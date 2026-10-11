@@ -17,7 +17,7 @@ Legacy `pie-elements` publishes a model schema and a configuration schema per el
 ## Non-goals
 
 - **A schema library** (Zod, TypeBox, hand-written schemas). The TypeScript interfaces are the single source; a schema library would be a second one to keep in step.
-- **Runtime validation in elements, players or `pie-api-aws`.** The schemas describe the contract; delivery does not validate against them. `pie-api-aws` stores models as given and validates only request envelopes. Its Learnosity transform writes keys the closed roots reject, such as `weights` on every multiple-choice model, and content on legacy element versions has no ng schema. Validating at store time is a `pie-api-aws` change of its own, resolving the schema of each model's element version. A host validates where it accepts or stores content.
+- **Runtime validation in elements, players or `pie-api-aws`.** The schemas describe the contract; delivery does not validate against them. `pie-api-aws` stores models as given and validates only request envelopes. Content it serves predates the schemas and is not expected to validate: its Learnosity transform writes keys no ng schema declares, such as `weights` on multiple-choice, authored items carry other value shapes, and content on legacy element versions has no ng schema. A host validates where it accepts or stores content.
 - **Committed schema copies.** A committed copy drifts from the build that published it; the npm package and its jsDelivr URL are the record.
 - **Changing behaviour to match legacy.** Typing is annotation-only. A legacy difference or a bug found while typing is recorded, and fixing it is a separate change.
 - **Matching legacy schemas key for key.** ng's types describe what ng reads and writes.

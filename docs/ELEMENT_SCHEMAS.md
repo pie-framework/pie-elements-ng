@@ -172,7 +172,7 @@ Validate a model against the schema of the element version that renders it. A ke
 
 Validation is structural. Whether a model is authorable, for example whether a correct answer is marked, is the controller's `validate(model, config)`, which returns authoring errors.
 
-Elements, players and `pie-api-aws` do not validate against the schemas: a host validates where it accepts or stores content. `pie-api-aws` stores models as given and checks only request envelopes. Multiple-choice models its Learnosity transform writes carry `weights`, which the schema does not declare, so they fail the closed root.
+Elements, players and `pie-api-aws` do not validate against the schemas: a host validates where it accepts or stores content. `pie-api-aws` stores models as given and checks only request envelopes. Content it serves today predates the schemas and is not expected to validate: its Learnosity transform writes keys no ng schema declares, such as `weights` on multiple-choice and `published` on extended-text-entry, and authored items carry other value shapes, such as an empty `alternateResponse` array on inline-dropdown.
 
 ### TypeScript
 
