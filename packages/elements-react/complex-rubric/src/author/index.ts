@@ -1,18 +1,22 @@
-// @ts-nocheck
-
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import RubricConfigure from '@pie-element/rubric/author';
 import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/author';
 import debug from 'debug';
 import { defaults } from '@pie-element/shared-lodash';
-import Main from './main.js';
+import Main, { type AuthorConfiguration, type AuthorModel } from './main.js';
 import sensibleDefaults from './defaults.js';
 import {
   COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
   COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
 } from '../private-tags.js';
+import type { ComplexRubricConfiguration, ComplexRubricModel, RubricModels, RubricType } from '../types.js';
+
+/** What the author accepts: it fills in the rest of the model, and of each rubric, from the defaults. */
+type ModelInput = Omit<Partial<ComplexRubricModel>, 'rubrics'> & {
+  rubrics?: { [K in keyof RubricModels]?: Partial<NonNullable<RubricModels[K]>> };
+} & Pick<Partial<AuthorModel>, 'errors'>;
 
 const MODEL_UPDATED = ModelUpdatedEvent.TYPE;
 const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG;
@@ -34,8 +38,8 @@ const defineComplexRubric = () => {
 
 defineComplexRubric();
 
-const prepareCustomizationObject = (config, model) => {
-  const configuration = defaults(config, sensibleDefaults.configuration);
+const prepareCustomizationObject = (config: ComplexRubricConfiguration | undefined, model: AuthorModel) => {
+  const configuration = defaults(config as ComplexRubricConfiguration, sensibleDefaults.configuration) as AuthorConfiguration;
 
   return {
     configuration,
@@ -48,9 +52,9 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     {
       rubrics: { simpleRubric = {}, rubricless = {}, multiTraitRubric = {} } = { simpleRubric: {}, rubricless: {}, multiTraitRubric: {} },
       ...model
-    } = {},
-    currentModel = {},
-  ) =>
+    }: ModelInput = {},
+    currentModel: Partial<AuthorModel> = {},
+  ): AuthorModel =>
   {
     const pieDefaults = sensibleDefaults?.model || {}
     return {
@@ -60,21 +64,26 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     rubrics: {
       simpleRubric: {
         ...(sensibleDefaults?.model?.rubrics || {}).simpleRubric,
-        ...(currentModel.rubrics || {}).simpleRubric,
+        ...((currentModel.rubrics || {}) as RubricModels).simpleRubric,
         ...simpleRubric,
       },
       multiTraitRubric: {
         ...(sensibleDefaults?.model?.rubrics || {}).multiTraitRubric,
-        ...(currentModel.rubrics || {}).multiTraitRubric,
+        ...((currentModel.rubrics || {}) as RubricModels).multiTraitRubric,
         ...multiTraitRubric,
       },
       rubricless: {
         ...(sensibleDefaults?.model?.rubrics || {}).rubricless,
-        ...(currentModel.rubrics || {}).rubricless,
+        ...((currentModel.rubrics || {}) as RubricModels).rubricless,
         ...rubricless,
       },
     },
   }};
+
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: AuthorConfiguration;
+  canUpdateModel: boolean;
 
   constructor() {
     super();
@@ -89,20 +98,20 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(m) {
+  set model(m: ModelInput) {
     this._model = ComplexRubricConfigureElement.createDefaultModel(m, this._model);
 
     this.canUpdateModel = true;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged: any = (m, reset) => {
+  onModelChanged = (m: ModelInput, reset?: boolean) => {
     this._model = ComplexRubricConfigureElement.createDefaultModel(m, this._model);
 
     this.dispatchModelUpdated(reset);
@@ -110,14 +119,14 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     this._render();
   };
 
-  set configuration(c) {
+  set configuration(c: ComplexRubricConfiguration) {
     const info = prepareCustomizationObject(c, this._model);
     this._configuration = info.configuration;
 
     this._render();
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: ComplexRubricConfiguration) {
     this._configuration = prepareCustomizationObject(c, this._model).configuration;
 
     if (this._model) {
@@ -127,7 +136,7 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     this._render();
   }
 
-  onModelUpdated: any = (e) => {
+  onModelUpdated = (e: Event) => {
     if (e.target === this) {
       return;
     }
@@ -135,11 +144,11 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const rubricType = e.target && e.target.getAttribute('data-rubric-type');
+    const rubricType = e.target && (e.target as Element).getAttribute('data-rubric-type');
 
     if (rubricType) {
-      if (e.update) {
-        this._model.rubrics[rubricType] = e.update;
+      if ((e as ModelUpdatedEvent).update) {
+        this._model.rubrics[rubricType as RubricType] = (e as ModelUpdatedEvent).update;
       }
 
       this.dispatchEvent(new ModelUpdatedEvent(this._model));
