@@ -49,6 +49,11 @@ export default {
           visualSupport: 'described',
         },
       },
+      // The element writes nothing to its session; this is the entry the player creates.
+      session: {
+        id: 'video-stimulus-1',
+        element: 'video-stimulus',
+      },
     },
   ],
 };
