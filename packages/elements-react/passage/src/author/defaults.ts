@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { PassageConfiguration, PassageModel } from '../types.js';
 
 // TODO: also update '../../controller/src/defaults.js' and '../../src/print.js' when updating defaults
 export default {
@@ -104,7 +105,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     additionalPassage: {
       settings: true,
@@ -112,4 +113,4 @@ export default {
       enabled: false,
     },
   },
-};
+} satisfies { model: Omit<PassageModel, 'id' | 'element'>; configuration: PassageConfiguration };

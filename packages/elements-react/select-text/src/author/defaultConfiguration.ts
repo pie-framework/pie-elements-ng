@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { SelectTextConfiguration, SelectTextModel, TextToken } from '../types.js';
 
 export default {
   model: {
@@ -16,7 +17,7 @@ export default {
     teacherInstructions: '',
     teacherInstructionsEnabled: true,
     text: '',
-    tokens: [],
+    tokens: [] as TextToken[],
     toolbarEditorPosition: 'bottom',
   },
   configuration: {
@@ -134,7 +135,10 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
+} satisfies {
+  model: Omit<SelectTextModel, 'id' | 'element'>;
+  configuration: SelectTextConfiguration;
 };

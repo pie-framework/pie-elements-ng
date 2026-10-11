@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { ExtendedTextEntryModel } from '../types.js';
 
 export default {
   annotationsEnabled: false,
@@ -34,4 +34,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<ExtendedTextEntryModel, 'id' | 'element'>;

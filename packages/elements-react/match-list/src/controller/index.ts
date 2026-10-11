@@ -1,15 +1,32 @@
-// @ts-nocheck
-
 import { isEmpty } from '@pie-element/shared-lodash';
-import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import { getFeedbackForCorrectness, type Correctness, type Feedback } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import debug from 'debug';
 
 const log = debug('@pie-element:match-list:controller');
 
 import defaults from './defaults.js';
+import type { MatchListAnswer, MatchListModel, MatchListPrompt, MatchListSession } from '../types.js';
 
-const getResponseCorrectness = (model, answers, env) => {
+type SessionValue = NonNullable<MatchListSession['value']>;
+
+export type MatchListOutcome = { score?: number; empty?: boolean; completed?: boolean; logTrace: string[] };
+
+export type ModelView = {
+  config: MatchListModel & { prompts: MatchListPrompt[] | undefined; answers: MatchListAnswer[] | undefined };
+  correctness: { score: string; correctness: Correctness | undefined };
+  feedback: string | undefined;
+  mode: PieEnvironment['mode'];
+  rationale?: string | null;
+  correctResponse: Record<string, string | number>;
+};
+
+const getResponseCorrectness = (
+  model: MatchListModel,
+  answers: SessionValue | undefined,
+  env: PieEnvironment,
+): Correctness => {
   const isPartialScoring = partialScoring.enabled(model, env);
   const prompts = model.prompts;
 
@@ -31,13 +48,13 @@ const getResponseCorrectness = (model, answers, env) => {
   return 'incorrect';
 };
 
-const getCorrectness = (question, env, answers) => {
+const getCorrectness = (question: MatchListModel, env: PieEnvironment, answers: SessionValue | undefined) => {
   if (env.mode === 'evaluate') {
     return getResponseCorrectness(question, answers, env);
   }
 };
 
-const getCorrectSelected = (prompts = [], answers) => {
+const getCorrectSelected = (prompts: MatchListPrompt[] = [], answers: SessionValue) => {
   let correctAnswers = 0;
 
   prompts.forEach((p) => {
@@ -49,32 +66,32 @@ const getCorrectSelected = (prompts = [], answers) => {
   return correctAnswers;
 };
 
-const getTotalCorrect = (question) => {
+const getTotalCorrect = (question: MatchListModel) => {
   return question && question.prompts ? question.prompts.length : 0;
 };
 
-const getPartialScore = (question, answers) => {
+const getPartialScore = (question: MatchListModel, answers: SessionValue) => {
   const count = getCorrectSelected(question && question.prompts, answers);
   const totalCorrect = getTotalCorrect(question);
 
   return parseFloat((count / totalCorrect).toFixed(2));
 };
 
-const getOutComeScore = (question, env, answers) => {
+const getOutComeScore = (question: MatchListModel, env: PieEnvironment, answers: SessionValue | undefined) => {
   const correctness = getCorrectness(question, env, answers);
 
-  return correctness === 'correct' ? 1 : correctness === 'partial' && true ? getPartialScore(question, answers) : 0;
+  return correctness === 'correct' ? 1 : correctness === 'partial' && true ? getPartialScore(question, answers!) : 0;
 };
 
 /**
  * Generates detailed trace log for match-list scoring evaluation
- * @param {Object} question
- * @param {Object} session
- * @param {Object} env
- * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  question: MatchListModel,
+  session: MatchListSession | undefined,
+  env: PieEnvironment,
+): string[] => {
+  const traceLog: string[] = [];
 
   const prompts = question?.prompts || [];
   const answers = session?.value || {};
@@ -136,8 +153,8 @@ export const getLogTrace = (question, session, env) => {
   return traceLog;
 };
 
-export const outcome = (question, session, env) => {
-  return new Promise((resolve) => {
+export const outcome = (question: MatchListModel, session: MatchListSession | undefined, env: PieEnvironment) => {
+  return new Promise<MatchListOutcome>((resolve) => {
     if (env.mode !== 'evaluate') {
       resolve({ score: undefined, completed: undefined, logTrace: [] });
     } else {
@@ -145,7 +162,7 @@ export const outcome = (question, session, env) => {
         resolve({ score: 0, empty: true, logTrace: ['Student did not provide any answer.'] });
       } else {
         const out = {
-          score: getOutComeScore(question, env, session.value),
+          score: getOutComeScore(question, env, session!.value),
           empty: false,
           logTrace: getLogTrace(question, session, env),
         };
@@ -156,8 +173,8 @@ export const outcome = (question, session, env) => {
   });
 };
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => {
+export function createDefaultModel(model: Partial<MatchListModel> = {}) {
+  return new Promise<Omit<MatchListModel, 'id' | 'element'> & Partial<MatchListModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
@@ -165,48 +182,49 @@ export function createDefaultModel(model = {}) {
   });
 }
 
-export const normalize = (model) => ({ ...defaults, ...model });
+export const normalize = (model: MatchListModel): MatchListModel => ({ ...defaults, ...model });
 
 /**
- *
- * @param {*} question
- * @param {*} session
- * @param {*} env
- * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
+ * @param updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export async function model(question, session, env, updateSession) {
+export async function model(
+  question: MatchListModel,
+  session: MatchListSession | undefined,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+): Promise<ModelView> {
   question = normalize(question);
   const correctness = getCorrectness(question, env, session && session.value);
-  const correctResponse = {};
+  const correctResponse: Record<string, string | number> = {};
   const score = `${getOutComeScore(question, env, session && session.value) * 100}%`;
   const correctInfo = {
     score,
     correctness,
   };
 
-  const shuffledValues = {};
+  const shuffledValues: NonNullable<MatchListSession['shuffledValues']> = {};
   let prompts = question.prompts;
   let answers = question.answers;
 
-  const us = (part) => (id, element, update) => {
+  const us = (part: 'prompts' | 'answers'): PieUpdateSession => (_id, _element, update) => {
     return new Promise((resolve) => {
-      shuffledValues[part] = update.shuffledValues;
+      shuffledValues[part] = update.shuffledValues as (string | number)[];
       resolve();
     });
   };
 
-  const lockChoiceOrder = lockChoices(question, session, env);
+  const lockChoiceOrder = lockChoices(question, session as { id?: string; element?: string } | undefined, env);
 
   if (!lockChoiceOrder) {
     prompts = await getShuffledChoices(
-      prompts,
-      { shuffledValues: ((session && session.shuffledValues) || {}).prompts },
+      prompts!,
+      { shuffledValues: ((session && session.shuffledValues) || {}).prompts as string[] | undefined },
       us('prompts'),
       'id',
     );
     answers = await getShuffledChoices(
-      answers,
-      { shuffledValues: ((session && session.shuffledValues) || {}).answers },
+      answers!,
+      { shuffledValues: ((session && session.shuffledValues) || {}).answers as string[] | undefined },
       us('answers'),
       'id',
     );
@@ -214,9 +232,9 @@ export async function model(question, session, env, updateSession) {
 
   if (!isEmpty(shuffledValues)) {
     if (updateSession && typeof updateSession === 'function') {
-      updateSession(session.id, session.element, {
+      updateSession(session!.id as string, session!.element as string, {
         shuffledValues,
-      }).catch((e) => {
+      }).catch((e: unknown) => {
         // eslint-disable-next-line no-console
         console.error('update session failed', e);
       });
@@ -231,10 +249,10 @@ export async function model(question, session, env, updateSession) {
 
   const feedback =
     env.mode === 'evaluate'
-      ? await getFeedbackForCorrectness(correctInfo.correctness, question.feedback)
+      ? await getFeedbackForCorrectness(correctInfo.correctness!, question.feedback as Partial<Feedback>)
       : undefined;
 
-  const base = {
+  const base: Omit<ModelView, 'correctResponse'> = {
     config: {
       ...question,
       prompts,
@@ -259,14 +277,14 @@ export async function model(question, session, env, updateSession) {
   return out;
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: MatchListModel, env: PieEnvironment) => {
+  return new Promise<MatchListSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { prompts, answers } = question;
-      const value = {};
+      const value: SessionValue = {};
 
-      prompts.forEach((p) => {
-        if (answers.filter((a) => a.id === p.relatedAnswer).length) {
+      prompts!.forEach((p) => {
+        if (answers!.filter((a) => a.id === p.relatedAnswer).length) {
           value[p.id] = p.relatedAnswer;
         }
       });

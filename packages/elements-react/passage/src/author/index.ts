@@ -1,20 +1,26 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
-import Main from './design.js';
+import Main, { type AuthorModel } from './design.js';
 import defaultValues from './defaults.js';
+import type { PassageConfiguration } from '../types.js';
 
 export default class PassageConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: PassageConfiguration;
+
+  static createDefaultModel = (model: Partial<AuthorModel> = {}): AuthorModel => ({
     ...defaultValues.model,
     ...model,
   });
@@ -26,12 +32,12 @@ export default class PassageConfigure extends HTMLElement {
     this._configuration = defaultValues.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<AuthorModel>) {
     this._model = PassageConfigure.createDefaultModel(m);
     this.render();
   }
 
-  set configuration(c) {
+  set configuration(c: PassageConfiguration) {
     this._configuration = c;
     this.render();
   }
@@ -40,31 +46,31 @@ export default class PassageConfigure extends HTMLElement {
     this.render();
   }
 
-  modelChanged(m) {
+  modelChanged(m: AuthorModel) {
     this._model = m;
-    this.dispatchEvent(new ModelUpdatedEvent(this._model), true);
+    this.dispatchEvent(new ModelUpdatedEvent(this._model));
     this.render();
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: PassageConfiguration) {
     this._configuration = c;
 
     this.render();
   }
 
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

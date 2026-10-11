@@ -1,36 +1,74 @@
-// @ts-nocheck
-
 import debug from 'debug';
-import { getFeedback } from '@pie-element/shared-feedback';
+import { getFeedback, type FeedbackConfig } from '@pie-element/shared-feedback';
+import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
+import type {
+  ExtendedTextEntryConfiguration,
+  ExtendedTextEntryDimensions,
+  ExtendedTextEntryModel,
+  ExtendedTextEntrySession,
+  PredefinedAnnotation,
+} from '../types.js';
 
 const log = debug('@pie-element:extended-text-entry:controller');
 
-export async function createDefaultModel(model = {}) {
+/** The model the delivery renders. */
+type ModelView = {
+  prompt: string | null | undefined;
+  dimensions: ExtendedTextEntryDimensions | undefined;
+  customKeys: string[];
+  id: string;
+  disabled: boolean;
+  feedback: string | undefined;
+  teacherInstructions: string | null | undefined;
+  language: string | undefined;
+  mathInput: boolean | undefined;
+  spanishInput: boolean | undefined;
+  specialInput: boolean | undefined;
+  equationEditor: string | number;
+  spellCheckEnabled: boolean;
+  pasteFormattingDisabled: boolean;
+  playersToolbarPosition: 'bottom' | 'top';
+  annotatorMode: boolean | undefined;
+  disabledAnnotator: boolean;
+  predefinedAnnotations: PredefinedAnnotation[] | undefined;
+  extraCSSRules: ExtraCSSRules | undefined;
+};
+
+export type ExtendedTextEntryValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+};
+
+export async function createDefaultModel(model: Partial<ExtendedTextEntryModel> = {}) {
   log('[createDefaultModel]', model);
 
   return { ...defaults, ...model };
 }
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: ExtendedTextEntryModel) => ({ ...defaults, ...question });
 
-export async function model(question, session, env) {
+export async function model(
+  question: ExtendedTextEntryModel,
+  _session: ExtendedTextEntrySession | undefined,
+  env: PieEnvironment,
+): Promise<ModelView> {
   log('[question]', question);
   const normalizedQuestion = normalize(question);
 
   const fb =
     env.mode === 'evaluate' && normalizedQuestion.feedbackEnabled
-      ? getFeedback(normalizedQuestion.feedback, 'Your answer has been submitted')
+      ? getFeedback(normalizedQuestion.feedback as FeedbackConfig, 'Your answer has been submitted')
       : Promise.resolve(undefined);
 
-  let teacherInstructions = null;
+  let teacherInstructions: string | null | undefined = null;
   if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
     teacherInstructions = normalizedQuestion.teacherInstructionsEnabled ? normalizedQuestion.teacherInstructions : null;
   } else {
     teacherInstructions = null;
   }
 
-  let equationEditor = normalizedQuestion.equationEditor || 'miscellaneous';
+  let equationEditor: string | number = normalizedQuestion.equationEditor || 'miscellaneous';
 
   switch (normalizedQuestion.equationEditor) {
     case 'Grade 1 - 2':
@@ -51,7 +89,7 @@ export async function model(question, session, env) {
 
   const annotatorMode = normalizedQuestion.annotationsEnabled && (env.role === 'instructor' || env.mode === 'evaluate');
 
-  return fb.then((feedback) => ({
+  return fb.then((feedback): ModelView => ({
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
     dimensions: normalizedQuestion.dimensions,
     customKeys: normalizedQuestion.customKeys || [],
@@ -84,16 +122,16 @@ export async function outcome(/*question, session, env*/) {
   };
 }
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
-  const errors = {};
+export const validate = (
+  model: Partial<ExtendedTextEntryModel> = {},
+  config: ExtendedTextEntryConfiguration = {},
+): ExtendedTextEntryValidationErrors => {
+  const errors: ExtendedTextEntryValidationErrors = {};
 
-  ['teacherInstructions', 'prompt'].forEach((field) => {
+  (['teacherInstructions', 'prompt'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }

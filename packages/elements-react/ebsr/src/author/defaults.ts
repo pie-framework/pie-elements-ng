@@ -1,6 +1,7 @@
-// @ts-nocheck
-
 import { cloneDeep } from '@pie-element/shared-lodash';
+import type { Choice, MultipleChoiceConfiguration } from '@pie-element/multiple-choice';
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { EbsrConfiguration, EbsrModel, EbsrPart } from '../types.js';
 
 const defaultConfig = {
   addChoiceButton: {
@@ -105,12 +106,12 @@ const defaultConfig = {
     showParagraphs: { disabled: false },
     separateParagraphs: { disabled: true },
   },
-};
+} satisfies MultipleChoiceConfiguration;
 
-const partModel = (base) => ({
+const partModel = (base?: Partial<EbsrPart>): EbsrPart => ({
   choiceMode: 'radio',
   choicePrefix: 'letters',
-  choices: [],
+  choices: [] as Choice[],
   choicesLayout: 'vertical',
   feedbackEnabled: false,
   gridColumns: 2,
@@ -169,7 +170,10 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
+} satisfies {
+  model: Omit<EbsrModel, 'id' | 'element'>;
+  configuration: EbsrConfiguration;
 };
