@@ -7,6 +7,7 @@ export default {
       tags: ['explicit-constructed-response', 'default'],
       model: {
         id: '1',
+        element: 'explicit-constructed-response',
         markup: '<p>The {{0}} jumped {{1}} the {{2}}</p>',
         disabled: false,
         choices: {
