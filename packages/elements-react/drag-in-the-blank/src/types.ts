@@ -31,7 +31,7 @@ export type CorrectResponse = Record<string, string>;
 export type AlternateResponses = string[][] | Record<string, string[]>;
 
 /**
- * Model for the @pie-elements/drag-in-the-blank
+ * Model for the `@pie-element/drag-in-the-blank`
  */
 export interface DragInTheBlankModel extends PieModel {
   /** Array of all the available choices */
@@ -112,7 +112,7 @@ export interface MaxImageDimensions extends ConfigureMaxImageDimensionsProp {
 }
 
 /**
- * Config Object for @pie-elements/drag-in-the-blank
+ * Config Object for `@pie-element/drag-in-the-blank`
  */
 export interface DragInTheBlankConfiguration {
   /**

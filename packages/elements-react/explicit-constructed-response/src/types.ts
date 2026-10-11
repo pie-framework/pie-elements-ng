@@ -37,7 +37,7 @@ export interface Choice {
 export type Choices = Record<string, Choice[]>;
 
 /**
- * Model for the @pie-elements/explicit-constructed-response
+ * Model for the `@pie-element/explicit-constructed-response`
  */
 export interface ExplicitConstructedResponseModel extends PieModel {
   /** Object with all the available choices for each response area */
@@ -123,7 +123,7 @@ export interface ExplicitConstructedResponseModel extends PieModel {
 }
 
 /**
- * Config Object for @pie-elements/explicit-constructed-response
+ * Config Object for `@pie-element/explicit-constructed-response`
  */
 export interface ExplicitConstructedResponseConfiguration {
   /**
