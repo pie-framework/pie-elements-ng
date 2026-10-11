@@ -1,5 +1,13 @@
 # @pie-lib/math-toolbar
 
+## 4.0.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @pie-lib/render-ui@8.0.4
+  - @pie-lib/math-input@9.0.4
+
 ## 4.0.3
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.4
+
+### Patch Changes
+
+- [#431](https://github.com/pie-framework/pie-elements-ng/pull/431) [`20c1c98`](https://github.com/pie-framework/pie-elements-ng/commit/20c1c98ba8e0891a3a97705f9c583bbc228bdae6) Thanks [@chillenious](https://github.com/chillenious)! - fix: declare renderUi before the interop fallbacks that read it
+- Updated dependencies []:
+  - @pie-lib/render-ui@8.0.4
+
 ## 5.0.3
 
 ### Patch Changes
