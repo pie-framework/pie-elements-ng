@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import Ajv, { type ValidateFunction } from 'ajv';
@@ -62,6 +62,8 @@ const splitDefaults = (value: unknown): DefaultsModule => {
 };
 
 const instructorGather = { mode: 'gather', role: 'instructor' };
+
+const DEMO_APPS = ['element-demo', 'element-a11y-demo'];
 
 // Generation builds a TypeScript program per element: a second or two each, more on a loaded runner.
 const GENERATION_TIMEOUT = 60_000;
@@ -143,7 +145,37 @@ const collectInstances = async (dir: string, elementName: string): Promise<Insta
     instances.push({ label: `demo session.mjs[${index}]`, kind: 'session', value: session });
   }
 
-  return instances;
+  // The demo apps seed their samples from `docs/demo/config.mjs` and keep them once edited, so they
+  // carry models and sessions of their own.
+  for (const app of DEMO_APPS) {
+    const samplesPath = join(workspaceRoot, 'apps', app, 'src/lib/samples', `${elementName}.json`);
+    if (!existsSync(samplesPath)) continue;
+    const { demos = [] } = JSON.parse(readFileSync(samplesPath, 'utf-8')) as {
+      demos?: { id: string; model?: object; session?: unknown }[];
+    };
+    for (const demo of demos) {
+      if (demo.model) {
+        instances.push({
+          label: `${app} sample "${demo.id}" model`,
+          kind: 'model',
+          value: demo.model,
+        });
+      }
+      for (const session of asArray(demo.session)) {
+        instances.push({
+          label: `${app} sample "${demo.id}" session`,
+          kind: 'session',
+          value: session,
+        });
+      }
+    }
+  }
+
+  const seen = new Set<string>();
+  return instances.filter(({ kind, value }) => {
+    const key = `${kind}:${JSON.stringify(value)}`;
+    return !seen.has(key) && seen.add(key);
+  });
 };
 
 const formatErrors = (validate: ValidateFunction) =>
