@@ -1,7 +1,6 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
+import type MultiTraitRubricAuthorElement from '@pie-element/multi-trait-rubric/author';
+import type RubricAuthorElement from '@pie-element/rubric/author';
 import { RUBRIC_TYPES } from '@pie-lib/rubric';
 import { layout } from '@pie-lib/config-ui';
 import Radio from '@mui/material/Radio';
@@ -13,6 +12,34 @@ import {
   COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
   COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
 } from '../private-tags.js';
+import type { ComplexRubricValidationErrors } from '../controller/index.js';
+import type { ComplexRubricConfiguration, ComplexRubricModel, RubricModels, RubricType } from '../types.js';
+
+/** The model the author edits: the defaults supply every rubric; a host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<ComplexRubricModel> & {
+  rubrics: Required<RubricModels>;
+  errors?: ComplexRubricValidationErrors;
+};
+
+/** The configuration the author renders: the defaults supply the rubric options and each rubric's configuration. */
+export type AuthorConfiguration = ComplexRubricConfiguration &
+  Required<Pick<ComplexRubricConfiguration, 'rubricOptions' | 'simpleRubric' | 'multiTraitRubric' | 'rubricless'>>;
+
+export type MainProps = {
+  canUpdateModel?: boolean;
+  configuration: AuthorConfiguration;
+  multiTraitRubricTagName?: string;
+  model: AuthorModel;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: ComplexRubricConfiguration) => void;
+  simpleRubricTagName?: string;
+};
+
+/** A rubric author custom element rendered by its tag name; the ref hands Main the element to set its model and configuration on. */
+type ConfigureElementTag<E extends HTMLElement> = React.ComponentType<{
+  'data-rubric-type': RubricType;
+  ref: (element: E | null) => void;
+}>;
 
 const StyledFormControlLabel: any = styled(FormControlLabel)({
   '&.MuiFormControlLabel-root': {
@@ -37,27 +64,21 @@ const rubricLabels = {
   [RUBRIC_TYPES.RUBRICLESS]: 'Rubricless',
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    canUpdateModel: PropTypes.bool,
-    configuration: PropTypes.object,
-    multiTraitRubricTagName: PropTypes.string,
-    model: PropTypes.object,
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-    simpleRubricTagName: PropTypes.string,
-  };
+export class Main extends React.Component<MainProps> {
+  declare simpleRubric: RubricAuthorElement | undefined;
+  declare multiTraitRubric: MultiTraitRubricAuthorElement | undefined;
+  declare rubricless: RubricAuthorElement | undefined;
 
-  onModelChanged: any = (model) => {
+  onModelChanged = (model: AuthorModel) => {
     const { onModelChanged } = this.props;
 
     return onModelChanged(model);
   };
 
-  onChangeRubricType: any = (e) => {
+  onChangeRubricType = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { model } = this.props;
 
-    const rubricType = e.target.value;
+    const rubricType = e.target.value as RubricType;
     this.onModelChanged({ ...model, rubricType });
   };
 
@@ -69,10 +90,11 @@ export class Main extends React.Component {
       multiTraitRubricTagName = COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
       simpleRubricTagName = COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
     } = this.props;
-    const MultiTraitRubricConfigureElement = multiTraitRubricTagName;
-    const SimpleRubricConfigureElement = simpleRubricTagName;
+    const MultiTraitRubricConfigureElement =
+      multiTraitRubricTagName as unknown as ConfigureElementTag<MultiTraitRubricAuthorElement>;
+    const SimpleRubricConfigureElement = simpleRubricTagName as unknown as ConfigureElementTag<RubricAuthorElement>;
 
-    const { extraCSSRules, rubrics = {} } = model || {};
+    const { extraCSSRules, rubrics = {} as AuthorModel['rubrics'] } = model || {};
     let { rubricType } = model;
     const {
       contentDimensions = {},
@@ -82,10 +104,10 @@ export class Main extends React.Component {
       rubricless,
       width,
     } = configuration;
-    let rubricTag = '';
+    let rubricTag: React.ReactNode = '';
 
     if (!rubricType) {
-      rubricType = RUBRIC_TYPES.SIMPLE_RUBRIC;
+      rubricType = RUBRIC_TYPES.SIMPLE_RUBRIC as RubricType;
     }
 
     const isRubricTypeAvailable = rubricOptions.indexOf(rubricType) > -1;

@@ -1,7 +1,7 @@
-// @ts-nocheck
+import type { LikertChoice, LikertModel } from '../types.js';
 
 export default {
-  choices: [],
+  choices: [] as LikertChoice[],
   likertOrientation: 'horizontal',
   likertScale: 'likert3',
   likertType: 'agreement',
@@ -9,4 +9,4 @@ export default {
   promptEnabled: true,
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
-};
+} satisfies Omit<LikertModel, 'id' | 'element'>;

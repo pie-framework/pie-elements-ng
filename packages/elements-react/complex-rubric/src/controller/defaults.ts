@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { Scale } from '@pie-element/multi-trait-rubric';
+import type { ComplexRubricModel } from '../types.js';
 
 // todo the import from pie-lib/rubric WILL break pslb
 //  so don't use it unless you also test "yarn build"
@@ -6,14 +7,14 @@ const RUBRIC_TYPES = {
   SIMPLE_RUBRIC: 'simpleRubric',
   MULTI_TRAIT_RUBRIC: 'multiTraitRubric',
   'rubricless': 'rubricless',
-};
+} as const;
 
 const multiTraitDefaultModel = {
   description: false,
   excludeZero: false,
   halfScoring: false,
   pointLabels: true,
-  scales: [],
+  scales: [] as Scale[],
   standards: false,
   visibleToStudent: true,
 };
@@ -36,6 +37,7 @@ export default {
   rubrics: {
     [RUBRIC_TYPES.SIMPLE_RUBRIC]: rubricDefaultModel,
     [RUBRIC_TYPES.MULTI_TRAIT_RUBRIC]: multiTraitDefaultModel,
+    // @ts-expect-error RUBRIC_TYPES has no RUBRICLESS key, so this default lands under "undefined" (as in legacy).
     [RUBRIC_TYPES.RUBRICLESS]: rubriclessDefaultModel,
   },
-};
+} satisfies Omit<ComplexRubricModel, 'id' | 'element'>;

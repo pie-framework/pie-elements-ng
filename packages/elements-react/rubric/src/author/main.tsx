@@ -1,22 +1,46 @@
-// @ts-nocheck
-
 import React from 'react';
 import { Authoring } from '@pie-lib/rubric';
 import { styled } from '@mui/material/styles';
 import { layout, settings } from '@pie-lib/config-ui';
+import type { DeleteDone, ImageHandler } from '@pie-element/shared-configure-events';
+import type { EditableHtmlPluginConfigure } from '@pie-element/shared-types';
+import type { RubricValidationErrors } from '../controller/index.js';
+import type { RubricConfiguration, RubricModel } from '../types.js';
+
+/** The model the author edits: the defaults supply `maxPoints`; a host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<RubricModel> & {
+  maxPoints: number;
+  errors?: RubricValidationErrors;
+};
+
+/** The configuration the author renders: the defaults supply `rubriclessInstruction`. */
+export type AuthorConfiguration = RubricConfiguration & {
+  rubriclessInstruction: EditableHtmlPluginConfigure;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: AuthorConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: RubricConfiguration) => void;
+  imageSupport?: {
+    add: (handler: ImageHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+};
 
 const { Panel, toggle } = settings;
 
-const StyledDiv: any = styled('div')(({ theme, width }) => ({
+const StyledDiv: any = styled('div')<{ width?: string }>(({ theme, width }) => ({
   maxWidth: width,
   fontFamily: 'Cerebri Sans',
   fontSize: theme.typography.fontSize,
 }));
 
-class Main extends React.Component {
-  verifyRubriclessModel: any = (m, config) => {
+class Main extends React.Component<MainProps> {
+  verifyRubriclessModel = (m: AuthorModel, config: RubricConfiguration) => {
     const { rubricless = false } = config || {};
-    return rubricless ? (({ points, sampleAnswers, ...rest }) => rest)(m) : m;
+    return rubricless ? (({ points: _points, sampleAnswers: _sampleAnswers, ...rest }) => rest)(m) : m;
   };
 
   render() {
@@ -43,15 +67,6 @@ class Main extends React.Component {
       rubriclessInstructionEnabled: rubricless && rubriclessInstruction.settings && toggle(rubriclessInstruction.label),
     };
 
-    const getPluginProps = (props) => {
-      return Object.assign(
-        {
-          ...baseInputConfiguration,
-        },
-        props || {},
-      );
-    };
-
     return (
       <layout.ConfigLayout
         extraCSSRules={extraCSSRules}
@@ -63,11 +78,9 @@ class Main extends React.Component {
             onChangeModel={onModelChanged}
             configuration={configuration}
             onChangeConfiguration={onConfigurationChanged}
-            pluginOpts={getPluginProps(rubriclessInstruction?.inputConfiguration)}
             groups={{
               Properties: panelProperties,
             }}
-            imageSupport={imageSupport}
           />
         }        >
         <StyledDiv width={width}>

@@ -1,18 +1,25 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import debug from 'debug';
-import { ModelUpdatedEvent, InsertSoundEvent, DeleteSoundEvent } from '@pie-element/shared-configure-events';
+import {
+  ModelUpdatedEvent,
+  InsertSoundEvent,
+  DeleteSoundEvent,
+  type DeleteDone,
+  type SoundHandler,
+} from '@pie-element/shared-configure-events';
 
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
+import type { LikertConfiguration, LikertModel } from '../types.js';
+
+type ModelInput = Partial<LikertModel> & Pick<Partial<AuthorModel>, 'errors'>;
 
 const log = debug('likert:configure');
 
-const prepareCustomizationObject = (config, model) => {
+const prepareCustomizationObject = (config: LikertConfiguration, model: AuthorModel) => {
   const configuration = defaults(config, sensibleDefaults.configuration);
 
   return {
@@ -22,11 +29,16 @@ const prepareCustomizationObject = (config, model) => {
 };
 
 export default class Likert extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  static createDefaultModel = (model: ModelInput = {}): AuthorModel => ({
     ...sensibleDefaults.model,
     ...model,
     choices: (model && model.choices) || [],
   });
+
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: LikertConfiguration;
+  private _disableSidePanel?: boolean;
 
   constructor() {
     super();
@@ -37,16 +49,16 @@ export default class Likert extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: ModelInput) {
     this._model = Likert.createDefaultModel(s);
     this._model = {
       ...this._model,
-      choices: this._model.choices.map((choice) => ({ ...choice, value: parseInt(choice.value) })),
+      choices: this._model.choices.map((choice) => ({ ...choice, value: parseInt(choice.value as string) })),
     };
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: LikertConfiguration) {
     const info = prepareCustomizationObject(c, this._model);
 
     this.onModelChanged(info.model);
@@ -54,24 +66,24 @@ export default class Likert extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean | undefined) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: AuthorModel, reset?: boolean) {
     this._model = m;
     this._render();
     this.dispatchModelUpdated(reset);
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: LikertConfiguration) {
     this._configuration = prepareCustomizationObject(c, this._model).configuration;
 
     if (this._model) {
@@ -81,11 +93,11 @@ export default class Likert extends HTMLElement {
     this._render();
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
