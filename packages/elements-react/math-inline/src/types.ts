@@ -181,7 +181,7 @@ export interface MathInlineModelSettings {
 }
 
 /**
- * Model for the @pie-elements/math-inline
+ * Model for the `@pie-element/math-inline`
  *
  * NOTE: teacherInstructions, studentInstructions, rationale & scoringType
  * functionalities are not defined yet - the value for those can belong to
@@ -196,7 +196,7 @@ export interface MathInlineModel extends PieModel, MathInlineModelSettings {
 }
 
 /**
- * Config Object for @pie-elements/math-inline
+ * Config Object for `@pie-element/math-inline`
  */
 export interface MathInlineConfiguration {
   /**
