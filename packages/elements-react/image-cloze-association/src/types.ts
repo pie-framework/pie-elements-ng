@@ -13,7 +13,8 @@ import type {
 } from '@pie-element/shared-types';
 
 /** Position of the possible responses relative to the image */
-export type ImageClozeAssociationChoicesPosition = 'top' | 'bottom' | 'left' | 'right';
+/** `below`, which imported content carries, renders as `bottom`. */
+export type ImageClozeAssociationChoicesPosition = 'top' | 'bottom' | 'below' | 'left' | 'right';
 
 export interface ImageClozeAssociationResponseContainer {
   /** The x coordinate of the response container, as a percentage of the image width */
@@ -182,6 +183,10 @@ export interface ImageClozeAssociationModel extends PieModel {
   response_id?: string;
   /** Not read by the element: the demo model carries it */
   metadatadistractor_rationale?: string;
+  /** Not read by the element: imported content carries it */
+  published?: boolean;
+  /** Not read by the element: imported content carries it; `shuffle` controls shuffling */
+  shuffle_options?: boolean;
 }
 
 /**
