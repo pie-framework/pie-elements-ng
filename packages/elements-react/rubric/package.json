@@ -22,7 +22,8 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@pie-element/shared-types": "workspace:*"
   },
   "exports": {
     ".": {

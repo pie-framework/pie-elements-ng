@@ -24,7 +24,7 @@ import SimpleClozeElement from '../../../elements-svelte/simple-cloze/src/delive
 import { model as simpleClozeModel } from '../../../elements-svelte/simple-cloze/src/controller/index.js';
 import VennClassificationElement from '../../../elements-svelte/venn-classification/src/delivery/index.js';
 import { model as vennModel } from '../../../elements-svelte/venn-classification/src/controller/index.js';
-import type { VennModel } from '../../../elements-svelte/venn-classification/src/types.js';
+import type { VennClassificationModel } from '../../../elements-svelte/venn-classification/src/types.js';
 
 type Session = Record<string, unknown>;
 type Element = HTMLElement & {
@@ -113,7 +113,7 @@ const vennClassification: ElementUnderTest = {
   name: 'venn-classification',
   Element: VennClassificationElement as unknown as CustomElementConstructor,
   model: async (tag, session) => {
-    const question: VennModel = {
+    const question: VennClassificationModel = {
       id: '1',
       element: tag,
       circles: [{ label: 'Reptile' }, { label: 'Egg-layer' }],

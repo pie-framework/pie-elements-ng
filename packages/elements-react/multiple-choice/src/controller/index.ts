@@ -1,14 +1,43 @@
-// @ts-nocheck
-
 /* eslint-disable no-console */
 import { isEmpty } from '@pie-element/shared-lodash';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import { isResponseCorrect } from './utils.js';
 import defaults from './defaults.js';
 import { lockChoices, partialScoring, getShuffledChoices } from '@pie-element/shared-controller-utils';
+import type {
+  Choice,
+  MultipleChoiceConfiguration,
+  MultipleChoiceModel,
+  MultipleChoiceSession,
+} from '../types.js';
 
-const prepareChoice = (model, env, defaultFeedback) => (choice) => {
-  const { role, mode } = env || {};
-  const out = {
+type DefaultFeedback = { correct: string; incorrect: string };
+
+/** A choice as the delivery view receives it. */
+type ChoiceView = {
+  label: string;
+  value: string;
+  rationale?: string | null;
+  correct?: boolean;
+  feedback?: string;
+};
+
+/** Errors `validate()` reports, keyed by field; `choices` and `rationale` are keyed by choice value. */
+export type MultipleChoiceValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  answerChoices?: string;
+  correctResponse?: string;
+  choices?: Record<string, string>;
+  rationale?: Record<string, string>;
+};
+
+const prepareChoice =
+  (model: MultipleChoiceModel, env: PieEnvironment | undefined, defaultFeedback: DefaultFeedback) =>
+  (choice: Choice): ChoiceView => {
+  const role = env?.role;
+  const mode = env?.mode;
+  const out: ChoiceView = {
     label: choice.label,
     value: choice.value,
   };
@@ -28,7 +57,7 @@ const prepareChoice = (model, env, defaultFeedback) => (choice) => {
       if (feedbackType === 'default') {
         out.feedback = defaultFeedback[choice.correct ? 'correct' : 'incorrect'];
       } else if (feedbackType === 'custom') {
-        out.feedback = choice.feedback.value;
+        out.feedback = choice.feedback?.value;
       }
     }
   }
@@ -36,11 +65,11 @@ const prepareChoice = (model, env, defaultFeedback) => (choice) => {
   return out;
 };
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => resolve({ ...defaults, ...model }));
+export function createDefaultModel(model: Partial<MultipleChoiceModel> = {}) {
+  return new Promise<Partial<MultipleChoiceModel>>((resolve) => resolve({ ...defaults, ...model }));
 }
 
-export const normalize = (question) => {
+export const normalize = (question: MultipleChoiceModel) => {
   const { verticalMode, choicesLayout, ...questionProps } = question || {};
 
   return {
@@ -59,7 +88,12 @@ export const normalize = (question) => {
  * @param {*} env
  * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export async function model(question, session, env, updateSession) {
+export async function model(
+  question: MultipleChoiceModel,
+  session: MultipleChoiceSession | undefined,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+) {
   const normalizedQuestion = normalize(question);
 
   const defaultFeedback = Object.assign(
@@ -67,13 +101,15 @@ export async function model(question, session, env, updateSession) {
     normalizedQuestion.defaultFeedback,
   );
 
-  let choices = (normalizedQuestion.choices || []).map(prepareChoice(normalizedQuestion, env, defaultFeedback));
+  let choices: ChoiceView[] | undefined = (normalizedQuestion.choices || []).map(prepareChoice(normalizedQuestion, env, defaultFeedback));
 
   const lockChoiceOrder = lockChoices(normalizedQuestion, session, env);
 
   if (!lockChoiceOrder) {
     choices = await getShuffledChoices(choices, session, updateSession, 'value');
   }
+
+  const { role, mode } = env;
 
   const out = {
     disabled: env.mode !== 'gather',
@@ -101,27 +137,21 @@ export async function model(question, session, env, updateSession) {
     autoplayAudioEnabled: normalizedQuestion.autoplayAudioEnabled,
     completeAudioEnabled: normalizedQuestion.completeAudioEnabled,
     customAudioButton: normalizedQuestion.customAudioButton,
+    teacherInstructions:
+      role === 'instructor' && (mode === 'view' || mode === 'evaluate') && normalizedQuestion.teacherInstructionsEnabled
+        ? normalizedQuestion.teacherInstructions
+        : null,
   };
-
-  const { role, mode } = env || {};
-
-  if (role === 'instructor' && (mode === 'view' || mode === 'evaluate')) {
-    out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
-      ? normalizedQuestion.teacherInstructions
-      : null;
-  } else {
-    out.teacherInstructions = null;
-  }
 
   return out;
 }
 
-export const getScore = (config, session) => {
+export const getScore = (config: MultipleChoiceModel, session: MultipleChoiceSession | undefined) => {
   if (!session || isEmpty(session)) {
     return 0;
   }
 
-  const selectedChoices = session.value || [];
+  const selectedChoices = session?.value || [];
   const correctChoices = (config.choices || []).filter((ch) => ch.correct);
 
   let score = selectedChoices.reduce(
@@ -149,8 +179,12 @@ export const getScore = (config, session) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: MultipleChoiceModel,
+  session: MultipleChoiceSession | undefined,
+  env: PieEnvironment,
+) => {
+  const traceLog: string[] = [];
   const selected = session?.value || [];
   
   const questionType = model.choiceMode === 'radio' ? 'multiple-choice (radio)' : 'multiple-select (checkbox)';
@@ -193,8 +227,8 @@ export const getLogTrace = (model, session, env) => {
  * @param {*} session
  * @param {Object} env
  */
-export function outcome(model, session, env) {
-  return new Promise((resolve) => {
+export function outcome(model: MultipleChoiceModel, session: MultipleChoiceSession | undefined, env: PieEnvironment) {
+  return new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ score: 0, empty: true, traceLog: ['Student did not select any answers. Score is 0.'] });
     } else {
@@ -211,8 +245,8 @@ export function outcome(model, session, env) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: MultipleChoiceModel, env: PieEnvironment) => {
+  return new Promise<MultipleChoiceSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { choices } = question || { choices: [] };
 
@@ -226,21 +260,21 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<MultipleChoiceModel> = {},
+  config: MultipleChoiceConfiguration = {},
+): MultipleChoiceValidationErrors => {
   const { choices } = model;
   const { minAnswerChoices = 2, maxAnswerChoices } = config;
   const reversedChoices = [...(choices || [])].reverse();
-  const choicesErrors = {};
-  const rationaleErrors = {};
-  const errors = {};
+  const choicesErrors: Record<string, string> = {};
+  const rationaleErrors: Record<string, string> = {};
+  const errors: MultipleChoiceValidationErrors = {};
 
-  ['teacherInstructions', 'prompt'].forEach((field) => {
+  (['teacherInstructions', 'prompt'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -276,7 +310,7 @@ export const validate = (model = {}, config = {}) => {
 
   if (nbOfChoices < minAnswerChoices) {
     errors.answerChoices = `There should be at least ${minAnswerChoices} choices defined.`;
-  } else if (nbOfChoices > maxAnswerChoices) {
+  } else if (maxAnswerChoices !== undefined && nbOfChoices > maxAnswerChoices) {
     errors.answerChoices = `No more than ${maxAnswerChoices} choices should be defined.`;
   }
 

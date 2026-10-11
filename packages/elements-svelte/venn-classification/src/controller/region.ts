@@ -8,7 +8,7 @@
  */
 
 import { t } from '../i18n.js';
-import type { Region, VennCircle, VennModel } from '../types.js';
+import type { Region, VennCircle, VennClassificationModel } from '../types.js';
 
 /**
  * Returns the canonical region key: sorted-ascending indexes joined by commas.
@@ -99,7 +99,7 @@ export function composeRegionLabel(
  * label.
  */
 export function getRegionLabel(
-  model: Pick<VennModel, 'circles' | 'regionLabels' | 'language'>,
+  model: Pick<VennClassificationModel, 'circles' | 'regionLabels' | 'language'>,
   region: Region
 ): string {
   const key = regionKey(region);

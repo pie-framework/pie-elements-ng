@@ -2,6 +2,8 @@
  * Core PIE specification types
  */
 
+import type { CommonConfigSettings } from './authoring.js';
+
 /**
  * Reference to a media asset and its playable encodings.
  *
@@ -223,9 +225,26 @@ export interface AccessibilityCatalog {
 
 // Base PIE model (all elements extend this)
 export interface PieModel {
+  /** Identifier to identify the Pie Element in html markup, Must be unique within a pie item config. */
   id: string;
-  element: string; // Element tag, the key in the item config's `elements` map, e.g. "multiple-choice"
+  /** The html Element tag name: the key in the item config's `elements` map, e.g. "multiple-choice" */
+  element: string;
+  /** QTI-aligned accessibility catalogs whose cards dock to content nodes by `data-catalog-idref` */
   accessibilityCatalogs?: AccessibilityCatalog[];
+}
+
+/** Host-supplied CSS scoped to the element: `rules` is a stylesheet whose class names are listed in `names`. */
+export interface ExtraCSSRules {
+  names?: string[];
+  rules?: string;
+}
+
+/** Images that replace the default audio play button. */
+export interface CustomAudioButton {
+  /** image url for the play state */
+  playImage: string;
+  /** image url for the pause state */
+  pauseImage: string;
 }
 
 // Theme configuration (from DaisyUI or custom)
@@ -276,28 +295,6 @@ export interface OutcomeResult {
 // Validation result
 export interface ValidationErrors {
   [key: string]: string;
-}
-
-// Common configuration settings
-export interface CommonConfigSettings {
-  settingsPanelDisabled?: boolean;
-  spellCheck?: ConfigureProp;
-  maxImageWidth?: ConfigureProp;
-  maxImageHeight?: ConfigureProp;
-  withRubric?: ConfigureProp;
-  language?: ConfigureProp;
-  languageChoices?: ConfigureLanguageOptions;
-}
-
-export interface ConfigureProp {
-  settings?: boolean;
-  label?: string;
-  enabled?: boolean;
-}
-
-export interface ConfigureLanguageOptions {
-  label: string;
-  options: { label: string; value: string }[];
 }
 
 // Print options
