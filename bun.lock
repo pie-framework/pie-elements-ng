@@ -93,14 +93,6 @@
         "vite": "^8.1.5",
       },
     },
-    "apps/esm-player-test": {
-      "name": "esm-player-test",
-      "version": "1.0.0",
-      "devDependencies": {
-        "@playwright/test": "^1.63.0",
-        "vite": "^8.1.5",
-      },
-    },
     "packages/element-player": {
       "name": "@pie-element/element-player",
       "version": "0.1.5",
@@ -3324,8 +3316,6 @@
     "eslint-scope": ["eslint-scope@5.1.1", "", { "dependencies": { "esrecurse": "^4.3.0", "estraverse": "^4.1.1" } }, "sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw=="],
 
     "esm-env": ["esm-env@1.2.2", "", {}, "sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA=="],
-
-    "esm-player-test": ["esm-player-test@workspace:apps/esm-player-test"],
 
     "esrap": ["esrap@2.4.0", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.4.15" }, "peerDependencies": { "@typescript-eslint/types": "^8.2.0" }, "optionalPeers": ["@typescript-eslint/types"] }, "sha512-CQPcneEHw/czj32uwQC52nYnax8H4SXt25FCM+LIwGZ49cMIxpOj3bP8wmzcI+Z0HIy5KkClaPhRLfCySzwHPA=="],
 

@@ -19,8 +19,7 @@
     "packages/element-theme-daisyui",
     "tools/cli",
     "apps/element-demo",
-    "apps/element-a11y-demo",
-    "apps/esm-player-test"
+    "apps/element-a11y-demo"
   ],
   "scripts": {
     "postinstall": "lefthook install",
@@ -83,10 +82,7 @@
     "check:provenance": "bun ./scripts/check-provenance.mjs",
     "trusted-publishers": "node ./scripts/configure-trusted-publishers.mjs",
     "check:sourcemaps": "bun ./scripts/check-sourcemap-sources.mjs",
-    "verify:dependency-integrity": "bun run cli verify:dependency-integrity",
-    "evals": "turbo run test:evals",
-    "evals:ui": "turbo run test:evals:ui",
-    "evals:headed": "turbo run test:evals:headed"
+    "verify:dependency-integrity": "bun run cli verify:dependency-integrity"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
