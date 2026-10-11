@@ -1,13 +1,23 @@
-// @ts-nocheck
-
 import debug from 'debug';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
+import type { DrawingResponseConfiguration, DrawingResponseModel, DrawingResponseSession } from '../types.js';
 
 const log = debug('pie-elements:drawing-response:controller');
 
-export const normalize = (question) => ({ ...defaults, ...question });
+/** Errors `validate()` reports, keyed by field. */
+export type DrawingResponseValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+};
 
-export function model(question, session, env) {
+export const normalize = (question: DrawingResponseModel): DrawingResponseModel => ({ ...defaults, ...question });
+
+export function model(
+  question: DrawingResponseModel,
+  _session: DrawingResponseSession | null | undefined,
+  env: PieEnvironment,
+) {
   const normalizedQuestion = normalize(question);
   const { extraCSSRules, imageUrl, imageDimensions, prompt, promptEnabled, backgroundImageEnabled, language } = normalizedQuestion;
 
@@ -21,22 +31,20 @@ export function model(question, session, env) {
       backgroundImageEnabled,
       language,
       extraCSSRules,
+      teacherInstructions:
+        env.role === 'instructor' &&
+        (env.mode === 'view' || env.mode === 'evaluate') &&
+        normalizedQuestion.teacherInstructionsEnabled
+          ? normalizedQuestion.teacherInstructions
+          : null,
     };
-
-    if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
-      out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
-        ? normalizedQuestion.teacherInstructions
-        : null;
-    } else {
-      out.teacherInstructions = null;
-    }
 
     resolve(out);
   });
 }
 
-export const createDefaultModel = (model = {}) =>
-  new Promise((resolve) => {
+export const createDefaultModel = (model: Partial<DrawingResponseModel> = {}) =>
+  new Promise<Partial<DrawingResponseModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
@@ -44,7 +52,7 @@ export const createDefaultModel = (model = {}) =>
   });
 
 export function outcome(/*config, session*/) {
-  return new Promise((resolve) => {
+  return new Promise<{ score: number; completed: string; note: string }>((resolve) => {
     log('outcome...');
     resolve({
       score: 0,
@@ -54,16 +62,16 @@ export function outcome(/*config, session*/) {
   });
 }
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
-  const errors = {};
+export const validate = (
+  model: Partial<DrawingResponseModel> = {},
+  config: DrawingResponseConfiguration = {},
+): DrawingResponseValidationErrors => {
+  const errors: DrawingResponseValidationErrors = {};
 
-  ['teacherInstructions', 'prompt'].forEach((field) => {
+  (['teacherInstructions', 'prompt'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }

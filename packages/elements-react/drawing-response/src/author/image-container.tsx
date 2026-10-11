@@ -5,6 +5,8 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 
 import Button from './button.js';
+import type { ImageHandler } from '@pie-element/shared-configure-events';
+import type { Dimensions } from '../types.js';
 
 const isImage = (file) => {
   const imageType = /image.*/;
@@ -66,7 +68,15 @@ const Toolbar: any = styled('div')({
   padding: '12px 8px',
 });
 
-export class ImageContainer extends Component {
+type ImageContainerProps = {
+  imageDimensions?: Dimensions;
+  imageUrl?: string;
+  onImageUpload: (imageUrl: string) => void;
+  onUpdateImageDimension: (dimensions: Dimensions) => void;
+  insertImage?: (handler: ImageHandler) => void;
+};
+
+export class ImageContainer extends Component<ImageContainerProps> {
 
   static propTypes = {
     imageDimensions: PropTypes.object,

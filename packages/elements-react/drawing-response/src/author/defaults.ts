@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { DrawingResponseConfiguration, DrawingResponseModel } from '../types.js';
 
 export default {
   model: {
@@ -76,7 +77,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
-};
+} satisfies { model: Omit<DrawingResponseModel, 'id' | 'element'>; configuration: DrawingResponseConfiguration };

@@ -1,25 +1,34 @@
-// @ts-nocheck
-
 import {
   DeleteImageEvent,
   DeleteSoundEvent,
   InsertImageEvent,
   InsertSoundEvent,
   ModelUpdatedEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root as ReactRoot } from 'react-dom/client';
 import debug from 'debug';
 
-import Root from './root.js';
+import Root, { type AuthorModel } from './root.js';
 import sensibleDefaults from './defaults.js';
+import type { DrawingResponseConfiguration, DrawingResponseModel } from '../types.js';
 
 const log = debug('hotspot:configure');
 
 export default class DrawableResponseConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}, config) => {
-    const defaultModel = {
+  private _root: ReactRoot | null;
+  private _model: AuthorModel;
+  private _configuration: DrawingResponseConfiguration;
+
+  static createDefaultModel = (
+    model: Partial<DrawingResponseModel> = {},
+    config?: DrawingResponseConfiguration,
+  ): AuthorModel => {
+    const defaultModel: AuthorModel = {
       ...sensibleDefaults.model,
       ...model,
     };
@@ -36,24 +45,25 @@ export default class DrawableResponseConfigure extends HTMLElement {
   constructor() {
     super();
     this._root = null;
-    this._configuration = sensibleDefaults.configuration;
+    const configuration: DrawingResponseConfiguration = sensibleDefaults.configuration;
+    this._configuration = configuration;
 
     // if configuration.withRubric.forceEnabled is true, then we
     // update the configuration (we do not want to display the toggle in the Settings Panel)
-    if (this._configuration.withRubric?.forceEnabled) {
-      this._configuration.withRubric.settings = false;
+    if (configuration.withRubric?.forceEnabled) {
+      configuration.withRubric.settings = false;
     }
 
     this._model = DrawableResponseConfigure.createDefaultModel({}, this._configuration);
     this.onModelChanged = this.onModelChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: Partial<DrawingResponseModel>) {
     this._model = DrawableResponseConfigure.createDefaultModel(s, this._configuration);
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: DrawingResponseConfiguration) {
     const newConfiguration = {
       ...sensibleDefaults.configuration,
       ...c,
@@ -67,7 +77,7 @@ export default class DrawableResponseConfigure extends HTMLElement {
     // without triggering the Model Updated event (for more details, check documentation)
     // and also update the configuration (we do not want to display the toggle in the Settings Panel)
     if (withRubric?.forceEnabled) {
-      this._configuration.withRubric.settings = false;
+      newConfiguration.withRubric.settings = false;
 
       if (!this._model.rubricEnabled) {
         this._model.rubricEnabled = true;
@@ -83,16 +93,16 @@ export default class DrawableResponseConfigure extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find(option => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -104,37 +114,37 @@ export default class DrawableResponseConfigure extends HTMLElement {
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged: any = (m, reset) => {
+  onModelChanged = (m: AuthorModel, reset?: boolean) => {
     this._model = m;
     this.dispatchModelUpdated(reset);
     this._render();
   };
 
-  onConfigurationChanged: any = (c) => {
+  onConfigurationChanged = (c: DrawingResponseConfiguration) => {
     this._configuration = c;
 
     this._render();
   };
 
-  insertImage: any = (handler) => {
+  insertImage = (handler: ImageHandler) => {
     this.dispatchEvent(new InsertImageEvent(handler));
   };
 
-  onDeleteImage: any = (src, done) => {
+  onDeleteImage = (src: string, done: DeleteDone) => {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   };
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

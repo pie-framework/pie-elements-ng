@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { DrawingResponseModel } from '../types.js';
 
 export default {
   backgroundImageEnabled: true,
@@ -11,4 +11,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<DrawingResponseModel, 'id' | 'element'>;
