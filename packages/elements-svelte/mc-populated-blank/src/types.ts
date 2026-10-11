@@ -124,6 +124,11 @@ export interface McPopulatedBlankModel extends PieModel {
   printAnswerKey?: boolean;
   /** The CQT `custom_type` whose bundled variant stylesheet applies, e.g. `sel_r1-_plusggg` */
   customType?: string;
+  /** Provenance metadata from the content import; the element does not read it. */
+  source?: {
+    /** The CQT question type the item was imported as, with its version, e.g. `sel_vicv0.0.1` */
+    csvQuestionTypeTag?: string;
+  };
 }
 
 /** A Settings Panel control for an editable field. */
