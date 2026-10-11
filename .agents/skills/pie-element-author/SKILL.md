@@ -41,10 +41,10 @@ src/
     index.ts                 # Pure TS controller (no DOM, no Svelte)
   index.ts                   # ESM root — re-exports all three sub-entries
   index.iife.ts              # IIFE entry — exports delivery component default; NO customElements.define
-  types.ts                   # Model, Session, ViewModel — no `any`
+  types.ts                   # <Name>Model, <Name>Configuration, <Name>Session (the JSON Schema source), ViewModel — no `any`
 
 package.json                 # "pie": { "controller": "@pie-element/<slug>/controller" }
-                             # "exports" map with ./delivery, ./controller, ./controller.js, ./author subpaths
+                             # "exports" map with ./delivery, ./controller, ./controller.js, ./author, ./schemas/<kind>.schema.json subpaths
                              # "files" includes controller.js
 controller.js                # Shim: export * from './dist/controller/index.js'
 docs.contract.json           # PieDocsContract
