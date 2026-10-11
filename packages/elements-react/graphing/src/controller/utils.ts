@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { differenceWith, isEqual, uniq, uniqWith } from '@pie-element/shared-lodash';
 import {
   getAmplitudeAndFreq,
@@ -7,15 +5,24 @@ import {
   pointsToAForAbsolute,
   pointsToABForExponential,
 } from '@pie-lib/graphing-utils';
+import type { Mark, MarkPoint, MarkType, Point } from '../types.js';
 
-export const equalPoint = (A, B) => {
+/** Two endpoints: a segment, line, ray or vector mark, or one side of a polygon. */
+type Segment = { from?: MarkPoint; to?: MarkPoint };
+
+type MarkComparator = (sessAnswer: Mark, mark: Mark) => boolean;
+
+/** Copies a point; a missing point copies to an empty object, whose coordinates read as undefined. */
+const copyPoint = (point: Partial<Point> | undefined): Point => ({ ...point }) as Point;
+
+export const equalPoint = (A: Partial<Point>, B: Partial<Point>) => {
   A = { ...A };
   B = { ...B };
 
   return isEqual(A.x, B.x) && isEqual(A.y, B.y);
 };
 
-export const equalPointWithLabel = (A, B) => {
+export const equalPointWithLabel = (A: Partial<MarkPoint>, B: Partial<MarkPoint>) => {
   // x1 = x2 & y1 = y2
   // A point is only correct if both its position AND its label match.
   // Labels are not scored independently; a point in the correct position
@@ -32,7 +39,7 @@ export const equalPointWithLabel = (A, B) => {
   return isEqual(A.x, B.x) && isEqual(A.y, B.y) && equalLabel;
 };
 
-export const equalSegment = (segment1, segment2) => {
+export const equalSegment = (segment1: Segment, segment2: Segment) => {
   // A.from = B.from, A.to = B.to OR A.from = B.to, A.to = B.from
   // x1 = x3 & y1 = y3 & x2 = x4 & y2 = y4
   return (
@@ -41,31 +48,32 @@ export const equalSegment = (segment1, segment2) => {
   );
 };
 
-export const equalVector = (vector1, vector2) => {
+export const equalVector = (vector1: Segment, vector2: Segment) => {
   // A.from = B.from, A.to = B.to;
   // x1 = x3 & y1 = y3 & x2 = x4 & y2 = y4
   return isEqual(vector1.from, vector2.from) && isEqual(vector1.to, vector2.to);
 };
 
 // this function is implemented in configure as well
-export const sortedAnswers = (answers) =>
+export const sortedAnswers = <T>(answers: Record<string, T> | undefined) =>
   Object.keys(answers || {})
     .sort()
-    .reduce((result, key) => {
-      if (key !== 'correctAnswer') {
+    .reduce<Record<string, T>>((result, key) => {
+      if (answers && key !== 'correctAnswer') {
         result[key] = answers[key];
       }
 
       return result;
     }, {});
 
-const returnLineEquationCoefficients = (line) => {
-  line = { ...line, to: { ...line.to }, from: { ...line.from } };
+const returnLineEquationCoefficients = (line: Segment) => {
+  const from = copyPoint(line.from);
+  const to = copyPoint(line.to);
 
-  const xA = line.from.x;
-  const yA = line.from.y;
-  const xB = line.to.x;
-  const yB = line.to.y;
+  const xA = from.x;
+  const yA = from.y;
+  const xB = to.x;
+  const yB = to.y;
 
   return {
     a: yB - yA,
@@ -74,9 +82,9 @@ const returnLineEquationCoefficients = (line) => {
   };
 };
 
-const getSignificantDecimals = (number) => Math.round(number * 10000) / 10000;
+const getSignificantDecimals = (number: number) => Math.round(number * 10000) / 10000;
 
-export const equalLine = (line1, line2) => {
+export const equalLine = (line1: Segment, line2: Segment) => {
   // line equation: ax + by + c = 0
   // 2 lines are equal if a1/a2 = b1/b2 = c1/c2, where a, b, c are the coefficients in line equation
 
@@ -87,7 +95,7 @@ export const equalLine = (line1, line2) => {
   const { a: a1, b: b1, c: c1 } = returnLineEquationCoefficients(line1);
   const { a: a2, b: b2, c: c2 } = returnLineEquationCoefficients(line2);
 
-  const proportions = [];
+  const proportions: number[] = [];
 
   if (a2 !== 0) {
     proportions.push(getSignificantDecimals(a1 / a2));
@@ -113,9 +121,9 @@ export const equalLine = (line1, line2) => {
   // return ((Math.abs((line1.to.y - line1.from.y) / (line1.to.x - line1.from.x))) === (Math.abs((line2.to.y - line2.from.y) / (line2.to.x - line2.from.x))));
 };
 
-export const equalRay = (ray1, ray2) => {
-  ray1 = { ...ray1, to: { ...ray1.to }, from: { ...ray1.from } };
-  ray2 = { ...ray2, to: { ...ray2.to }, from: { ...ray2.from } };
+export const equalRay = (ray1Mark: Segment, ray2Mark: Segment) => {
+  const ray1 = { from: copyPoint(ray1Mark.from), to: copyPoint(ray1Mark.to) };
+  const ray2 = { from: copyPoint(ray2Mark.from), to: copyPoint(ray2Mark.to) };
 
   // slope: m = (y2-y1)/(x2-x1)
   // slope & x1 = x3 & y1 = y3 & angle between (x1, y1) (x2, y2) is same as angle between (x3, y3) (x4, y4)
@@ -127,13 +135,15 @@ export const equalRay = (ray1, ray2) => {
   return mRay1 === mRay2 && ray1.from.x === ray2.from.x && ray1.from.y === ray2.from.y && angleRay1 === angleRay2;
 };
 
-export const constructSegmentsFromPoints = (points) => {
+export const constructSegmentsFromPoints = (points: MarkPoint[] | undefined): Segment[] => {
   // takes the list of points that represent a polygon and transforms it into a list of segments; eg.:
   // points: A, B, C, D => segments: AB, BC, CD, DA
-  return (points || []).map((point, index) => ({ from: point, to: points[(index + 1) % points.length] }));
+  const list = points || [];
+
+  return list.map((point, index) => ({ from: point, to: list[(index + 1) % list.length] }));
 };
 
-export const removeDuplicateSegments = (segments) => {
+export const removeDuplicateSegments = (segments: Segment[] | undefined) => {
   segments = segments || [];
   // removes segments that are duplicates; eg. These segments are the same, so one will be removed:
   // segment1: from: { x: 1, y: 1 }, to: { x: 2, y: 1 }
@@ -141,14 +151,14 @@ export const removeDuplicateSegments = (segments) => {
   return uniqWith(segments, (s1, s2) => equalSegment(s1, s2));
 };
 
-export const removeInvalidSegments = (segments) => {
+export const removeInvalidSegments = (segments: Segment[] | undefined) => {
   segments = segments || [];
   // removes segments that start in a point and end in the same point (eg.: from: { x: 1, y: 1 }, to: { x: 1, y: 1 })
 
   return segments.filter((segment) => !isEqual(segment.from, segment.to));
 };
 
-export const equalPolygon = (poly1, poly2) => {
+export const equalPolygon = (poly1: Mark, poly2: Mark) => {
   const { points: points1 } = poly1;
   const { points: points2 } = poly2;
 
@@ -165,9 +175,9 @@ export const equalPolygon = (poly1, poly2) => {
   return (!differentSegments1 || !differentSegments1.length) && (!differentSegments2 || !differentSegments2.length);
 };
 
-export const equalCircle = (c1, c2) => {
-  c1 = { ...c1, root: { ...c1.root }, edge: { ...c1.edge } };
-  c2 = { ...c2, root: { ...c2.root }, edge: { ...c2.edge } };
+export const equalCircle = (circle1: Mark, circle2: Mark) => {
+  const c1 = { root: copyPoint(circle1.root), edge: copyPoint(circle1.edge) };
+  const c2 = { root: copyPoint(circle2.root), edge: copyPoint(circle2.edge) };
   const equalRootAndEdge = isEqual(c2.edge, c1.edge) && isEqual(c2.root, c1.root);
 
   // if both edge and root are the same, it means the shapes are exactly the same
@@ -180,10 +190,10 @@ export const equalCircle = (c1, c2) => {
   return isEqual(c2.root, c1.root) && isEqual(rC1, rC2);
 };
 
-export const equalSine = (sine1, sine2) => {
-  const getPoints = ({ root, edge }) => {
-    root = { ...root };
-    edge = { ...edge };
+export const equalSine = (sine1: Mark, sine2: Mark) => {
+  const getPoints = (sine: Mark) => {
+    const root = copyPoint(sine.root);
+    const edge = copyPoint(sine.edge);
 
     const { amplitude, freq } = getAmplitudeAndFreq(root, edge);
     // the height of the sine wave
@@ -249,14 +259,11 @@ export const equalSine = (sine1, sine2) => {
   // rootDiff1 === rootDiff2);
 };
 
-export const equalParabola = (p1, p2) => {
+export const equalParabola = (p1: Mark, p2: Mark) => {
   const { edge: edgeP1 } = p1;
   const { edge: edgeP2 } = p2;
-  let { root: rootP1 } = p1;
-  let { root: rootP2 } = p2;
-
-  rootP1 = { ...rootP1 };
-  rootP2 = { ...rootP2 };
+  const rootP1 = copyPoint(p1.root);
+  const rootP2 = copyPoint(p2.root);
 
   const p1edge = edgeP1 || { ...rootP1 };
   const p2edge = edgeP2 || { ...rootP2 };
@@ -270,7 +277,7 @@ export const equalParabola = (p1, p2) => {
   const { a: a2, b: b2, c: c2 } = pointsToABC(rootP2, edgeP2, p2mirrorEdge);
 
   // sometimes numbers have this form: 1.00000000002 because of calculations, we have to round them
-  const round = (number) => Math.round(number * 10000) / 10000;
+  const round = (number: number) => Math.round(number * 10000) / 10000;
 
   return round(a1) === round(a2) && round(b1) === round(b2) && round(c1) === round(c2);
 };
@@ -281,14 +288,11 @@ export const equalParabola = (p1, p2) => {
  * @param p1 - student answer
  * @param p2 - correct answer
  * */
-export const equalAbsolute = (p1, p2) => {
+export const equalAbsolute = (p1: Mark, p2: Mark) => {
   const { edge: edgeP1 } = p1;
   const { edge: edgeP2 } = p2;
-  let { root: rootP1 } = p1;
-  let { root: rootP2 } = p2;
-
-  rootP1 = { ...rootP1 };
-  rootP2 = { ...rootP2 };
+  const rootP1 = copyPoint(p1.root);
+  const rootP2 = copyPoint(p2.root);
 
   const p1edge = edgeP1 || { ...rootP1 };
   const p2edge = edgeP2 || { ...rootP2 };
@@ -306,14 +310,11 @@ export const equalAbsolute = (p1, p2) => {
  * @param p1 - student answer
  * @param p2 - correct answer
  * */
-export const equalExponential = (p1, p2) => {
+export const equalExponential = (p1: Mark, p2: Mark) => {
   const { edge: edgeP1 } = p1;
   const { edge: edgeP2 } = p2;
-  let { root: rootP1 } = p1;
-  let { root: rootP2 } = p2;
-
-  rootP1 = { ...rootP1 };
-  rootP2 = { ...rootP2 };
+  const rootP1 = copyPoint(p1.root);
+  const rootP2 = copyPoint(p2.root);
 
   const p1edge = edgeP1 || { ...rootP1 };
   const p2edge = edgeP2 || { ...rootP2 };
@@ -325,7 +326,7 @@ export const equalExponential = (p1, p2) => {
   return isEqual(a2, a1) && isEqual(b2, b1);
 };
 
-export const equalMarks = {
+export const equalMarks: Record<MarkType, MarkComparator> = {
   circle: (sessAnswer, mark) => equalCircle(sessAnswer, mark),
   line: (sessAnswer, mark) => equalLine(sessAnswer, mark),
   parabola: (sessAnswer, mark) => equalParabola(sessAnswer, mark),
@@ -339,10 +340,10 @@ export const equalMarks = {
   vector: (sessAnswer, mark) => equalVector(sessAnswer, mark),
 };
 
-const completePoint = (point) => point && Number.isFinite(point.x) && Number.isFinite(point.y);
-const completeFromTo = (item) => item && completeMark.point(item.from) && completeMark.point(item.to);
-const completeRootEdge = (item) => item && completeMark.point(item.edge) && completeMark.point(item.root);
-const completePoints = (item) =>
+const completePoint = (point: Partial<Point> | undefined): boolean | undefined => point && Number.isFinite(point.x) && Number.isFinite(point.y);
+const completeFromTo = (item: Mark | undefined): boolean | undefined => item && completeMark.point(item.from) && completeMark.point(item.to);
+const completeRootEdge = (item: Mark | undefined): boolean | undefined => item && completeMark.point(item.edge) && completeMark.point(item.root);
+const completePoints = (item: Mark | undefined): boolean | number | undefined =>
   item &&
   item.points &&
   item.points.length &&

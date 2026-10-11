@@ -1,27 +1,35 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Configure from './configure.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Configure, { type AuthorModel } from './configure.js';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import type {
+  Graph,
+  GraphingSolutionSetAnswers,
+  GraphingSolutionSetConfiguration,
+  GraphingSolutionSetModel,
+  GraphSettings,
+} from '../types.js';
 
 const log = debug('pie-elements:graphing-solution-set:configure');
 
 // this function is implemented in controller as well
-const sortedAnswers = (answers) =>
+const sortedAnswers = <T>(answers: Record<string, T> | undefined) =>
   Object.keys(answers || {})
     .sort()
-    .reduce((result, key) => {
-      if (key !== 'correctAnswer') {
+    .reduce<Record<string, T>>((result, key) => {
+      if (answers && key !== 'correctAnswer') {
         result[key] = answers[key];
       }
 
@@ -29,9 +37,20 @@ const sortedAnswers = (answers) =>
     }, {});
 
 export default class GraphLinesConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: GraphingSolutionSetConfiguration;
+
+  static createDefaultModel = (model: Partial<GraphingSolutionSetModel> = {}): AuthorModel => {
     const normalizedModel = { ...defaultValues.model, ...model };
-    const { answers = {}, domain = {}, graph = {}, range = {}, standardGrid } = normalizedModel;
+    // The empty fallbacks apply only when the model sets these keys to undefined.
+    const {
+      answers = {} as GraphingSolutionSetAnswers,
+      domain = {} as GraphSettings,
+      graph = {} as Graph,
+      range = {} as GraphSettings,
+      standardGrid,
+    } = normalizedModel;
     return {
       ...normalizedModel,
       answers:
@@ -64,7 +83,7 @@ export default class GraphLinesConfigure extends HTMLElement {
   /*
    * Function to set the model
    * */
-  set model(m) {
+  set model(m: Partial<GraphingSolutionSetModel>) {
     this._model = GraphLinesConfigure.createDefaultModel(m);
     this._render();
   }
@@ -72,7 +91,7 @@ export default class GraphLinesConfigure extends HTMLElement {
   /*
    * Function to set the configuration
    * */
-  set configuration(c) {
+  set configuration(c: GraphingSolutionSetConfiguration) {
     this._configuration = {
       ...defaultValues.configuration,
       ...c,
@@ -90,7 +109,7 @@ export default class GraphLinesConfigure extends HTMLElement {
     } else {
       if (language?.settings) {
         if (this._model.language) {
-          this._configuration.language.enabled = true;
+          language.enabled = true;
         }
       } else {
         delete this._model.language;
@@ -103,7 +122,7 @@ export default class GraphLinesConfigure extends HTMLElement {
    * Triggered when the model is changed
    * @param {object} model - the new model
    * */
-  onModelChanged: any = (model) => {
+  onModelChanged = (model: AuthorModel) => {
     this._model = model;
     this._render();
     log('[onModelChanged]: ', this._model);
@@ -114,24 +133,24 @@ export default class GraphLinesConfigure extends HTMLElement {
    * Triggered when the configuration is changed
    * @param {object} config - the new configuration
    * */
-  onConfigurationChanged: any = (config) => {
+  onConfigurationChanged = (config: GraphingSolutionSetConfiguration) => {
     this._configuration = config;
     this._render();
   };
 
-  insertImage: any = (handler) => {
+  insertImage = (handler: ImageHandler) => {
     this.dispatchEvent(new InsertImageEvent(handler));
   };
 
-  onDeleteImage: any = (src, done) => {
+  onDeleteImage = (src: string, done: DeleteDone) => {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   };
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

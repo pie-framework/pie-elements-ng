@@ -1,28 +1,37 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Configure from './configure.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Configure, { type AuthorModel } from './configure.js';
 import {
   DeleteImageEvent,
   DeleteSoundEvent,
   InsertImageEvent,
   InsertSoundEvent,
   ModelUpdatedEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { cloneDeep } from '@pie-element/shared-lodash';
+import type {
+  Graph,
+  GraphingAnswers,
+  GraphingConfiguration,
+  GraphingModel,
+  GraphSettings,
+  MarkType,
+} from '../types.js';
 
 const log = debug('pie-elements:graphing:configure');
 
 // this function is implemented in controller as well
-const sortedAnswers = (answers) =>
+const sortedAnswers = <T>(answers: Record<string, T> | undefined) =>
   Object.keys(answers || {})
     .sort()
-    .reduce((result, key) => {
-      if (key !== 'correctAnswer') {
+    .reduce<Record<string, T>>((result, key) => {
+      if (answers && key !== 'correctAnswer') {
         result[key] = answers[key];
       }
 
@@ -30,20 +39,27 @@ const sortedAnswers = (answers) =>
     }, {});
 
 export default class GraphLinesConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _modelCopy?: AuthorModel;
+  private _configuration: GraphingConfiguration;
+  private hasPlayerAsParent?: boolean;
+
+  static createDefaultModel = (model: Partial<GraphingModel> = {}): AuthorModel => {
     const normalizedModel = { ...defaultValues.model, ...model };
+    // The empty fallbacks apply only when the model sets these keys to undefined.
     const {
-      answers = {},
-      domain = {},
+      answers = {} as GraphingAnswers,
+      domain = {} as GraphSettings,
       defaultTool,
-      graph = {},
-      range = {},
+      graph = {} as Graph,
+      range = {} as GraphSettings,
       standardGrid,
       toolbarTools,
     } = normalizedModel;
 
     // added support for models without defaultTool defined; also used in packages/graphing/controller/src/index.js
-    const toolbarToolsNoLabel = (toolbarTools || []).filter((tool) => tool !== 'label');
+    const toolbarToolsNoLabel = (toolbarTools || []).filter((tool): tool is MarkType => tool !== 'label');
     const normalizedDefaultTool = defaultTool || (toolbarToolsNoLabel.length && toolbarToolsNoLabel[0]) || '';
 
     return {
@@ -76,14 +92,14 @@ export default class GraphLinesConfigure extends HTMLElement {
     this._configuration = defaultValues.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<GraphingModel>) {
     this._model = GraphLinesConfigure.createDefaultModel(m);
     this._modelCopy = cloneDeep(this._model);
 
     this._render();
   }
 
-  resetModelAfterConfigurationIsSet: any = () => {
+  resetModelAfterConfigurationIsSet = () => {
     // In environments that use pie-player-components, model is set before configuration.
     // This is the reason why sometimes the model gets altered non-reversible
     // (altered using default configuration instead of client configuration, because at that point client configuration was not set yet)
@@ -101,7 +117,7 @@ export default class GraphLinesConfigure extends HTMLElement {
     }
   };
 
-  set configuration(c) {
+  set configuration(c: GraphingConfiguration) {
     this._configuration = {
       ...defaultValues.configuration,
       ...c,
@@ -122,7 +138,7 @@ export default class GraphLinesConfigure extends HTMLElement {
     } else {
       if (language?.settings) {
         if (this._model.language) {
-          this._configuration.language.enabled = true;
+          language.enabled = true;
         }
       } else {
         delete this._model.language;
@@ -132,7 +148,7 @@ export default class GraphLinesConfigure extends HTMLElement {
     this._render();
   }
 
-  onModelChanged: any = (model) => {
+  onModelChanged = (model: AuthorModel) => {
     this._model = model;
     this._render();
 
@@ -141,24 +157,24 @@ export default class GraphLinesConfigure extends HTMLElement {
     this.dispatchEvent(new ModelUpdatedEvent(this._model));
   };
 
-  onConfigurationChanged: any = (config) => {
+  onConfigurationChanged = (config: GraphingConfiguration) => {
     this._configuration = config;
     this._render();
   };
 
-  insertImage: any = (handler) => {
+  insertImage = (handler: ImageHandler) => {
     this.dispatchEvent(new InsertImageEvent(handler));
   };
 
-  onDeleteImage: any = (src, done) => {
+  onDeleteImage = (src: string, done: DeleteDone) => {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   };
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
