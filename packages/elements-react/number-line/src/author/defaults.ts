@@ -1,7 +1,8 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { NumberLineConfiguration, NumberLineModel, NumberLineResponse } from '../types.js';
 
 export const model = {
-  correctResponse: [],
+  correctResponse: [] as NumberLineResponse[],
   feedback: {
     correct: { default: 'Correct', type: 'none' },
     incorrect: { default: 'Incorrect', type: 'none' },
@@ -14,7 +15,7 @@ export const model = {
     },
     domain: { min: -1, max: 1 },
     exhibitOnly: false,
-    initialElements: [],
+    initialElements: [] as NumberLineResponse[],
     initialType: 'PF',
     maxNumberOfPoints: 1,
     ticks: { minor: 0.125, major: 0.5, tickIntervalType: 'Decimal' },
@@ -29,7 +30,7 @@ export const model = {
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
   widthEnabled: true,
-};
+} satisfies Omit<NumberLineModel, 'id' | 'element'>;
 
 export const configuration = {
   baseInputConfiguration: {
@@ -105,7 +106,7 @@ export const configuration = {
   },
   languageChoices: {
     label: 'Language Choices',
-    options: [],
+    options: [] as ConfigureLanguageOptionsProp[],
   },
   spellCheck: {
     label: 'Spellcheck',
@@ -116,4 +117,6 @@ export const configuration = {
   hidePointConfigButtons: false,
   availableTools: ['PF', 'LFF', 'LEF', 'LFE', 'LEE', 'RFN', 'RFP', 'REN', 'REP'],
   settingsPanelDisabled: false,
-};
+} satisfies NumberLineConfiguration;
+
+export default { model, configuration };
