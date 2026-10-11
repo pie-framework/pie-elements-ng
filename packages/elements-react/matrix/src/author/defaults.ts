@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { MatrixConfiguration, MatrixModel } from '../types.js';
 
 /** NOTE: teacherInstructions, studentInstructions, rationale & scoringType
  * functionalities are not defined yet - the value for those can belong to
@@ -8,7 +8,7 @@ export default {
   model: {
     columnLabels: ['COLUMN 1', 'COLUMN 2', 'COLUMN 3'],
     labelType: 'agreement',
-    matrixValues: {},
+    matrixValues: {} as Record<string, number>,
     prompt: '',
     promptEnabled: true,
     rowLabels: ['STATEMENT 1', 'STATEMENT 2'],
@@ -52,4 +52,4 @@ export default {
       required: false,
     },
   },
-};
+} satisfies { model: Omit<MatrixModel, 'id' | 'element'>; configuration: MatrixConfiguration };
