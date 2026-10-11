@@ -45,7 +45,7 @@ export interface ExtendedTextEntryFeedback {
   custom?: string;
 }
 
-/** Model for the @pie-elements/extended-text-entry Interaction */
+/** Model for the `@pie-element/extended-text-entry` Interaction */
 export interface ExtendedTextEntryModel extends PieModel {
   /**
    * Dimensions the editor should take
@@ -175,7 +175,7 @@ export interface ConfigureWithForceProp extends ConfigureProp {
   forceEnabled?: boolean;
 }
 
-/** Config Object for @pie-elements/extended-text-entry */
+/** Config Object for `@pie-element/extended-text-entry` */
 export interface ExtendedTextEntryConfiguration {
   /** Annotations configuration */
   annotations?: ConfigureProp;

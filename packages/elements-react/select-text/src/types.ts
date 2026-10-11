@@ -50,7 +50,7 @@ export interface ComplexFeedbackType {
   partial?: FeedbackType;
 }
 
-/** Pie Model Object for @pie-element/select-text */
+/** Pie Model Object for `@pie-element/select-text` */
 export interface SelectTextModel extends PieModel {
   /**
    * The maximum number of token selections a user can make when responding; 0 allows any number
@@ -137,7 +137,7 @@ export interface SelectTextModel extends PieModel {
   extraCSSRules?: ExtraCSSRules;
 }
 
-/** Config Object for @pie-element/select-text */
+/** Config Object for `@pie-element/select-text` */
 export interface SelectTextConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled

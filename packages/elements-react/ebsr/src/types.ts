@@ -48,7 +48,7 @@ export interface EbsrModel extends PieModel {
   extraCSSRules?: ExtraCSSRules;
 }
 
-/** Config Object for @pie-element/ebsr */
+/** Config Object for `@pie-element/ebsr` */
 export interface EbsrConfiguration {
   /** Indicates configuration for part A */
   partA?: MultipleChoiceConfiguration;
