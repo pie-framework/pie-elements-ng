@@ -8,8 +8,6 @@ export default {
       model: {
         id: '1',
         element: 'hotspot-element',
-                "disabled": false,
-        "mode": "gather",
         "dimensions": {
           "height": 500,
           "width": 700
