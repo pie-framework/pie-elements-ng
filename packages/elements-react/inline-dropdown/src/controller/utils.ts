@@ -1,12 +1,14 @@
-// @ts-nocheck
-
 import { forEach } from '@pie-element/shared-lodash';
+import type { Choice, InlineDropdownModel } from '../types.js';
 
-export const getAllCorrectResponses = ({ choices, alternateResponse }) => {
+export const getAllCorrectResponses = ({
+  choices,
+  alternateResponse,
+}: Partial<Pick<InlineDropdownModel, 'choices' | 'alternateResponse'>>) => {
   alternateResponse = alternateResponse || {};
-  const correctAnswers = {};
+  const correctAnswers: Record<string, string[]> = {};
 
-  forEach(choices, (respArea, key) => {
+  forEach<Choice[]>(choices, (respArea, key) => {
     if (!correctAnswers[key]) {
       correctAnswers[key] = [];
     }
