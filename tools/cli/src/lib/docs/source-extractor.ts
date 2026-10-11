@@ -247,7 +247,7 @@ export const loadPointerValue = async (
     source,
     ts.ScriptTarget.Latest,
     true,
-    ts.ScriptKind.TS
+    filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
   );
   const scope = buildScope(sourceFile);
   const exportName = pointer.exportName || 'default';

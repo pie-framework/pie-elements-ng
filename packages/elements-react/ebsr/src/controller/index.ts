@@ -1,15 +1,47 @@
-// @ts-nocheck
-
 import defaults from './defaults.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import { isResponseCorrect } from './utils.js';
 import { get, isEmpty } from '@pie-element/shared-lodash';
 import Translator from '@pie-lib/translator';
+import type { Choice, MultipleChoiceConfiguration, MultipleChoiceSession } from '@pie-element/multiple-choice';
+import type { MultipleChoiceValidationErrors } from '@pie-element/multiple-choice/controller';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
+import type { EbsrConfiguration, EbsrModel, EbsrPart, EbsrSession } from '../types.js';
 
 const { translator } = Translator;
 
-const prepareChoice = (model, env, defaultFeedback) => (choice) => {
-  const out = {
+type PartKey = 'partA' | 'partB';
+
+type DefaultFeedback = { correct: string; incorrect: string };
+
+/** A choice as the delivery view receives it. */
+type ChoiceView = {
+  label: string;
+  value: string;
+  rationale?: string | null;
+  correct?: boolean;
+  feedback?: string;
+};
+
+/** A part as the delivery view receives it. */
+type PartView = Omit<EbsrPart, 'choices' | 'prompt' | 'teacherInstructions'> & {
+  choices: ChoiceView[] | undefined;
+  disabled: boolean;
+  complete: { min: number };
+  responseCorrect: boolean | undefined;
+  partLabel?: string;
+  prompt?: string | null;
+  teacherInstructions?: string | null;
+};
+
+/** Errors `validate()` reports for each part, shaped as the multiple-choice part reports them. */
+export type EbsrValidationErrors = {
+  partA: MultipleChoiceValidationErrors;
+  partB: MultipleChoiceValidationErrors;
+};
+
+const prepareChoice = (model: EbsrPart, env: PieEnvironment, defaultFeedback: DefaultFeedback) => (choice: Choice) => {
+  const out: ChoiceView = {
     label: choice.label,
     value: choice.value,
   };
@@ -29,7 +61,7 @@ const prepareChoice = (model, env, defaultFeedback) => (choice) => {
       if (feedbackType === 'default') {
         out.feedback = defaultFeedback[choice.correct ? 'correct' : 'incorrect'];
       } else if (feedbackType === 'custom') {
-        out.feedback = choice.feedback.value;
+        out.feedback = choice.feedback?.value;
       }
     }
   }
@@ -37,7 +69,7 @@ const prepareChoice = (model, env, defaultFeedback) => (choice) => {
   return out;
 };
 
-const parsePart = (part, key, session, env) => {
+const parsePart = (part: EbsrPart, key: PartKey, session: EbsrSession, env: PieEnvironment): PartView => {
   const defaultFeedback = Object.assign({ correct: 'Correct', incorrect: 'Incorrect' }, part.defaultFeedback);
 
   let choices = part.choices ? part.choices.map(prepareChoice(part, env, defaultFeedback)) : [];
@@ -53,13 +85,19 @@ const parsePart = (part, key, session, env) => {
   };
 };
 
-const normalizePart = (model, base) => ({
+const normalizePart = (model: Partial<EbsrPart>, base: EbsrPart): EbsrPart => ({
   ...base,
   ...model,
   choicesLayout: model.choicesLayout || (model.verticalMode === false && 'horizontal') || 'vertical',
 });
 
-export const normalize = ({ partA = {}, partB = {}, language, ...question }) => ({
+/** A model whose parts may omit what the defaults supply. */
+type NormalizeInput = Omit<EbsrModel, 'partA' | 'partB'> & {
+  partA?: Partial<EbsrPart>;
+  partB?: Partial<EbsrPart>;
+};
+
+export const normalize = ({ partA = {}, partB = {}, language, ...question }: NormalizeInput) => ({
   ...defaults,
   ...question,
   language,
@@ -74,16 +112,23 @@ export const normalize = ({ partA = {}, partB = {}, language, ...question }) => 
  * @param {*} env
  * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export async function model(question, session, env, updateSession) {
+export async function model(
+  question: EbsrModel,
+  session: EbsrSession,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+) {
   const normalizedQuestion = normalize(question);
   const partA = parsePart(normalizedQuestion.partA, 'partA', session, env);
   const partB = parsePart(normalizedQuestion.partB, 'partB', session, env);
 
-  const shuffledValues = {};
+  const shuffledValues: NonNullable<EbsrSession['shuffledValues']> = {};
 
-  const us = (part) => (id, element, update) =>
+  const us =
+    (part: PartKey): PieUpdateSession =>
+    (_id, _element, update) =>
     new Promise((resolve) => {
-      shuffledValues[part] = update.shuffledValues;
+      shuffledValues[part] = update.shuffledValues as string[];
       resolve();
     });
 
@@ -116,7 +161,7 @@ export async function model(question, session, env, updateSession) {
 
   if (!isEmpty(shuffledValues)) {
     if (updateSession && typeof updateSession === 'function') {
-      updateSession(session.id, session.element, {
+      updateSession(session.id as string, session.element as string, {
         shuffledValues,
       }).catch((e) => {
         // eslint-disable-next-line no-console
@@ -167,24 +212,29 @@ export async function model(question, session, env, updateSession) {
   });
 }
 
-export const createDefaultModel = (model = {}) =>
-  new Promise((resolve) => {
+export const createDefaultModel = (model: Partial<EbsrModel> = {}) =>
+  new Promise<Partial<EbsrModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
     });
   });
 
-const isCorrect = (c) => c.correct === true;
+const isCorrect = (c: Choice) => c.correct === true;
 
-const getScore = (config, sessionPart, key, partialScoringEnabled) => {
+const getScore = (
+  config: EbsrModel,
+  sessionPart: MultipleChoiceSession | undefined,
+  key: PartKey,
+  partialScoringEnabled: boolean,
+) => {
   const { choices = [] } = (config && config[key]) || {};
   const maxScore = choices.length;
   const { value: sessionPartValue } = sessionPart || {};
 
-  const chosen = (c) => !!(sessionPartValue || []).find((v) => v === c.value);
-  const correctAndNotChosen = (c) => isCorrect(c) && !chosen(c);
-  const incorrectAndChosen = (c) => !isCorrect(c) && chosen(c);
+  const chosen = (c: Choice) => !!(sessionPartValue || []).find((v) => v === c.value);
+  const correctAndNotChosen = (c: Choice) => isCorrect(c) && !chosen(c);
+  const incorrectAndChosen = (c: Choice) => !isCorrect(c) && chosen(c);
   const correctChoices = choices.reduce((total, choice) => {
     if (correctAndNotChosen(choice) || incorrectAndChosen(choice)) {
       return total - 1;
@@ -198,7 +248,7 @@ const getScore = (config, sessionPart, key, partialScoringEnabled) => {
     return 0;
   }
 
-  return parseFloat(maxScore ? (correctChoices / maxScore).toFixed(2) : 0);
+  return parseFloat(maxScore ? (correctChoices / maxScore).toFixed(2) : '0');
 };
 
 /**
@@ -208,8 +258,8 @@ const getScore = (config, sessionPart, key, partialScoringEnabled) => {
  * @param {Object} env
  * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (question: EbsrModel, session: EbsrSession | undefined, env: PieEnvironment) => {
+  const traceLog: string[] = [];
 
   if (!session || !session.value) {
     traceLog.push('Student did not answer the question.');
@@ -290,8 +340,17 @@ export const getLogTrace = (question, session, env) => {
   return traceLog;
 };
 
-export function outcome(config, session, env) {
-  return new Promise((resolve) => {
+type Outcome = {
+  score: number;
+  scoreA: number;
+  scoreB: number;
+  empty?: boolean;
+  max?: number;
+  logTrace: string[];
+};
+
+export function outcome(config: EbsrModel, session: EbsrSession | undefined, env: PieEnvironment) {
+  return new Promise<Outcome>((resolve) => {
     const { value } = session || {};
 
     if (!session || !value) {
@@ -330,8 +389,8 @@ export function outcome(config, session, env) {
   });
 }
 
-const returnPartCorrect = (choices) => {
-  let answers = [];
+const returnPartCorrect = (choices: Choice[]) => {
+  let answers: string[] = [];
 
   choices.forEach((i) => {
     const { correct, value } = i;
@@ -342,8 +401,8 @@ const returnPartCorrect = (choices) => {
   return answers;
 };
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: EbsrModel, env: PieEnvironment) => {
+  return new Promise<EbsrSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { partA, partB } = question;
 
@@ -369,22 +428,22 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-const validatePart = (model = {}, config = {}) => {
+const validatePart = (
+  model: Partial<EbsrPart> = {},
+  config: MultipleChoiceConfiguration = {},
+): MultipleChoiceValidationErrors => {
   const { choices } = model;
   const { minAnswerChoices = 2, maxAnswerChoices } = config;
   const reversedChoices = [...(choices || [])].reverse();
-  const errors = {};
-  const choicesErrors = {};
-  const rationaleErrors = {};
+  const errors: MultipleChoiceValidationErrors = {};
+  const choicesErrors: Record<string, string> = {};
+  const rationaleErrors: Record<string, string> = {};
   let hasCorrectResponse = false;
 
-  ['teacherInstructions', 'prompt'].forEach((field) => {
+  (['teacherInstructions', 'prompt'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -416,7 +475,7 @@ const validatePart = (model = {}, config = {}) => {
 
   if (nbOfChoices < minAnswerChoices) {
     errors.answerChoices = `There should be at least ${minAnswerChoices} choices defined.`;
-  } else if (nbOfChoices > maxAnswerChoices) {
+  } else if (maxAnswerChoices !== undefined && nbOfChoices > maxAnswerChoices) {
     errors.answerChoices = `No more than ${maxAnswerChoices} choices should be defined.`;
   }
 
@@ -435,7 +494,10 @@ const validatePart = (model = {}, config = {}) => {
   return errors;
 };
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<EbsrModel> = {},
+  config: EbsrConfiguration = {},
+): EbsrValidationErrors => {
   const { partA, partB } = model || {};
   const { partA: partAConfig, partB: partBConfig } = config || {};
 

@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { Choice, CorrectResponse, PlacementOrderingConfiguration, PlacementOrderingModel } from '../types.js';
 
 /** NOTE: teacherInstructions, studentInstructions, rationale & scoringType
  * functionalities are not defined yet - the value for those can belong to
@@ -9,8 +10,8 @@ export default {
   model: {
     choiceLabel: '',
     choiceLabelEnabled: true,
-    choices: [],
-    correctResponse: [],
+    choices: [] as Choice[],
+    correctResponse: [] as CorrectResponse[],
     feedbackEnabled: false,
     numberedGuides: false,
     orientation: 'vertical',
@@ -157,7 +158,10 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
+} satisfies {
+  model: Omit<PlacementOrderingModel, 'id' | 'element'>;
+  configuration: PlacementOrderingConfiguration;
 };

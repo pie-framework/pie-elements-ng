@@ -23,7 +23,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -31,6 +30,7 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
 import PropTypes from 'prop-types';
 import React from 'react';
 import Switch from '@mui/material/Switch';

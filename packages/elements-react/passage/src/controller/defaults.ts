@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { PassageModel } from '../types.js';
 
 // TODO: also update '../../configure/src/defaults.js' and '../../src/print.js' when updating defaults
 export default {
@@ -16,4 +16,4 @@ export default {
   teacherInstructionsEnabled: true,
   textEnabled: true,
   titleEnabled: true,
-};
+} satisfies Omit<PassageModel, 'id' | 'element'>;

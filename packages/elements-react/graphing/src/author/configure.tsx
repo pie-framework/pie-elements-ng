@@ -1,7 +1,4 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import debug from 'debug';
 import { intersection } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
@@ -12,6 +9,29 @@ import EditableHtml from '@pie-lib/editable-html-tip-tap';
 
 import GraphingConfig from './graphing-config.js';
 import CorrectResponse from './correct-response.js';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions, EditableHtmlConfigureProp } from '@pie-element/shared-types';
+import type { GraphingValidationErrors } from '../controller/index.js';
+import type { GraphingConfiguration, GraphingModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<GraphingModel> & {
+  errors?: GraphingValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type ConfigureProps = {
+  model: AuthorModel;
+  configuration: GraphingConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: GraphingConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
 
 const { Panel, toggle, radio, checkboxes, textField, dropdown } = settings;
 const log = debug('@pie-element:graphing:configure');
@@ -32,16 +52,7 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export class Configure extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-    imageSupport: PropTypes.object,
-    uploadSoundSupport: PropTypes.object,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-  };
-
+export class Configure extends React.Component<ConfigureProps> {
   componentDidMount() {
     const { configuration, onModelChanged, model } = this.props;
     const { availableTools, title, graphDimensions } = configuration || {};
@@ -58,26 +69,26 @@ export class Configure extends React.Component {
     }
 
     const toolbarTools = intersection(availableTools || [], model.toolbarTools || []);
-    const titleEnabled = showTitle === undefined || showTitle === null ? title.enabled : showTitle;
+    const titleEnabled = showTitle === undefined || showTitle === null ? title!.enabled : showTitle;
     const dimensionsEnabled =
-      showDimensions === undefined || showDimensions === null ? graphDimensions.enabled : showDimensions;
+      showDimensions === undefined || showDimensions === null ? graphDimensions!.enabled : showDimensions;
 
     onModelChanged && onModelChanged({ ...model, arrows, toolbarTools, titleEnabled, dimensionsEnabled });
   }
 
-  onRationaleChange: any = (rationale) => {
+  onRationaleChange = (rationale: string) => {
     const { onModelChanged, model } = this.props;
 
     onModelChanged({ ...model, rationale });
   };
 
-  onPromptChange: any = (prompt) => {
+  onPromptChange = (prompt: string) => {
     const { onModelChanged, model } = this.props;
 
     onModelChanged({ ...model, prompt });
   };
 
-  onTeacherInstructionsChange: any = (teacherInstructions) => {
+  onTeacherInstructionsChange = (teacherInstructions: string) => {
     const { onModelChanged, model } = this.props;
 
     onModelChanged({ ...model, teacherInstructions });
@@ -110,7 +121,7 @@ export class Configure extends React.Component {
       maxImageHeight = {},
       withRubric = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       mathMlOptions = {},
       removeIncompleteTool = false,
     } = configuration || {};
@@ -172,7 +183,7 @@ export class Configure extends React.Component {
       instruction: instruction.settings && textField(instruction.label),
     };
 
-    const getPluginProps = (props = {}) => ({
+    const getPluginProps = (props: EditableHtmlConfigureProp = {}) => ({
       ...baseInputConfiguration,
       ...props,
     });

@@ -15,7 +15,8 @@
         "file": "src/controller/defaults.ts"
       },
       "config": {
-        "file": "src/controller/defaults.ts"
+        "file": "src/author/defaults.tsx",
+        "path": "configuration"
       }
     },
     {
@@ -24,7 +25,8 @@
         "file": "src/controller/defaults.ts"
       },
       "config": {
-        "file": "src/controller/defaults.ts"
+        "file": "src/author/defaults.tsx",
+        "path": "configuration"
       }
     }
   ]

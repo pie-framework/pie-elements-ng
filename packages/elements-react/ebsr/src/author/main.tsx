@@ -1,10 +1,33 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import { settings, layout } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
+import type { Choice, MultipleChoiceConfiguration } from '@pie-element/multiple-choice';
+import type { MultipleChoiceValidationErrors } from '@pie-element/multiple-choice/controller';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 import { EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG } from '../private-tags.js';
+import type { EbsrValidationErrors } from '../controller/index.js';
+import type { EbsrConfiguration, EbsrModel, EbsrPart } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<EbsrModel> & {
+  partA: EbsrPart;
+  partB: EbsrPart;
+  errors?: EbsrValidationErrors;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: EbsrConfiguration;
+  multipleChoiceTagName?: string;
+  onModelChanged: (model: AuthorModel, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: EbsrConfiguration) => void;
+};
+
+/** The multiple-choice configure element of a part, which reads the model it is handed. */
+type PartConfigureElement = HTMLElement & {
+  _model: EbsrPart & { errors: MultipleChoiceValidationErrors };
+  configuration: MultipleChoiceConfiguration;
+};
 
 const { Panel, toggle, radio, dropdown } = settings;
 
@@ -17,16 +40,11 @@ const Divider: any = styled('div')(({ theme }) => ({
   height: theme.spacing(2.5),
 }));
 
-export class Main extends React.Component {
-  static propTypes = {
-    configuration: PropTypes.object,
-    model: PropTypes.object,
-    multipleChoiceTagName: PropTypes.string,
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-  };
+export class Main extends React.Component<MainProps> {
+  partA?: PartConfigureElement;
+  partB?: PartConfigureElement;
 
-  removeExtraChoices: any = (choices) => {
+  removeExtraChoices = (choices: Choice[]) => {
     let correctFound = false;
 
     return (choices || []).map((choice) => {
@@ -44,7 +62,7 @@ export class Main extends React.Component {
     });
   };
 
-  onModelChanged: any = (model, key) => {
+  onModelChanged = (model: AuthorModel, key?: string) => {
     const { onModelChanged } = this.props;
 
     if (key === 'partA.choiceMode' && model.partA.choiceMode === 'radio') {
@@ -69,7 +87,8 @@ export class Main extends React.Component {
       multipleChoiceTagName = EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG,
       onConfigurationChanged,
     } = this.props;
-    const MultipleChoiceConfigureElement = multipleChoiceTagName;
+    // A custom element tag, so JSX checks none of its attributes.
+    const MultipleChoiceConfigureElement = multipleChoiceTagName as unknown as React.ElementType;
     const { partLabelType, partA: modelPartA, partB: modelPartB, extraCSSRules } = model;
     const {
       contentDimensions = {},
@@ -79,7 +98,7 @@ export class Main extends React.Component {
       settingsPanelDisabled,
       scoringType = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       ...generalConfiguration
     } = configuration;
     const {
@@ -125,7 +144,7 @@ export class Main extends React.Component {
     };
 
     const panelSettings = {
-      partLabels: generalConfiguration.partLabels.settings && toggle(generalConfiguration.partLabels.label),
+      partLabels: generalConfiguration.partLabels?.settings && toggle(generalConfiguration.partLabels.label),
       partLabelType: model.partLabels && dropdown('', ['Numbers', 'Letters']),
       partialScoring: partialScoring.settings && toggle(partialScoring.label),
       scoringType: scoringType.settings && radio(scoringType.label, ['auto', 'rubric']),
@@ -200,7 +219,7 @@ export class Main extends React.Component {
         <MultipleChoiceConfigureElement
           data-part="A"
           key="partA"
-          ref={(ref) => {
+          ref={(ref: PartConfigureElement | null) => {
             if (ref) {
               // do not use destructuring to get model from props
               this.partA = ref;
@@ -222,7 +241,7 @@ export class Main extends React.Component {
         <MultipleChoiceConfigureElement
           data-part="B"
           key="partB"
-          ref={(ref) => {
+          ref={(ref: PartConfigureElement | null) => {
             if (ref) {
               // do not use destructuring to get model from props
               this.partB = ref;

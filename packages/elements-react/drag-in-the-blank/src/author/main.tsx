@@ -1,7 +1,4 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { layout, settings } from '@pie-lib/config-ui';
 import { InputContainer as InputContainerImport } from '@pie-lib/render-ui';
@@ -25,7 +22,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -33,21 +29,62 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
 import { DragProvider } from '@pie-lib/drag';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
-import { DragOverlay } from '@dnd-kit/core';
+import { DragOverlay, type ClientRect, type Data, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions, EditableHtmlConfigureProp } from '@pie-element/shared-types';
 
 import Choice from './choice.js';
 import Choices from './choices.js';
 import { createSlateMarkup } from './markupUtils.js';
 import { generateValidationMessage } from './utils.js';
+import type { DragInTheBlankValidationErrors } from '../controller/index.js';
+import type {
+  Choice as ChoiceModel,
+  CorrectResponse,
+  DragInTheBlankConfiguration,
+  DragInTheBlankModel,
+} from '../types.js';
 
-class DragPreviewWrapper extends React.Component {
-  containerRef = React.createRef();
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<DragInTheBlankModel> & {
+  choices: ChoiceModel[];
+  correctResponse: CorrectResponse;
+  markup: string;
+  errors?: DragInTheBlankValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: DragInTheBlankConfiguration;
+  disableSidePanel?: boolean;
+  onModelChanged: (model: AuthorModel, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: DragInTheBlankConfiguration, reset?: boolean) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+/** The drag preview renders a choice without `onRemoveChoice`, which BlankContent's propTypes require. */
+const ChoicePreview = Choice as React.FC<{ choice: ChoiceModel }>;
+
+type State = {
+  /** The drag data of the choice being dragged */
+  activeDragItem: Data | null;
+};
+
+class DragPreviewWrapper extends React.Component<{ children?: React.ReactNode }> {
+  containerRef = React.createRef<HTMLDivElement>();
 
   componentDidMount() {
     // Render math in the drag preview after it mounts
@@ -113,65 +150,54 @@ const FlexContainer: any = styled('div')({
   alignItems: 'center',
 });
 
-export class Main extends React.Component {
-  static propTypes = {
-    configuration: PropTypes.object.isRequired,
-    model: PropTypes.object.isRequired,
-    disableSidePanel: PropTypes.bool,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-    uploadSoundSupport: PropTypes.object,
-  };
-
-  state = {
+export class Main extends React.Component<MainProps, State> {
+  state: State = {
     activeDragItem: null,
   };
 
-  constructor(props) {
+  markupRef: React.RefObject<HTMLDivElement>;
+
+  constructor(props: MainProps) {
     super(props);
-    this.markupRef = React.createRef();
+    this.markupRef = React.createRef<HTMLDivElement>();
   }
 
-  onModelChange: any = (newVal) => {
+  onModelChange = (newVal: Partial<AuthorModel>) => {
     this.props.onModelChanged({
       ...this.props.model,
       ...newVal,
     });
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.props.onModelChanged({
       ...this.props.model,
       prompt,
     });
   };
 
-  onRationaleChanged: any = (rationale) => {
+  onRationaleChanged = (rationale: string) => {
     this.props.onModelChanged({
       ...this.props.model,
       rationale,
     });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.props.onModelChanged({
       ...this.props.model,
       teacherInstructions,
     });
   };
 
-  onMarkupChanged: any = (slateMarkup) => {
+  onMarkupChanged = (slateMarkup: string) => {
     this.props.onModelChanged({
       ...this.props.model,
       slateMarkup,
     });
   };
 
-  onResponsesChanged: any = (choices) => {
+  onResponsesChanged = (choices: ChoiceModel[]) => {
     const {
       model: { correctResponse, markup },
     } = this.props;
@@ -206,7 +232,7 @@ export class Main extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       maxLength = {},
     } = configuration || {};
     const {
@@ -253,7 +279,7 @@ export class Main extends React.Component {
       rubricEnabled: withRubric?.settings && toggle(withRubric?.label),
     };
 
-    const getPluginProps = (props) => {
+    const getPluginProps = (props?: EditableHtmlConfigureProp) => {
       return Object.assign(
         {
           ...baseInputConfiguration,
@@ -263,7 +289,7 @@ export class Main extends React.Component {
     };
 
 
-    const onDragEnd = ({ active, over }) => {
+    const onDragEnd = ({ active, over }: DragEndEvent) => {
       // check if item was placed as a correct answer and then dropped outside of StyledMarkup component
       if (active && !over) {
         const drag = active.data.current;
@@ -271,8 +297,10 @@ export class Main extends React.Component {
         if (drag && drag.type === 'drag-in-the-blank-placed-choice') {
           if (this.markupRef.current) {
             const markupBounds = this.markupRef.current.getBoundingClientRect();
-            const dropX = active.rect.current.translated?.x || 0;
-            const dropY = active.rect.current.translated?.y || 0;
+            // dnd-kit rects carry no `x` or `y`, so both read 0.
+            const translated = active.rect.current.translated as (ClientRect & { x?: number; y?: number }) | null;
+            const dropX = translated?.x || 0;
+            const dropY = translated?.y || 0;
 
             const isOutsideMarkup = (
               dropX < markupBounds.left ||
@@ -312,7 +340,7 @@ export class Main extends React.Component {
       });
     };
 
-    const onDragStart = (event) => {
+    const onDragStart = (event: DragStartEvent) => {
       const { active } = event;
 
       if (active?.data?.current) {
@@ -333,7 +361,7 @@ export class Main extends React.Component {
 
         if (!choice) return null;
 
-        return <Choice choice={choice} />;
+        return <ChoicePreview choice={choice} />;
       }
     };
 
@@ -454,7 +482,7 @@ export class Main extends React.Component {
             pluginProps={getPluginProps(addChoice?.inputConfiguration)}
             maxImageWidth={(maxImageWidth && maxImageWidth.choice) || defaultImageMaxWidth}
             maxImageHeight={(maxImageHeight && maxImageHeight.choice) || defaultImageMaxHeight}
-            maxLength={maxLength}
+            maxLength={maxLength as number}
           />
 
           {rationaleEnabled && (

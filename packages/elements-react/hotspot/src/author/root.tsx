@@ -1,8 +1,5 @@
-// @ts-nocheck
-
 import React from 'react';
 import { settings, layout, InputContainer, NumberTextField } from '@pie-lib/config-ui';
-import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -11,10 +8,42 @@ import Tooltip from '@mui/material/Tooltip';
 import HotspotPalette from './hotspot-palette.js';
 import HotspotContainer from './hotspot-container.js';
 import { updateImageDimensions, generateValidationMessage, getUpdatedShapes, getAllShapes, groupShapes } from './utils.js';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { HotspotValidationErrors } from '../controller/index.js';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
+import type { Dimensions, HotspotConfiguration, HotspotModel, Shapes } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<HotspotModel> & {
+  shapes: Shapes;
+  dimensions: Dimensions;
+  errors?: HotspotValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type RootProps = {
+  configuration: HotspotConfiguration;
+  model: AuthorModel;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+  onImageUpload: (imageUrl: string) => void;
+  onColorChanged: (colorType: 'hotspotColor' | 'outlineColor', color: string) => void;
+  onPromptChanged: (prompt: string) => void;
+  onUpdateImageDimension: (dimensions: Dimensions) => void;
+  onUpdateShapes: (shapes: Shapes) => void;
+  onModelChangedByConfig: (model: AuthorModel, propertyType?: string) => void;
+  onRationaleChanged: (rationale: string) => void;
+  onConfigurationChanged: (configuration: HotspotConfiguration) => void;
+  onTeacherInstructionsChanged: (teacherInstructions: string) => void;
+};
 
 const { Panel, toggle, dropdown } = settings;
 
-const checkNullish = (value) => value !== null && value !== undefined;
+const checkNullish = (value: unknown) => value !== null && value !== undefined;
 
 const DimensionsContainer: any = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -56,15 +85,15 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export class Root extends React.Component {
-  handleColorChange: any = (fieldType, color) => {
+export class Root extends React.Component<RootProps> {
+  handleColorChange = (fieldType: 'hotspot' | 'outline', color: string) => {
     const { onColorChanged } = this.props;
-    const cType = `${fieldType}Color`;
+    const cType = `${fieldType}Color` as const;
 
     onColorChanged(cType, color);
   };
 
-  handleOnUpdateImageDimensions: any = (value, resizeType) => {
+  handleOnUpdateImageDimensions = (value: number, resizeType: 'width' | 'height') => {
     const {
       model: { dimensions, shapes },
       configuration: { preserveAspectRatio = {} },
@@ -122,7 +151,7 @@ export class Root extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
     } = configuration || {};
     const {
       errors,
@@ -276,7 +305,7 @@ export class Root extends React.Component {
                   label="Width"
                   value={model.dimensions.width}
                   min={0}
-                  onChange={(e, value) => this.handleOnUpdateImageDimensions(value, 'width')}
+                  onChange={(_e, value) => this.handleOnUpdateImageDimensions(value, 'width')}
                   showErrorWhenOutsideRange
                 />
               </FieldContainer>
@@ -287,7 +316,7 @@ export class Root extends React.Component {
                   label="Height"
                   value={model.dimensions.height}
                   min={0}
-                  onChange={(e, value) => this.handleOnUpdateImageDimensions(value, 'height')}
+                  onChange={(_e, value) => this.handleOnUpdateImageDimensions(value, 'height')}
                   showErrorWhenOutsideRange
                 />
               </FieldContainer>
@@ -318,27 +347,5 @@ export class Root extends React.Component {
     );
   }
 }
-
-Root.propTypes = {
-  configuration: PropTypes.object,
-  model: PropTypes.object.isRequired,
-  imageSupport: PropTypes.shape({
-    add: PropTypes.func,
-    delete: PropTypes.func,
-  }),
-  uploadSoundSupport: PropTypes.shape({
-    add: PropTypes.func,
-    delete: PropTypes.func,
-  }),
-  onImageUpload: PropTypes.func.isRequired,
-  onColorChanged: PropTypes.func.isRequired,
-  onPromptChanged: PropTypes.func.isRequired,
-  onUpdateImageDimension: PropTypes.func.isRequired,
-  onUpdateShapes: PropTypes.func.isRequired,
-  onModelChangedByConfig: PropTypes.func.isRequired,
-  onRationaleChanged: PropTypes.func.isRequired,
-  onConfigurationChanged: PropTypes.func.isRequired,
-  onTeacherInstructionsChanged: PropTypes.func.isRequired,
-};
 
 export default Root;

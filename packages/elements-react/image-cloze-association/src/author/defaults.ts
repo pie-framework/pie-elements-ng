@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { ImageClozeAssociationConfiguration, ImageClozeAssociationModel } from '../types.js';
 
 export default {
   model: {
@@ -55,7 +56,10 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
+} satisfies {
+  model: Omit<ImageClozeAssociationModel, 'id' | 'element'>;
+  configuration: ImageClozeAssociationConfiguration;
 };

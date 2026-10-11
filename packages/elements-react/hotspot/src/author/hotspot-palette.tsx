@@ -25,7 +25,16 @@ const StyledMenuItem: any = styled(MenuItem)(({ theme }) => ({
   marginTop: theme.spacing(2),
 }));
 
-class Palette extends React.Component {
+type PaletteProps = {
+  hotspotColor?: string;
+  hotspotList?: string[];
+  onHotspotColorChange: (color: string) => void;
+  onOutlineColorChange: (color: string) => void;
+  outlineColor?: string;
+  outlineList?: string[];
+};
+
+class Palette extends React.Component<PaletteProps> {
   onChange = (name) => (event) => {
     const { value } = event.target;
     const { onHotspotColorChange, onOutlineColorChange } = this.props;

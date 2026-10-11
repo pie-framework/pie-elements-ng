@@ -30,8 +30,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
-const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -39,6 +37,8 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { LIKERT_ORIENTATION } from './likertEntities.js';
 import Translator from '@pie-lib/translator';
 

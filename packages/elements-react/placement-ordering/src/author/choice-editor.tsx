@@ -27,7 +27,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -35,9 +34,53 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
 import { AlertDialog } from '@pie-lib/config-ui';
 
 import ChoiceTile from './choice-tile.js';
+import type { DeleteDone, ImageHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureMathMLProp, EditableHtmlConfigureProp } from '@pie-element/shared-types';
+import type { PlacementOrderingValidationErrors } from '../controller/index.js';
+import type { Choice, CorrectResponse } from '../types.js';
+
+/** A tile the author drags: a choice, or a slot of the correct order. */
+export type AuthorTile = Partial<Choice> & {
+  type: 'choice' | 'target';
+  draggable: boolean;
+  editable: boolean;
+  droppable?: boolean;
+  index?: number;
+};
+
+/** The choices, the correct order being edited, and the tiles built from both. */
+export type AuthorOrdering = {
+  choices: Choice[];
+  /** Has empty slots while the author has not placed every choice */
+  response: Array<CorrectResponse | string | undefined>;
+  tiles: AuthorTile[];
+};
+
+type ChoiceEditorProps = {
+  correctResponse?: Array<CorrectResponse | string>;
+  choices: Choice[];
+  onChange: (choices: Choice[], correctResponse?: AuthorOrdering['response']) => void;
+  imageSupport?: {
+    add: (handler: ImageHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+  toolbarOpts?: { position: string };
+  pluginProps?: EditableHtmlConfigureProp;
+  choicesLabel?: string;
+  placementArea?: boolean;
+  singularChoiceLabel?: string;
+  pluralChoiceLabel?: string;
+  spellCheck?: boolean;
+  maxImageWidth?: number;
+  maxImageHeight?: number;
+  errors?: PlacementOrderingValidationErrors;
+  mathMlOptions?: ConfigureMathMLProp;
+  ordering: AuthorOrdering;
+};
 
 function findFreeChoiceSlot(choices) {
   let slot = 1;
@@ -88,7 +131,7 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-class ChoiceEditor extends React.Component {
+class ChoiceEditor extends React.Component<ChoiceEditorProps> {
   static propTypes = {
     correctResponse: PropTypes.array.isRequired,
     choices: PropTypes.array.isRequired,

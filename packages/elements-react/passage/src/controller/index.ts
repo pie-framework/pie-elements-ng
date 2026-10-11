@@ -1,24 +1,45 @@
-// @ts-nocheck
-
 import { isEmpty } from '@pie-element/shared-lodash';
+import type { PieEnvironment } from '@pie-element/shared-types';
 
 import defaults from './defaults.js';
+import type { PassageConfiguration, PassageModel, PassageSession } from '../types.js';
 
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+/** A passage as the delivery renders it: each field is empty when disabled */
+export interface PassageView {
+  teacherInstructions: string;
+  label: string;
+  title: string;
+  subtitle: string;
+  author: string;
+  text: string;
+}
 
-const checkNullish = (value) => value !== null && value !== undefined;
+export type ModelView = Omit<PassageModel, 'passages'> & { passages: PassageView[] };
 
-const isEnabled = (value, defaultValue) => (checkNullish(value) ? value : defaultValue);
+type PassageField = 'teacherInstructions' | 'title' | 'subtitle' | 'author' | 'text';
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => {
+export type PassageFieldErrors = Partial<Record<PassageField, string>>;
+
+/** Errors from `validate()`, keyed by passage index */
+export type PassageValidationErrors = {
+  passages?: Record<number, PassageFieldErrors>;
+};
+
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+
+const checkNullish = (value: boolean | undefined) => value !== null && value !== undefined;
+
+const isEnabled = (value: boolean | undefined, defaultValue: boolean | undefined) => (checkNullish(value) ? value : defaultValue);
+
+export function createDefaultModel(model: Partial<PassageModel> = {}) {
+  return new Promise<Omit<PassageModel, 'id' | 'element'> & Partial<PassageModel>>((resolve) => {
     resolve({ ...defaults, ...model });
   });
 }
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: PassageModel) => ({ ...defaults, ...question });
 
-const normalizeTeacherInstructions = (instructions, env) => {
+const normalizeTeacherInstructions = (instructions: string | undefined, env: PieEnvironment) => {
   const { role, mode } = env;
 
   if (role === 'instructor' && (mode === 'view' || mode === 'evaluate')) {
@@ -28,20 +49,18 @@ const normalizeTeacherInstructions = (instructions, env) => {
   return '';
 };
 
-/**
- *
- * @param {*} question
- * @param {*} session
- * @param {*} env
- */
-export async function model(question, session, env) {
+export async function model(
+  question: PassageModel,
+  _session: PassageSession | undefined,
+  env: PieEnvironment
+): Promise<ModelView> {
   const normalizedQuestion = normalize(question);
 
-  const normalizedPassages = normalizedQuestion.passages.map((passage, index) => ({
+  const normalizedPassages = normalizedQuestion.passages.map((passage, index): PassageView => ({
     teacherInstructions: isEnabled(passage.teacherInstructionsEnabled, normalizedQuestion.teacherInstructionsEnabled)
       ? normalizeTeacherInstructions(passage.teacherInstructions, env)
       : '',
-    label: getContent(passage.title) ? passage.title : `Passage ${index + 1}`,
+    label: getContent(passage.title) ? passage.title! : `Passage ${index + 1}`,
     title: isEnabled(passage.titleEnabled, normalizedQuestion.titleEnabled) ? passage.title || '' : '',
     subtitle: isEnabled(passage.subtitleEnabled, normalizedQuestion.subtitleEnabled) ? passage.subtitle || '' : '',
     author: isEnabled(passage.authorEnabled, normalizedQuestion.authorEnabled) ? passage.author || '' : '',
@@ -54,14 +73,17 @@ export async function model(question, session, env) {
   };
 }
 
-export const validate = (model = {}, config = {}) => {
-  const errors = {};
-  const passagesErrors = {};
+export const validate = (
+  model: Partial<PassageModel> = {},
+  config: PassageConfiguration = {}
+): PassageValidationErrors => {
+  const errors: PassageValidationErrors = {};
+  const passagesErrors: Record<number, PassageFieldErrors> = {};
 
   (model.passages || []).forEach((passage, index) => {
-    const err = {};
+    const err: PassageFieldErrors = {};
 
-    ['teacherInstructions', 'title', 'subtitle', 'author', 'text'].forEach((field) => {
+    (['teacherInstructions', 'title', 'subtitle', 'author', 'text'] as const).forEach((field) => {
       if (config[field]?.required && !getContent(passage[field])) {
         err[field] = 'This field is required.';
       }

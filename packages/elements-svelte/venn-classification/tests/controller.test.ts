@@ -11,9 +11,9 @@ import {
   outcome,
   validate,
 } from '../src/controller/index.js';
-import type { VennModel, VennSession } from '../src/types.js';
+import type { VennClassificationModel, VennClassificationSession } from '../src/types.js';
 
-function twoSetModel(overrides: Partial<VennModel> = {}): VennModel {
+function twoSetModel(overrides: Partial<VennClassificationModel> = {}): VennClassificationModel {
   return createDefaultModel({
     circles: [{ label: 'A' }, { label: 'B' }],
     tiles: [
@@ -184,13 +184,13 @@ describe('isComplete', () => {
 
 describe('outcome', () => {
   const m = twoSetModel();
-  const correct: VennSession = {
+  const correct: VennClassificationSession = {
     placements: { t1: [0], t2: [1], t3: [0, 1], t4: [] },
   };
-  const partial: VennSession = {
+  const partial: VennClassificationSession = {
     placements: { t1: [0], t2: [1], t3: [0], t4: [] },
   };
-  const wrong: VennSession = {
+  const wrong: VennClassificationSession = {
     placements: { t1: [1], t2: [0], t3: [], t4: [0, 1] },
   };
 
@@ -393,9 +393,9 @@ describe('model teacher instructions', () => {
 
   it('sends them to an instructor when the flag is unset, as multiple-choice does', async () => {
     const { teacherInstructionsEnabled: _flag, ...unset } = question;
-    expect((await buildViewModel(unset as VennModel, {}, instructor)).teacherInstructions).toBe(
-      '<p>Read aloud.</p>'
-    );
+    expect(
+      (await buildViewModel(unset as VennClassificationModel, {}, instructor)).teacherInstructions
+    ).toBe('<p>Read aloud.</p>');
   });
 
   it('withholds them when turned off, and from a student', async () => {

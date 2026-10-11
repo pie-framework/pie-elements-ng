@@ -1,8 +1,5 @@
-// @ts-nocheck
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
 import EditableHtml, { ALL_PLUGINS, deleteInlineDropdownByIndex } from '@pie-lib/editable-html-tip-tap';
 import { AlertDialog, InputContainer, layout, settings } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
@@ -16,10 +13,56 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Info from '@mui/icons-material/Info';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 
 import InlineDropdownToolbar from './inline-dropdown-toolbar.js';
 import { generateValidationMessage } from './utils.js';
 import ResponseAreaComponent from './response-area.js';
+import type { InlineDropdownValidationErrors } from '../controller/index.js';
+import type { Choice, Choices, InlineDropdownConfiguration, InlineDropdownModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<InlineDropdownModel> & {
+  choices: Choices;
+  markup: string;
+  slateMarkup: string;
+  errors?: InlineDropdownValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: InlineDropdownConfiguration;
+  disableSidePanel?: boolean;
+  onModelChanged: (model: Partial<AuthorModel>, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: InlineDropdownConfiguration, reset?: boolean) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type Warning = {
+  open: boolean;
+  text?: string;
+  onClose?: () => void;
+  onConfirm?: () => void;
+};
+
+type State = {
+  warning: Warning;
+  /** The choices of each response area as the toolbar edits them; set on mount */
+  respAreaChoices?: Choices;
+};
+
+/** A response area node in the template editor */
+type ResponseAreaNode = { attrs: { index: string } };
+
+/** The template editor; it keeps a response area's toolbar open while this holds the area's index */
+type TemplateEditor = { _holdInlineDropdownToolbarIndex?: string };
 
 const { toggle, Panel, dropdown } = settings;
 
@@ -80,7 +123,7 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-const createElementFromHTML = (htmlString) => {
+const createElementFromHTML = (htmlString: string) => {
   const div = document.createElement('div');
 
   div.innerHTML = (htmlString || '').trim();
@@ -88,24 +131,8 @@ const createElementFromHTML = (htmlString) => {
   return div;
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    configuration: PropTypes.object.isRequired,
-    model: PropTypes.object.isRequired,
-    disableSidePanel: PropTypes.bool,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-    uploadSoundSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-  };
-
-  state = {
+export class Main extends React.Component<MainProps, State> {
+  state: State = {
     warning: { open: false },
   };
 
@@ -117,8 +144,8 @@ export class Main extends React.Component {
     this.setState({ respAreaChoices: cloneDeep(choices) });
   }
 
-  UNSAFE_componentWillReceiveProps(nProps) {
-    const newState = {};
+  UNSAFE_componentWillReceiveProps(nProps: MainProps) {
+    const newState: Pick<State, 'respAreaChoices'> = {};
 
     if (
       !isEqual(nProps.model.choices, this.props.model.choices) ||
@@ -136,22 +163,22 @@ export class Main extends React.Component {
     //eslint-disable-next-line
     const domNode = ReactDOM.findDOMNode(this);
 
-    renderMath(domNode);
+    renderMath(domNode as Element);
   }
 
-  onModelChange: any = (newVal) => {
+  onModelChange = (newVal: Partial<AuthorModel>) => {
     this.props.onModelChanged({ ...this.props.model, ...newVal });
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.onModelChange({ prompt });
   };
 
-  onRationaleChanged: any = (rationale) => {
+  onRationaleChanged = (rationale: string) => {
     this.onModelChange({ rationale });
   };
 
-  onChoiceRationaleChanged: any = (index, choice) => {
+  onChoiceRationaleChanged = (index: string, choice: Choice) => {
     const { model } = this.props;
     const indexOfChoice =
       model.choices &&
@@ -163,15 +190,15 @@ export class Main extends React.Component {
     this.onModelChange(model);
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.onModelChange({ teacherInstructions });
   };
 
-  onMarkupChanged: any = (slateMarkup) => {
+  onMarkupChanged = (slateMarkup: string) => {
     this.onModelChange({ slateMarkup });
   };
 
-  onCheck: any = (confirmCallback, cancelCallback) => {
+  onCheck = (confirmCallback: () => void, cancelCallback: () => void) => {
     this.setState({
       warning: {
         open: true,
@@ -186,8 +213,15 @@ export class Main extends React.Component {
     });
   };
 
-  validateResponseAreaClose: any = (node, pos, editor, closeToolbar, onCancel) => {
-    const { respAreaChoices } = this.state;
+  validateResponseAreaClose = (
+    node: ResponseAreaNode,
+    pos: number,
+    editor: TemplateEditor,
+    closeToolbar: () => void,
+    onCancel: () => void,
+  ) => {
+    // componentDidMount sets `respAreaChoices`, so it is present here.
+    const respAreaChoices = this.state.respAreaChoices as Choices;
     const index = node.attrs.index;
     const currentChoices = respAreaChoices[index] || [];
     const shouldWarn = currentChoices.length < 2 || !currentChoices.find((c) => c.correct);
@@ -209,19 +243,20 @@ export class Main extends React.Component {
     );
   };
 
-  onChange: any = (markup) => {
-    const { respAreaChoices } = this.state;
+  onChange = (markup: string) => {
+    // componentDidMount sets `respAreaChoices`, so it is present here.
+    const respAreaChoices = this.state.respAreaChoices as Choices;
     const domMarkup = createElementFromHTML(markup);
-    const allRespAreas = domMarkup.querySelectorAll('[data-type="inline_dropdown"]');
-    const allChoices = {};
+    const allRespAreas = domMarkup.querySelectorAll<HTMLElement>('[data-type="inline_dropdown"]');
+    const allChoices: Record<string, string> = {};
 
     allRespAreas.forEach((el) => {
-      allChoices[el.dataset.index] = el.dataset.value || '';
+      allChoices[el.dataset.index as string] = el.dataset.value || '';
     });
 
-    const existingRespAreaChoices = reduce(
+    const existingRespAreaChoices = reduce<Choice[], Choices>(
       respAreaChoices,
-      (obj, choices, key) => {
+      (obj, _choices, key) => {
         if (!isUndefined(allChoices[key])) {
           obj[key] = respAreaChoices[key];
         }
@@ -231,16 +266,16 @@ export class Main extends React.Component {
       {},
     );
 
-    const newRespAreaChoices = {};
+    const newRespAreaChoices: Choices = {};
 
     allRespAreas.forEach((el, index) => {
-      const choices = existingRespAreaChoices[el.dataset.index];
+      const choices = existingRespAreaChoices[el.dataset.index as string];
 
       if (choices) {
         newRespAreaChoices[index] = choices;
       }
 
-      el.dataset.index = index;
+      el.dataset.index = `${index}`;
     });
 
     this.onModelChange({
@@ -249,11 +284,12 @@ export class Main extends React.Component {
     });
   };
 
-  onAddChoice: any = (index, label, choiceIndex) => {
-    const { respAreaChoices } = this.state;
+  onAddChoice = (index: string, label: string, choiceIndex: number) => {
+    // componentDidMount sets `respAreaChoices`, so it is present here.
+    const respAreaChoices = this.state.respAreaChoices as Choices;
     const { maxResponseAreaChoices } = this.props.configuration;
 
-    const showWarning = (message) =>
+    const showWarning = (message: string) =>
       this.setState({
         warning: {
           open: true,
@@ -265,7 +301,7 @@ export class Main extends React.Component {
         },
       });
 
-    if (respAreaChoices[index] && respAreaChoices[index].length >= maxResponseAreaChoices) {
+    if (respAreaChoices[index] && respAreaChoices[index].length >= (maxResponseAreaChoices as number)) {
       showWarning(`There are only ${maxResponseAreaChoices} answers allowed per choice.`);
       return;
     }
@@ -300,16 +336,18 @@ export class Main extends React.Component {
     this.onModelChange({ choices: cloneDeep(respAreaChoices) });
   };
 
-  onRemoveChoice: any = (respIndex, index) => {
-    const { respAreaChoices } = this.state;
+  onRemoveChoice = (respIndex: string, index: number) => {
+    // componentDidMount sets `respAreaChoices`, so it is present here.
+    const respAreaChoices = this.state.respAreaChoices as Choices;
 
     respAreaChoices[respIndex].splice(index, 1);
 
     this.onModelChange({ choices: cloneDeep(respAreaChoices) });
   };
 
-  onSelectChoice: any = (respIndex, selectedIndex) => {
-    const { respAreaChoices } = this.state;
+  onSelectChoice = (respIndex: string, selectedIndex: number) => {
+    // componentDidMount sets `respAreaChoices`, so it is present here.
+    const respAreaChoices = this.state.respAreaChoices as Choices;
 
     respAreaChoices[respIndex] = respAreaChoices[respIndex].map((choice, index) => ({
       ...choice,
@@ -340,7 +378,7 @@ export class Main extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       responseAreaInputConfiguration = {},
     } = configuration || {};
 
@@ -348,7 +386,6 @@ export class Main extends React.Component {
       choiceRationaleEnabled,
       choices,
       errors,
-      extraCSSRules,
       promptEnabled,
       rationaleEnabled,
       spellCheckEnabled,
@@ -387,7 +424,7 @@ export class Main extends React.Component {
                       markup={choice.rationale || ''}
                       spellCheck={spellCheckEnabled}
                       pluginProps={getPluginProps(rationale?.inputConfiguration)}
-                      onChange={(c) => this.onChoiceRationaleChanged(key, { ...choice, rationale: c })}
+                      onChange={(c: string) => this.onChoiceRationaleChanged(key, { ...choice, rationale: c })}
                       imageSupport={imageSupport}
                       maxImageWidth={(maxImageWidth && maxImageWidth.rationale) || defaultImageMaxWidth}
                       maxImageHeight={(maxImageHeight && maxImageHeight.rationale) || defaultImageMaxHeight}
@@ -531,19 +568,29 @@ export class Main extends React.Component {
                 duplicates: true,
               },
               maxResponseAreas: maxResponseAreas,
-              onToolbarCloseRequest: ([node, pos], editor, closeToolbar, onCancel) => {
+              onToolbarCloseRequest: (
+                [node, pos]: [ResponseAreaNode, number],
+                editor: TemplateEditor,
+                closeToolbar: () => void,
+                onCancel: () => void,
+              ) => {
                 this.validateResponseAreaClose(node, pos, editor, closeToolbar, onCancel);
               },
-              respAreaToolbar: (nodeInfo, editor, closeToolbar) => {
+              respAreaToolbar: (
+                nodeInfo: [ResponseAreaNode, number],
+                editor: TemplateEditor,
+                closeToolbar: () => void,
+              ) => {
                 const [node, pos] = nodeInfo;
-                const { respAreaChoices } = this.state;
+                // componentDidMount sets `respAreaChoices` before the author can open a toolbar.
+                const respAreaChoices = this.state.respAreaChoices as Choices;
 
-                return (props) => (
+                return (props: { editorCallback?: (instance: unknown) => void }) => (
                   <InlineDropdownToolbar
                     {...props}
                     onAddChoice={this.onAddChoice}
-                    onRemoveChoice={(index) => this.onRemoveChoice(node.attrs.index, index)}
-                    onSelectChoice={(index) => this.onSelectChoice(node.attrs.index, index)}
+                    onRemoveChoice={(index: number) => this.onRemoveChoice(node.attrs.index, index)}
+                    onSelectChoice={(index: number) => this.onSelectChoice(node.attrs.index, index)}
                     node={node}
                     pos={pos}
                     editor={editor}

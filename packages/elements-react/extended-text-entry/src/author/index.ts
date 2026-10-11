@@ -1,20 +1,26 @@
-// @ts-nocheck
-
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Main from './main.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Main, { type AuthorModel } from './main.js';
 
 import defaults from './defaults.js';
+import type { ExtendedTextEntryConfiguration } from '../types.js';
 
 export default class ExtendedTextEntry extends HTMLElement {
-  static createDefaultModel = (model = {}, config) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: ExtendedTextEntryConfiguration;
+
+  static createDefaultModel = (model: AuthorModel = {}, config?: ExtendedTextEntryConfiguration): AuthorModel => {
     const defaultModel = { ...defaults.model, ...model };
 
     // if configuration.withRubric.forceEnabled is true, then we update the model (rubricEnabled)
@@ -40,16 +46,18 @@ export default class ExtendedTextEntry extends HTMLElement {
     this._model = ExtendedTextEntry.createDefaultModel({}, this._configuration);
   }
 
-  set model(m) {
+  set model(m: AuthorModel) {
     this._model = ExtendedTextEntry.createDefaultModel(m, this._configuration);
     this.render();
   }
 
-  set configuration(c) {
-    this._configuration = {
+  set configuration(c: ExtendedTextEntryConfiguration) {
+    const configuration = {
       ...defaults.configuration,
       ...c,
     };
+
+    this._configuration = configuration;
 
     const { withRubric = {} } = c || {};
 
@@ -57,7 +65,7 @@ export default class ExtendedTextEntry extends HTMLElement {
     // without triggering the Model Updated event (for more details, check documentation)
     // and also update the configuration (we do not want to display the toggle in the Settings Panel)
     if (withRubric?.forceEnabled) {
-      this._configuration.withRubric.settings = false;
+      configuration.withRubric.settings = false;
 
       if (!this._model.rubricEnabled) {
         this._model.rubricEnabled = true;
@@ -67,13 +75,13 @@ export default class ExtendedTextEntry extends HTMLElement {
     this.render();
   }
 
-  onModelChanged(m) {
+  onModelChanged(m: AuthorModel) {
     this._model = m;
     this.render();
     this.dispatchEvent(new ModelUpdatedEvent(this._model, false));
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: ExtendedTextEntryConfiguration) {
     this._configuration = {
       ...defaults.configuration,
       ...c,
@@ -90,19 +98,19 @@ export default class ExtendedTextEntry extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

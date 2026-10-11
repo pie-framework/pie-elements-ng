@@ -9,6 +9,22 @@ import Checkbox from '@mui/material/Checkbox';
 import { color } from '@pie-lib/render-ui';
 
 import Typography from '@mui/material/Typography';
+import type { ConfigureMathMLProp, ConfigureProp } from '@pie-element/shared-types';
+import type { AuthorModel, ChartDefinition } from './configure.js';
+import type { ChartingAuthorNewCategoryDefaults, ChartingLabelsPlaceholders, ChartingOptions } from '../types.js';
+
+type ChartingConfigProps = {
+  model: AuthorModel;
+  onChange: (model: AuthorModel) => void;
+  charts?: ChartDefinition[];
+  labelsPlaceholders?: ChartingLabelsPlaceholders;
+  titlePlaceholder?: ConfigureProp;
+  showPixelGuides?: boolean;
+  authorNewCategoryDefaults?: ChartingAuthorNewCategoryDefaults;
+  chartingOptions?: ChartingOptions;
+  mathMlOptions?: ConfigureMathMLProp;
+  labelsCharactersLimit?: number;
+};
 
 const Container: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
@@ -54,7 +70,7 @@ const restoreCorrectAnswer = (correctAnswer, data) => {
   return correctResponseDefinition;
 };
 
-export class ChartingConfig extends React.Component {
+export class ChartingConfig extends React.Component<ChartingConfigProps> {
   static propTypes = {
     model: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,

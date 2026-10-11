@@ -1,9 +1,23 @@
-// @ts-nocheck
-
 import defaults from './defaults.js';
 import { isEmpty } from '@pie-element/shared-lodash';
+import type { PieEnvironment } from '@pie-element/shared-types';
+import type { MatrixConfiguration, MatrixModel, MatrixSession } from '../types.js';
 
-export const createDefaultModel = (model = {}) => new Promise((resolve) => resolve({ ...defaults, ...model }));
+/** Errors `validate()` reports. */
+export type MatrixValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+};
+
+/** The model `model()` hands the delivery. */
+type MatrixViewModel = Omit<MatrixModel, 'teacherInstructions'> & {
+  disabled: boolean;
+  mode: PieEnvironment['mode'];
+  teacherInstructions?: string | null;
+};
+
+export const createDefaultModel = (model: Partial<MatrixModel> = {}) =>
+  new Promise<Partial<MatrixModel>>((resolve) => resolve({ ...defaults, ...model }));
 
 /**
  *
@@ -11,10 +25,10 @@ export const createDefaultModel = (model = {}) => new Promise((resolve) => resol
  * @param {*} session
  * @param {*} env
  */
-export async function model(question, session, env) {
+export async function model(question: MatrixModel, _session: MatrixSession | undefined, env: PieEnvironment) {
   const normalizedQuestion = { ...defaults, ...question };
 
-  const out = {
+  const out: MatrixViewModel = {
     ...normalizedQuestion,
     disabled: env.mode !== 'gather',
     mode: env.mode,
@@ -33,15 +47,16 @@ export async function model(question, session, env) {
   return out;
 }
 
-export function outcome(model, session) {
-  return new Promise((resolve) => {
+export function outcome(model: MatrixModel, session: MatrixSession | undefined) {
+  return new Promise<{ score: number; empty: boolean }>((resolve) => {
     // A player sends an untouched item's session as `{ id, element }`, without `value`.
     if (!session || isEmpty(session) || !session.value) {
       return resolve({ score: 0, empty: true });
     }
 
     const score = Object.keys(session.value).reduce((acc, key) => {
-      const matrixValue = model.matrixValues[key];
+      // `model` is not normalized here, so a model without `matrixValues` throws
+      const matrixValue = (model.matrixValues as Record<string, number>)[key];
       return acc + (matrixValue || 0);
     }, 0);
 
@@ -49,8 +64,8 @@ export function outcome(model, session) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: MatrixModel, env: PieEnvironment) => {
+  return new Promise<MatrixSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { matrixValues } = question || [];
 
@@ -64,16 +79,16 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
-  const errors = {};
+export const validate = (
+  model: Partial<MatrixModel> = {},
+  config: MatrixConfiguration = {},
+): MatrixValidationErrors => {
+  const errors: MatrixValidationErrors = {};
 
-  ['teacherInstructions', 'prompt'].forEach((field) => {
+  (['teacherInstructions', 'prompt'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }

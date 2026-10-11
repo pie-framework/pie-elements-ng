@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { MultipleChoiceModel } from '../types.js';
 
 export default {
   choiceMode: 'checkbox',
@@ -25,4 +25,4 @@ export default {
   hoverAnswerStrokeColor: 'initial',
   hoverAnswerStrokeWidth: 'initial',
   keyboardEventsEnabled: false,
-};
+} satisfies Omit<MultipleChoiceModel, 'id' | 'element'>;

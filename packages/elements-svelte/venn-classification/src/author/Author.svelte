@@ -30,11 +30,18 @@ import {
   getRegionLabel,
   normalizeRegion,
 } from '../controller/region.js';
-import type { Region, VennModel, VennTile } from '../types.js';
+import type {
+  Region,
+  VennClassificationConfiguration,
+  VennClassificationModel,
+  VennTile,
+} from '../types.js';
 import { stripHtml } from '../delivery/tile-accessible-name.js';
 
-let { model, configuration }: { model?: VennModel; configuration?: Record<string, unknown> } =
-  $props();
+let {
+  model,
+  configuration,
+}: { model?: VennClassificationModel; configuration?: VennClassificationConfiguration } = $props();
 
 const config = $derived(mergeConfiguration(defaults.configuration, configuration));
 
@@ -49,7 +56,7 @@ const SCORING_POLICY_CHOICES = [
  * host's property. Announces it as a bubbling `model.updated` for the player
  * listening at its root.
  */
-function emit(next: VennModel) {
+function emit(next: VennClassificationModel) {
   $host<HTMLElement & { model: unknown }>().model = next;
   $host().dispatchEvent(new ModelUpdatedEvent(next));
 }
@@ -59,11 +66,11 @@ function emit(next: VennModel) {
  * and `element` included, passes through untouched: the player owns those two,
  * and an edit must not drop what the form does not show.
  */
-function safeModel(): VennModel {
+function safeModel(): VennClassificationModel {
   return createDefaultModel(model || undefined);
 }
 
-function update(patch: Partial<VennModel>) {
+function update(patch: Partial<VennClassificationModel>) {
   emit({ ...safeModel(), ...patch });
 }
 

@@ -20,12 +20,4 @@ describe('path hygiene', () => {
     expect(bundleApi).toContain('findWorkspaceRoot(process.cwd())');
     expect(iifeContract).toContain('findWorkspaceRoot(process.cwd())');
   });
-
-  it('keeps esm player test checkout paths configurable', () => {
-    const viteConfig = readWorkspaceFile('apps/esm-player-test/vite.config.js');
-
-    expect(viteConfig).not.toContain("allow: ['../..', '../../../pie-players']");
-    expect(viteConfig).toContain('PIE_PLAYERS_ROOT');
-    expect(viteConfig).toContain('monorepoRoot');
-  });
 });

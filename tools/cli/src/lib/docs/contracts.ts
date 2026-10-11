@@ -2,13 +2,8 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { CONTRACT_FILENAME, inferViewsFromPackageExports } from './discovery.js';
-import type {
-  ElementPackageInfo,
-  PieDocsContract,
-  PieDocsPropertyMetadata,
-  PieDocsSourcePointer,
-  PieDocsViewMetadata,
-} from './types.js';
+import { loadPointerValue } from './source-extractor.js';
+import type { ElementPackageInfo, PieDocsContract, PieDocsSourcePointer } from './types.js';
 
 const MODES = ['gather', 'view', 'evaluate'];
 
@@ -20,83 +15,6 @@ const isSourcePointer = (value: unknown): value is PieDocsSourcePointer =>
   typeof value.file === 'string' &&
   (value.exportName === undefined || typeof value.exportName === 'string') &&
   (value.path === undefined || typeof value.path === 'string');
-
-const isPrimitiveEnumValue = (value: unknown): value is string | number | boolean | null =>
-  value === null || ['string', 'number', 'boolean'].includes(typeof value);
-
-const isPropertyMetadata = (value: unknown): value is PieDocsPropertyMetadata => {
-  if (!isObject(value)) {
-    return false;
-  }
-  const allowed = [
-    'title',
-    'description',
-    'notes',
-    'type',
-    'required',
-    'enum',
-    'minimum',
-    'maximum',
-    'minLength',
-    'maxLength',
-    'pattern',
-    'itemType',
-    'examples',
-  ];
-  for (const key of Object.keys(value)) {
-    if (!allowed.includes(key)) {
-      return false;
-    }
-  }
-  if (value.title !== undefined && typeof value.title !== 'string') return false;
-  if (value.description !== undefined && typeof value.description !== 'string') return false;
-  if (value.notes !== undefined && typeof value.notes !== 'string') return false;
-  if (value.type !== undefined && typeof value.type !== 'string') return false;
-  if (value.required !== undefined && typeof value.required !== 'boolean') return false;
-  if (value.enum !== undefined) {
-    if (!Array.isArray(value.enum) || value.enum.some((entry) => !isPrimitiveEnumValue(entry))) {
-      return false;
-    }
-  }
-  for (const key of ['minimum', 'maximum', 'minLength', 'maxLength'] as const) {
-    if (value[key] !== undefined && typeof value[key] !== 'number') return false;
-  }
-  if (value.pattern !== undefined && typeof value.pattern !== 'string') return false;
-  if (value.itemType !== undefined && typeof value.itemType !== 'string') return false;
-  if (value.examples !== undefined && !Array.isArray(value.examples)) return false;
-  return true;
-};
-
-const normalizeMetadataMap = (
-  map?: Record<string, PieDocsPropertyMetadata>
-): Record<string, PieDocsPropertyMetadata> | undefined => {
-  if (!map) {
-    return undefined;
-  }
-  return Object.fromEntries(
-    Object.entries(map)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([path, metadata]) => [path, { ...metadata }])
-  );
-};
-
-const isViewMetadata = (value: unknown): value is PieDocsViewMetadata => {
-  if (!isObject(value)) {
-    return false;
-  }
-  for (const key of Object.keys(value)) {
-    if (!['pie', 'config'].includes(key)) {
-      return false;
-    }
-    const map = value[key];
-    if (map === undefined) continue;
-    if (!isObject(map)) return false;
-    for (const entry of Object.values(map)) {
-      if (!isPropertyMetadata(entry)) return false;
-    }
-  }
-  return true;
-};
 
 const normalizePointer = (pointer: PieDocsSourcePointer): PieDocsSourcePointer => ({
   file: pointer.file,
@@ -116,51 +34,41 @@ const normalizeContract = (contract: PieDocsContract): PieDocsContract => ({
       view: view.view,
       pie: normalizePointer(view.pie),
       config: normalizePointer(view.config),
-      ...(view.description ? { description: view.description } : {}),
-      ...(view.metadata
-        ? {
-            metadata: {
-              ...(view.metadata.pie ? { pie: normalizeMetadataMap(view.metadata.pie) } : {}),
-              ...(view.metadata.config
-                ? { config: normalizeMetadataMap(view.metadata.config) }
-                : {}),
-            },
-          }
-        : {}),
     })),
 });
 
-const inferPiePointer = (packageDir: string): PieDocsSourcePointer => {
-  const candidates: PieDocsSourcePointer[] = [
+// The first candidate whose file exists and whose path resolves in it.
+const firstResolving = async (
+  packageDir: string,
+  candidates: PieDocsSourcePointer[]
+): Promise<PieDocsSourcePointer | undefined> => {
+  for (const candidate of candidates) {
+    if (!existsSync(join(packageDir, candidate.file))) continue;
+    try {
+      await loadPointerValue(packageDir, candidate);
+      return candidate;
+    } catch {
+      // The path is absent from this file; try the next candidate.
+    }
+  }
+  return undefined;
+};
+
+// Controller defaults export either `{ model, configuration }` or the model itself.
+const inferPiePointer = async (packageDir: string): Promise<PieDocsSourcePointer> =>
+  (await firstResolving(packageDir, [
     { file: 'src/author/defaultConfiguration.ts', path: 'model' },
     { file: 'src/author/defaults.ts', path: 'model' },
-    { file: 'src/controller/defaults.ts' },
-  ];
+    { file: 'src/controller/defaults.ts', path: 'model' },
+  ])) ?? { file: 'src/controller/defaults.ts' };
 
-  for (const candidate of candidates) {
-    if (existsSync(join(packageDir, candidate.file))) {
-      return candidate;
-    }
-  }
-
-  return { file: 'src/controller/defaults.ts' };
-};
-
-const inferConfigPointer = (packageDir: string): PieDocsSourcePointer => {
-  const candidates: PieDocsSourcePointer[] = [
+const inferConfigPointer = async (packageDir: string): Promise<PieDocsSourcePointer> =>
+  (await firstResolving(packageDir, [
     { file: 'src/author/defaultConfiguration.ts', path: 'configuration' },
     { file: 'src/author/defaults.ts', path: 'configuration' },
-    { file: 'src/controller/defaults.ts' },
-  ];
-
-  for (const candidate of candidates) {
-    if (existsSync(join(packageDir, candidate.file))) {
-      return candidate;
-    }
-  }
-
-  return { file: 'src/controller/defaults.ts', path: 'configuration' };
-};
+    { file: 'src/author/defaults.tsx', path: 'configuration' },
+    { file: 'src/controller/defaults.ts', path: 'configuration' },
+  ])) ?? { file: 'src/controller/defaults.ts', path: 'configuration' };
 
 export const parseContract = (raw: unknown, location: string): PieDocsContract => {
   if (!isObject(raw)) {
@@ -192,17 +100,8 @@ export const parseContract = (raw: unknown, location: string): PieDocsContract =
     if (!isSourcePointer(view.config)) {
       throw new Error(`Invalid docs contract in ${location}: views[${index}].config is invalid`);
     }
-    if (view.metadata !== undefined && !isViewMetadata(view.metadata)) {
-      throw new Error(`Invalid docs contract in ${location}: views[${index}].metadata is invalid`);
-    }
 
-    return {
-      view: view.view,
-      pie: view.pie,
-      config: view.config,
-      ...(typeof view.description === 'string' ? { description: view.description } : {}),
-      ...(view.metadata ? { metadata: view.metadata } : {}),
-    };
+    return { view: view.view, pie: view.pie, config: view.config };
   });
 
   const supportedModes = Array.isArray(raw.supportedModes)
@@ -249,8 +148,8 @@ export const seedContractForElement = async (
     return { wrote: false, contractPath, contract: existing };
   }
 
-  const piePointer = inferPiePointer(element.packageDir);
-  const configPointer = inferConfigPointer(element.packageDir);
+  const piePointer = await inferPiePointer(element.packageDir);
+  const configPointer = await inferConfigPointer(element.packageDir);
   const views = inferViewsFromPackageExports(element.exportsMap).map((view) => ({
     view,
     pie: piePointer,

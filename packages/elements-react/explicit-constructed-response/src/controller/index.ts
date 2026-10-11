@@ -1,18 +1,44 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { find, isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { decode } from 'he';
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import Translator from '@pie-lib/translator';
 import defaults from './defaults.js';
+import type {
+  Choice,
+  Choices,
+  ExplicitConstructedResponseConfiguration,
+  ExplicitConstructedResponseModel,
+  ExplicitConstructedResponseSession,
+} from '../types.js';
+
+/** Errors `validate()` reports, keyed by field. */
+export type ExplicitConstructedResponseValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  responseAreas?: string;
+  /** Per response area index, the error for each choice, keyed by the choice's `value` */
+  choices?: Record<string, Record<string, string>>;
+};
+
+/** A choice as the controller hands it to the delivery */
+type PreparedChoice = {
+  label: string;
+  value: string;
+  correct?: boolean;
+  feedback?: string;
+};
 
 const { translator } = Translator;
 
 const log = debug('explicit-constructed-response:controller');
 
-export const prepareChoice = (mode, defaultFeedback) => (choice) => {
-  const out = {
+type DefaultFeedback = { correct: string; incorrect: string };
+
+export const prepareChoice = (mode: PieEnvironment['mode'], defaultFeedback: DefaultFeedback) => (choice: Choice) => {
+  const out: PreparedChoice = {
     label: choice.label,
     value: choice.value,
   };
@@ -25,14 +51,14 @@ export const prepareChoice = (mode, defaultFeedback) => (choice) => {
     if (feedbackType === 'default') {
       out.feedback = defaultFeedback['correct'];
     } else if (feedbackType === 'custom') {
-      out.feedback = choice.feedback.value;
+      out.feedback = choice.feedback?.value;
     }
   }
 
   return out;
 };
 
-const getFeedback = (value) => {
+const getFeedback = (value: unknown) => {
   if (value) {
     return 'correct';
   }
@@ -41,7 +67,7 @@ const getFeedback = (value) => {
 };
 
 // also used in configure/src/markupUtils.js
-const getAdjustedLength = (length) => {
+const getAdjustedLength = (length: number) => {
   if (Math.abs(length) === Infinity) {
     return 2;
   }
@@ -62,7 +88,7 @@ const getAdjustedLength = (length) => {
 };
 
 // we can't use the dom parser here because it is not available in the node environment
-const decodeHtmlEntities = (str) => {
+const decodeHtmlEntities = (str: string) => {
   if (!str) return '';
   return str
     .replace(/&lt;/g, '<')
@@ -72,7 +98,7 @@ const decodeHtmlEntities = (str) => {
     .replace(/&amp;/g, '&');
 };
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: ExplicitConstructedResponseModel) => ({ ...defaults, ...question });
 
 /**
  *
@@ -80,7 +106,11 @@ export const normalize = (question) => ({ ...defaults, ...question });
  * @param {*} session
  * @param {*} env
  */
-export async function model(question, session, env) {
+export async function model(
+  question: ExplicitConstructedResponseModel,
+  session: ExplicitConstructedResponseSession | undefined,
+  env: PieEnvironment,
+) {
   // this was added to treat an exception, when the model has choices without
   // the "value" property like: { label: 'test' }
   if (question.choices) {
@@ -88,7 +118,7 @@ export async function model(question, session, env) {
       question.choices[key] = (question.choices[key] || []).map((item, index) => {
         if (!item.value) {
           log('Choice does not contain "value" property, which is required.', item);
-          return { value: `${index}`, ...item };
+          return { value: `${index}`, ...(item as Partial<Choice>) } as Choice;
         }
 
         return item;
@@ -102,7 +132,7 @@ export async function model(question, session, env) {
     normalizedQuestion.defaultFeedback,
   );
   const prepareChoiceFn = prepareChoice(env.mode, defaultFeedback);
-  const choices = reduce(
+  const choices = reduce<Choice[], Record<string, PreparedChoice[]>>(
     normalizedQuestion.choices,
     (obj, area, key) => {
       obj[key] = map(area, prepareChoiceFn);
@@ -115,7 +145,7 @@ export async function model(question, session, env) {
   const { value = {} } = session || {};
   const feedback =
     env.mode === 'evaluate'
-      ? reduce(
+      ? reduce<Choice[], Record<string, 'correct' | 'incorrect'>>(
           normalizedQuestion.choices,
           (obj, respArea, key) => {
             const chosenValue = value && value[key];
@@ -187,11 +217,14 @@ export async function model(question, session, env) {
   return out;
 }
 
-export const prepareVal = (html) => {
+export const prepareVal = (html: string | undefined) => {
   return decodeHTML(getInnerText(html).trim());
 };
 
-export const getScore = (config, session) => {
+export const getScore = (
+  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup'>,
+  session: ExplicitConstructedResponseSession | undefined,
+) => {
   const { value } = session || {};
 
   if (!session || isEmpty(session) || !value) {
@@ -200,7 +233,7 @@ export const getScore = (config, session) => {
 
   const responseAreas = config.markup && config.markup.match(/\{\{(.+?)\}\}/g);
   const maxScore = responseAreas ? responseAreas.length : 0;
-  const correctCount = reduce(
+  const correctCount = reduce<Choice[], number>(
     config.choices,
     (total, respArea, key) => {
       const chosenValue = value && value[key];
@@ -214,7 +247,7 @@ export const getScore = (config, session) => {
     0,
   );
 
-  const str = maxScore ? (correctCount / maxScore).toFixed(2) : 0;
+  const str = maxScore ? (correctCount / maxScore).toFixed(2) : '0';
 
   return parseFloat(str);
 };
@@ -226,8 +259,12 @@ export const getScore = (config, session) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: ExplicitConstructedResponseModel,
+  session: ExplicitConstructedResponseSession | undefined,
+  env: Partial<PieEnvironment>,
+) => {
+  const traceLog: string[] = [];
   const { value } = session || {};
   const { choices, markup } = model || {};
   
@@ -237,12 +274,12 @@ export const getLogTrace = (model, session, env) => {
   traceLog.push(`${totalAreas} response area(s) defined in this question.`);
   
   if (value && Object.keys(value).length > 0) {
-    const filledAreas = Object.entries(value).filter(([key, val]) => val && val.trim()).length;
+    const filledAreas = Object.entries(value).filter(([, val]) => val && val.trim()).length;
     traceLog.push(`Student filled ${filledAreas} out of ${totalAreas} response area(s).`);
     
     Object.keys(choices || {}).forEach((areaKey) => {
       const studentAnswer = (value && value[areaKey]) || '';
-      const correctOptions = choices[areaKey] || [];
+      const correctOptions = (choices as Choices)[areaKey] || [];
       const isCorrect = !isEmpty(studentAnswer.trim()) && 
         correctOptions.some(option => prepareVal(option.label) === prepareVal(studentAnswer));
       
@@ -271,7 +308,7 @@ export const getLogTrace = (model, session, env) => {
       let correctCount = 0;
       Object.keys(choices || {}).forEach((areaKey) => {
         const studentAnswer = (value && value[areaKey]) || '';
-        const correctOptions = choices[areaKey] || [];
+        const correctOptions = (choices as Choices)[areaKey] || [];
         const isCorrect = !isEmpty(studentAnswer.trim()) && 
           correctOptions.some(option => prepareVal(option.label) === prepareVal(studentAnswer));
         if (isCorrect) correctCount++;
@@ -301,8 +338,12 @@ export const getLogTrace = (model, session, env) => {
  * @param {boolean} env.partialScoring - is partial scoring enabled (if undefined default to true) This overrides
  *   `model.partialScoring`.
  */
-export function outcome(model, session, env = {}) {
-  return new Promise((resolve) => {
+export function outcome(
+  model: ExplicitConstructedResponseModel,
+  session: ExplicitConstructedResponseSession | undefined,
+  env: Partial<PieEnvironment> = {},
+) {
+  return new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ 
         score: 0, 
@@ -323,11 +364,11 @@ export function outcome(model, session, env = {}) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: ExplicitConstructedResponseModel, env: PieEnvironment) => {
+  return new Promise<ExplicitConstructedResponseSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { choices } = question;
-      const value = {};
+      const value: Record<string, string> = {};
 
       Object.keys(choices).forEach((key, i) => {
         value[i] = choices[key][0].label;
@@ -342,7 +383,7 @@ export const createCorrectResponseSession = (question, env) => {
 
 // remove all html tags
 // const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-const getInnerText = (html) => {
+const getInnerText = (html: unknown) => {
   if (typeof html !== 'string') {
     return '';
   }
@@ -354,18 +395,21 @@ const getInnerText = (html) => {
   }
 };
 
-const decodeHTML = (html) => decode(html);
+const decodeHTML = (html: string) => decode(html);
 
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<ExplicitConstructedResponseModel> = {},
+  config: ExplicitConstructedResponseConfiguration = {},
+) => {
   const { choices, markup } = model;
   const { maxResponseAreas } = config;
-  const allChoicesErrors = {};
-  const errors = {};
+  const allChoicesErrors: Record<string, Record<string, string>> = {};
+  const errors: ExplicitConstructedResponseValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -373,7 +417,7 @@ export const validate = (model = {}, config = {}) => {
 
   Object.entries(choices || {}).forEach(([key, values]) => {
     const reversedChoices = [...(values || [])].reverse();
-    const choicesErrors = {};
+    const choicesErrors: Record<string, string> = {};
 
     reversedChoices.forEach((choice, index) => {
       const { value, label } = choice;
@@ -394,9 +438,9 @@ export const validate = (model = {}, config = {}) => {
     }
   });
 
-  const nbOfResponseAreas = (markup.match(/\{\{(\d+)\}\}/g) || []).length;
+  const nbOfResponseAreas = ((markup as string).match(/\{\{(\d+)\}\}/g) || []).length;
 
-  if (nbOfResponseAreas > maxResponseAreas) {
+  if (maxResponseAreas !== undefined && nbOfResponseAreas > maxResponseAreas) {
     errors.responseAreas = `No more than ${maxResponseAreas} response areas should be defined.`;
   } else if (nbOfResponseAreas < 1) {
     errors.responseAreas = 'There should be at least 1 response area defined.';

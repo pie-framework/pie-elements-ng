@@ -58,7 +58,7 @@ bun run cli packages:enable-publishing
 
 #### `docs:generate`
 
-Generate framework-agnostic HTML docs artifacts for elements from per-element `docs.contract.json` descriptors.
+Generate framework-agnostic HTML docs for elements: property rows from each element's JSON Schemas, defaults from the files its `docs.contract.json` points at.
 The element demo runs this during `prebuild`/`predev`; the generated `static/element-docs`
 directory is a local build artifact and is not committed.
 

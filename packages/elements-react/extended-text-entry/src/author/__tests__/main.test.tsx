@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { ExtendedTextEntryConfiguration } from '../../types';
 
 // MathJax loads off a CDN and has no bearing on the settings panel.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -8,14 +9,14 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () =>
 const { Main } = await import('../main');
 const { default: defaults } = await import('../defaults');
 
-const renderMain = (configuration = defaults.configuration) => {
+const renderMain = (configuration: ExtendedTextEntryConfiguration = defaults.configuration) => {
   const onModelChanged = vi.fn();
   render(
     <Main
       model={defaults.model}
       configuration={configuration}
-      imageSupport={{}}
-      uploadSoundSupport={{}}
+      imageSupport={{ add: vi.fn(), delete: vi.fn() }}
+      uploadSoundSupport={{ add: vi.fn(), delete: vi.fn() }}
       onModelChanged={onModelChanged}
       onConfigurationChanged={vi.fn()}
     />

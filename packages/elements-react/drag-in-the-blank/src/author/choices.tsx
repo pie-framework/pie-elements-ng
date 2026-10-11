@@ -52,6 +52,8 @@ export class Choices extends React.Component {
     maxImageWidth: PropTypes.number,
     maxImageHeight: PropTypes.number,
     maxLength: PropTypes.number,
+    imageSupport: PropTypes.object,
+    mathMlOptions: PropTypes.object,
   };
 
   state = { warning: { open: false } };

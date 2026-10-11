@@ -475,6 +475,30 @@ describe('createMathjaxRenderer', () => {
     await rendering;
   });
 
+  it('puts math in the tab order when the page sets opts.inTabOrder to true', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: ASSET_ROOT, inTabOrder: true } };
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+
+    expect(page.MathJax.options.menuOptions.settings.inTabOrder).toBe(true);
+    expect(page.MathJax.options.a11y).toEqual({ inTabOrder: true });
+    runMathjaxScript().finishStartup();
+    await rendering;
+  });
+
+  it('keeps math out of the tab order for an opts.inTabOrder other than true', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: ASSET_ROOT, inTabOrder: 'true' } };
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+
+    expect(page.MathJax.options.menuOptions.settings.inTabOrder).toBe(false);
+    expect(page.MathJax.options.a11y).toEqual({ inTabOrder: false });
+    runMathjaxScript().finishStartup();
+    await rendering;
+  });
+
   it('loads MathJax from srcUrl when one is given', async () => {
     const scripts = interceptScripts();
 

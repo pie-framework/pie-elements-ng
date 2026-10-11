@@ -9,14 +9,14 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: vi.fn
 
 import VennClassificationElement from '../src/delivery/index.js';
 import { model as controllerModel } from '../src/controller/index.js';
-import type { VennModel } from '../src/types.js';
+import type { VennClassificationModel } from '../src/types.js';
 
 const TAG = 'venn-classification--version-0-0-0-teacher-instructions-test';
 if (!customElements.get(TAG)) {
   customElements.define(TAG, VennClassificationElement as unknown as CustomElementConstructor);
 }
 
-const QUESTION: VennModel = {
+const QUESTION: VennClassificationModel = {
   id: '1',
   element: TAG,
   prompt: '<p>Sort each animal.</p>',
@@ -25,7 +25,7 @@ const QUESTION: VennModel = {
   teacherInstructions: '<p>Read aloud.</p>',
 };
 
-async function render(question: VennModel, env: { mode: string; role: string }) {
+async function render(question: VennClassificationModel, env: { mode: string; role: string }) {
   const element = document.createElement(TAG) as any;
   document.body.appendChild(element);
   const session = { id: '1', element: TAG };

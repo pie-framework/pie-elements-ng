@@ -194,3 +194,4 @@ See [docs/PRINT_SUPPORT.md](docs/PRINT_SUPPORT.md) for complete documentation.
 
 - [Architecture](docs/ARCHITECTURE.md) - Detailed architecture and design decisions
 - [Print Support](docs/PRINT_SUPPORT.md) - Print architecture and usage
+- [Element Interfaces and JSON Schemas](docs/ELEMENT_SCHEMAS.md) - Declaring an element's model, configuration and session, and using the published schemas

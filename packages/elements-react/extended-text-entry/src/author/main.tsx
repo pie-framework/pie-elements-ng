@@ -1,15 +1,36 @@
-// @ts-nocheck
-
 import React from 'react';
 import { FeedbackSelector, InputContainer, settings, layout } from '@pie-lib/config-ui';
-import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
+import type { EditableHtmlConfigureProp } from '@pie-element/shared-types';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ExtendedTextEntryValidationErrors } from '../controller/index.js';
+import type { ExtendedTextEntryConfiguration, ExtendedTextEntryFeedback, ExtendedTextEntryModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<ExtendedTextEntryModel> & { errors?: ExtendedTextEntryValidationErrors };
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: ExtendedTextEntryConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: ExtendedTextEntryConfiguration) => void;
+  imageSupport: {
+    add: (handler: ImageHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+  uploadSoundSupport: {
+    add: (handler: SoundHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+};
+
+type MainState = { setDimensions: boolean };
 
 const { Panel, toggle, numberFields, dropdown } = settings;
 
-const defaultFeedback = {
+const defaultFeedback: ExtendedTextEntryFeedback = {
   type: 'default',
   default: 'Your answer has been submitted',
 };
@@ -31,35 +52,26 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export class Main extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    imageSupport: PropTypes.object.isRequired,
-    uploadSoundSupport: PropTypes.object.isRequired,
-  };
-
-  constructor(props) {
+export class Main extends React.Component<MainProps, MainState> {
+  constructor(props: MainProps) {
     super(props);
     this.state = { setDimensions: true };
   }
 
-  onPromptChange: any = (markup) => {
+  onPromptChange = (markup: string) => {
     const { onModelChanged, model } = this.props;
 
     onModelChanged({ ...model, prompt: markup });
   };
 
-  changeFeedback: any = (feedback) => {
+  changeFeedback = (feedback: ExtendedTextEntryFeedback) => {
     const { model, onModelChanged } = this.props;
     const update = { ...model, feedback };
 
     onModelChanged(update);
   };
 
-  changeTeacherInstructions: any = (teacherInstructions) => {
+  changeTeacherInstructions = (teacherInstructions: string) => {
     const { model, onModelChanged } = this.props;
     const update = { ...model, teacherInstructions };
 
@@ -151,7 +163,7 @@ export class Main extends React.Component {
       rubricEnabled: withRubric?.settings && toggle(withRubric?.label),
     };
 
-    const getPluginProps = (props) => {
+    const getPluginProps = (props?: EditableHtmlConfigureProp) => {
       return Object.assign(
         {
           ...baseInputConfiguration,
@@ -169,8 +181,8 @@ export class Main extends React.Component {
           <Panel
             model={model}
             configuration={configuration}
-            onChangeModel={(model) => onModelChanged(model)}
-            onChangeConfiguration={(config) => onConfigurationChanged(config)}
+            onChangeModel={(model: AuthorModel) => onModelChanged(model)}
+            onChangeConfiguration={(config: ExtendedTextEntryConfiguration) => onConfigurationChanged(config)}
             groups={{
               Settings: panelSettings,
               Properties: panelProperties,

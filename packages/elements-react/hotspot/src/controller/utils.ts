@@ -1,18 +1,17 @@
-// @ts-nocheck
-
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
+import type { HotspotModel, HotspotSession, HotspotShape } from '../types.js';
 
-export const getCorrectResponse = (choices) =>
+export const getCorrectResponse = (choices: HotspotShape[]) =>
   choices
     .filter((c) => c.correct)
     .map((c) => c.id)
     .sort();
 
-export const isResponseCorrect = (question, session) => {
+export const isResponseCorrect = (question: HotspotModel, session: HotspotSession | null | undefined) => {
   const {
     shapes: { rectangles = [], polygons = [], circles = [] },
   } = question;
-  const choices = [...rectangles, ...polygons, ...circles];
+  const choices: HotspotShape[] = [...rectangles, ...polygons, ...circles];
   let correctResponseIds = getCorrectResponse(choices);
 
   if (!session || isEmpty(session)) {

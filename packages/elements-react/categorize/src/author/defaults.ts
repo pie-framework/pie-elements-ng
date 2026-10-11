@@ -1,16 +1,23 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type {
+  CategorizeConfiguration,
+  CategorizeModel,
+  Category,
+  CategoryChoice,
+  CategoryCorrectResponse,
+} from '../types.js';
 
 export default {
   model: {
     allowAlternateEnabled: true,
     allowMaxChoicesPerCategory: false,
-    alternates: [],
-    categories: [],
+    alternates: [] as unknown[],
+    categories: [] as Category[],
     categoriesPerRow: 2,
-    choices: [],
+    choices: [] as CategoryChoice[],
     choicesLabel: '',
     choicesPosition: 'below',
-    correctResponse: [],
+    correctResponse: [] as CategoryCorrectResponse[],
     feedbackEnabled: false,
     lockChoiceOrder: true,
     maxAnswerChoices: 6,
@@ -165,7 +172,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
-};
+} satisfies { model: Omit<CategorizeModel, 'id' | 'element'>; configuration: CategorizeConfiguration };

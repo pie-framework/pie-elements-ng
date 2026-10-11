@@ -1,5 +1,5 @@
-// @ts-nocheck
-
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { MathInlineConfiguration, MathInlineModel, MathInlineResponse } from '../types.js';
 import { ResponseTypes } from './utils.js';
 
 /** NOTE: teacherInstructions, studentInstructions, rationale & scoringType
@@ -10,7 +10,7 @@ import { ResponseTypes } from './utils.js';
 export default {
   model: {
     allowTrailingZerosDefault: false,
-    customKeys: [],
+    customKeys: [] as string[],
     equationEditor: '8',
     expression: '',
     feedback: {
@@ -26,7 +26,7 @@ export default {
     rationale: '',
     rationaleEnabled: true,
     responseType: ResponseTypes.advanced,
-    responses: [],
+    responses: [] as MathInlineResponse[],
     scoringType: 'auto',
     studentInstructionsEnabled: true,
     teacherInstructions: '',
@@ -135,7 +135,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
-};
+} satisfies { model: Omit<MathInlineModel, 'id' | 'element'>; configuration: MathInlineConfiguration };

@@ -1,7 +1,4 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -12,6 +9,49 @@ import { merge } from '@pie-element/shared-lodash';
 import { LIKERT_TYPE, LIKERT_SCALE, LIKERT_ORIENTATION } from './likertEntities.js';
 import generateChoices from './choiceGenerator.js';
 import { color } from '@pie-lib/render-ui';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { LikertValidationErrors } from '../controller/index.js';
+import type {
+  LikertChoice,
+  LikertConfiguration,
+  LikertModel,
+  LikertOrientation as LikertOrientationValue,
+  LikertScale as LikertScaleValue,
+  LikertType as LikertTypeValue,
+} from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<LikertModel> & {
+  choices: LikertChoice[];
+  errors?: LikertValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: LikertConfiguration;
+  disableSidePanel?: boolean;
+  onModelChanged: (model: AuthorModel, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: LikertConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type ModelEditorProps = {
+  model: AuthorModel;
+  onChangeModel: (model: AuthorModel) => void;
+};
+
+type DesignProps = MainProps & {
+  onChangeModel: (model: AuthorModel) => void;
+  onChoiceChanged: (index: number, choice: LikertChoice) => void;
+  onPromptChanged: (prompt: string) => void;
+  onTeacherInstructionsChanged: (teacherInstructions: string) => void;
+};
 
 const { Panel, toggle, radio } = settings;
 
@@ -93,11 +133,11 @@ const CustomColorRadio: any = styled(Radio)({
   color: `${color.tertiary()} !important`,
 });
 
-const LikertOrientation = (props) => {
+const LikertOrientation = (props: ModelEditorProps) => {
   const { model, onChangeModel } = props;
 
-  const onChangeLikertOrientation = (e) => {
-    const likertOrientation = e.target.value;
+  const onChangeLikertOrientation = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const likertOrientation = e.target.value as LikertOrientationValue;
 
     onChangeModel({ ...model, likertOrientation });
   };
@@ -118,10 +158,10 @@ const LikertOrientation = (props) => {
   );
 };
 
-const LikertScale = (props) => {
+const LikertScale = (props: ModelEditorProps) => {
   const { model, onChangeModel } = props;
-  const onChangeLikertScale = (e) => {
-    const likertScale = e.target.value;
+  const onChangeLikertScale = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const likertScale = e.target.value as LikertScaleValue;
 
     onChangeModel({
       ...model,
@@ -142,10 +182,10 @@ const LikertScale = (props) => {
   );
 };
 
-const LikertType = (props) => {
+const LikertType = (props: ModelEditorProps) => {
   const { model, onChangeModel } = props;
-  const onChangeLikertType = (e) => {
-    const likertType = e.target.value;
+  const onChangeLikertType = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const likertType = e.target.value as LikertTypeValue;
 
     onChangeModel({
       ...model,
@@ -185,10 +225,10 @@ const LikertType = (props) => {
   );
 };
 
-const buildValuesMap = (model) =>
-  model.choices.reduce((acc, choice) => {
+const buildValuesMap = (model: AuthorModel) =>
+  model.choices.reduce<Record<string, number>>((acc, choice) => {
     const accClone = { ...acc };
-    const choiceValue = parseInt(choice.value);
+    const choiceValue = parseInt(choice.value as string);
 
     if (!accClone[choiceValue]) {
       accClone[choiceValue] = 0;
@@ -197,7 +237,7 @@ const buildValuesMap = (model) =>
     return { ...accClone, [choiceValue]: accClone[choiceValue] + 1 };
   }, {});
 
-const Design = (props) => {
+const Design = (props: DesignProps) => {
   const {
     configuration,
     imageSupport,
@@ -298,7 +338,7 @@ const Design = (props) => {
           <LikertLabelInput key={`likert-label-${index}`} label={'Likert Label'}>
             <StyledEditableHtml
               markup={choice.label || ''}
-              onChange={(c) => onChoiceChanged(index, { ...choice, label: c })}
+              onChange={(c: string) => onChoiceChanged(index, { ...choice, label: c })}
               imageSupport={imageSupport}
               spellCheck={spellCheckEnabled}
               uploadSoundSupport={uploadSoundSupport}
@@ -312,7 +352,7 @@ const Design = (props) => {
               value={choice.value}
               max={100}
               min={-100}
-              onChange={(e, t) => {
+              onChange={(_e: unknown, t: number) => {
                 onChoiceChanged(index, { ...choice, value: t });
               }}
               imageSupport={imageSupport}
@@ -327,32 +367,21 @@ const Design = (props) => {
   );
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    model: PropTypes.object.isRequired,
-    disableSidePanel: PropTypes.bool,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-  };
-
-  onChoiceChanged: any = (index, choice) => {
+export class Main extends React.Component<MainProps> {
+  onChoiceChanged = (index: number, choice: LikertChoice) => {
     const { model, onModelChanged } = this.props;
 
-    model.choices = model.choices.map((choice) => merge({}, choice));
+    model.choices = model.choices.map((choice) => merge({}, choice) as LikertChoice);
     model.choices.splice(index, 1, choice);
 
     onModelChanged(model);
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.props.onModelChanged({ ...this.props.model, prompt });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.props.onModelChanged({ ...this.props.model, teacherInstructions });
   };
 

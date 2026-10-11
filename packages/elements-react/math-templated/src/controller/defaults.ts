@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { MathTemplatedConfiguration, MathTemplatedModel, MathTemplatedResponse } from '../types.js';
 
 // Should be exactly the same as configure/defaults.js
 export default {
@@ -12,7 +12,7 @@ export default {
     promptEnabled: true,
     rationale: '',
     rationaleEnabled: true,
-    responses: {},
+    responses: {} as Record<string, MathTemplatedResponse>,
     spellCheckEnabled: true,
     teacherInstructions: '',
     teacherInstructionsEnabled: true,
@@ -20,4 +20,4 @@ export default {
     validationDefault: 'literal',
   },
   configuration: {},
-};
+} satisfies { model: Omit<MathTemplatedModel, 'id' | 'element'>; configuration: MathTemplatedConfiguration };

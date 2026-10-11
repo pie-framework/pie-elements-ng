@@ -1,30 +1,36 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 
 import defaults from './defaults.js';
+import type { CategorizeConfiguration, CategorizeModel } from '../types.js';
 
 export default class CategorizeConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: CategorizeConfiguration;
+
+  static createDefaultModel = (model: Partial<CategorizeModel> = {}): AuthorModel => ({
     ...defaults.model,
     ...model,
   });
 
   // PD-2960: make sure we don't have alternates in model or possibility to add them (temporary solution)
   // this function is used in controller, too
-  static disableAlternateResponses = (m) => {
-    let { correctResponse } = m || {};
+  static disableAlternateResponses = (m: Partial<CategorizeModel>) => {
+    let { correctResponse } = m || ({} as Partial<CategorizeModel>);
     correctResponse = correctResponse || [];
     const mappedCorrectResponse = correctResponse.map((cr) => {
       const { alternateResponses, ...response } = cr;
@@ -44,10 +50,10 @@ export default class CategorizeConfigure extends HTMLElement {
     this._configuration = defaults.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<CategorizeModel>) {
     this._model = CategorizeConfigure.createDefaultModel(m);
 
-    if (m.choices && m.choices.length >= m.maxAnswerChoices) {
+    if (m.choices && m.maxAnswerChoices !== undefined && m.choices.length >= m.maxAnswerChoices) {
       this._model.maxAnswerChoices = m.choices.length;
       console.warn("Max Answer Choices can't be less than choices length!");
     }
@@ -55,7 +61,7 @@ export default class CategorizeConfigure extends HTMLElement {
     this.render();
   }
 
-  set configuration(c) {
+  set configuration(c: CategorizeConfiguration) {
     const newConfiguration = {
       ...defaults.configuration,
       ...c,
@@ -72,18 +78,21 @@ export default class CategorizeConfigure extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      // `this._configuration` is `newConfiguration`
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
+
+      const language = this._model.language;
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
-          value: this._model.language,
-          label: this._model.language,
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === language)) {
+        newConfiguration.languageChoices.options.push({
+          value: language,
+          label: language,
         });
       }
     } else {
@@ -93,14 +102,14 @@ export default class CategorizeConfigure extends HTMLElement {
     this.render();
   }
 
-  onModelChanged(m) {
+  onModelChanged(m: AuthorModel) {
     this._model = m;
 
     this.render();
     this.dispatchEvent(new ModelUpdatedEvent(this._model, false));
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: CategorizeConfiguration) {
     this._configuration = c;
     this.render();
   }
@@ -113,19 +122,19 @@ export default class CategorizeConfigure extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

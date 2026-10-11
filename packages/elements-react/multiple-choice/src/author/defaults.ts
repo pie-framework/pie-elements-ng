@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { Choice, MultipleChoiceConfiguration, MultipleChoiceModel } from '../types.js';
 
 /** NOTE: teacherInstructions, studentInstructions, rationale & scoringType
  * functionalities are not defined yet - the value for those can belong to
@@ -8,7 +9,7 @@ export default {
   model: {
     choiceMode: 'checkbox',
     choicePrefix: 'letters',
-    choices: [],
+    choices: [] as Choice[],
     choicesLayout: 'vertical',
     feedbackEnabled: false,
     gridColumns: 2,
@@ -154,7 +155,10 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
+} satisfies {
+  model: Omit<MultipleChoiceModel, 'id' | 'element'>;
+  configuration: MultipleChoiceConfiguration;
 };

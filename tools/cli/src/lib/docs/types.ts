@@ -6,33 +6,10 @@ export interface PieDocsSourcePointer {
   path?: string;
 }
 
-export interface PieDocsPropertyMetadata {
-  title?: string;
-  description?: string;
-  notes?: string;
-  type?: string;
-  required?: boolean;
-  enum?: Array<string | number | boolean | null>;
-  minimum?: number;
-  maximum?: number;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: string;
-  itemType?: string;
-  examples?: unknown[];
-}
-
-export interface PieDocsViewMetadata {
-  pie?: Record<string, PieDocsPropertyMetadata>;
-  config?: Record<string, PieDocsPropertyMetadata>;
-}
-
 export interface PieDocsViewContract {
   view: string;
   pie: PieDocsSourcePointer;
   config: PieDocsSourcePointer;
-  description?: string;
-  metadata?: PieDocsViewMetadata;
 }
 
 export interface PieDocsContract {
@@ -49,9 +26,7 @@ export interface PieDocsProperty {
   type: string;
   required: boolean;
   defaultValue?: unknown;
-  title?: string;
   description?: string;
-  notes?: string;
   enum?: Array<string | number | boolean | null>;
   minimum?: number;
   maximum?: number;
@@ -59,7 +34,18 @@ export interface PieDocsProperty {
   maxLength?: number;
   pattern?: string;
   itemType?: string;
-  examples?: unknown[];
+}
+
+/** A named object type a schema references, documented once. */
+export interface PieDocsDefinition {
+  name: string;
+  description?: string;
+  properties: PieDocsProperty[];
+}
+
+export interface PieDocsSchemaDocs {
+  properties: PieDocsProperty[];
+  definitions: PieDocsDefinition[];
 }
 
 export interface PieDocsViewOutput {

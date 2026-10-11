@@ -1,26 +1,37 @@
-// @ts-nocheck
-
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Main from './main.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Main, { type AuthorModel } from './main.js';
 import debug from 'debug';
 import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
 import { processMarkup, createSlateMarkup } from './markupUtils.js';
+import type { InlineDropdownConfiguration, InlineDropdownModel } from '../types.js';
+
+/** The configuration once `sensibleDefaults.configuration` has filled the keys it carries. */
+type AuthorConfiguration = InlineDropdownConfiguration &
+  Required<Pick<InlineDropdownConfiguration, 'language' | 'languageChoices'>>;
 
 const log = debug('multiple-choice:configure');
 
 export default class InlineDropdown extends HTMLElement {
-  static prepareModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: InlineDropdownConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static prepareModel = (model: Partial<InlineDropdownModel> = {}): AuthorModel => {
     const currModal = {
       ...sensibleDefaults.model,
       ...model,
@@ -45,13 +56,16 @@ export default class InlineDropdown extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: Partial<InlineDropdownModel>) {
     this._model = InlineDropdown.prepareModel(s);
     this._render();
   }
 
-  set configuration(c) {
-    this._configuration = defaults(c, sensibleDefaults.configuration);
+  set configuration(c: InlineDropdownConfiguration) {
+    // `defaults()` fills `c` in place and returns it.
+    const configuration = defaults(c, sensibleDefaults.configuration) as AuthorConfiguration;
+
+    this._configuration = configuration;
 
     // if language:enabled is true, then the corresponding default item model should include a language value;
     // if it is false, then the language field should be omitted from the item model.
@@ -61,17 +75,17 @@ export default class InlineDropdown extends HTMLElement {
       if (c.languageChoices?.options?.length) {
         this._model.language = c.languageChoices.options[0].value;
       }
-    } else if (c.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+    } else if ((c as AuthorConfiguration).language.settings && this._model.language) {
+      configuration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!configuration.languageChoices.options || !configuration.languageChoices.options.length) {
+        configuration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!configuration.languageChoices.options.find(option => option.value === this._model.language)) {
+        configuration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -83,42 +97,42 @@ export default class InlineDropdown extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: Partial<InlineDropdownModel>, reset?: boolean) {
     this._model = InlineDropdown.prepareModel(m);
     this._render();
     this.dispatchModelUpdated(reset);
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: InlineDropdownConfiguration) {
     this._configuration = c;
     this._render();
   }
 
   /** @param {done, progress, file} handler */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

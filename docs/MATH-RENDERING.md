@@ -74,6 +74,8 @@ A relative root resolves against the page's base URL. A copy reads its assets wh
 - `speechPath`: the directory of `speech-worker.js` and its `mathmaps/`, by default `mathjax@4.1.3/sre` under the root.
 - `speechLocales`: the locales the menu's speech language submenu lists, by id (`['en', 'de']`), or by id with the label it shows (`{ en: 'English', cy: 'Cymraeg' }`). Unset, it lists SRE's 13 locales. When English is not listed, speech starts in the first listed locale, and a stored menu locale that is not listed is dropped.
 
+- `inTabOrder`: `true` puts typeset math in the keyboard tab order, in the menu setting and for the explorer; any other value leaves it out. It has no renderer option, and a copy reads it when it starts MathJax.
+
 The renderer options of the same names take precedence over the page's.
 
 **Files**, every package at 4.1.3:
@@ -130,7 +132,7 @@ A self-hosted root holds those paths, and only the mathmaps of the listed locale
 
 ## Accessibility
 
-Each typeset expression carries hidden MathML (`mjx-assistive-mml`) for screen readers, and the MathJax context menu. The speech-rule-engine output is off by default: no semantic enrichment, no generated speech and no speech web worker, so no `worker-src blob:` CSP entry is needed. A student who turns on Semantic Enrichment from the menu starts the speech worker, a `blob:` worker that imports `speech-worker.js` from the [asset root](#assets). A worker that fails to start, because a content security policy refuses `blob:` workers or the root's script, ends speech, braille and the explorer for the page and logs one warning; math goes on typesetting with its hidden MathML. Math stays out of the tab order, so it offers no Tab or arrow-key exploration.
+Each typeset expression carries hidden MathML (`mjx-assistive-mml`) for screen readers, and the MathJax context menu. The speech-rule-engine output is off by default: no semantic enrichment, no generated speech and no speech web worker, so no `worker-src blob:` CSP entry is needed. A student who turns on Semantic Enrichment from the menu starts the speech worker, a `blob:` worker that imports `speech-worker.js` from the [asset root](#assets). A worker that fails to start, because a content security policy refuses `blob:` workers or the root's script, ends speech, braille and the explorer for the page and logs one warning; math goes on typesetting with its hidden MathML. Math stays out of the tab order, so it offers no Tab or arrow-key exploration, unless the page sets `opts.inTabOrder` to `true` ([Assets](#assets)), which gives each expression a tab stop.
 
 A student's menu choices are saved in localStorage under `PIE-MathJax-Menu-Settings`, a key MathJax 3 does not share, and apply on later loads. Hidden MathML is exempt: the renderer's configuration sets it on every load.
 

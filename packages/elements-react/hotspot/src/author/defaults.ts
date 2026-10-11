@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { Circle, HotspotConfiguration, HotspotModel, Polygon, Rectangle } from '../types.js';
 
 export default {
   model: {
@@ -13,7 +14,7 @@ export default {
     prompt: '',
     promptEnabled: true,
     rationaleEnabled: true,
-    shapes: { rectangles: [], polygons: [], circles: [] },
+    shapes: { rectangles: [] as Rectangle[], polygons: [] as Polygon[], circles: [] as Circle[] },
     strokeWidth: 5,
     studentInstructionsEnabled: true,
     teacherInstructions: '',
@@ -105,7 +106,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
-};
+} satisfies { model: Omit<HotspotModel, 'id' | 'element'>; configuration: HotspotConfiguration };

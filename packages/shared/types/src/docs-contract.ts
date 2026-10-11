@@ -22,27 +22,6 @@ export interface PieDocsSourcePointer {
   path?: string;
 }
 
-export interface PieDocsPropertyMetadata {
-  title?: string;
-  description?: string;
-  notes?: string;
-  type?: string;
-  required?: boolean;
-  enum?: Array<string | number | boolean | null>;
-  minimum?: number;
-  maximum?: number;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: string;
-  itemType?: string;
-  examples?: unknown[];
-}
-
-export interface PieDocsViewMetadata {
-  pie?: Record<string, PieDocsPropertyMetadata>;
-  config?: Record<string, PieDocsPropertyMetadata>;
-}
-
 export interface PieDocsViewContract {
   /**
    * Logical view id, for example: delivery, author, print.
@@ -58,17 +37,6 @@ export interface PieDocsViewContract {
    * Source pointer for author/configuration defaults.
    */
   config: PieDocsSourcePointer;
-
-  /**
-   * Optional view-specific notes.
-   */
-  description?: string;
-
-  /**
-   * Optional manual metadata to enrich generated docs with human context
-   * and constraints. Paths should match flattened generated property paths.
-   */
-  metadata?: PieDocsViewMetadata;
 }
 
 export interface PieDocsContract {

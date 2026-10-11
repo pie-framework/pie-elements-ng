@@ -28,7 +28,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 const renderUiNamespaceAny = RenderUiNamespace as any;
@@ -37,6 +36,7 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
 export const AxisPropTypes = {
   includeArrows: PropTypes.object,
   graphProps: PropTypes.object,

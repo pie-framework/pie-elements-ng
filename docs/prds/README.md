@@ -124,12 +124,12 @@ Start from [`_template.md`](./_template.md). Keep it short — one screen of mar
 ## How a PRD relates to other docs
 
 - **Discovery / market survey material** (prioritisation, gap analyses, vendor parity notes) may live outside this repository. Nothing here requires linking to it; a PRD is sufficient on its own for *what* to build in this codebase.
-- `.cursorrules`, `.claude/instructions.md`, and package-level READMEs are **standing context** (conventions, patterns, do/don't). PRDs do not migrate this content; reference it where useful but assume it is loaded by the agent already.
+- `AGENTS.md` and package-level READMEs are **standing context** (conventions, patterns, do/don't). PRDs do not migrate this content; reference it where useful but assume it is loaded by the agent already.
 - Implementation lives in `packages/elements-svelte/<name>` (or `packages/elements-react/<name>`, etc.); tests live alongside it. The PRD does not replace any of these — it supplements them.
 
 ## Working with AI tools (Cursor / Claude Code / Codex)
 
-PRDs are the per-feature context that complements `AGENTS.md` / `.cursorrules` / `.claude/instructions.md`. When starting work on a feature with a PRD, point the agent at the PRD file at the start of the session — it gives the agent the *what* and *why* it would otherwise have to guess at.
+PRDs are the per-feature context that complements `AGENTS.md`. When starting work on a feature with a PRD, point the agent at the PRD file at the start of the session — it gives the agent the *what* and *why* it would otherwise have to guess at.
 
 A few practical rules to keep PRDs useful with LLMs in the loop:
 
