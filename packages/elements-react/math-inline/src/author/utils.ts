@@ -1,11 +1,15 @@
-// @ts-nocheck
+import type { EditableHtmlConfigureProp } from '@pie-element/shared-types';
+import type { MathInlineConfiguration, MathInlineModel } from '../types.js';
 
 export const ResponseTypes = {
   advanced: 'Advanced Multi',
   simple: 'Simple',
-};
+} as const;
 
-export const generateValidationMessage = (model = {}, config = {}) => {
+export const generateValidationMessage = (
+  model: Partial<MathInlineModel> = {},
+  config: MathInlineConfiguration = {},
+) => {
   const { maxResponseAreas } = config;
   const { responseType } = model;
   let responseAreasMessage = '';
@@ -25,7 +29,10 @@ export const generateValidationMessage = (model = {}, config = {}) => {
   return 'Validation requirements:' + answersMessage + responseAreasMessage;
 };
 
-export const getPluginProps = (props = {}, baseInputConfiguration = {}) => ({
+export const getPluginProps = (
+  props: EditableHtmlConfigureProp = {},
+  baseInputConfiguration: EditableHtmlConfigureProp = {},
+) => ({
   ...baseInputConfiguration,
   ...props,
 });

@@ -1,13 +1,33 @@
-// @ts-nocheck
-
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { FeedbackConfig, settings, layout, InputContainer } from '@pie-lib/config-ui';
-import PropTypes from 'prop-types';
 import debug from 'debug';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 import GeneralConfigBlock from './general-config-block.js';
 import { getPluginProps, ResponseTypes } from './utils.js';
+import type { MathInlineValidationErrors } from '../controller/index.js';
+import type { ComplexFeedback, MathInlineConfiguration, MathInlineModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<MathInlineModel> & {
+  errors?: MathInlineValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type ConfigureProps = {
+  model: AuthorModel;
+  configuration: MathInlineConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: MathInlineConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
 
 const log = debug('@pie-element:math-inline:configure');
 const { Panel, toggle, radio, dropdown } = settings;
@@ -24,28 +44,19 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export class Configure extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    imageSupport: PropTypes.object,
-    uploadSoundSupport: PropTypes.object,
-  };
-
-  onChange: any = (model) => {
+export class Configure extends React.Component<ConfigureProps> {
+  onChange = (model: AuthorModel) => {
     this.props.onModelChanged(model);
   };
 
-  changeTeacherInstructions: any = (teacherInstructions) => {
+  changeTeacherInstructions = (teacherInstructions: string) => {
     this.props.onModelChanged({
       ...this.props.model,
       teacherInstructions,
     });
   };
 
-  onFeedbackChange: any = (feedback) => {
+  onFeedbackChange = (feedback: ComplexFeedback) => {
     const { model, onModelChanged } = this.props;
     model.feedback = feedback;
     onModelChanged(model);
@@ -73,7 +84,7 @@ export class Configure extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
     } = configuration || {};
     const {
       errors = {},
@@ -124,8 +135,8 @@ export class Configure extends React.Component {
           <Panel
             model={model}
             configuration={configuration}
-            onChangeModel={(model) => onModelChanged(model)}
-            onChangeConfiguration={(config) => onConfigurationChanged(config)}
+            onChangeModel={(model: AuthorModel) => onModelChanged(model)}
+            onChangeConfiguration={(config: MathInlineConfiguration) => onConfigurationChanged(config)}
             groups={{
               Settings: panelSettings,
               Properties: panelProperties,
@@ -163,7 +174,6 @@ export class Configure extends React.Component {
           rationaleEnabled={rationaleEnabled}
           promptEnabled={promptEnabled}
           toolbarOpts={toolbarOpts}
-          spellCheck={spellCheckEnabled}
         />
 
         {feedbackEnabled && (
