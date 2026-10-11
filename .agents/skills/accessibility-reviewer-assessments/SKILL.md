@@ -147,7 +147,7 @@ Educational assessment components have unique accessibility requirements beyond 
   height: 30px;
 }
 
-/* ✅ WCAG 2.2 minimum: 44×44px */
+/* ✅ Meets 2.5.8 (AA, 24×24 minimum) and 2.5.5 (AAA, 44×44) */
 .drag-handle {
   width: 44px;
   height: 44px;
@@ -223,13 +223,13 @@ Educational assessment components have unique accessibility requirements beyond 
 #### 2.4 Navigable (Level A/AA)
 
 - [ ] **2.4.1** (Level A): Bypass blocks (skip links to main content)
-- [ ] **2.4.2** (Level A): Components have descriptive labels/ARIA names
+- [ ] **2.4.2** (Level A): The page has a title describing its topic or purpose
 - [ ] **2.4.3** (Level A): Focus order is logical and intuitive
 - [ ] **2.4.4** (Level A): Link purpose clear from link text or context
 - [ ] **2.4.6** (Level AA): Headings and labels are descriptive
-- [ ] **2.4.7** (Level AA): Focus indicator is visible (2px minimum, 3:1 contrast)
+- [ ] **2.4.7** (Level AA): Focus indicator is visible, at 3:1 against adjacent colours (1.4.11)
 - [ ] **2.4.11** (Level AA, New in 2.2): Focus not obscured by other content
-- [ ] **2.4.13** (Level AA, New in 2.2): Focus appearance has minimum 2px perimeter, 3:1 contrast
+- [ ] **2.4.13** (Level AAA, New in 2.2): Focus indicator at least a 2 CSS px perimeter, at 3:1 between focused and unfocused states
 - [ ] **Component context**: Focus styles work in both shadow and light DOM
 
 **Example Issues to Catch:**
@@ -260,7 +260,7 @@ Educational assessment components have unique accessibility requirements beyond 
 #### 2.5 Input Modalities (Level A/AA)
 
 - [ ] **2.5.1** (Level A): Pointer gestures have keyboard/single-pointer alternatives
-- [ ] **2.5.2** (Level A): Touch targets at least 44×44 CSS pixels (with exceptions)
+- [ ] **2.5.2** (Level A): Pointer actions complete on the up-event, or can be aborted or undone
 - [ ] **2.5.3** (Level A): Labels match accessible names
 - [ ] **2.5.4** (Level A): Motion actuation can be disabled
 - [ ] **2.5.7** (Level AA, New in 2.2): Dragging movements have single-pointer alternative
@@ -272,7 +272,7 @@ Educational assessment components have unique accessibility requirements beyond 
 <!-- ❌ Touch target too small: 20×20px -->
 <button style="width: 20px; height: 20px;">×</button>
 
-<!-- ✅ WCAG 2.2 compliant: 44×44px -->
+<!-- ✅ Meets 2.5.8 (AA, 24×24 minimum) and 2.5.5 (AAA, 44×44) -->
 <button style="width: 44px; height: 44px;" aria-label="Close">×</button>
 
 <!-- ❌ Drag-only interaction -->
@@ -550,7 +550,7 @@ When conducting an accessibility review:
    - Test with color blindness simulators
 
 4. **Touch Target Audit**
-   - Verify all interactive elements are at least 44×44px
+   - Verify every interactive element is at least 24×24 CSS px, or spaced so a 24px circle on each overlaps no other target (2.5.8)
    - Check spacing between adjacent targets
 
 5. **Code Review**
@@ -592,25 +592,24 @@ For each violation:
 
 ## Tool Usage
 
-- **Read**: Examine Svelte components, CSS files, HTML templates
-- **Glob**: Find all component files, style files
-- **Grep**: Search for ARIA attributes, alt attributes, role attributes, focus/keyboard handlers
-- **Bash**: Run accessibility tests, check test results, run axe-core if available
+- Examine Svelte components, CSS files, rendered markup, and Playwright specs.
+- Search for ARIA attributes, alt attributes, roles, focus handling, keyboard handlers, and `axe` usage.
+- Run the repo's relevant Bun or Playwright checks when validation is in scope.
 
 ## Testing Commands
 
 ```bash
-# Run Playwright accessibility tests for example app
-bun --filter @pie-elements/example test:e2e
+# Scenario suite: Axe plus custom Playwright checks
+bun run test:a11y
 
-# Run specific a11y test suite
-bun --filter @pie-elements/example test:e2e a11y
+# Broad sweep over the demo inventory (about 7 minutes)
+bun run test:a11y:inventory
 
-# Check for ARIA violations with axe-core (if configured)
-npm run test:a11y
+# Watch a failing scenario in the browser
+bun run test:a11y:headed
 
-# Test component in isolation
-bun test -- --grep "accessibility"
+# Unit and component tests (Vitest)
+bun run test
 ```
 
 ## Resources

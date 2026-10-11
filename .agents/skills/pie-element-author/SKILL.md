@@ -209,7 +209,7 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 
 - [ ] Full keyboard navigation reachable (Tab / Space / Enter / Esc as appropriate).
 - [ ] axe-core clean.
-- [ ] Focus visible at WCAG 2.2 AA spec (2 px ring, 3:1 contrast).
+- [ ] Focus visible (2.4.7, AA) as a 2 px ring at 3:1 contrast (the 2.4.13 AAA bar).
 
 ## Quality Gates Before Marking Done
 
