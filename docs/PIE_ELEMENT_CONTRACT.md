@@ -14,7 +14,7 @@ Every element consumes a model, a session, and an environment object.
 - The session is learner response data. Its shape is element-specific. The player owns the session object it sets, and the element writes each change into that object, as the Delivery Contract below sets out.
 - The environment describes mode and role. Supported modes are `gather`, `view`, and `evaluate`; supported roles are `student` and `instructor`. The authoring view is a separate custom element, described under the Authoring Contract.
 
-Element-specific model and session fields are part of that element's public contract once published. Breaking shape changes require normal semver treatment.
+Element-specific model and session fields are part of that element's public contract once published, and the package's [JSON Schemas](#json-schemas) describe them. Breaking shape changes require normal semver treatment.
 
 ### Controller Module
 
@@ -313,6 +313,18 @@ Packages that do not publish `./browser/*` exports must expose `./runtime-suppor
 
 Packages that publish `./browser/*` exports may omit `./runtime-support` unless they need to disable a runtime strategy or view.
 
+### JSON Schemas
+
+Every element package publishes JSON Schemas for its model and session, and for its authoring configuration when it exports `./author`:
+
+| Export | Target |
+| --- | --- |
+| `./schemas/model.schema.json` | `./dist/schemas/model.schema.json` |
+| `./schemas/session.schema.json` | `./dist/schemas/session.schema.json` |
+| `./schemas/configuration.schema.json` | `./dist/schemas/configuration.schema.json` |
+
+The build generates them from `<Name>Model`, `<Name>Session` and `<Name>Configuration` in the package's `src/types.ts`, where `<Name>` is the PascalCase package name, and the root entry re-exports those types. Each schema is draft-07 with `$id` set to its versioned jsDelivr URL. Model and configuration roots reject unknown top-level keys, as the legacy schemas do. Nested objects and the session accept them, because players and controllers write extra state into the session. See [`docs/prds/element-json-schemas/PRD.md`](prds/element-json-schemas/PRD.md).
+
 ## Runtime Strategy Contract
 
 The same npm package must be usable by three runtime strategies.
@@ -367,6 +379,7 @@ The aggregate verifier runs the contract-relevant checks for:
 - npm publish surface and browser ESM policy,
 - controller/configure packaging and compatibility shims,
 - runtime-support export coverage,
+- JSON Schema exports on element packages,
 - sourcemap source content.
 
 Release publishing and full lint checks must include this verifier so new and changed packages cannot silently drift from the contract.
