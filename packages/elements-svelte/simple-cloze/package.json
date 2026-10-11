@@ -77,6 +77,9 @@
       "types": "./dist/runtime-support.d.ts",
       "default": "./dist/runtime-support.js"
     },
+    "./schemas/model.schema.json": "./dist/schemas/model.schema.json",
+    "./schemas/configuration.schema.json": "./dist/schemas/configuration.schema.json",
+    "./schemas/session.schema.json": "./dist/schemas/session.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -89,7 +92,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-browser-editor-runtime.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
+    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-browser-editor-runtime.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {

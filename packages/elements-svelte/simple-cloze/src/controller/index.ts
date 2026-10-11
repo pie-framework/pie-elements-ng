@@ -1,26 +1,6 @@
 import defaults from './defaults.js';
 import { toPlainText } from './plain-text.js';
-
-export type SimpleClozeQuestion = {
-  id?: string;
-  element?: string;
-  prompt?: string;
-  promptEnabled?: boolean;
-  correctAnswer?: string;
-  teacherInstructions?: string;
-  teacherInstructionsEnabled?: boolean;
-  /** The learner-facing strings' language, as `@pie-lib/translator` reads it (`en_US`, `es_ES`, …). */
-  language?: string;
-  [key: string]: unknown;
-};
-
-export type SimpleClozeSession = {
-  id?: string;
-  element?: string;
-  /** The learner's typed answer. */
-  value?: unknown;
-  [key: string]: unknown;
-};
+import type { SimpleClozeConfiguration, SimpleClozeModel, SimpleClozeSession } from '../types.js';
 
 export type SimpleClozeEnv = {
   mode?: string;
@@ -34,12 +14,6 @@ export type SimpleClozeOutcome = {
   score: number;
   empty: boolean;
   traceLog: string[];
-};
-
-type FieldConfig = { required?: boolean };
-export type SimpleClozeValidationConfig = {
-  prompt?: FieldConfig;
-  [key: string]: unknown;
 };
 
 /**
@@ -62,7 +36,7 @@ const hasContent = (html: unknown): boolean =>
  * nothing, so a blank key never scores.
  */
 export const getCorrectness = (
-  question: SimpleClozeQuestion | null | undefined,
+  question: Partial<SimpleClozeModel> | null | undefined,
   session: SimpleClozeSession | null | undefined
 ): SimpleClozeCorrectness => {
   const response = comparable(session?.value);
@@ -80,12 +54,12 @@ export const getCorrectness = (
 
 /** Single response, all-or-nothing: 1 when it matches the answer key, else 0. */
 export const getPartialScore = (
-  question: SimpleClozeQuestion | null | undefined,
+  question: Partial<SimpleClozeModel> | null | undefined,
   session: SimpleClozeSession | null | undefined
 ): number => (getCorrectness(question, session) === 'correct' ? 1 : 0);
 
 const getTraceLog = (
-  question: SimpleClozeQuestion | null | undefined,
+  question: Partial<SimpleClozeModel> | null | undefined,
   correctness: SimpleClozeCorrectness,
   score: number
 ): string[] => {
@@ -106,7 +80,7 @@ const getTraceLog = (
 };
 
 export const outcome = (
-  question: SimpleClozeQuestion | null | undefined,
+  question: Partial<SimpleClozeModel> | null | undefined,
   session: SimpleClozeSession | null | undefined,
   _env: SimpleClozeEnv = {}
 ): Promise<SimpleClozeOutcome> =>
@@ -126,7 +100,9 @@ export const outcome = (
     resolve({ score, empty: false, traceLog: getTraceLog(question, correctness, score) });
   });
 
-export const createDefaultModel = (model: SimpleClozeQuestion = {}): SimpleClozeQuestion => ({
+export const createDefaultModel = (
+  model: Partial<SimpleClozeModel> = {}
+): Partial<SimpleClozeModel> => ({
   ...defaults.model,
   ...model,
 });
@@ -136,7 +112,7 @@ export const normalizeSession = (s: SimpleClozeSession | null | undefined): Simp
 });
 
 export const model = (
-  question: SimpleClozeQuestion | null | undefined,
+  question: Partial<SimpleClozeModel> | null | undefined,
   session: SimpleClozeSession | null | undefined,
   env: SimpleClozeEnv | null | undefined
 ): Promise<Record<string, unknown>> => {
@@ -172,7 +148,7 @@ export const model = (
 };
 
 export const createCorrectResponseSession = (
-  question: SimpleClozeQuestion | null | undefined,
+  question: Partial<SimpleClozeModel> | null | undefined,
   env: SimpleClozeEnv | null | undefined
 ): Promise<SimpleClozeSession | null> => {
   return new Promise((resolve) => {
@@ -186,8 +162,8 @@ export const createCorrectResponseSession = (
 };
 
 export const validate = (
-  model: SimpleClozeQuestion = {},
-  config: SimpleClozeValidationConfig = {}
+  model: Partial<SimpleClozeModel> = {},
+  config: SimpleClozeConfiguration = {}
 ): Record<string, string> => {
   const errors: Record<string, string> = {};
 
