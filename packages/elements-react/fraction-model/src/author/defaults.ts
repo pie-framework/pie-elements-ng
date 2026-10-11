@@ -1,8 +1,9 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { FractionModelConfiguration, FractionModelModel, FractionModelResponse } from '../types.js';
 
 export default {
   model: {
-    correctResponse: [],
+    correctResponse: [] as FractionModelResponse[],
     title: '',
     prompt: '',
     modelTypeSelected: 'bar',
@@ -68,7 +69,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     spellCheck: {
       label: 'Spellcheck',
@@ -77,4 +78,7 @@ export default {
     },
     settingsPanelDisabled: true,
   },
+} satisfies {
+  model: Omit<FractionModelModel, 'id' | 'element'>;
+  configuration: FractionModelConfiguration;
 };

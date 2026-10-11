@@ -1,9 +1,9 @@
-// @ts-nocheck
+import type { FractionModelModel, FractionModelResponse } from '../types.js';
 
 // Should be exactly the same as configure/defaults.js
 export default {
   model: {
-    correctResponse: [],
+    correctResponse: [] as FractionModelResponse[],
     title: '',
     prompt: '',
     modelTypeSelected: 'bar',
@@ -12,4 +12,4 @@ export default {
     allowedStudentConfig: false,
     showGraphLabels: false,
   },
-};
+} satisfies { model: Omit<FractionModelModel, 'id' | 'element'> };

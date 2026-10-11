@@ -1,24 +1,33 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Main from './main.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Main, { type AuthorModel } from './main.js';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import defaultValues from './defaults.js';
+import type { FractionModelConfiguration, FractionModelModel } from '../types.js';
 
 export default class FractionModelConfigure extends HTMLElement {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: FractionModelConfiguration;
+  // Declared only: neither is set until resetModelAfterConfigurationIsSet() runs, and nothing sets `_modelCopy`.
+  private declare _modelCopy?: AuthorModel;
+  declare hasPlayerAsParent?: boolean;
+
   /**
    * This function makes sure you set the default values on the model
    * @param model
    * @returns model
    */
-  static createDefaultModel = (model = {}) => {
+  static createDefaultModel = (model: Partial<FractionModelModel> = {}): AuthorModel => {
     const c = defaultValues.configuration;
     let language = model.language || '';
 
@@ -44,13 +53,13 @@ export default class FractionModelConfigure extends HTMLElement {
     this._configuration = defaultValues.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<FractionModelModel>) {
     this._model = FractionModelConfigure.createDefaultModel(m);
     this.render();
   }
 
-  set configuration(c) {
-    const newConfiguration = {
+  set configuration(c: FractionModelConfiguration) {
+    const newConfiguration: FractionModelConfiguration = {
       ...defaultValues.configuration,
       ...c,
     };
@@ -66,19 +75,24 @@ export default class FractionModelConfigure extends HTMLElement {
       if (newConfiguration?.languageChoices?.options?.length) {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
-    } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+    } else if (newConfiguration.language!.settings && this._model.language) {
+      // this._configuration is newConfiguration. Its `language` throws when absent, and `languageChoices` is
+      // assumed present, as untyped.
+      const language = this._model.language;
+      const languageChoices = this._configuration.languageChoices!;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      this._configuration.language!.enabled = true;
+
+      if (!languageChoices.options || !languageChoices.options.length) {
+        languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
-          value: this._model.language,
-          label: this._model.language,
+      if (!languageChoices.options.find((option) => option.value === language)) {
+        languageChoices.options.push({
+          value: language,
+          label: language,
         });
       }
     } else {
@@ -87,7 +101,7 @@ export default class FractionModelConfigure extends HTMLElement {
     this.render();
   }
 
-  resetModelAfterConfigurationIsSet: any = () => {
+  resetModelAfterConfigurationIsSet = () => {
     // In environments that use pie-player-components, model is set before configuration.
     // This is the reason why sometimes the model gets altered non-reversible
     // (altered using default configuration instead of client configuration, because at that point client configuration was not set yet)
@@ -109,19 +123,20 @@ export default class FractionModelConfigure extends HTMLElement {
     this.render();
   }
 
-  modelChanged(m) {
+  modelChanged(m: AuthorModel) {
     this._model = m;
-    this.dispatchEvent(new ModelUpdatedEvent(this._model), true);
+    // This passed `true` to dispatchEvent as a second argument, which ignores it.
+    this.dispatchEvent(new ModelUpdatedEvent(this._model));
     this.render();
   }
 
-  onChange: any = (o) => {
+  onChange = (o: Partial<AuthorModel>) => {
     this._model = { ...this._model, ...o };
     this.dispatchEvent(new ModelUpdatedEvent(this._model));
     this.render();
   };
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: FractionModelConfiguration) {
     this._configuration = c;
     this.render();
   }
@@ -130,26 +145,25 @@ export default class FractionModelConfigure extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
   render() {
     if (this._model) {
       const el = React.createElement(Main, {
-        classes: {},
         model: this._model,
         configuration: this._configuration,
         onConfigurationChanged: this.onConfigurationChanged,
