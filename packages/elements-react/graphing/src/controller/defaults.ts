@@ -1,7 +1,7 @@
-// @ts-nocheck
+import type { GraphingModel, GraphingTool, Mark } from '../types.js';
 
 // TODO: This is lifted from @pie-lib/graphing, however importing this will break a controller build because it has jsx source in that package.
-const allTools = [
+const allTools: GraphingTool[] = [
   'circle',
   'line',
   'label',
@@ -21,7 +21,7 @@ export default {
   answers: {
     correctAnswer: {
       name: 'Correct Answer',
-      marks: [],
+      marks: [] as Mark[],
     },
   },
   arrows: {
@@ -30,7 +30,7 @@ export default {
     up: true,
     down: true,
   },
-  backgroundMarks: [],
+  backgroundMarks: [] as Mark[],
   coordinatesOnHover: false,
   defaultGridConfiguration: 0,
   domain: {
@@ -63,4 +63,4 @@ export default {
   title: '',
   titleEnabled: true,
   toolbarTools: allTools,
-};
+} satisfies Omit<GraphingModel, 'id' | 'element'>;
