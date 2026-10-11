@@ -11,21 +11,21 @@ Feature branch: `feat/PIE-1255-element-json-schemas`. Each batch is a branch `fe
 - [x] multiple-choice (React reference)
 - [x] venn-classification (Svelte reference)
 - [x] turbo build input, PRD, legacy changes note
-- [ ] PR merged into the feature branch
+- [x] PR merged into the feature branch
 
 ## Element batches
 
 | Batch | Elements | Status |
 | --- | --- | --- |
-| A | ebsr, select-text, extended-text-entry, passage, match-list | |
-| B | rubric, multi-trait-rubric, complex-rubric, likert | |
-| C | drag-in-the-blank, explicit-constructed-response, inline-dropdown | |
-| D | math-inline, math-templated, image-cloze-association | |
-| E | graphing, graphing-solution-set | |
-| F | number-line, charting, fraction-model | |
-| G | categorize, match, matrix | |
-| H | hotspot, drawing-response, placement-ordering | |
-| I | mc-populated-blank, simple-cloze, video-stimulus (Svelte) | |
+| A | ebsr, select-text, extended-text-entry, passage, match-list | Done |
+| B | rubric, multi-trait-rubric, complex-rubric, likert | Done |
+| C | drag-in-the-blank, explicit-constructed-response, inline-dropdown | Done |
+| D | math-inline, math-templated, image-cloze-association | Done |
+| E | graphing, graphing-solution-set | Done |
+| F | number-line, charting, fraction-model | Done |
+| G | categorize, match, matrix | Done |
+| H | hotspot, drawing-response, placement-ordering | Done |
+| I | mc-populated-blank, simple-cloze, video-stimulus (Svelte) | Done |
 
 ## Per element
 
