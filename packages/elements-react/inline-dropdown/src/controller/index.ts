@@ -1,12 +1,30 @@
-// @ts-nocheck
-
 import { isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 
 import { getAllCorrectResponses } from './utils.js';
+import type {
+  Choice,
+  Choices,
+  InlineDropdownConfiguration,
+  InlineDropdownModel,
+  InlineDropdownSession,
+} from '../types.js';
 
-const getFeedback = (correct) => {
+/** Errors `validate()` reports, keyed by field. */
+export type InlineDropdownValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  responseAreasError?: string;
+  responseAreaChoicesError?: string;
+};
+
+/** A choice as the controller hands it to the delivery: rationales are `null` unless the instructor sees them */
+type DeliveryChoice = Omit<Choice, 'rationale'> & { rationale?: string | null };
+
+const getFeedback = (correct: unknown) => {
   if (correct) {
     return 'correct';
   }
@@ -14,7 +32,7 @@ const getFeedback = (correct) => {
   return 'incorrect';
 };
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: InlineDropdownModel) => ({ ...defaults, ...question });
 
 /**
  *
@@ -23,10 +41,15 @@ export const normalize = (question) => ({ ...defaults, ...question });
  * @param {*} env
  * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export async function model(question, session, env, updateSession) {
+export async function model(
+  question: InlineDropdownModel,
+  session: InlineDropdownSession | null | undefined,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+) {
   const normalizedQuestion = normalize(question);
   const { value = {} } = session || {};
-  let choices = reduce(
+  let choices = reduce<Choice[], Record<string, DeliveryChoice[] | undefined>>(
     normalizedQuestion.choices,
     (obj, area, key) => {
       obj[key] = map(area, (choice) => choice);
@@ -36,7 +59,7 @@ export async function model(question, session, env, updateSession) {
     {},
   );
 
-  let feedback = {};
+  let feedback: Record<string, string> = {};
 
   if (env.mode === 'evaluate') {
     const allCorrectResponses = getAllCorrectResponses(normalizedQuestion);
@@ -44,7 +67,7 @@ export async function model(question, session, env, updateSession) {
     let correctResponses = 0;
 
     for (let i = 0; i < respAreaLength; i++) {
-      const result = reduce(
+      const result = reduce<string[], { correctResponses: number; feedback: Record<string, string> }>(
         allCorrectResponses,
         (obj, choices, key) => {
           const answer = (value && value[key]) || '';
@@ -73,27 +96,30 @@ export async function model(question, session, env, updateSession) {
     }
   }
 
-  const lockChoiceOrder = lockChoices(normalizedQuestion, session, env);
+  // `lockChoices` ignores the session, so the per-area `shuffledValues` shape does not matter to it.
+  const lockChoiceOrder = lockChoices(normalizedQuestion, session as Parameters<typeof lockChoices>[1], env);
 
   if (!lockChoiceOrder) {
-    const shuffledValues = {};
+    const shuffledValues: Record<string, string[]> = {};
     const keys = Object.keys(choices);
 
-    const us = (part) => (id, element, update) => {
-      return new Promise((resolve) => {
-        shuffledValues[part] = update.shuffledValues;
-        resolve();
-      });
-    };
+    const us =
+      (part: string): PieUpdateSession =>
+      (_id, _element, update) => {
+        return new Promise((resolve) => {
+          shuffledValues[part] = update.shuffledValues as string[];
+          resolve();
+        });
+      };
 
     let i;
 
     for (i = 0; i < keys.length; i++) {
       const key = keys[i];
-      const storedValues = session?.shuffledValues?.[key];
+      const storedValues = (session?.shuffledValues as Record<string, string[]> | undefined)?.[key];
 
       choices[key] = await getShuffledChoices(
-        choices[key],
+        choices[key] as DeliveryChoice[],
         // the shuffledValues structure was updated to an object like { choice_key: [] }
         // and we need to override shuffledValues if it's not an array
         { shuffledValues: Array.isArray(storedValues) ? storedValues : [] },
@@ -104,7 +130,7 @@ export async function model(question, session, env, updateSession) {
 
     if (!isEmpty(shuffledValues)) {
       if (session && updateSession && typeof updateSession === 'function') {
-        updateSession(session.id, session.element, {
+        updateSession(session.id as string, session.element as string, {
           shuffledValues,
         }).catch((e) => {
           // eslint-disable-next-line no-console
@@ -114,10 +140,10 @@ export async function model(question, session, env, updateSession) {
     }
   }
 
-  let teacherInstructions = null;
-  let rationale = null;
+  let teacherInstructions: string | null | undefined = null;
+  let rationale: string | null | undefined = null;
 
-  const choicesWillNullRationales = (Object.keys(choices) || []).reduce((acc, currentValue) => {
+  const choicesWillNullRationales = (Object.keys(choices) || []).reduce<Record<string, DeliveryChoice[]>>((acc, currentValue) => {
     acc[currentValue] = (choices[currentValue] || []).map((choice) => ({
       ...choice,
       rationale: null,
@@ -156,14 +182,17 @@ export async function model(question, session, env, updateSession) {
   return out;
 }
 
-export const getScore = (config, session) => {
+export const getScore = (
+  config: Partial<Pick<InlineDropdownModel, 'choices' | 'alternateResponse'>>,
+  session: InlineDropdownSession | null | undefined,
+) => {
   const { value = {} } = session || {};
   const maxScore = config && config.choices ? Object.keys(config.choices).length : 0;
   const allCorrectResponses = getAllCorrectResponses(config);
   let correctCount = 0;
 
   for (let i = 0; i < maxScore; i++) {
-    const result = reduce(
+    const result = reduce<string[], number>(
       allCorrectResponses,
       (total, choices, key) => {
         const answer = (value && value[key]) || '';
@@ -199,8 +228,12 @@ export const getScore = (config, session) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: InlineDropdownModel,
+  session: InlineDropdownSession | null | undefined,
+  env: Partial<PieEnvironment>,
+) => {
+  const traceLog: string[] = [];
   const { value = {} } = session || {};
   const allCorrectResponses = getAllCorrectResponses(model);
   const responseAreaKeys = Object.keys(allCorrectResponses);
@@ -209,7 +242,7 @@ export const getLogTrace = (model, session, env) => {
   traceLog.push(`${totalAreas} dropdown response area(s) defined in this question.`);
   
   if (value && Object.keys(value).length > 0) {
-    const selectedAreas = Object.entries(value).filter(([key, val]) => val && val.trim()).length;
+    const selectedAreas = Object.entries(value).filter(([, val]) => val && val.trim()).length;
     traceLog.push(`Student selected options in ${selectedAreas} out of ${totalAreas} dropdown(s).`);
     
     responseAreaKeys.forEach((areaKey) => {
@@ -251,8 +284,12 @@ export const getLogTrace = (model, session, env) => {
  * @param {boolean} env.partialScoring - is partial scoring enabled (if undefined default to true) This overrides
  *   `model.partialScoring`.
  */
-export function outcome(model, session, env = {}) {
-  return new Promise((resolve) => {
+export function outcome(
+  model: InlineDropdownModel,
+  session: InlineDropdownSession | null | undefined,
+  env: Partial<PieEnvironment> = {},
+) {
+  return new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ 
         score: 0, 
@@ -273,11 +310,11 @@ export function outcome(model, session, env = {}) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: InlineDropdownModel, env: PieEnvironment) => {
+  return new Promise<InlineDropdownSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { choices } = question;
-      const value = {};
+      const value: Record<string, string> = {};
 
       if (choices) {
         Object.keys(choices).forEach((key, i) => {
@@ -297,18 +334,18 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<InlineDropdownModel> = {},
+  config: InlineDropdownConfiguration = {},
+) => {
   const { markup, choices } = model;
   const { maxResponseAreas, maxResponseAreaChoices } = config;
-  const errors = {};
+  const errors: InlineDropdownValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -316,14 +353,21 @@ export const validate = (model = {}, config = {}) => {
 
   const nbOfResponseAreas = ((markup || '').match(/\{\{(\d+)\}\}/g) || []).length;
 
-  if (nbOfResponseAreas > maxResponseAreas) {
+  if (maxResponseAreas !== undefined && nbOfResponseAreas > maxResponseAreas) {
     errors.responseAreasError = `No more than ${maxResponseAreas} response areas should be defined.`;
   } else if (nbOfResponseAreas < 1) {
     errors.responseAreasError = 'There should be defined at least 1 response area.';
   }
 
-  (Object.keys(choices) || []).forEach((choiceKey) => {
-    if (choices[choiceKey] && choices[choiceKey].length > maxResponseAreaChoices) {
+  // `Object.keys` throws when the model has no `choices`.
+  const allChoices = choices as Choices;
+
+  (Object.keys(allChoices) || []).forEach((choiceKey) => {
+    if (
+      allChoices[choiceKey] &&
+      maxResponseAreaChoices !== undefined &&
+      allChoices[choiceKey].length > maxResponseAreaChoices
+    ) {
       errors.responseAreaChoicesError = `No more than ${maxResponseAreaChoices} choices per response area should be defined.`;
     }
   });

@@ -1,7 +1,7 @@
-// @ts-nocheck
+import type { Choices, ExplicitConstructedResponseModel } from '../types.js';
 
 export default {
-  choices: {},
+  choices: {} as Choices,
   displayType: 'block',
   markup: '',
   maxLengthPerChoiceEnabled: true,
@@ -16,4 +16,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<ExplicitConstructedResponseModel, 'id' | 'element'>;

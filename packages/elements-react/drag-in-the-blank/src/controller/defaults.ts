@@ -1,7 +1,7 @@
-// @ts-nocheck
+import type { Choice, DragInTheBlankModel } from '../types.js';
 
 export default {
-  choices: [],
+  choices: [] as Choice[],
   choicesPosition: 'below',
   correctResponse: {},
   disabled: false,
@@ -16,4 +16,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<DragInTheBlankModel, 'id' | 'element'>;

@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { InlineDropdownConfiguration, InlineDropdownModel } from '../types.js';
 
 export default {
   model: {
@@ -127,7 +128,10 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
+} satisfies {
+  model: Omit<InlineDropdownModel, 'id' | 'element'>;
+  configuration: InlineDropdownConfiguration;
 };

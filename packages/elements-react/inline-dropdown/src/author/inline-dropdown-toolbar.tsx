@@ -190,6 +190,9 @@ class RespAreaToolbar extends React.Component {
     onToolbarDone: PropTypes.func.isRequired,
     editor: PropTypes.object,
     spellCheck: PropTypes.bool,
+    mathMlOptions: PropTypes.object,
+    baseInputConfiguration: PropTypes.object,
+    responseAreaInputConfiguration: PropTypes.object,
   };
   clickedInside = false;
   preventDone = false;
