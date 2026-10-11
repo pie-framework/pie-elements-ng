@@ -10,16 +10,7 @@ Drafts or updates a PRD for a new element or substantial feature change.
 
 ## When a PRD Is Required
 
-From `AGENTS.md` (verbatim):
-
-> - New elements (net-new `@pie-element/*` packages or substantial new interaction types).
-> - Non-trivial extensions of existing elements (anything that adds an authoring-visible config, a new mode, or a materially new delivery surface).
-> - Cross-cutting platform changes that touch model / session / event contracts across multiple elements (e.g. shared-stimulus container, parameterized items, event consistency work).
-> - Authoring-surface changes that shift how authors compose item content.
-
-Does **not** require a PRD: bug fixes, refactors with no behaviour change, demo tweaks, docs / README changes, version bumps, dependency updates, or retroactive documentation of stable elements you are not actively changing.
-
-**Retroactive PRDs for existing elements**: do not write them preemptively. Tests own behaviour; a PRD written after the fact drifts from the code and creates a second source of truth with no active reader. Exception: write a thin PRD for an existing element *when you are about to touch it* — capture only intent not derivable from the code (key non-goals, deliberate divergences from the legacy implementation). One screen is enough.
+The bar is set in `docs/prds/README.md` (When to write a PRD, Retroactive PRDs for existing elements) and summarised in `AGENTS.md` (Spec-driven workflow). Apply it from there.
 
 ## Process
 

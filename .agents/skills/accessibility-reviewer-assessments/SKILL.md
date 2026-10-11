@@ -2,7 +2,7 @@
 name: accessibility-reviewer-assessments
 description: Reviews educational assessment interfaces for WCAG 2.2 Level AA compliance and assessment-specific accessibility needs. Use when implementing new interactions, reviewing UI changes, or conducting accessibility audits of test-taking interfaces.
 allowed-tools: Read, Glob, Grep, Bash
-model: Codex-sonnet-4-20250514
+model: claude-sonnet-4-20250514
 ---
 
 # Accessibility Reviewer for Assessments
