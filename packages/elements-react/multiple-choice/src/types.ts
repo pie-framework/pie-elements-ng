@@ -171,7 +171,7 @@ export interface MaxImageDimensions extends ConfigureMaxImageDimensionsProp {
   choices?: number;
 }
 
-/** Config Object for @pie-element/multiple-choice */
+/** Config Object for `@pie-element/multiple-choice` */
 export interface MultipleChoiceConfiguration {
   /**
    * The number of empty choices to show in config view if no choice model is provided
