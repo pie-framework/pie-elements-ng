@@ -1,8 +1,9 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { Choice, DragInTheBlankConfiguration, DragInTheBlankModel } from '../types.js';
 
 export default {
   model: {
-    choices: [],
+    choices: [] as Choice[],
     choicesPosition: 'below',
     correctResponse: {},
     disabled: false,
@@ -117,8 +118,11 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     maxLength: 200
   },
+} satisfies {
+  model: Omit<DragInTheBlankModel, 'id' | 'element'>;
+  configuration: DragInTheBlankConfiguration;
 };

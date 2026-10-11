@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import DragInTheBlank from '../index';
 import { model as buildModel } from '../../controller/index';
+import type { PieEnvironment } from '@pie-element/shared-types';
+import type { DragInTheBlankModel } from '../../types';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
@@ -25,7 +27,7 @@ const question = (extra: object = {}) => ({
   ...extra,
 });
 
-const viewModel = (extra: object = {}) => buildModel(question(extra), { value: {} }, { mode: 'gather' }, vi.fn());
+const viewModel = (extra: object = {}) => buildModel(question(extra) as unknown as DragInTheBlankModel, { value: {} }, { mode: 'gather' } as PieEnvironment, vi.fn());
 
 const mount = async (extra: object = {}) => {
   const el = document.createElement('test-ditb-container-ids') as Host;
