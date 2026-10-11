@@ -29,7 +29,8 @@
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@pie-element/shared-types": "workspace:*"
   },
   "exports": {
     ".": {
@@ -84,6 +85,9 @@
       "types": "./dist/runtime-support.d.ts",
       "default": "./dist/runtime-support.js"
     },
+    "./schemas/model.schema.json": "./dist/schemas/model.schema.json",
+    "./schemas/configuration.schema.json": "./dist/schemas/configuration.schema.json",
+    "./schemas/session.schema.json": "./dist/schemas/session.schema.json",
     "./package.json": "./package.json"
   },
   "type": "module",
@@ -104,6 +108,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/debug": "^4.1.12",
     "vitest": "^4.1.11",
     "happy-dom": "^20.14.5",
     "@testing-library/react": "^16.3.2",
@@ -111,7 +116,7 @@
     "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"

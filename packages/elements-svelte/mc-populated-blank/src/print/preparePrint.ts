@@ -1,9 +1,9 @@
 import { createCorrectResponseSession, model as toViewModel } from '../controller/index.js';
-import type { McpbQuestion, McpbRole, McpbSession } from '../shared/types.js';
+import type { McpbRole, McPopulatedBlankModel, McPopulatedBlankSession } from '../types.js';
 
 export interface PrintView {
   model: Record<string, unknown>;
-  session: McpbSession | null;
+  session: McPopulatedBlankSession | null;
   teacherInstructions: string;
   audioUrl: string;
   audioTranscript: string;
@@ -16,15 +16,13 @@ export interface PrintView {
  * the same path a player shows it through; `printAnswerKey: false` withholds it.
  */
 export async function preparePrint(
-  question: McpbQuestion,
+  question: McPopulatedBlankModel,
   role: McpbRole | undefined
 ): Promise<PrintView> {
   const env = { mode: 'view' as const, role };
   const viewModel = await toViewModel({ ...question, lockChoiceOrder: true }, null, env);
   const key =
-    question.printAnswerKey === false
-      ? null
-      : ((await createCorrectResponseSession(question, env)) as McpbSession | null);
+    question.printAnswerKey === false ? null : await createCorrectResponseSession(question, env);
   const { teacherInstructions, audioUrl, audioTranscript, ...model } = viewModel;
   return {
     // Delivery renders these as a collapsed toggle and a player; print writes them out.

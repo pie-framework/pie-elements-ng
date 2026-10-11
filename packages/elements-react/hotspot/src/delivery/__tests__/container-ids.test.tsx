@@ -1,5 +1,6 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { PieEnvironment } from '@pie-element/shared-types';
 
 import { model as buildModel } from '../../controller/index';
 
@@ -29,6 +30,8 @@ type Host = HTMLElement & { model: object; session: object };
 customElements.define('test-hotspot-container-ids', Hotspot as unknown as CustomElementConstructor);
 
 const question = (extra: object = {}) => ({
+  id: '1',
+  element: 'hotspot',
   prompt: '<p>Select the wings.</p>',
   promptEnabled: true,
   imageUrl: 'plane.png',
@@ -45,10 +48,10 @@ const question = (extra: object = {}) => ({
 });
 
 // Evaluate mode describes each shape button with its evaluation, which is what carries references.
-const viewModel = async (extra: object = {}, mode = 'gather') =>
-  (await buildModel(question(extra), { answers: [] }, { mode })) as object;
+const viewModel = async (extra: object = {}, mode: PieEnvironment['mode'] = 'gather') =>
+  (await buildModel(question(extra), { answers: [] }, { mode, role: 'student' })) as object;
 
-const mount = async (extra: object = {}, mode = 'gather') => {
+const mount = async (extra: object = {}, mode: PieEnvironment['mode'] = 'gather') => {
   const el = document.createElement('test-hotspot-container-ids') as Host;
   document.body.appendChild(el);
   el.model = await viewModel(extra, mode);
@@ -74,7 +77,7 @@ afterEach(() => {
 });
 
 describe('hotspot container ids', () => {
-  it.each(['gather', 'evaluate'])('repeat no id when two items share a page (%s)', async (mode) => {
+  it.each(['gather', 'evaluate'] as const)('repeat no id when two items share a page (%s)', async (mode) => {
     await mount({}, mode);
     await mount({}, mode);
 

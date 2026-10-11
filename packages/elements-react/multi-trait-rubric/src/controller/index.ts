@@ -1,13 +1,22 @@
-// @ts-nocheck
-
+import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 import { markupToText } from './utils.js';
+import type { MultiTraitRubricConfiguration, MultiTraitRubricModel, MultiTraitRubricSession } from '../types.js';
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => resolve({ ...defaults, ...model }));
+/** Errors of one trait: `name` and `description` messages. */
+export type TraitErrors = { name?: string; description?: string };
+
+/** Errors `validate()` reports, keyed by scale index, then by trait or score point index. */
+export type MultiTraitRubricValidationErrors = {
+  traitsErrors?: Record<number, Record<number, TraitErrors>>;
+  scorePointsErrors?: Record<number, Record<number, string>>;
+};
+
+export const normalize = (question: Partial<MultiTraitRubricModel>) => ({ ...defaults, ...question });
+
+export function createDefaultModel(model: Partial<MultiTraitRubricModel> = {}) {
+  return new Promise<ReturnType<typeof normalize>>((resolve) => resolve({ ...defaults, ...model }));
 }
-
-export const normalize = (question) => ({ ...defaults, ...question });
 
 /**
  *
@@ -15,8 +24,12 @@ export const normalize = (question) => ({ ...defaults, ...question });
  * @param {*} session
  * @param {*} env
  */
-export async function model(question, session, env) {
-  const normalizedQuestion = normalize(question);
+export async function model(
+  question: MultiTraitRubricModel,
+  _session: MultiTraitRubricSession | undefined,
+  env: PieEnvironment,
+) {
+  const normalizedQuestion: ReturnType<typeof normalize> & { visible?: boolean } = normalize(question);
 
   if (!env.role || env.role === 'student') {
     normalizedQuestion.visible = normalizedQuestion.visibleToStudent;
@@ -45,8 +58,8 @@ export function outcome() {
   return new Promise((resolve) => resolve({ score: 0, empty: true }));
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (_question: MultiTraitRubricModel, env: PieEnvironment) => {
+  return new Promise<MultiTraitRubricSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       resolve({ id: '1' });
     } else {
@@ -56,17 +69,20 @@ export const createCorrectResponseSession = (question, env) => {
 };
 
 // IMPORTANT! If you make any changes to this function, please make sure you also update complex-rubric/controller/validateMultiTraitRubric function!“.
-export const validate = (model, config) => {
+export const validate = (
+  model: Partial<MultiTraitRubricModel>,
+  _config?: MultiTraitRubricConfiguration,
+): MultiTraitRubricValidationErrors => {
   const { scales, description = false, pointLabels = false } = model;
-  const errors = {};
-  const traitsErrors = {};
-  const scorePointsErrors = {};
+  const errors: MultiTraitRubricValidationErrors = {};
+  const traitsErrors: Record<number, Record<number, TraitErrors>> = {};
+  const scorePointsErrors: Record<number, Record<number, string>> = {};
 
   (scales || []).forEach((scale, scaleIndex) => {
     const { traits = [] } = scale;
     const { scorePointsLabels = [] } = scale;
-    const scaleErrors = {};
-    const scorePointsLabelsErrors = {};
+    const scaleErrors: Record<number, TraitErrors> = {};
+    const scorePointsLabelsErrors: Record<number, string> = {};
 
     if (pointLabels) {
       scorePointsLabels.forEach((scorePointLabel, scoreIndex) => {

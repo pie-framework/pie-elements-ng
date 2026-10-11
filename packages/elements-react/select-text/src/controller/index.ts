@@ -1,19 +1,56 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { isEmpty } from '@pie-element/shared-lodash';
-import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import { getFeedbackForCorrectness, type Correctness, type Feedback } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
+import type { SelectTextConfiguration, SelectTextModel, SelectTextSession, TextToken } from '../types.js';
 
 const log = debug('@pie-element:select-text:controller');
 
-const equalTokens = (token1 = {}, token2 = {}) =>
+type ResponseCorrectness = 'unknown' | 'correct' | 'partially-correct' | 'incorrect';
+
+/** A token as the delivery view receives it; `correct` and `isMissing` are set in evaluate mode only. */
+type TokenView = Omit<TextToken, 'correct'> & { correct: boolean | undefined; isMissing: boolean | undefined };
+
+/** The model the delivery view receives. */
+type ModelView = {
+  tokens: TokenView[];
+  highlightChoices?: boolean;
+  prompt: string | null | undefined;
+  text: string;
+  disabled: boolean;
+  maxSelections?: number;
+  correctness: ResponseCorrectness | undefined;
+  env: PieEnvironment;
+  feedback: string | undefined;
+  incorrect: boolean | undefined;
+  language?: string;
+  extraCSSRules?: ExtraCSSRules;
+  rationale?: string | null;
+  teacherInstructions?: string | null;
+};
+
+type Outcome = { score: number | undefined; empty?: boolean; completed?: undefined; logTrace: string[] };
+
+/** Errors `validate()` reports, keyed by field. */
+export type SelectTextValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  tokensError?: string;
+  selectionsError?: string;
+};
+
+/** The session `model()` works on; without a session it starts from one carrying `selectedToken`. */
+type ModelSession = SelectTextSession & { selectedToken?: TextToken[] };
+
+const equalTokens = (token1: Partial<TextToken> = {}, token2: Partial<TextToken> = {}) =>
   (token1?.start === token2?.start && token1?.end === token2?.end) ||
   // this case is used for the cases when the token's start & end were recalculated
   (token1?.start === token2?.oldStart && token1?.end === token2?.oldEnd);
 
-const normalizeTokens = (tokens = [], selectedTokens = [], evaluateMode = false) =>
+const normalizeTokens = (tokens: TextToken[] = [], selectedTokens: TextToken[] = [], evaluateMode = false): TokenView[] =>
   (tokens || []).map((token) => {
     const isCorrect = !!token.correct;
     // search if correct token is missing from session
@@ -26,7 +63,7 @@ const normalizeTokens = (tokens = [], selectedTokens = [], evaluateMode = false)
     };
   });
 
-export const getCorrectness = (tokens, selected) => {
+export const getCorrectness = (tokens: TextToken[], selected: TextToken[]): ResponseCorrectness => {
   const correct = tokens.filter((t) => t.correct === true);
 
   if (correct.length === 0) {
@@ -50,10 +87,14 @@ export const getCorrectness = (tokens, selected) => {
   return 'incorrect';
 };
 
-const getCorrectSelected = (tokens, selected) =>
+const getCorrectSelected = (tokens: TextToken[], selected: TextToken[] | undefined) =>
   (selected || []).filter((s) => tokens.findIndex((token) => token.correct && equalTokens(token, s)) !== -1);
 
-export const getPartialScore = (question, session, totalCorrect) => {
+export const getPartialScore = (
+  question: SelectTextModel,
+  session: SelectTextSession | undefined,
+  totalCorrect: TextToken[],
+) => {
   if (!session || isEmpty(session)) {
     return 0;
   }
@@ -61,7 +102,7 @@ export const getPartialScore = (question, session, totalCorrect) => {
   const correctCount = getCorrectSelected(question.tokens, session.selectedTokens).length;
   const correctTokens = (question.tokens || []).filter((t) => t.correct === true);
   const extraSelected = session.selectedTokens ? session.selectedTokens.length > correctTokens.length : 0;
-  const incorrectCount = extraSelected ? session.selectedTokens && session.selectedTokens.length - correctCount : 0;
+  const incorrectCount = extraSelected && session.selectedTokens ? session.selectedTokens.length - correctCount : 0;
   const count = correctCount - incorrectCount;
   const positiveCount = count < 0 ? 0 : count;
 
@@ -75,8 +116,8 @@ export const getPartialScore = (question, session, totalCorrect) => {
  * @param {Object} env - the environment
  * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (question: SelectTextModel, session: SelectTextSession | undefined, env: PieEnvironment) => {
+  const traceLog: string[] = [];
 
   const selectedTokens = session?.selectedTokens || [];
   const tokens = question?.tokens || [];
@@ -147,8 +188,8 @@ export const getLogTrace = (question, session, env) => {
   return traceLog;
 };
 
-export const outcome = (question, session, env) =>
-  new Promise((resolve) => {
+export const outcome = (question: SelectTextModel, session: SelectTextSession | undefined, env: PieEnvironment) =>
+  new Promise<Outcome>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ score: 0, empty: true, logTrace: ['Student did not select any token.'] });
     }
@@ -168,22 +209,25 @@ export const outcome = (question, session, env) =>
     }
   });
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => {
+export function createDefaultModel(model: Partial<SelectTextModel> = {}) {
+  return new Promise<Partial<SelectTextModel>>((resolve) => {
     resolve({ ...defaults, ...model });
   });
 }
 
-export const normalizeSession = (session) => ({ selectedTokens: [], ...session });
+export const normalizeSession = (session: SelectTextSession | undefined) => ({
+  selectedTokens: [] as TextToken[],
+  ...session,
+});
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: SelectTextModel) => ({ ...defaults, ...question });
 
-export const model = (question, session, env) => {
+export const model = (question: SelectTextModel, session: ModelSession | null | undefined, env: PieEnvironment) => {
   session = session || { selectedToken: [] };
   session.selectedTokens = session.selectedTokens || [];
   const normalizedQuestion = normalize(question);
 
-  return new Promise((resolve) => {
+  return new Promise<ModelView>((resolve) => {
     log('[model]', 'normalizedQuestion: ', normalizedQuestion);
     log('[model]', 'session: ', session);
 
@@ -191,15 +235,15 @@ export const model = (question, session, env) => {
     log('[model] tokens:', tokens);
 
     const correctness =
-      env.mode === 'evaluate' ? getCorrectness(normalizedQuestion.tokens, session.selectedTokens) : undefined;
+      env.mode === 'evaluate' ? getCorrectness(normalizedQuestion.tokens, session.selectedTokens as TextToken[]) : undefined;
 
     const fb =
       env.mode === 'evaluate' && normalizedQuestion.feedbackEnabled
-        ? getFeedbackForCorrectness(correctness, normalizedQuestion.feedback)
+        ? getFeedbackForCorrectness(correctness as Correctness, normalizedQuestion.feedback as Partial<Feedback>)
         : Promise.resolve(undefined);
 
     fb.then((feedback) => {
-      const out = {
+      const out: ModelView = {
         tokens,
         highlightChoices: normalizedQuestion.highlightChoices,
         prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
@@ -229,8 +273,8 @@ export const model = (question, session, env) => {
   });
 };
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: SelectTextModel, env: PieEnvironment) => {
+  return new Promise<SelectTextSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { tokens } = question;
       const selectedTokens = tokens.filter((t) => t.correct);
@@ -245,19 +289,19 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<SelectTextModel> = {},
+  config: SelectTextConfiguration = {},
+): SelectTextValidationErrors => {
   const { tokens } = model;
   const { minTokens = 2, maxTokens, maxSelections } = config;
-  const errors = {};
+  const errors: SelectTextValidationErrors = {};
   const nbOfTokens = (tokens || []).length;
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -267,13 +311,13 @@ export const validate = (model = {}, config = {}) => {
 
   if (nbOfTokens < minTokens) {
     errors.tokensError = `There should be at least ${minTokens} tokens defined.`;
-  } else if (nbOfTokens > maxTokens) {
+  } else if (maxTokens !== undefined && nbOfTokens > maxTokens) {
     errors.tokensError = `No more than ${maxTokens} tokens should be defined.`;
   }
 
   if (nbOfSelections < 1) {
     errors.selectionsError = 'There should be at least 1 token selected.';
-  } else if (nbOfSelections > maxSelections) {
+  } else if (maxSelections !== undefined && nbOfSelections > maxSelections) {
     errors.selectionsError = `No more than ${maxSelections} tokens should be selected.`;
   }
 

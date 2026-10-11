@@ -1,9 +1,10 @@
-// @ts-nocheck
+import type { Choice } from '@pie-element/multiple-choice';
+import type { EbsrModel, EbsrPart } from '../types.js';
 
-const partModel = (base) => ({
+const partModel = (base?: Partial<EbsrPart>): EbsrPart => ({
   choiceMode: 'radio',
   choicePrefix: 'letters',
-  choices: [],
+  choices: [] as Choice[],
   choicesLayout: 'vertical',
   feedbackEnabled: false,
   gridColumns: 2,
@@ -24,4 +25,4 @@ export default {
   partLabelType: 'Letters',
   partA: partModel(),
   partB: partModel(),
-};
+} satisfies Omit<EbsrModel, 'id' | 'element'>;

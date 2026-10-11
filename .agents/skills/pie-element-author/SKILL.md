@@ -39,13 +39,13 @@ src/
     index.ts
   controller/
     index.ts                 # Pure TS controller (no DOM, no Svelte)
-  index.ts                   # ESM root — re-exports the delivery default
+  index.ts                   # ESM root — re-exports the delivery default and `export type * from './types.js'`
   index.iife.ts              # IIFE entry — exports delivery component default; NO customElements.define
   runtime-support.ts         # Runtime support metadata
-  types.ts                   # Model, Session, ViewModel — no `any`
+  types.ts                   # <Name>Model, <Name>Configuration, <Name>Session (the JSON Schema source), ViewModel — no `any`
 
 package.json                 # "pie": { "controller": "@pie-element/<slug>/controller" }
-                             # "exports" map with ./delivery, ./controller, ./controller.js, ./author subpaths
+                             # "exports" map with ./delivery, ./controller, ./controller.js, ./author, ./schemas/<kind>.schema.json subpaths
                              # "files" includes controller.js
                              # "scripts" copied verbatim from venn-classification
 controller.js                # Shim: export * from './dist/controller/index.js'
@@ -54,7 +54,7 @@ svelte.config.js
 tsconfig.json
 ```
 
-The package has no Vite or Vitest config. The build script runs the shared configs in `tools/vite/` (see `docs/PACKAGING_ARCHITECTURE.md`), which discover lanes from the `src/` entries present, and the root `vitest.config.ts` runs the package's tests.
+The package has no Vite or Vitest config. The build script runs the shared configs in `tools/vite/` (see `docs/PACKAGING_ARCHITECTURE.md`), which discover lanes from the `src/` entries present, and the root `vitest.config.ts` runs the package's tests. The build ends by generating the JSON Schemas from `src/types.ts`; `docs/ELEMENT_SCHEMAS.md` sets out how to declare the contract types and what the schema test validates.
 
 ## Controller Contract
 

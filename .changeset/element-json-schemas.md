@@ -1,0 +1,41 @@
+---
+"@pie-element/categorize": patch
+"@pie-element/charting": patch
+"@pie-element/cli": patch
+"@pie-element/complex-rubric": patch
+"@pie-element/drag-in-the-blank": patch
+"@pie-element/drawing-response": patch
+"@pie-element/ebsr": patch
+"@pie-element/explicit-constructed-response": patch
+"@pie-element/extended-text-entry": patch
+"@pie-element/fraction-model": patch
+"@pie-element/graphing": patch
+"@pie-element/graphing-solution-set": patch
+"@pie-element/hotspot": patch
+"@pie-element/image-cloze-association": patch
+"@pie-element/inline-dropdown": patch
+"@pie-element/likert": patch
+"@pie-element/match": patch
+"@pie-element/match-list": patch
+"@pie-element/math-inline": patch
+"@pie-element/math-templated": patch
+"@pie-element/matrix": patch
+"@pie-element/mc-populated-blank": patch
+"@pie-element/multi-trait-rubric": patch
+"@pie-element/multiple-choice": patch
+"@pie-element/number-line": patch
+"@pie-element/passage": patch
+"@pie-element/placement-ordering": patch
+"@pie-element/rubric": patch
+"@pie-element/select-text": patch
+"@pie-element/shared-types": patch
+"@pie-element/simple-cloze": patch
+"@pie-element/venn-classification": patch
+"@pie-element/video-stimulus": patch
+"@pie-lib/config-ui": patch
+"@pie-lib/rubric": patch
+---
+
+Each element publishes JSON Schemas for its model and session, and for its authoring configuration when it has one, at `@pie-element/<name>/schemas/<kind>.schema.json`. The root entry exports the `<Name>Model`, `<Name>Session` and `<Name>Configuration` types they are generated from. `@pie-element/shared-types` adds the authoring building blocks those types share.
+
+`docs:generate` in `@pie-element/cli` documents each property from the element's schemas, with its defaults alongside. `@pie-element/shared-types` drops `PieDocsPropertyMetadata`, `PieDocsViewMetadata` and the `description` and `metadata` fields of `PieDocsViewContract`, which no element set.

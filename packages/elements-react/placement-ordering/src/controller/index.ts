@@ -1,13 +1,20 @@
-// @ts-nocheck
-
 import { flattenCorrect, getAllCorrectResponses, score } from './scoring.js';
 
 import { every, isArray, isEmpty, isEqual, map, reduce } from '@pie-element/shared-lodash';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import type { Feedback } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import debug from 'debug';
 
 import defaults from './defaults.js';
+import type {
+  Choice,
+  CorrectResponse,
+  PlacementOrderingConfiguration,
+  PlacementOrderingModel,
+  PlacementOrderingSession,
+} from '../types.js';
 
 const log = debug('@pie-element:placement-ordering:controller');
 import Translator from '@pie-lib/translator';
@@ -16,6 +23,45 @@ const { translator } = Translator;
 
 export const questionError = () => new Error('Question is missing required array: correctResponse');
 
+/** Errors `validate()` reports, keyed by field; `choicesErrors` is keyed by choice id. */
+export type PlacementOrderingValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  orderError?: string;
+  choicesErrors?: Record<string, string>;
+};
+
+/** The model `model()` hands to delivery. */
+export type PlacementOrderingViewModel = {
+  env?: PieEnvironment;
+  extraCSSRules?: ExtraCSSRules;
+  outcomes?: Array<{ id: string | null; outcome: string }>;
+  completeLength?: number;
+  choices?: Choice[];
+  note?: string;
+  showNote?: boolean;
+  language?: string;
+  prompt?: string | null;
+  config?: {
+    orientation: 'vertical' | 'horizontal';
+    includeTargets?: boolean;
+    choiceLabelEnabled?: boolean;
+    targetLabel?: string;
+    choiceLabel?: string;
+    showOrdering?: boolean;
+    allowSameChoiceInTargets: boolean;
+  };
+  disabled?: boolean;
+  rationale?: string | null;
+  teacherInstructions?: string | null;
+  correctness?: 'correct' | 'partial' | 'incorrect';
+  correctResponse?: Array<string | CorrectResponse>;
+  feedback?: string;
+};
+
+export type PlacementOrderingOutcome = { score: number; empty?: boolean; logTrace: string[] };
+
 /**
  * Generates detailed trace log for placement-ordering scoring evaluation
  * @param {Object} question - the question model
@@ -23,11 +69,14 @@ export const questionError = () => new Error('Question is missing required array
  * @param {Object} env - the environment
  * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  question: PlacementOrderingModel,
+  session: PlacementOrderingSession | null | undefined,
+  env?: PieEnvironment,
+): string[] => {
+  const traceLog: string[] = [];
 
   const value = session?.value || [];
-  const correctResponse = question?.correctResponse || [];
   const hasPlacementArea = question?.placementArea === true;
 
   if (!value.length) {
@@ -42,7 +91,7 @@ export const getLogTrace = (question, session, env) => {
 
   const allCorrectResponses = getAllCorrectResponses(question);
 
-  let bestMatch = { score: 0, response: [] };
+  let bestMatch: { score: number; response: Array<string | CorrectResponse> } = { score: 0, response: [] };
 
   allCorrectResponses.forEach((cr) => {
     let matchCount = 0;
@@ -67,8 +116,6 @@ export const getLogTrace = (question, session, env) => {
     if (incorrectCount > 0) {
     traceLog.push(`${incorrectCount} tile(s) placed in an incorrect order.`);
   }
-
-  const isFullyCorrect = allCorrectResponses.some((cr) => isEqual(cr, value));
 
   const partialScoringEnabled = partialScoring.enabled(question, env || {});
 
@@ -98,7 +145,11 @@ export const getLogTrace = (question, session, env) => {
   return traceLog;
 };
 
-export function outcome(question, session, env) {
+export function outcome(
+  question: PlacementOrderingModel,
+  session: PlacementOrderingSession | null | undefined,
+  env?: PieEnvironment,
+): Promise<PlacementOrderingOutcome> {
   return new Promise((resolve, reject) => {
     if (!session || isEmpty(session)) {
       resolve({ 
@@ -126,8 +177,8 @@ export function outcome(question, session, env) {
   });
 }
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => {
+export function createDefaultModel(model: Partial<PlacementOrderingModel> = {}) {
+  return new Promise<Omit<PlacementOrderingModel, 'id' | 'element'> & Partial<PlacementOrderingModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
@@ -135,7 +186,7 @@ export function createDefaultModel(model = {}) {
   });
 }
 
-export const normalize = (question) => ({
+export const normalize = (question: PlacementOrderingModel): PlacementOrderingModel => ({
   ...defaults,
   rationaleEnabled: true,
   feedbackEnabled: false,
@@ -151,9 +202,13 @@ export const normalize = (question) => ({
  * @param {*} session
  * @param {*} env
  */
-export async function model(question, session, env) {
+export async function model(
+  question: PlacementOrderingModel,
+  session: PlacementOrderingSession | null | undefined,
+  env: PieEnvironment,
+): Promise<PlacementOrderingViewModel> {
   const normalizedQuestion = normalize(question);
-  const base = {};
+  const base: PlacementOrderingViewModel = {};
 
   if (question.alternateResponses && every(question.alternateResponses, isArray)) {
     log('Deprecated structure of alternateResponses is in use');
@@ -203,9 +258,9 @@ export async function model(question, session, env) {
     const value = (session && session.value) || [];
     const allCorrectResponses = getAllCorrectResponses(normalizedQuestion);
 
-    const bestSetOfResponses = allCorrectResponses.reduce(
+    const bestSetOfResponses = allCorrectResponses.reduce<{ arr: Array<string | CorrectResponse>; score: number }>(
       (info, cr) => {
-        const currentScore = reduce(value, (acc, c, idx) => acc + (Array.isArray(cr) && cr[idx] === c ? 1 : 0), 0);
+        const currentScore = reduce(value, (acc, c, idx) => acc + (Array.isArray(cr) && cr[idx as number] === c ? 1 : 0), 0);
 
         if (currentScore > info.score) {
           return {
@@ -222,7 +277,7 @@ export async function model(question, session, env) {
     base.outcomes = map(value, (c, idx) => {
       return {
         id: c,
-        outcome: bestSetOfResponses.arr[idx] === c ? 'correct' : 'incorrect',
+        outcome: bestSetOfResponses.arr[idx as number] === c ? 'correct' : 'incorrect',
       };
     });
 
@@ -243,7 +298,7 @@ export async function model(question, session, env) {
     }
 
     const feedback = normalizedQuestion.feedbackEnabled
-      ? await getFeedbackForCorrectness(base.correctness, normalizedQuestion.feedback)
+      ? await getFeedbackForCorrectness(base.correctness, normalizedQuestion.feedback as Partial<Feedback>)
       : undefined;
 
     base.feedback = feedback;
@@ -253,12 +308,16 @@ export async function model(question, session, env) {
   }
 }
 
-export const createCorrectResponseSession = (question, env) => {
+export const createCorrectResponseSession = (
+  question: PlacementOrderingModel,
+  env: PieEnvironment,
+): Promise<PlacementOrderingSession | null> => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       resolve({
         id: '1',
-        value: flattenCorrect(question),
+        // flattenCorrect returns ids for every entry that has one
+        value: flattenCorrect(question) as string[],
       });
     } else {
       resolve(null);
@@ -266,24 +325,24 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<PlacementOrderingModel> = {},
+  config: PlacementOrderingConfiguration = {},
+): PlacementOrderingValidationErrors => {
   const { choices, correctResponse } = model;
-  const errors = {};
+  const errors: PlacementOrderingValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
   });
 
   const reversedChoices = [...(choices || [])].reverse();
-  const choicesErrors = {};
+  const choicesErrors: Record<string, string> = {};
 
   reversedChoices.forEach((choice, index) => {
     const { id, label } = choice;
@@ -300,7 +359,9 @@ export const validate = (model = {}, config = {}) => {
   });
 
   const choicesIds = (choices || []).map((choice) => choice.id);
-  const correctResponseIds = (correctResponse || []).map((response) => response.id || response);
+  const correctResponseIds = (correctResponse || []).map(
+    (response) => (typeof response !== 'string' && response.id) || response,
+  );
 
   if (isEqual(choicesIds, correctResponseIds)) {
     errors.orderError = 'The correct ordering should not be identical to the initial ordering.';

@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { MatchModel, MatchRow } from '../types.js';
 
 export default {
   choiceMode: 'radio',
@@ -11,10 +11,10 @@ export default {
   promptEnabled: true,
   rationale: '',
   rationaleEnabled: true,
-  rows: [],
+  rows: [] as MatchRow[],
   scoringType: 'auto',
   studentInstructionsEnabled: true,
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<MatchModel, 'id' | 'element'>;

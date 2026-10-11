@@ -1,13 +1,20 @@
-// @ts-nocheck
-
+import type { Scale } from '@pie-element/multi-trait-rubric';
 import { RUBRIC_TYPES } from '@pie-lib/rubric';
+import type { ComplexRubricConfiguration, ComplexRubricModel } from '../types.js';
+
+// `@pie-lib/rubric` types these values as `string`; their literal types key the defaults by rubric type.
+const TYPES = RUBRIC_TYPES as {
+  SIMPLE_RUBRIC: 'simpleRubric';
+  MULTI_TRAIT_RUBRIC: 'multiTraitRubric';
+  RUBRICLESS: 'rubricless';
+};
 
 const multiTraitDefaultModel = {
   description: false,
   excludeZero: false,
   halfScoring: false,
   pointLabels: true,
-  scales: [],
+  scales: [] as Scale[],
   standards: false,
   visibleToStudent: true,
 };
@@ -200,16 +207,16 @@ export default {
   model: {
     rubricType: 'simpleRubric',
     rubrics: {
-      [RUBRIC_TYPES.SIMPLE_RUBRIC]: rubricDefaultModel,
-      [RUBRIC_TYPES.MULTI_TRAIT_RUBRIC]: multiTraitDefaultModel,
-      [RUBRIC_TYPES.RUBRICLESS]: rubriclessDefaultModel,
+      [TYPES.SIMPLE_RUBRIC]: rubricDefaultModel,
+      [TYPES.MULTI_TRAIT_RUBRIC]: multiTraitDefaultModel,
+      [TYPES.RUBRICLESS]: rubriclessDefaultModel,
     },
   },
   configuration: {
     // width: '770px',
     rubricOptions: ['simpleRubric', 'multiTraitRubric', 'rubricless'],
-    [RUBRIC_TYPES.MULTI_TRAIT_RUBRIC]: multiTraitDefaultConfiguration,
-    [RUBRIC_TYPES.SIMPLE_RUBRIC]: rubricDefaultConfiguration,
-    [RUBRIC_TYPES.RUBRICLESS]: rubriclessDefaultConfiguration,
+    [TYPES.MULTI_TRAIT_RUBRIC]: multiTraitDefaultConfiguration,
+    [TYPES.SIMPLE_RUBRIC]: rubricDefaultConfiguration,
+    [TYPES.RUBRICLESS]: rubriclessDefaultConfiguration,
   },
-};
+} satisfies { model: Omit<ComplexRubricModel, 'id' | 'element'>; configuration: ComplexRubricConfiguration };

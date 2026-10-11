@@ -1,7 +1,31 @@
-// @ts-nocheck
-
+import type { TraitErrors, MultiTraitRubricValidationErrors } from '@pie-element/multi-trait-rubric/controller';
+import type { RubricValidationErrors } from '@pie-element/rubric/controller';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 import { markupToText } from './utils.js';
+import type {
+  ComplexRubricConfiguration,
+  ComplexRubricModel,
+  ComplexRubricSession,
+  EmbeddedMultiTraitRubricModel,
+  EmbeddedRubricModel,
+} from '../types.js';
+
+/** Errors `validate()` reports: the simple rubric's or the multi trait rubric's, per `rubricType`. */
+export type ComplexRubricValidationErrors = RubricValidationErrors & MultiTraitRubricValidationErrors;
+
+/** A rubric model as `model()` hands it to delivery, which shows it when `visible`. */
+type ViewRubric<T> = Partial<T> & { visible?: boolean };
+
+type MultiTraitView = ViewRubric<EmbeddedMultiTraitRubricModel>;
+
+type NormalizedQuestion = Omit<ReturnType<typeof normalize>, 'rubrics'> & {
+  rubrics: {
+    simpleRubric?: ViewRubric<EmbeddedRubricModel>;
+    multiTraitRubric?: ViewRubric<EmbeddedMultiTraitRubricModel>;
+    rubricless?: ViewRubric<EmbeddedRubricModel>;
+  };
+};
 
 
 // todo the import from pie-lib/rubric WILL break pslb
@@ -10,27 +34,32 @@ const RUBRIC_TYPES = {
   SIMPLE_RUBRIC: 'simpleRubric',
   MULTI_TRAIT_RUBRIC: 'multiTraitRubric',
   'rubricless': 'rubricless',
-};
+} as const;
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => resolve({ ...defaults, ...model }));
+export function createDefaultModel(model: Partial<ComplexRubricModel> = {}) {
+  return new Promise<ReturnType<typeof normalize>>((resolve) => resolve({ ...defaults, ...model }));
 }
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: Partial<ComplexRubricModel>) => ({ ...defaults, ...question });
 
 /**
  * @param {*} question
  * @param {*} session
  * @param {*} env
  */
-export async function model(question, session, env) {
-  const normalizedQuestion = normalize(question);
+export async function model(
+  question: ComplexRubricModel,
+  _session: ComplexRubricSession | undefined,
+  env: PieEnvironment,
+) {
+  const normalizedQuestion: NormalizedQuestion = normalize(question);
 
   if (
     normalizedQuestion.rubricType === RUBRIC_TYPES.SIMPLE_RUBRIC ||
+    // @ts-expect-error RUBRIC_TYPES has no RUBRICLESS key, so a rubricless model takes the multi trait branch (as in legacy).
     normalizedQuestion.rubricType === RUBRIC_TYPES.RUBRICLESS
   ) {
-    return new Promise((resolve) => {
+    return new Promise<Partial<NormalizedQuestion>>((resolve) => {
       resolve(
         env && env.role && env.role === 'instructor'
           ? {
@@ -51,13 +80,13 @@ export async function model(question, session, env) {
       !env.role ||
       (env.role === 'student' && normalizedQuestion.rubrics && normalizedQuestion.rubrics.multiTraitRubric)
     ) {
-      normalizedQuestion.rubrics.multiTraitRubric.visible = normalizedQuestion.visibleToStudent;
+      (normalizedQuestion.rubrics.multiTraitRubric as MultiTraitView).visible = normalizedQuestion.visibleToStudent;
     } else {
-      normalizedQuestion.rubrics.multiTraitRubric.visible = true;
+      (normalizedQuestion.rubrics.multiTraitRubric as MultiTraitView).visible = true;
     }
 
     // todo update pie-ui instead of parsing this here:
-    const { scales, excludeZero } = normalizedQuestion.rubrics.multiTraitRubric || {};
+    const { scales, excludeZero } = (normalizedQuestion.rubrics.multiTraitRubric as MultiTraitView) || {};
     const parsedScales = (scales || []).map((scale) => ({ ...scale, excludeZero }));
 
     return {
@@ -92,8 +121,8 @@ export function outcome() {
   return new Promise((resolve) => resolve({ score: 0, empty: true }));
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (_question: ComplexRubricModel, env: PieEnvironment) => {
+  return new Promise<ComplexRubricSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       resolve({ id: '1' });
     } else {
@@ -104,17 +133,17 @@ export const createCorrectResponseSession = (question, env) => {
 
 // IMPORTANT! This function is a duplicate of rubric/controller/validate function!
 // If you make any changes to this function, please make sure you also update rubric/controller/validate function!“.
-const validateSimpleRubric = (model) => {
+const validateSimpleRubric = (model: EmbeddedRubricModel): RubricValidationErrors => {
   const { points } = model;
-  const errors = {};
-  const pointsDescriptorsErrors = {};
+  const errors: RubricValidationErrors = {};
+  const pointsDescriptorsErrors: Record<number, string> = {};
 
   (points || []).forEach((point, index) => {
 
     if (!point || point === '<div></div>') {
       pointsDescriptorsErrors[index] = 'Points descriptors cannot be empty.';
     } else {
-      const identicalPointDescr = points.slice(index + 1).some((p) => markupToText(p) === markupToText(point));
+      const identicalPointDescr = (points as string[]).slice(index + 1).some((p) => markupToText(p) === markupToText(point));
 
       if (identicalPointDescr) {
         pointsDescriptorsErrors[index] = 'Points descriptors should be unique.';
@@ -131,17 +160,17 @@ const validateSimpleRubric = (model) => {
 
 // IMPORTANT! This function is a duplicate of multi-trait-rubric/controller/validate function!
 // If you make any changes to this function, please make sure you also update multi-trait-rubric/controller/validate function!“.
-const validateMultiTraitRubric = (model) => {
+const validateMultiTraitRubric = (model: Partial<EmbeddedMultiTraitRubricModel>): MultiTraitRubricValidationErrors => {
   const { scales, description = false, pointLabels = false } = model;
-  const errors = {};
-  const traitsErrors = {};
-  const scorePointsErrors = {};
+  const errors: MultiTraitRubricValidationErrors = {};
+  const traitsErrors: Record<number, Record<number, TraitErrors>> = {};
+  const scorePointsErrors: Record<number, Record<number, string>> = {};
 
   (scales || []).forEach((scale, scaleIndex) => {
     const { traits = [] } = scale;
     const { scorePointsLabels = [] } = scale;
-    const scaleErrors = {};
-    const scorePointsLabelsErrors = {};
+    const scaleErrors: Record<number, TraitErrors> = {};
+    const scorePointsLabelsErrors: Record<number, string> = {};
 
     if (pointLabels) {
       scorePointsLabels.forEach((scorePointLabel, scoreIndex) => {
@@ -203,10 +232,13 @@ const validateMultiTraitRubric = (model) => {
   return errors;
 };
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<ComplexRubricModel> = {},
+  _config: ComplexRubricConfiguration = {},
+): ComplexRubricValidationErrors => {
   const { rubrics = {}, rubricType } = model;
   const { multiTraitRubric = {}, simpleRubric = {} } = rubrics;
-  let errors = {};
+  let errors: ComplexRubricValidationErrors = {};
 
   switch (rubricType) {
     case RUBRIC_TYPES.SIMPLE_RUBRIC:

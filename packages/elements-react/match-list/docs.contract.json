@@ -14,7 +14,8 @@
         "file": "src/controller/defaults.ts"
       },
       "config": {
-        "file": "src/controller/defaults.ts"
+        "file": "src/controller/defaults.ts",
+        "path": "configuration"
       }
     }
   ]

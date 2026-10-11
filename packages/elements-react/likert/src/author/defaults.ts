@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { LikertChoice, LikertConfiguration, LikertModel } from '../types.js';
 
 /** NOTE: teacherInstructions, studentInstructions, rationale & scoringType
  * functionalities are not defined yet - the value for those can belong to
@@ -6,7 +6,7 @@
  */
 export default {
   model: {
-    choices: [],
+    choices: [] as LikertChoice[],
     likertOrientation: 'horizontal',
     likertScale: 'likert3',
     likertType: 'agreement',
@@ -60,4 +60,4 @@ export default {
       },
     },
   },
-};
+} satisfies { model: Omit<LikertModel, 'id' | 'element'>; configuration: LikertConfiguration };

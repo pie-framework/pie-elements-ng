@@ -1,14 +1,56 @@
-// @ts-nocheck
-
 import { cloneDeep, find, isEmpty, isEqualWith, merge, omitBy } from '@pie-element/shared-lodash';
-import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import { getFeedbackForCorrectness, type Correctness, type Feedback } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import * as math from 'mathjs';
 
 import defaults from './defaults.js';
 import { reloadTicksData } from './utils.js';
+import type {
+  NumberLineGraph,
+  NumberLineModel,
+  NumberLineResponse,
+  NumberLineSession,
+  NumberLineTicks,
+  NumberLineConfiguration,
+} from '../types.js';
 
-const score = (number) => {
+/** The environment, plus the accessibility settings a host may pass */
+type NumberLineEnvironment = PieEnvironment & { accessibility?: { colorContrast?: string } };
+
+/** A rule of the legacy partial scoring that `getScore` reads */
+type PartialScoringRule = { numberOfCorrect: number; scorePercentage: number };
+
+/** The legacy question shape `getScore` reads: `partialScoring` holds rules, gated by `allowPartialScoring` */
+type LegacyScoredQuestion = {
+  correctResponse: NumberLineResponse[];
+  allowPartialScoring?: boolean;
+  partialScoring?: PartialScoringRule[];
+};
+
+type Corrected = {
+  /** Indices of the answers that match a correct response */
+  correct: number[];
+  /** Indices of the answers that match no correct response */
+  incorrect: number[];
+  /** Correct responses no answer matched */
+  notInAnswer: NumberLineResponse[];
+  noCorrectResponse?: boolean;
+};
+
+type NumberLineCorrectness = 'unknown' | 'unanswered' | 'correct' | 'partial' | 'incorrect';
+
+export type NumberLineValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  widthError?: string;
+  domainError?: string;
+  maxError?: string;
+  pointsError?: string;
+  correctResponseError?: string;
+};
+
+const score = (number: number) => {
   return {
     score: {
       scaled: number,
@@ -16,7 +58,7 @@ const score = (number) => {
   };
 };
 
-const getPartialScore = (corrected, ps) => {
+const getPartialScore = (corrected: Corrected, ps: PartialScoringRule[]) => {
   const { correct } = corrected;
   const rule = ps.find((r) => r.numberOfCorrect === correct.length);
 
@@ -27,7 +69,7 @@ const getPartialScore = (corrected, ps) => {
   }
 };
 
-const accumulateAnswer = (correctResponse) => (total, answer) => {
+const accumulateAnswer = (correctResponse: NumberLineResponse[]) => (total: number, answer: NumberLineResponse) => {
   const isCorrectResponse = correctResponse.some((cr) => matches(cr)(answer));
   return total + (isCorrectResponse ? 1 : 0);
 };
@@ -39,8 +81,12 @@ const accumulateAnswer = (correctResponse) => (total, answer) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: NumberLineModel,
+  session: NumberLineSession | null | undefined,
+  env: PieEnvironment,
+): string[] => {
+  const traceLog: string[] = [];
 
   const studentAnswers = session?.answer || [];
   const correctResponse = model?.correctResponse || [];
@@ -73,7 +119,6 @@ export const getLogTrace = (model, session, env) => {
   }
 
   const studentAnswersCopy = [...studentAnswers];
-  const correctResponseCopy = [...correctResponse];
 
   correct.forEach((index) => {
     const answer = studentAnswersCopy[index];
@@ -122,15 +167,21 @@ export const getLogTrace = (model, session, env) => {
 
 /**
  */
-export function outcome(model, session, env) {
+export function outcome(
+  model: NumberLineModel,
+  session: NumberLineSession | null | undefined,
+  env: PieEnvironment,
+): Promise<{ score: number; empty?: boolean; logTrace: string[] }> {
   return new Promise((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ score: 0, empty: true, logTrace: ['Student did not interact with the number line.'] });
     } else {
       const partialScoringEnabled = partialScoring.enabled(model, env);
-      const numCorrect = (session.answer || []).reduce(accumulateAnswer(model.correctResponse), 0);
+      // Read without the defaults: a model without correctResponse throws here.
+      const correctResponse = model.correctResponse as NumberLineResponse[];
+      const numCorrect = (session.answer || []).reduce(accumulateAnswer(correctResponse), 0);
 
-      let total = model.correctResponse.length;
+      let total = correctResponse.length;
       let numIncorrect = 0;
 
       if ((session.answer || []).length > total) {
@@ -155,7 +206,10 @@ export function outcome(model, session, env) {
   });
 }
 
-export function getScore(question, session) {
+export function getScore(
+  question: LegacyScoredQuestion,
+  session: NumberLineSession | null | undefined,
+): Promise<{ score: { scaled: number } }> {
   return new Promise((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ score: { scaled: 0 } });
@@ -188,7 +242,7 @@ export function getScore(question, session) {
 
 export const CLOSE_TO_PRECISION = 3;
 
-export const closeTo = (a, b, precision) => {
+export const closeTo = (a: number, b: number, precision?: number) => {
   precision = precision || 5;
   const expectedDiff = Math.pow(10, -precision) / 2;
   const receivedDiff = Math.abs(a - b);
@@ -196,15 +250,15 @@ export const closeTo = (a, b, precision) => {
   return close;
 };
 
-const matches = (a) => (v) => {
-  return isEqualWith(a, v, (v, ov) => {
+const matches = (a: NumberLineResponse) => (v: NumberLineResponse) => {
+  return isEqualWith(a, v, (v: unknown, ov: unknown) => {
     if (typeof v === 'number' && typeof ov === 'number') {
       return closeTo(v, ov, CLOSE_TO_PRECISION);
     }
   });
 };
 
-export const getCorrected = (answer, correctResponse) => {
+export const getCorrected = (answer: NumberLineResponse[], correctResponse: NumberLineResponse[]): Corrected => {
   if (isEmpty(correctResponse) && answer.length > 0) {
     return {
       correct: [],
@@ -214,7 +268,7 @@ export const getCorrected = (answer, correctResponse) => {
     };
   }
 
-  return answer.reduce(
+  return answer.reduce<Corrected>(
     (acc, a, index) => {
       const { correct, incorrect, notInAnswer } = acc;
 
@@ -240,7 +294,7 @@ export const getCorrected = (answer, correctResponse) => {
   );
 };
 
-export const getCorrectness = (corrected) => {
+export const getCorrectness = (corrected: Corrected): NumberLineCorrectness => {
   const { incorrect, correct, notInAnswer, noCorrectResponse } = corrected;
 
   if (noCorrectResponse) {
@@ -270,7 +324,7 @@ export const getCorrectness = (corrected) => {
  * A sample of a normalize function see:
  * https://github.com/pie-framework/pie-elements/issues/21
  */
-export function normalize(question) {
+export function normalize(question: NumberLineModel) {
   // A copy: merge and model()'s tick updates write into the objects they are given.
   const base = cloneDeep(defaults);
   const feedback = merge(base.feedback, question.feedback);
@@ -278,7 +332,7 @@ export function normalize(question) {
   return { ...base, ...question, feedback };
 }
 
-export function createDefaultModel(model = {}) {
+export function createDefaultModel(model: Partial<NumberLineModel> = {}): Promise<Partial<NumberLineModel>> {
   return new Promise((resolve) => {
     const out = {
       ...model,
@@ -294,8 +348,8 @@ export function createDefaultModel(model = {}) {
 }
 
 // this function is duplicated in configure; at some point, use the same shared function
-const updateTicks = (model) => {
-  const { graph: { domain, labelStep, ticks = {} } = {} } = model;
+const updateTicks = <T extends { graph: NumberLineGraph }>(model: T): T => {
+  const { graph: { domain, labelStep, ticks = {} as NumberLineTicks } = {} as NumberLineGraph } = model;
   const { minor, major } = ticks;
 
   if (domain) {
@@ -308,7 +362,7 @@ const updateTicks = (model) => {
     ticks.tickIntervalType = 'Fraction';
 
     // update the ticks frequency and label value to match the label step if needed
-    const step = math.evaluate(labelStep);
+    const step: number = math.evaluate(labelStep);
 
     if (step !== major) {
       ticks.major = step;
@@ -319,7 +373,11 @@ const updateTicks = (model) => {
   return model;
 };
 
-export async function model(question, session, env) {
+export async function model(
+  question: NumberLineModel,
+  session: NumberLineSession | null | undefined,
+  env: NumberLineEnvironment,
+) {
   if (!question) {
     throw new Error('question is null');
   }
@@ -334,7 +392,7 @@ export async function model(question, session, env) {
 
     const correctResponse = cloneDeep(normalizedQuestion.correctResponse);
     const corrected = evaluateMode && getCorrected(session ? session.answer || [] : [], correctResponse);
-    const correctness = evaluateMode && getCorrectness(corrected);
+    const correctness = evaluateMode && getCorrectness(corrected as Corrected);
 
     const { exhibitOnly } = graph;
     const disabled = env.mode !== 'gather' || exhibitOnly === true;
@@ -345,7 +403,8 @@ export async function model(question, session, env) {
     }
 
     const feedbackMessage = evaluateMode
-      ? await getFeedbackForCorrectness(correctness, normalizedQuestion.feedback)
+      ? // 'unknown' (no correct response) has no default feedback, so it gets no message.
+        await getFeedbackForCorrectness(correctness as Correctness, normalizedQuestion.feedback as Partial<Feedback>)
       : undefined;
 
     const out = {
@@ -355,7 +414,7 @@ export async function model(question, session, env) {
       disabled,
       corrected,
       correctResponse:
-        evaluateMode && ['unanswered', 'correct'].indexOf(correctness) === -1 && normalizedQuestion.correctResponse,
+        evaluateMode && ['unanswered', 'correct'].indexOf(correctness as string) === -1 && normalizedQuestion.correctResponse,
       feedback: feedbackMessage && {
         type: correctness,
         message: feedbackMessage,
@@ -370,7 +429,10 @@ export async function model(question, session, env) {
   }
 }
 
-export const createCorrectResponseSession = (question, env) => {
+export const createCorrectResponseSession = (
+  question: NumberLineModel,
+  env: PieEnvironment,
+): Promise<NumberLineSession | null> => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { correctResponse: answer } = question;
@@ -385,41 +447,47 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<NumberLineModel> = {},
+  config: NumberLineConfiguration = {},
+): NumberLineValidationErrors => {
   const { graph, correctResponse } = model || {};
   const { maxMaxElements = 20, numberLineDimensions: { min: minWidth = 200, max: maxWidth = 800 } = {} } = config || {};
   const { width, domain, maxNumberOfPoints } = graph || {};
   const { min, max } = domain || {};
-  const errors = {};
+  const errors: NumberLineValidationErrors = {};
 
-  ['teacherInstructions', 'prompt'].forEach((field) => {
+  (['teacherInstructions', 'prompt'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
   });
 
-  if (width < minWidth || width > maxWidth) {
+  // A missing value compares false, so it raises no error.
+  if ((width as number) < minWidth || (width as number) > maxWidth) {
     errors.widthError = `Width should be a value between ${minWidth} and ${maxWidth}.`;
   }
 
   const MIN_DOMAIN = -100000;
   const MAX_DOMAIN = 100000;
 
-  if (min < MIN_DOMAIN || min > MAX_DOMAIN || max < MIN_DOMAIN || max > MAX_DOMAIN) {
+  if (
+    (min as number) < MIN_DOMAIN ||
+    (min as number) > MAX_DOMAIN ||
+    (max as number) < MIN_DOMAIN ||
+    (max as number) > MAX_DOMAIN
+  ) {
     errors.domainError = `Min and max values must both be in the range [${MIN_DOMAIN}, ${MAX_DOMAIN}].`;
   }
 
-  if (min >= max) {
+  if ((min as number) >= (max as number)) {
     errors.maxError = 'Max value must be greater than min value.';
   }
 
-  if (maxNumberOfPoints < 1 || maxNumberOfPoints > maxMaxElements) {
+  if ((maxNumberOfPoints as number) < 1 || (maxNumberOfPoints as number) > maxMaxElements) {
     errors.pointsError = `Max number of elements should be between 1 and ${maxMaxElements}.`;
   }
 

@@ -1,13 +1,60 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { cloneDeep, isEmpty, uniqWith } from '@pie-element/shared-lodash';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 import { equalMarks, sortedAnswers, removeInvalidAnswers } from './utils.js';
+import type {
+  Answer,
+  Arrows,
+  Graph,
+  GraphingSolutionSetModel,
+  GraphingSolutionSetSession,
+  Mark,
+} from '../types.js';
 
 const log = debug('@pie-element:graphing-solution-set:controller');
 
-const initializeGraphMap = () => ({
+type Correctness = 'correct' | 'incorrect' | 'missing';
+
+/** A session mark scored against an answer. */
+type CorrectedMark = Mark & { correctness: Correctness };
+
+/** An answer as scoring reads it; the placeholder `initializeGraphMap()` holds no marks. */
+type PossibleAnswer = Partial<Answer>;
+
+type BestAnswer = {
+  bestScore: number;
+  bestScoreAnswerKey: string | null;
+  answersCorrected: CorrectedMark[];
+  foundOneSolution: boolean;
+};
+
+/** The model the delivery view receives. */
+type GraphingSolutionSetViewModel = Omit<
+  GraphingSolutionSetModel,
+  'arrows' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
+> & {
+  arrows?: Arrows;
+  defaultTool: 'line';
+  disabled: boolean;
+  prompt?: string | null;
+  rationale?: string | null;
+  size?: Graph;
+  showToggle: boolean;
+  teacherInstructions?: string | null;
+  /** Not read by the delivery view, which offers the line and polygon tools. */
+  toolbarTools?: unknown;
+  /** Session marks; in evaluate mode with a correct answer, each carries `correctness` */
+  answersCorrected?: Mark[];
+  correctResponse?: Mark[];
+};
+
+/** Errors `validate()` reports; `correctAnswerErrors` is keyed by answer key. */
+export type GraphingSolutionSetValidationErrors = {
+  correctAnswerErrors?: Record<string, string>;
+};
+
+const initializeGraphMap = (): PossibleAnswer & { line: Mark[] } => ({
   line: [],
 });
 
@@ -16,7 +63,7 @@ const initializeGraphMap = () => ({
  * @param {Object} mark1 - first mark
  * @param {Object} mark2 - second mark
  * */
-export const compareMarks = (mark1, mark2) => {
+export const compareMarks = (mark1: Mark | undefined, mark2: Mark | undefined) => {
   // marks can be compared with equalMarks[type] function only if they have the same type;
   // if type is different, they are clearly not equal
   return !!(
@@ -33,16 +80,23 @@ export const compareMarks = (mark1, mark2) => {
  * @param {Object} sessionAnswers - array of marks from session
  * @param {Object} marks - array of marks from correct answer
  * */
-export const getAnswerCorrected = ({ sessionAnswers, marks: correctAnswers }) => {
-  sessionAnswers = sessionAnswers || [];
-  correctAnswers = correctAnswers || [];
-  const rez = cloneDeep(sessionAnswers).reduce((correctedAnswer, answer) => {
-    const answerIsCorrect = correctAnswers.find((mark) => compareMarks(answer, mark));
-    answer.correctness = answerIsCorrect ? 'correct' : 'incorrect';
+export const getAnswerCorrected = ({
+  sessionAnswers: sessionAnswersInput,
+  marks: correctAnswersInput,
+}: {
+  sessionAnswers?: Mark[];
+  marks?: Mark[];
+}): CorrectedMark[] => {
+  const sessionAnswers = sessionAnswersInput || [];
+  const correctAnswers = correctAnswersInput || [];
+  const rez = cloneDeep(sessionAnswers).reduce<CorrectedMark[]>((correctedAnswer, sessionMark) => {
+    const answerIsCorrect = correctAnswers.find((mark) => compareMarks(sessionMark, mark));
+    const correctness: Correctness = answerIsCorrect ? 'correct' : 'incorrect';
+    const answer: CorrectedMark = Object.assign(sessionMark, { correctness });
     return [...correctedAnswer, answer];
   }, []);
   // add missing objects from correct answer
-  const missingAnswers = cloneDeep(correctAnswers).reduce((correctedAnswer, answer) => {
+  const missingAnswers = cloneDeep(correctAnswers).reduce<CorrectedMark[]>((correctedAnswer, answer) => {
     const answerIndex = sessionAnswers.find((mark) => compareMarks(answer, mark));
     if (!answerIndex) {
       // means that corrected answer is missing from session, so we mark it as missing object
@@ -59,36 +113,40 @@ export const getAnswerCorrected = ({ sessionAnswers, marks: correctAnswers }) =>
  * @param {Object} session - session object
  * @param {Object} env - env object
  * */
-export const getBestAnswer = (question, session, env = {}) => {
-  // questionPossibleAnswers contains all possible answers (correct response and alternates);
-  let { answers: questionPossibleAnswers = {}, scoringType } = question || {};
-  let { answer } = session || {};
+export const getBestAnswer = (
+  question: GraphingSolutionSetModel | undefined,
+  session: GraphingSolutionSetSession | undefined,
+  _env: Partial<PieEnvironment> = {},
+): BestAnswer => {
+  // questionAnswers contains all possible answers (correct response and alternates);
+  const questionAnswers: Record<string, Answer> = question?.answers ?? {};
+  const { answer: sessionAnswer } = session || {};
   // filter the incomplete objects
-  Object.entries(questionPossibleAnswers || {}).forEach(
-    ([key, value]) =>
-      (questionPossibleAnswers[key] = { ...value, marks: value?.marks.filter((mark) => !mark.building) }),
+  Object.entries(questionAnswers || {}).forEach(
+    ([key, value]) => (questionAnswers[key] = { ...value, marks: value?.marks.filter((mark) => !mark.building) }),
   );
   // initialize answer if no values
-  answer = answer || [];
+  const answer = sessionAnswer || [];
+  let questionPossibleAnswers: Record<string, PossibleAnswer | undefined>;
   // initialize one possible answer if no values
-  if (isEmpty(questionPossibleAnswers)) {
+  if (isEmpty(questionAnswers)) {
     questionPossibleAnswers = { correctAnswer: initializeGraphMap() };
   } else {
     questionPossibleAnswers = {
-      correctAnswer: questionPossibleAnswers.correctAnswer,
-      ...sortedAnswers(questionPossibleAnswers),
+      correctAnswer: questionAnswers.correctAnswer,
+      ...sortedAnswers<PossibleAnswer>(questionAnswers),
     };
   }
   // student's answers without DUPLICATES
   const sessionAnswers = uniqWith(answer, compareMarks);
   // array of possible answers entries
   const possibleAnswers = Object.entries(questionPossibleAnswers);
-  return possibleAnswers.reduce(
+  return possibleAnswers.reduce<BestAnswer>(
     (acc, entry) => {
       // iterating each possible answer (main + alternates)
       const possibleAnswerKey = entry[0];
       const possibleAnswer = entry[1] || {};
-      let { marks } = possibleAnswer;
+      const { marks } = possibleAnswer;
       if (!marks || !marks.length) {
         return acc;
       }
@@ -119,7 +177,7 @@ export const getBestAnswer = (question, session, env = {}) => {
       bestScore: 0,
       bestScoreAnswerKey: null,
       // initially we just suppose all the answers are incorrect
-      answersCorrected: cloneDeep(sessionAnswers).map((answer) => ({ ...answer, correctness: 'incorrect' })),
+      answersCorrected: cloneDeep(sessionAnswers).map((answer): CorrectedMark => ({ ...answer, correctness: 'incorrect' })),
       foundOneSolution: false,
     },
   );
@@ -129,7 +187,7 @@ export const getBestAnswer = (question, session, env = {}) => {
  * Constant normalize
  * @param {Object} question - question object
  * */
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: GraphingSolutionSetModel): GraphingSolutionSetModel => ({ ...defaults, ...question });
 
 /*
  * Function to set model
@@ -137,17 +195,23 @@ export const normalize = (question) => ({ ...defaults, ...question });
  * @param {Object} session - session object
  * @param {Object} env - env object
  * */
-export function model(question, session, env) {
+export function model(
+  question: GraphingSolutionSetModel,
+  session: GraphingSolutionSetSession,
+  env: PieEnvironment,
+): Promise<GraphingSolutionSetViewModel> {
   return new Promise((resolve) => {
     const normalizedQuestion = normalize(question);
     // ensure removing of invalid answers
     // need this if undo redo was last operation
     session.answer = removeInvalidAnswers(session.answer);
     // console.log('normalizedQuestion', normalizedQuestion);
+    // `defaultTool` and `toolbarTools` are not model keys; destructuring keeps them out of `questionProps`.
     const { defaultTool, extraCSSRules, prompt, promptEnabled, graph, answers, toolbarTools, ...questionProps } =
-      normalizedQuestion || {};
+      normalizedQuestion as GraphingSolutionSetModel & { defaultTool?: unknown; toolbarTools?: unknown };
     let { arrows } = normalizedQuestion;
-    const { mode, role } = env || {};
+    const mode = env?.mode;
+    const role = env?.role;
 
     // This is used for offering support for old models which have the property arrows: boolean
     // Same thing is set in authoring : packages/graphing/configure/src/configure.jsx - componentDidMount
@@ -169,7 +233,7 @@ export function model(question, session, env) {
       }
     }
 
-    const base = {
+    const base: GraphingSolutionSetViewModel = {
       ...questionProps,
       answers,
       arrows,
@@ -190,7 +254,7 @@ export function model(question, session, env) {
     };
 
     if (role === 'instructor' && (mode === 'view' || mode === 'evaluate')) {
-      const { rationale, rationaleEnabled, teacherInstructions, teacherInstructionsEnabled } = normalizedQuestion || {};
+      const { rationale, rationaleEnabled, teacherInstructions, teacherInstructionsEnabled } = normalizedQuestion;
 
       base.rationale = rationaleEnabled ? rationale : null;
       base.teacherInstructions = teacherInstructionsEnabled ? teacherInstructions : null;
@@ -225,8 +289,12 @@ export function model(question, session, env) {
  * @param {Object} session - session object
  * @param {Object} env - env object
  * */
-export function outcome(question, session, env = {}) {
-  return new Promise((resolve) => {
+export function outcome(
+  question: GraphingSolutionSetModel,
+  session: GraphingSolutionSetSession | undefined,
+  env: Partial<PieEnvironment> = {},
+) {
+  return new Promise<{ score: number; empty?: boolean }>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ score: 0, empty: true });
     }
@@ -247,11 +315,11 @@ export function outcome(question, session, env = {}) {
  * @param {Object} question - question object
  * @param {Object} env - env object
  * */
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: GraphingSolutionSetModel, env: PieEnvironment) => {
+  return new Promise<GraphingSolutionSetSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { answers } = question || {};
-      let marks = [];
+      let marks: Mark[] = [];
       if (answers && Object.values(answers)) {
         const correctAnswer = answers.correctAnswer || Object.values(answers)[0] || {};
         marks = correctAnswer.marks || [];
@@ -270,10 +338,11 @@ export const createCorrectResponseSession = (question, env) => {
  * Constant to validate model before saving item
  * @param {Object} model - model object
  * */
-export const validate = (model = {}) => {
-  const { answers, gssLineData } = model;
-  const errors = {};
-  const correctAnswerErrors = {};
+export const validate = (model: Partial<GraphingSolutionSetModel> = {}): GraphingSolutionSetValidationErrors => {
+  // Read unguarded: validate throws on a model without answers or gssLineData.
+  const { answers, gssLineData } = model as Required<Pick<GraphingSolutionSetModel, 'answers' | 'gssLineData'>>;
+  const errors: GraphingSolutionSetValidationErrors = {};
+  const correctAnswerErrors: Record<string, string> = {};
   let found = false;
   if (gssLineData.numberOfLines === 1) {
     if (answers.correctAnswer.marks.length < 1) {
@@ -294,8 +363,9 @@ export const validate = (model = {}) => {
       }
     }
   }
-  let polygon = answers.correctAnswer.marks.find((mark) => mark.type === 'polygon');
-  if (!found && (!gssLineData.selectedTool === 'solutionSet' || !polygon)) {
+  const polygon = answers.correctAnswer.marks.find((mark) => mark.type === 'polygon');
+  // `!selectedTool` is a boolean, so this comparison is always false and the check reduces to `!polygon`.
+  if (!found && ((!gssLineData.selectedTool as unknown) === 'solutionSet' || !polygon)) {
     correctAnswerErrors.correctAnswer = 'Please select a solution set for the graphing solution set item.';
   }
   if (!isEmpty(correctAnswerErrors)) {

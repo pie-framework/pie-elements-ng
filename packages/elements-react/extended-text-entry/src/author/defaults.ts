@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { ExtendedTextEntryConfiguration, ExtendedTextEntryModel } from '../types.js';
 
 export default {
   model: {
@@ -143,4 +143,7 @@ export default {
       mmlEditing: false,
     },
   },
+} satisfies {
+  model: Omit<ExtendedTextEntryModel, 'id' | 'element'>;
+  configuration: ExtendedTextEntryConfiguration;
 };

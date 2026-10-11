@@ -39,7 +39,12 @@ import {
   unplacedTiles,
 } from './dnd.js';
 import { regionKey } from '../controller/region.js';
-import type { Region, VennModel, VennSession, VennTile } from '../types.js';
+import type {
+  Region,
+  VennClassificationModel,
+  VennClassificationSession,
+  VennTile,
+} from '../types.js';
 
 type VmTile = {
   id: string;
@@ -63,13 +68,16 @@ type ViewModel = {
 
 let props = $props<{
   model?: ViewModel;
-  session?: VennSession;
-  onSessionChange?: (session: VennSession) => void;
+  session?: VennClassificationSession;
+  onSessionChange?: (session: VennClassificationSession) => void;
 }>();
 
 /** The only circle count the v1 layout draws; `validate()` rejects any other. */
 const SUPPORTED_CIRCLES = 2;
-const DEFAULT_CIRCLES: VennModel['circles'] = [{ label: 'Set A' }, { label: 'Set B' }];
+const DEFAULT_CIRCLES: VennClassificationModel['circles'] = [
+  { label: 'Set A' },
+  { label: 'Set B' },
+];
 
 /**
  * `url(#…)` references resolve page-wide, so two diagrams on one page (or the
@@ -105,13 +113,13 @@ let detachPointerDrag: (() => void) | null = null;
  */
 let keyActivatedTileId: string | null = null;
 
-const circles = $derived<VennModel['circles']>(
-  (props?.model?.circles ?? DEFAULT_CIRCLES) as VennModel['circles']
+const circles = $derived<VennClassificationModel['circles']>(
+  (props?.model?.circles ?? DEFAULT_CIRCLES) as VennClassificationModel['circles']
 );
 const circleCountSupported = $derived(circles.length === SUPPORTED_CIRCLES);
 const language = $derived<string | undefined>(props?.model?.language);
 
-const modelShape = $derived<VennModel>({
+const modelShape = $derived<VennClassificationModel>({
   circles,
   tiles: (props?.model?.tiles ?? []) as VennTile[],
   regionLabels: props?.model?.regionLabels ?? {},
@@ -128,12 +136,14 @@ const visiblePlacements = $derived<Record<string, Region | null>>(
   buildVisiblePlacements(props?.session, props?.model, showCorrect)
 );
 
-const visibleSession = $derived<VennSession>({ placements: visiblePlacements });
+const visibleSession = $derived<VennClassificationSession>({ placements: visiblePlacements });
 
 const grouped = $derived<Record<string, VennTile[]>>(
-  groupTilesByRegion(modelShape as VennModel, visibleSession)
+  groupTilesByRegion(modelShape as VennClassificationModel, visibleSession)
 );
-const trayTiles = $derived<VennTile[]>(unplacedTiles(modelShape as VennModel, visibleSession));
+const trayTiles = $derived<VennTile[]>(
+  unplacedTiles(modelShape as VennClassificationModel, visibleSession)
+);
 
 /** One tile with an image puts every tile on the taller image grid. */
 const cell = $derived<TileCell>(
@@ -149,7 +159,9 @@ const geometry = $derived<DiagramGeometry>(
   )
 );
 const layout = $derived<DiagramLayout | null>(
-  circleCountSupported ? buildLayout2Set(modelShape as VennModel, geometry, cell) : null
+  circleCountSupported
+    ? buildLayout2Set(modelShape as VennClassificationModel, geometry, cell)
+    : null
 );
 /** Placed tiles scale with the rendered diagram, not below the PRD's 44 px hit target. */
 const tileScale = $derived(placedTileScale(diagramWidth, geometry, cell));
@@ -161,7 +173,7 @@ const navigableTargets = $derived<string[]>(['0', '0,1', '1', '', 'tray']);
  * off when the mode leaves evaluate, when the view model carries no correct
  * regions to show, and when the player hands over a different session.
  */
-let showCorrectSession: VennSession | undefined;
+let showCorrectSession: VennClassificationSession | undefined;
 $effect.pre(() => {
   const session = props?.session;
   const canShowCorrect = isEvaluate && !!props?.model?.correctRegionsById;
@@ -182,7 +194,7 @@ onDestroy(() => {
 });
 
 function buildVisiblePlacements(
-  session: VennSession | undefined,
+  session: VennClassificationSession | undefined,
   model: ViewModel | undefined,
   show: boolean
 ): Record<string, Region | null> {
@@ -225,7 +237,7 @@ function clientToViewBox(clientX: number, clientY: number): { x: number; y: numb
 
 function commitPlacement(tileId: string, placement: Region | null) {
   const next = applyPlacement({
-    model: modelShape as VennModel,
+    model: modelShape as VennClassificationModel,
     session: props?.session,
     tileId,
     placement,
@@ -236,7 +248,7 @@ function commitPlacement(tileId: string, placement: Region | null) {
 
 function findTile(id: string | null | undefined): VennTile | null {
   if (!id) return null;
-  return ((modelShape as VennModel).tiles || []).find((t) => t.id === id) ?? null;
+  return ((modelShape as VennClassificationModel).tiles || []).find((t) => t.id === id) ?? null;
 }
 
 function regionByKey(key: string): RegionLayout | undefined {
@@ -473,7 +485,7 @@ $effect(() => {
   // Re-typeset whenever visible placements or tile labels change.
   // Touch `visiblePlacements` and `modelShape.tiles` length so Svelte tracks them.
   const _ = visiblePlacements;
-  const __ = (modelShape as VennModel).tiles?.length ?? 0;
+  const __ = (modelShape as VennClassificationModel).tiles?.length ?? 0;
   void _;
   void __;
   tick().then(typeset);

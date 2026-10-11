@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import debug from 'debug';
 import { defaults, isArray } from '@pie-element/shared-lodash';
 import {
@@ -10,17 +8,35 @@ import {
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
+import type { ConfigurePropWithEnabled } from '@pie-element/shared-types';
 
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 
 import sensibleDefaults from './defaults.js';
 import { processMarkup, createSlateMarkup } from './markupUtils.js';
+import type {
+  Choice,
+  ExplicitConstructedResponseConfiguration,
+  ExplicitConstructedResponseModel,
+} from '../types.js';
+
+/** The configuration once `sensibleDefaults.configuration` has filled the keys it carries. */
+type AuthorConfiguration = ExplicitConstructedResponseConfiguration &
+  Required<Pick<ExplicitConstructedResponseConfiguration, 'language' | 'languageChoices'>>;
 
 const log = debug('explicit-constructed-response:configure');
 
 export default class ExplicitConstructedResponse extends HTMLElement {
-  static prepareModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: ExplicitConstructedResponseConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static prepareModel = (model: Partial<ExplicitConstructedResponseModel> = {}): AuthorModel => {
     const joinedObj = {
       ...sensibleDefaults.model,
       ...model,
@@ -36,7 +52,7 @@ export default class ExplicitConstructedResponse extends HTMLElement {
           joinedObj.choices[key] = (joinedObj.choices[key] || []).map((item, index) => {
             if (!item.value) {
               log('Choice does not contain "value" property, which is required.', item);
-              return { value: `${index}`, ...item };
+              return { value: `${index}`, ...(item as Partial<Choice>) } as Choice;
             }
 
             return item;
@@ -59,7 +75,7 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     this._configuration = sensibleDefaults.configuration;
   }
 
-  set model(s) {
+  set model(s: Partial<ExplicitConstructedResponseModel>) {
     this._model = ExplicitConstructedResponse.prepareModel(s);
     if (this._model.responseAreaInputConfiguration) {
       this._model.responseAreaInputConfiguration =
@@ -68,28 +84,31 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     this._render();
   }
 
-  set configuration(c) {
-    this._configuration = defaults(c, sensibleDefaults.configuration);
+  set configuration(c: ExplicitConstructedResponseConfiguration) {
+    const newConfiguration = defaults(c, sensibleDefaults.configuration) as AuthorConfiguration;
+
+    this._configuration = newConfiguration;
 
     // if language:enabled is true, then the corresponding default item model should include a language value;
     // if it is false, then the language field should be omitted from the item model.
     // if a default item model includes a language value (e.g., en_US) and the corresponding authoring view settings have language:settings = true,
     // then (a) language:enabled should also be true, and (b) that default language value should be represented in languageChoices[] (as a key).
+    // `defaults()` fills `c` in place, so `c.language` is set in the `else if` below.
     if (c.language?.enabled) {
       if (c.languageChoices?.options?.length) {
         this._model.language = c.languageChoices.options[0].value;
       }
-    } else if (c.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+    } else if ((c.language as ConfigurePropWithEnabled).settings && this._model.language) {
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -101,18 +120,18 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged: any = (m, reset)=> {
+  onModelChanged = (m: Partial<AuthorModel>, reset?: boolean) => {
     this._model = ExplicitConstructedResponse.prepareModel({
       ...this._model,
       ...m,
@@ -121,7 +140,7 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     this.dispatchModelUpdated(reset);
   };
 
-  onConfigurationChanged: any =(c) => {
+  onConfigurationChanged = (c: ExplicitConstructedResponseConfiguration) => {
     this._configuration = c;
 
     const newInputConfig = this._configuration?.responseAreaInputConfiguration?.inputConfiguration;
@@ -135,19 +154,19 @@ export default class ExplicitConstructedResponse extends HTMLElement {
   };
 
   /** @param {done, progress, file} handler */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root as ReactRoot } from 'react-dom/client';
 import debug from 'debug';
 import {
   ModelUpdatedEvent,
@@ -9,20 +7,29 @@ import {
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
-import Root from './root.js';
+import Root, { type AuthorModel } from './root.js';
 import sensibleDefaults from './defaults.js';
+import type { Dimensions, HotspotConfiguration, HotspotModel, Shapes } from '../types.js';
 
 const log = debug('hotspot:configure');
 
 export default class HotspotConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  private _root: ReactRoot | null;
+  private _model: AuthorModel;
+  private _configuration: HotspotConfiguration;
+
+  // A one-element array is always truthy, so the defaults' lists are never the fallback.
+  static createDefaultModel = (model: Partial<HotspotModel> = {}): AuthorModel => ({
     ...sensibleDefaults.model,
     ...model,
-    hotspotList: model.hotspotList || [model.hotspotColor] || sensibleDefaults.model.hotspotList,
-    outlineList: model.outlineList || [model.outlineColor] || sensibleDefaults.model.outlineList,
-    shapes: model.shapes || sensibleDefaults.model.shapes || {},
+    hotspotList: model.hotspotList || ([model.hotspotColor] as string[]),
+    outlineList: model.outlineList || ([model.outlineColor] as string[]),
+    shapes: model.shapes || sensibleDefaults.model.shapes,
   });
 
   constructor() {
@@ -33,12 +40,12 @@ export default class HotspotConfigure extends HTMLElement {
     this.onModelChanged = this.onModelChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: Partial<HotspotModel>) {
     this._model = HotspotConfigure.createDefaultModel(s);
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: HotspotConfiguration) {
     const newConfiguration = {
       ...sensibleDefaults.configuration,
       ...c,
@@ -55,16 +62,16 @@ export default class HotspotConfigure extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -76,24 +83,24 @@ export default class HotspotConfigure extends HTMLElement {
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: AuthorModel, reset?: boolean) {
     this._model = m;
     this.dispatchModelUpdated(reset);
     this._render();
   }
 
-  onConfigurationChanged: any = (c) => {
+  onConfigurationChanged = (c: HotspotConfiguration) => {
     this._configuration = c;
     this._render();
   };
 
-  onModelChangedByConfig: any = (m, propertyType) => {
+  onModelChangedByConfig = (m: AuthorModel, propertyType?: string) => {
     const _model = m;
 
     if (propertyType === 'multipleCorrect') {
@@ -107,68 +114,68 @@ export default class HotspotConfigure extends HTMLElement {
     this.onModelChanged(_model);
   };
 
-  onColorChanged: any = (colorType, color) => {
+  onColorChanged = (colorType: 'hotspotColor' | 'outlineColor', color: string) => {
     this.onModelChanged({
       ...this._model,
       [colorType]: color,
     });
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.onModelChanged({
       ...this._model,
       prompt,
     });
   };
 
-  onRationaleChanged: any = (rationale) => {
+  onRationaleChanged = (rationale: string) => {
     this.onModelChanged({
       ...this._model,
       rationale,
     });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.onModelChanged({
       ...this._model,
       teacherInstructions,
     });
   };
 
-  onUpdateImageDimension: any = (dimensions) => {
+  onUpdateImageDimension = (dimensions: Dimensions) => {
     this.onModelChanged({
       ...this._model,
       dimensions,
     });
   };
 
-  onUpdateShapes: any = (shapes) => {
+  onUpdateShapes = (shapes: Shapes) => {
     this.onModelChanged({
       ...this._model,
       shapes,
     });
   };
 
-  onImageUpload: any = (imageUrl) => {
+  onImageUpload = (imageUrl: string) => {
     this.onModelChanged({
       ...this._model,
       imageUrl,
     });
   };
 
-  insertImage: any = (handler) => {
+  insertImage = (handler: ImageHandler) => {
     this.dispatchEvent(new InsertImageEvent(handler));
   };
 
-  onDeleteImage: any = (src, done) => {
+  onDeleteImage = (src: string, done: DeleteDone) => {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   };
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

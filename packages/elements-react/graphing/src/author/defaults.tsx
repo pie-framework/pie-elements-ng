@@ -1,6 +1,7 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { GraphingConfiguration, GraphingModel, GraphingTool, Mark } from '../types.js';
 
-const allTools = [
+const allTools: GraphingTool[] = [
   'circle',
   'line',
   'label',
@@ -20,7 +21,7 @@ export default {
     answers: {
       correctAnswer: {
         name: 'Correct Answer',
-        marks: [],
+        marks: [] as Mark[],
       },
     },
     arrows: {
@@ -29,7 +30,7 @@ export default {
       up: true,
       down: true,
     },
-    backgroundMarks: [],
+    backgroundMarks: [] as Mark[],
     coordinatesOnHover: false,
     defaultGridConfiguration: 0,
     domain: {
@@ -415,7 +416,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     mathMlOptions: {
       mmlOutput: false,
@@ -423,4 +424,4 @@ export default {
     },
     removeIncompleteTool: false,
   },
-};
+} satisfies { model: Omit<GraphingModel, 'id' | 'element'>; configuration: GraphingConfiguration };

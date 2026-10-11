@@ -1,14 +1,44 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer, settings, layout } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { EditableHtmlConfigureProp } from '@pie-element/shared-types';
 import MatrixColumnsSizeHeaderInput from './MatrixColumnsSizeHeaderInput.js';
 import MatrixRowsSizeHeaderInput from './MatrixRowsSizeHeaderInput.js';
 import MatrixLabelTypeHeaderInput from './MatrixLabelTypeHeaderInput.js';
 import MatrixValues from './MatrixValues.js';
+import type { MatrixValidationErrors } from '../controller/index.js';
+import type { MatrixConfiguration, MatrixModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<MatrixModel> & {
+  columnLabels: string[];
+  rowLabels: string[];
+  matrixValues: Record<string, number>;
+  errors?: MatrixValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: MatrixConfiguration;
+  disableSidePanel?: boolean;
+  onModelChanged: (model: AuthorModel, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: MatrixConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type DesignProps = MainProps & {
+  onChangeModel: (model: AuthorModel) => void;
+  onPromptChanged: (prompt: string) => void;
+  onTeacherInstructionsChanged: (teacherInstructions: string) => void;
+};
 
 const { Panel, toggle, radio } = settings;
 
@@ -33,7 +63,7 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-const Design = (props) => {
+const Design = (props: DesignProps) => {
   const {
     model,
     configuration,
@@ -62,7 +92,7 @@ const Design = (props) => {
     scoringType: scoringType.settings && radio(scoringType.label, ['auto', 'rubric']),
   };
 
-  const getPluginProps = (props = {}) => ({
+  const getPluginProps = (props: EditableHtmlConfigureProp = {}) => ({
     ...baseInputConfiguration,
     ...props,
   });
@@ -126,27 +156,16 @@ const Design = (props) => {
   );
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    model: PropTypes.object.isRequired,
-    disableSidePanel: PropTypes.bool,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-  };
-
-  onPromptChanged: any = (prompt) => {
+export class Main extends React.Component<MainProps> {
+  onPromptChanged = (prompt: string) => {
     this.props.onModelChanged({ ...this.props.model, prompt });
   };
 
-  onChangeModel: any = (data) => {
+  onChangeModel = (data: Partial<AuthorModel>) => {
     this.props.onModelChanged({ ...this.props.model, ...data });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.props.onModelChanged({ ...this.props.model, teacherInstructions });
   };
 

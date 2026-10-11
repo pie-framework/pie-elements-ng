@@ -4,6 +4,14 @@ import NumberTextField from './number-text-field.js';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { styled } from '@mui/material/styles';
+import type { NumberLineDomain } from '../types.js';
+
+type DomainProps = {
+  domain: NumberLineDomain;
+  /** Not read */
+  errors?: object;
+  onChange: (domain: NumberLineDomain) => void;
+};
 
 const DOMAIN_BEGIN = 'domainBegin';
 const DOMAIN_END = 'domainEnd';
@@ -30,7 +38,7 @@ const sort = (domain) => {
   return { min: domain.max, max: domain.min };
 };
 
-export class Domain extends React.Component {
+export class Domain extends React.Component<DomainProps> {
   constructor(props) {
     super(props);
 

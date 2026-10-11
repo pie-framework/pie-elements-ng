@@ -1,10 +1,10 @@
-// @ts-nocheck
+import type { MatchListAnswer, MatchListModel, MatchListPrompt } from '../types.js';
 
 export default {
   config: {
-    answers: [],
+    answers: [] as MatchListAnswer[],
     prompt: '',
-    prompts: [],
+    prompts: [] as MatchListPrompt[],
     shuffled: false,
   },
-};
+} satisfies Omit<MatchListModel, 'id' | 'element'>;

@@ -231,6 +231,7 @@ export class ChoiceConfiguration extends React.Component {
     uploadSoundSupport: PropTypes.object,
     maxImageWidth: PropTypes.number,
     maxImageHeight: PropTypes.number,
+    mathMlOptions: PropTypes.object,
   };
 
   static defaultProps = {

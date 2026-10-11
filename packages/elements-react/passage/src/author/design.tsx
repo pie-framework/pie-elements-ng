@@ -1,15 +1,36 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { settings, layout } from '@pie-lib/config-ui';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import { ConfirmationDialog, PassageButton } from './common.js';
 import Passage from './passage.js';
+import type { PassageValidationErrors } from '../controller/index.js';
+import type { PassageConfiguration, PassageEntry, PassageModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<PassageModel> & { passages: PassageEntry[]; errors?: PassageValidationErrors };
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: PassageConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: PassageConfiguration) => void;
+  imageSupport: {
+    add: (handler: ImageHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+  uploadSoundSupport: {
+    add: (handler: SoundHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+};
+
+type MainState = { showConfirmationDialog: boolean; indexToRemove: number };
 
 const { Panel, toggle, dropdown } = settings;
 
@@ -18,25 +39,15 @@ const AdditionalPassageHeading: any = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-export class Main extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    imageSupport: PropTypes.object.isRequired,
-    uploadSoundSupport: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-  };
-
-  constructor(props) {
+export class Main extends React.Component<MainProps, MainState> {
+  constructor(props: MainProps) {
     super(props);
     this.state = { showConfirmationDialog: false, indexToRemove: -1 };
   }
 
-  getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
+  getInnerText = (html: string) => (html || '').replaceAll(/<[^>]*>/g, '');
 
-  onDelete: any = (model, indexToRemove, onModelChanged) => {
+  onDelete = (model: AuthorModel, indexToRemove: number, onModelChanged: (model: AuthorModel) => void) => {
     let updatedPassages = model.passages;
     updatedPassages.splice(indexToRemove, 1);
     onModelChanged({ ...model, passages: updatedPassages });
@@ -47,8 +58,8 @@ export class Main extends React.Component {
     });
   };
 
-  removeAdditionalPassage: any = (indexToRemove) => {
-    const { model = {}, onModelChanged } = this.props;
+  removeAdditionalPassage = (indexToRemove: number) => {
+    const { model, onModelChanged } = this.props;
     const { passages = [] } = model;
 
     const { teacherInstructions = '', title = '', subtitle = '', author = '', text = '' } = passages[indexToRemove];
@@ -69,7 +80,7 @@ export class Main extends React.Component {
     }
   };
 
-  addAdditionalPassage: any = () => {
+  addAdditionalPassage = () => {
     const { model, onModelChanged } = this.props;
 
     const updatedPassages = [
@@ -91,7 +102,7 @@ export class Main extends React.Component {
     const {
       settingsPanelDisabled,
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       teacherInstructions = {},
       title = {},
       subtitle = {},
@@ -139,7 +150,7 @@ export class Main extends React.Component {
           />
         }
       >
-        {passages.map((passage, passageIndex) => (
+        {passages.map((_passage, passageIndex) => (
           <React.Fragment key={passageIndex}>
             {passageIndex > 0 && (
               <AdditionalPassageHeading variant="h5">

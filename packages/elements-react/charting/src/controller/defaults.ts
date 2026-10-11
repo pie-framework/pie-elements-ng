@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { ChartingCategory, ChartingCorrectAnswer, ChartingDomain, ChartingModel } from '../types.js';
 
 /**
  * NOTE: There's no functionality described for graphTitle,
@@ -12,9 +12,9 @@ export default {
   changeEditableEnabled: false,
   changeInteractiveEnabled: false,
   chartType: 'lineCross',
-  correctAnswer: {},
-  data: [],
-  domain: {},
+  correctAnswer: {} as ChartingCorrectAnswer,
+  data: [] as ChartingCategory[],
+  domain: {} as ChartingDomain,
   graph: { width: 480, height: 480 },
   prompt: '',
   promptEnabled: true,
@@ -27,4 +27,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   title: '',
-};
+} satisfies Omit<ChartingModel, 'id' | 'element'>;

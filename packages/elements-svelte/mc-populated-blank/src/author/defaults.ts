@@ -1,4 +1,5 @@
 import controllerDefaults, { BLANK_TOKEN } from '../controller/defaults.js';
+import type { McPopulatedBlankConfiguration, McPopulatedBlankModel } from '../types.js';
 
 /** The model a new item starts from: a valid question an author edits in place. */
 export default {
@@ -19,4 +20,7 @@ export default {
       settings: true,
     },
   },
+} satisfies {
+  model: Omit<McPopulatedBlankModel, 'id' | 'element'>;
+  configuration: McPopulatedBlankConfiguration;
 };

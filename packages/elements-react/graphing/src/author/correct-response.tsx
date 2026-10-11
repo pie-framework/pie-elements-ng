@@ -200,8 +200,10 @@ export class CorrectResponse extends React.Component {
   static propTypes = {
     availableTools: PropTypes.array,
     errors: PropTypes.object,
+    mathMlOptions: PropTypes.object,
     model: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
+    removeIncompleteTool: PropTypes.bool,
     toolbarTools: PropTypes.arrayOf(PropTypes.String),
   };
 

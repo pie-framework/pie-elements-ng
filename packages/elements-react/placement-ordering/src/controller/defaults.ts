@@ -1,10 +1,10 @@
-// @ts-nocheck
+import type { Choice, CorrectResponse, PlacementOrderingModel } from '../types.js';
 
 export default {
   choiceLabel: '',
   choiceLabelEnabled: true,
-  choices: [],
-  correctResponse: [],
+  choices: [] as Choice[],
+  correctResponse: [] as CorrectResponse[],
   feedbackEnabled: false,
   numberedGuides: false,
   orientation: 'vertical',
@@ -21,4 +21,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<PlacementOrderingModel, 'id' | 'element'>;

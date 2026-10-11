@@ -1,16 +1,19 @@
-// @ts-nocheck
+import type { CategoryChoice, CategoryCorrectResponse, MultiplePlacements } from '../types.js';
 
 // used in configure too, for consistency modify it there too
-export const multiplePlacements = { enabled: 'Yes', disabled: 'No', perChoice: 'Set Per Choice' };
+export const multiplePlacements = { enabled: 'Yes', disabled: 'No', perChoice: 'Set Per Choice' } as const satisfies Record<
+  string,
+  MultiplePlacements
+>;
 
 // used to validate the config
-export const isCorrectResponseDuplicated = (choices, alternate) => {
+export const isCorrectResponseDuplicated = (choices: string[], alternate: string[][]) => {
   if (choices.length < 1 || alternate.length < 1) {
     return -1;
   }
 
   const stringChoices = JSON.stringify(choices.sort());
-  const stringAlternate = alternate.reduce(
+  const stringAlternate = alternate.reduce<string[]>(
     (total, current) => (current.length > 0 ? [...total, JSON.stringify(current.sort())] : total),
     [],
   );
@@ -19,13 +22,13 @@ export const isCorrectResponseDuplicated = (choices, alternate) => {
   return foundIndexDuplicate;
 };
 
-export const isAlternateDuplicated = (alternate) => {
+export const isAlternateDuplicated = (alternate: string[][]) => {
   if (alternate.length <= 1) {
     return -1;
   }
 
-  const elementSet = new Set();
-  const stringAlternate = alternate.reduce(
+  const elementSet = new Set<string>();
+  const stringAlternate = alternate.reduce<string[]>(
     (total, current) => (current.length > 0 ? [...total, JSON.stringify(current.sort())] : total),
     [],
   );
@@ -43,7 +46,11 @@ export const isAlternateDuplicated = (alternate) => {
 
 // calculate the minimum number of populated response areas (categories) in the correct answer or alternates
 // and create an array with the possible responses ids
-export const getCompleteResponseDetails = (correctResponse, alternates, allChoices) => {
+export const getCompleteResponseDetails = (
+  correctResponse: CategoryCorrectResponse[],
+  alternates: string[][][],
+  allChoices: CategoryChoice[],
+) => {
   const choicesPerCategory = correctResponse.map((category) => category.choices);
   const possibleResponses = [choicesPerCategory.flat()];
   let responseAreasToBeFilled = choicesPerCategory.filter((choices) => choices.length).length;

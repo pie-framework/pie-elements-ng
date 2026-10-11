@@ -1,23 +1,39 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { isEmpty } from '@pie-element/shared-lodash';
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment } from '@pie-element/shared-types';
 
 import { isResponseCorrect } from './utils.js';
 
 import defaults from './defaults.js';
+import type {
+  HotspotAnswer,
+  HotspotConfiguration,
+  HotspotModel,
+  HotspotSession,
+  HotspotShape,
+  Polygon,
+} from '../types.js';
 
 const log = debug('pie-elements:hotspot:controller');
 
-const checkNullish = (value) => value !== null && value !== undefined;
+/** Errors `validate()` reports, keyed by field. */
+export type HotspotValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  shapes?: string;
+  selections?: string;
+};
 
-export const normalize = (question) => ({
+const checkNullish = (value: unknown) => value !== null && value !== undefined;
+
+export const normalize = (question: HotspotModel): HotspotModel => ({
   ...defaults,
   ...question,
 });
 
-export function model(question, session, env) {
+export function model(question: HotspotModel, session: HotspotSession | null | undefined, env: PieEnvironment) {
   const normalizedQuestion = normalize(question);
   const {
     imageUrl,
@@ -39,6 +55,8 @@ export function model(question, session, env) {
   const { rectangles, polygons, circles } = shapes || {};
 
   const shouldIncludeCorrectResponse = env.mode === 'evaluate' || (env.role === 'instructor' && env.mode === 'view');
+
+  const isInstructorReview = env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate');
 
   return new Promise((resolve) => {
     const out = {
@@ -74,34 +92,32 @@ export function model(question, session, env) {
       },
       responseCorrect: env.mode === 'evaluate' ? isResponseCorrect(normalizedQuestion, session) : undefined,
       extraCSSRules: normalizedQuestion.extraCSSRules,
+      rationale: isInstructorReview && normalizedQuestion.rationaleEnabled ? normalizedQuestion.rationale : null,
+      teacherInstructions:
+        isInstructorReview && normalizedQuestion.teacherInstructionsEnabled
+          ? normalizedQuestion.teacherInstructions
+          : null,
+      prompt: normalizedQuestion.promptEnabled ? prompt : null,
+      strokeWidth: normalizedQuestion.strokeWidth,
     };
-
-    if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
-      out.rationale = normalizedQuestion.rationaleEnabled ? normalizedQuestion.rationale : null;
-      out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
-        ? normalizedQuestion.teacherInstructions
-        : null;
-    } else {
-      out.rationale = null;
-      out.teacherInstructions = null;
-    }
-
-    out.prompt = normalizedQuestion.promptEnabled ? prompt : null;
-    out.strokeWidth = normalizedQuestion.strokeWidth;
 
     resolve(out);
   });
 }
 
-export const createDefaultModel = (model = {}) =>
-  new Promise((resolve) => {
+export const createDefaultModel = (model: Partial<HotspotModel> = {}) =>
+  new Promise<Partial<HotspotModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
     });
   });
 
-const getScore = (config, session, env = {}) => {
+const getScore = (
+  config: HotspotModel,
+  session: HotspotSession | null | undefined,
+  env: Partial<PieEnvironment> = {},
+) => {
   const { answers } = session || {};
 
   if (!config.shapes || (!config.shapes.rectangles && !config.shapes.polygons && !config.shapes.circles)) {
@@ -118,7 +134,7 @@ const getScore = (config, session, env = {}) => {
   let correctAnswers = 0;
   let selectedChoices = 0;
 
-  const choices = [...rectangles, ...polygons, ...circles];
+  const choices: HotspotShape[] = [...rectangles, ...polygons, ...circles];
 
   const correctChoices = choices.filter((choice) => choice.correct);
 
@@ -140,7 +156,7 @@ const getScore = (config, session, env = {}) => {
   const total = correctChoices.length === 0 ? 1 : correctChoices.length;
   const str = ((correctAnswers - extraAnswers) / total).toFixed(2);
 
-  return str < 0 ? 0 : parseFloat(str);
+  return Number(str) < 0 ? 0 : parseFloat(str);
 };
 
   /**
@@ -150,12 +166,16 @@ const getScore = (config, session, env = {}) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: HotspotModel,
+  session: HotspotSession | null | undefined,
+  env: Partial<PieEnvironment>,
+) => {
+  const traceLog: string[] = [];
   const { answers } = session || {};
   const { shapes } = model || {};
 
-  const allShapes = [];
+  const allShapes: HotspotShape[] = [];
   if (shapes) {
     if (shapes.rectangles) allShapes.push(...shapes.rectangles);
     if (shapes.polygons) allShapes.push(...shapes.polygons);
@@ -235,8 +255,12 @@ export const getLogTrace = (model, session, env) => {
   return traceLog;
 }
 
-export function outcome(config, session, env = {}) {
-  return new Promise((resolve) => {
+export function outcome(
+  config: HotspotModel,
+  session: HotspotSession | null | undefined,
+  env: Partial<PieEnvironment> = {},
+) {
+  return new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
     log('outcome...');
 
     if (!session || isEmpty(session)) {
@@ -247,7 +271,7 @@ export function outcome(config, session, env = {}) {
       });
     }
 
-    if (session.answers) {
+    if (session?.answers) {
       const traceLog = getLogTrace(config, session, env);
       const score = getScore(config, session, env);
 
@@ -262,8 +286,8 @@ export function outcome(config, session, env = {}) {
   });
 }
 
-const returnShapesCorrect = (shapes) => {
-  let answers = [];
+const returnShapesCorrect = (shapes: HotspotShape[]) => {
+  let answers: HotspotAnswer[] = [];
 
   shapes.forEach((i) => {
     const { correct, id } = i;
@@ -274,10 +298,10 @@ const returnShapesCorrect = (shapes) => {
   return answers;
 };
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: HotspotModel, env: PieEnvironment) => {
+  return new Promise<HotspotSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
-      const { shapes: { rectangles = [], circles = [], polygons = {} } = {} } = question;
+      const { shapes: { rectangles = [], circles = [], polygons = {} as Polygon[] } = {} } = question;
 
       const rectangleCorrect = returnShapesCorrect(rectangles);
       const polygonsCorrect = returnShapesCorrect(polygons);
@@ -293,24 +317,27 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | null | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<HotspotModel> = {},
+  config: HotspotConfiguration = {},
+): HotspotValidationErrors => {
   const { shapes } = model;
   const { minShapes = 2, maxShapes, maxSelections } = config;
-  const errors = {};
+  const errors: HotspotValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
   });
 
-  const allShapes = Object.values(shapes || {}).reduce((acc, shape) => [...acc, ...shape], []);
+  const allShapes = Object.values(shapes || {}).reduce<HotspotShape[]>(
+    (acc, shape) => [...acc, ...(shape as HotspotShape[])],
+    [],
+  );
 
   const nbOfSelections = (allShapes || []).reduce((acc, shape) => (shape.correct ? acc + 1 : acc), 0);
 
@@ -318,13 +345,13 @@ export const validate = (model = {}, config = {}) => {
 
   if (nbOfShapes < minShapes) {
     errors.shapes = `There should be at least ${minShapes} shapes defined.`;
-  } else if (nbOfShapes > maxShapes) {
+  } else if (maxShapes !== undefined && nbOfShapes > maxShapes) {
     errors.shapes = `No more than ${maxShapes} shapes should be defined.`;
   }
 
   if (nbOfSelections < 1) {
     errors.selections = 'There should be at least 1 shape selected.';
-  } else if (nbOfSelections > maxSelections) {
+  } else if (maxSelections !== undefined && nbOfSelections > maxSelections) {
     errors.selections = `No more than ${maxSelections} shapes should be selected.`;
   }
 

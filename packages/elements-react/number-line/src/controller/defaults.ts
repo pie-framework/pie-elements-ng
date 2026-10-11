@@ -1,7 +1,7 @@
-// @ts-nocheck
+import type { NumberLineModel, NumberLineResponse } from '../types.js';
 
 export default {
-  correctResponse: [],
+  correctResponse: [] as NumberLineResponse[],
   feedback: {
     correct: { default: 'Correct', type: 'none' },
     incorrect: { default: 'Incorrect', type: 'none' },
@@ -14,7 +14,7 @@ export default {
     },
     domain: { min: -1, max: 1 },
     exhibitOnly: false,
-    initialElements: [],
+    initialElements: [] as NumberLineResponse[],
     initialType: 'PF',
     maxNumberOfPoints: 1,
     ticks: { minor: 0.125, major: 0.5, tickIntervalType: 'Decimal' },
@@ -29,4 +29,4 @@ export default {
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
   widthEnabled: true,
-};
+} satisfies Omit<NumberLineModel, 'id' | 'element'>;

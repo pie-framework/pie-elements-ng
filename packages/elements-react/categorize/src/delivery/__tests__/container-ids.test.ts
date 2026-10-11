@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import Categorize from '../index';
 import { model as buildModel } from '../../controller/index';
+import type { PieEnvironment } from '@pie-element/shared-types';
+import type { CategorizeModel } from '../../types';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
@@ -28,7 +30,8 @@ const question = (extra: object = {}) => ({
   ...extra,
 });
 
-const viewModel = (extra: object = {}) => buildModel(question(extra), { answers: [] }, { mode: 'gather' }, vi.fn());
+const viewModel = (extra: object = {}) =>
+  buildModel(question(extra) as CategorizeModel, { answers: [] }, { mode: 'gather' } as PieEnvironment, vi.fn());
 
 const mount = async (extra: object = {}) => {
   const el = document.createElement('test-categorize-container-ids') as Host;

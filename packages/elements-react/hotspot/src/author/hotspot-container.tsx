@@ -11,6 +11,8 @@ import { SUPPORTED_SHAPES } from './shapes/index.js';
 import Drawable from './hotspot-drawable.js';
 import UploadControl from './upload-control.js';
 import { getAllShapes, groupShapes } from './utils.js';
+import type { ImageHandler } from '@pie-element/shared-configure-events';
+import type { Dimensions, Shapes } from '../types.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(1.5),
@@ -68,7 +70,25 @@ const isImage = (file) => {
   return file.type.match(imageType);
 };
 
-export class Container extends Component {
+type ContainerProps = {
+  dimensions?: Dimensions;
+  imageUrl?: string;
+  hotspotColor?: string;
+  selectedHotspotColor?: string;
+  hoverOutlineColor?: string;
+  multipleCorrect?: boolean;
+  onImageUpload: (imageUrl: string) => void;
+  onUpdateImageDimension: (dimensions: Dimensions) => void;
+  insertImage?: (handler: ImageHandler) => void;
+  onUpdateShapes: (shapes: Shapes) => void;
+  outlineColor?: string;
+  shapes: Shapes;
+  strokeWidth?: number;
+  preserveAspectRatioEnabled?: boolean;
+  hasErrors?: boolean;
+};
+
+export class Container extends Component<ContainerProps> {
   static getDerivedStateFromProps(nextProps, prevState) {
     // always transform shapes map into shapes array at this level
     return {

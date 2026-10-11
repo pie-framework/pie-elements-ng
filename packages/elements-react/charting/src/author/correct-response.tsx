@@ -7,6 +7,24 @@ import { Chart } from '@pie-lib/charting';
 import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
 
 import Typography from '@mui/material/Typography';
+import type { ConfigureMathMLProp } from '@pie-element/shared-types';
+import type { AuthorModel, ChartDefinition } from './configure.js';
+import type { ChartingValidationErrors } from '../controller/index.js';
+import type { ChartingGraph, ChartingLabelsPlaceholders } from '../types.js';
+
+type CorrectResponseProps = {
+  model: AuthorModel;
+  onChange: (model: AuthorModel) => void;
+  charts?: ChartDefinition[];
+  /** Category errors of the correct answer, keyed by category position; the chart shows each under its category */
+  error?: ChartingValidationErrors['categoryErrors'];
+  correctAnswerErrors?: ChartingValidationErrors['correctAnswerErrors'];
+  studentNewCategoryDefaultLabel?: string;
+  mathMlOptions?: ConfigureMathMLProp;
+  labelsPlaceholders?: ChartingLabelsPlaceholders;
+  /** Not read */
+  config?: ChartingGraph;
+};
 
 const Container: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
@@ -133,7 +151,7 @@ export const getUpdatedCategories = (nextProps, prevProps, prevState) => {
   return nextCategories;
 };
 
-export class CorrectResponse extends React.Component {
+export class CorrectResponse extends React.Component<CorrectResponseProps> {
   static propTypes = {
     correctAnswerErrors: PropTypes.object,
     studentNewCategoryDefaultLabel: PropTypes.string,

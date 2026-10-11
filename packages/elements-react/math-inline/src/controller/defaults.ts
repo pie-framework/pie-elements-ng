@@ -1,10 +1,9 @@
-// @ts-nocheck
-
+import type { MathInlineModel, MathInlineResponse } from '../types.js';
 import { ResponseTypes } from './utils.js';
 
 export default {
   allowTrailingZerosDefault: false,
-  customKeys: [],
+  customKeys: [] as string[],
   equationEditor: '8',
   expression: '',
   feedback: {
@@ -20,11 +19,11 @@ export default {
   rationale: '',
   rationaleEnabled: true,
   responseType: ResponseTypes.advanced,
-  responses: [],
+  responses: [] as MathInlineResponse[],
   scoringType: 'auto',
   studentInstructionsEnabled: true,
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
   validationDefault: 'literal',
-};
+} satisfies Omit<MathInlineModel, 'id' | 'element'>;
