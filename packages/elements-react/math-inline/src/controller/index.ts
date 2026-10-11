@@ -1,8 +1,15 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { isEmpty } from '@pie-element/shared-lodash';
 import { getActualFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import type { Correctness, Feedback } from '@pie-element/shared-feedback';
+import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
+import type {
+  MathInlineAnswer,
+  MathInlineConfiguration,
+  MathInlineModel,
+  MathInlineResponse,
+  MathInlineSession,
+} from '../types.js';
 
 import { ResponseTypes } from './utils.js';
 import Translator from '@pie-lib/translator';
@@ -14,8 +21,71 @@ import * as mv from '@pie-framework/math-validation';
 
 const log = debug('@pie-element:math-inline:controller');
 
-const getResponseCorrectness = (model, answerItem, isOutcome) => {
-  const correctResponses = model.responses;
+/** Correctness of the learner's answer; `score` is a number for `outcome()` and a percentage for `model()`. */
+type MathInlineCorrectness = {
+  correctness: 'correct' | 'incorrect' | 'unanswered';
+  score: number | string;
+  correct: boolean;
+};
+
+/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
+type LatexEqualOpts = mv.Opts & {
+  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
+};
+
+/** The model with the controller defaults applied. */
+type NormalizedQuestion = ReturnType<typeof normalize>;
+
+/** The model as the delivery view receives it. */
+type MathInlineViewConfig = Omit<
+  NormalizedQuestion,
+  'extraCSSRules' | 'responses' | 'language' | 'prompt' | 'rationale' | 'teacherInstructions'
+> & {
+  responses?: MathInlineResponse[];
+  prompt?: string | null;
+  rationale?: string | null;
+  teacherInstructions?: string | null;
+  showNote?: boolean;
+  note?: string;
+  env?: PieEnvironment;
+};
+
+type MathInlineViewModel = {
+  extraCSSRules?: ExtraCSSRules;
+  config: MathInlineViewConfig;
+  correctness?: MathInlineCorrectness;
+  feedback?: string;
+  disabled: boolean;
+  view: boolean;
+  correctResponse?: Record<string, never>;
+  rationale?: string | null;
+  teacherInstructions?: string | null;
+  language?: string;
+};
+
+type MathInlineOutcome = {
+  score: number | string | undefined;
+  completed?: undefined;
+  empty?: boolean;
+  logTrace: string[];
+};
+
+/** Errors `validate()` reports, keyed by field; `responsesErrors` is keyed by response index, then by `answer` or alternate id. */
+export type MathInlineValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  responseAreasError?: string;
+  responsesErrors?: Record<number, Record<string, string>>;
+};
+
+const getResponseCorrectness = (
+  model: MathInlineModel,
+  answerItem: string | undefined,
+  isOutcome?: boolean,
+): MathInlineCorrectness => {
+  // An unnormalized model reaches here from `outcome()`, so `responses` can be absent.
+  const correctResponses = model.responses as MathInlineResponse[];
   const isAdvanced = model.responseType === ResponseTypes.advanced;
 
   if (!answerItem) {
@@ -28,7 +98,7 @@ const getResponseCorrectness = (model, answerItem, isOutcome) => {
 
   const isAnswerCorrect = getIsAnswerCorrect(isAdvanced ? correctResponses : correctResponses.slice(0, 1), answerItem);
 
-  const correctnessObject = {
+  const correctnessObject: MathInlineCorrectness = {
     correctness: 'incorrect',
     score: isOutcome ? 0 : '0%',
     correct: false,
@@ -43,13 +113,13 @@ const getResponseCorrectness = (model, answerItem, isOutcome) => {
   return correctnessObject;
 };
 
-function getIsAnswerCorrect(correctResponseItems, answerItem) {
+function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefined, answerItem: string) {
   let answerCorrect = false;
 
   (correctResponseItems || []).forEach((correctResponse) => {
     if (answerCorrect) return;
 
-    const opts = {
+    const opts: LatexEqualOpts = {
       mode: correctResponse.validation || defaults.validationDefault,
     };
 
@@ -60,8 +130,9 @@ function getIsAnswerCorrect(correctResponseItems, answerItem) {
       };
     }
 
+    const alternates = correctResponse.alternates || {};
     const acceptedValues = [correctResponse.answer].concat(
-      Object.keys(correctResponse.alternates || {}).map((alternateId) => correctResponse.alternates[alternateId]),
+      Object.keys(alternates).map((alternateId) => alternates[alternateId]),
     );
 
     for (let i = 0; i < acceptedValues.length; i++) {
@@ -80,7 +151,12 @@ function getIsAnswerCorrect(correctResponseItems, answerItem) {
   return answerCorrect;
 }
 
-const getCorrectness = (question, env, session, isOutcome) => {
+const getCorrectness = (
+  question: MathInlineModel,
+  env: PieEnvironment,
+  session: MathInlineSession | undefined,
+  isOutcome?: boolean,
+) => {
   if (env.mode === 'evaluate') {
     return getResponseCorrectness(
       question,
@@ -94,8 +170,8 @@ const getCorrectness = (question, env, session, isOutcome) => {
   return undefined;
 };
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => {
+export function createDefaultModel(model: Partial<MathInlineModel> = {}) {
+  return new Promise<Partial<MathInlineModel>>((resolve) => {
     resolve({
       config: {
         ...defaults,
@@ -112,8 +188,12 @@ export function createDefaultModel(model = {}) {
  * @param {Object} env
  * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  question: MathInlineModel,
+  session: MathInlineSession | undefined,
+  env: PieEnvironment,
+) => {
+  const traceLog: string[] = [];
 
   if (!session || (!session.response && !session.completeAnswer)) {
     traceLog.push('Student did not enter a response.');
@@ -149,8 +229,9 @@ export const getLogTrace = (question, session, env) => {
       traceLog.push(`Ignore order: ${ignoreOrder ? 'enabled' : 'disabled'}.`);
     }
     
+    const alternates = response.alternates || {};
     const acceptedValues = [response.answer].concat(
-      Object.keys(response.alternates || {}).map((alternateId) => response.alternates[alternateId])
+      Object.keys(alternates).map((alternateId) => alternates[alternateId])
     );
     
     if (acceptedValues.length > 1) {
@@ -158,7 +239,8 @@ export const getLogTrace = (question, session, env) => {
     }
   });
 
-  const correctness = getCorrectness(question, env, session, true);
+  // A session reaches here only from `outcome()` in evaluate mode, where correctness is computed.
+  const correctness = getCorrectness(question, env, session, true) as MathInlineCorrectness;
 
   if (correctness.correctness === 'correct') {
     traceLog.push('Student answer matches one of the accepted responses.');
@@ -174,15 +256,15 @@ export const getLogTrace = (question, session, env) => {
   return traceLog;
 };
 
-export const outcome = (question, session, env) => {
-  return new Promise((resolve) => {
+export const outcome = (question: MathInlineModel, session: MathInlineSession | undefined, env: PieEnvironment) => {
+  return new Promise<MathInlineOutcome>((resolve) => {
     if (env.mode !== 'evaluate') {
       resolve({ score: undefined, completed: undefined, logTrace: [] });
     } else {
       if (!session || isEmpty(session)) {
         resolve({ score: 0, empty: true, logTrace: ['Student did not enter a response.'] });
       } else {
-        const correctness = getCorrectness(question, env, session, true);
+        const correctness = getCorrectness(question, env, session, true) as MathInlineCorrectness;
 
         resolve({ score: correctness.score, logTrace: getLogTrace(question, session, env) });
       }
@@ -190,10 +272,10 @@ export const outcome = (question, session, env) => {
   });
 };
 
-export const normalize = (question) => {
+export const normalize = (question: MathInlineModel) => {
   // making sure that defaults are set
   if (!isEmpty(question.responses)) {
-    question.responses = question.responses.map((correctResponse) => ({
+    question.responses = (question.responses as MathInlineResponse[]).map((correctResponse) => ({
       ...correctResponse,
       validation: correctResponse.validation || question.validationDefault,
       allowTrailingZeros: correctResponse.allowTrailingZeros || question.allowTrailingZerosDefault,
@@ -204,20 +286,24 @@ export const normalize = (question) => {
   return { ...defaults, ...question };
 };
 
-export const model = (question, session, env) =>
-  new Promise((resolve) => {
+export const model = (question: MathInlineModel, session: MathInlineSession | undefined, env: PieEnvironment) =>
+  new Promise<MathInlineViewModel>((resolve) => {
     const normalizedQuestion = normalize(question);
     const correctness = getCorrectness(normalizedQuestion, env, session);
-    const { extraCSSRules, responses, language, ...config } = normalizedQuestion;
+    const { extraCSSRules, responses, language, ...rest } = normalizedQuestion;
+    const config: MathInlineViewConfig = rest;
 
     config.responses = config.responseType === ResponseTypes.simple ? responses.slice(0, 1) : responses;
 
     const feedback =
       env.mode === 'evaluate' && normalizedQuestion.feedbackEnabled
-        ? getActualFeedbackForCorrectness(correctness?.correctness, normalizedQuestion.feedback)
+        ? getActualFeedbackForCorrectness(
+            correctness?.correctness as Correctness,
+            normalizedQuestion.feedback as Partial<Feedback>,
+          )
         : undefined;
 
-    const out = {
+    const out: MathInlineViewModel = {
       extraCSSRules,
       config,
       correctness,
@@ -228,7 +314,7 @@ export const model = (question, session, env) =>
 
     const note = normalizedQuestion.note || translator.t('mathInline.primaryCorrectWithAlternates', { lng: language });
     const showNote =
-      config?.responses?.length > 1 ||
+      (config?.responses?.length ?? 0) > 1 ||
       (config?.responses || []).some(
         (response) => response.validation === 'symbolic' || Object.keys(response.alternates || {}).length > 0,
       );
@@ -262,12 +348,12 @@ export const model = (question, session, env) =>
     resolve(out);
   });
 
-const escape = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+const escape = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 
-const simpleSessionResponse = (question) =>
-  new Promise((resolve) => {
+const simpleSessionResponse = (question: MathInlineModel) =>
+  new Promise<MathInlineSession>((resolve) => {
     const { responses, id } = question;
-    const { answer } = responses && responses.length ? responses[0] : {};
+    const { answer } = responses && responses.length ? responses[0] : ({} as Partial<MathInlineResponse>);
 
     resolve({
       id,
@@ -277,12 +363,12 @@ const simpleSessionResponse = (question) =>
   });
 
 // use this for items like E672793
-const removeTrailingEscape = (str) => (str.endsWith('\\') ? str.slice(0, -1) : str);
+const removeTrailingEscape = (str: string) => (str.endsWith('\\') ? str.slice(0, -1) : str);
 
-const advancedSessionResponse = (question) =>
-  new Promise((resolve) => {
+const advancedSessionResponse = (question: MathInlineModel) =>
+  new Promise<MathInlineSession>((resolve) => {
     const { responses, id } = question;
-    const { answer } = responses && responses.length ? responses[0] : {};
+    const { answer } = responses && responses.length ? responses[0] : ({} as Partial<MathInlineResponse>);
 
     if (!answer) {
       resolve({
@@ -295,7 +381,8 @@ const advancedSessionResponse = (question) =>
     }
 
     try {
-      const e = question.expression;
+      // `escape` throws on an absent expression; the catch below handles it.
+      const e = question.expression as string;
       const RESPONSE_TOKEN = /\\{\\{\s*response\s*\\}\\}/g;
 
       const o = escape(e).split(RESPONSE_TOKEN);
@@ -321,7 +408,7 @@ const advancedSessionResponse = (question) =>
 
       m.shift();
 
-      const answers = {};
+      const answers: Record<string, MathInlineAnswer> = {};
 
       for (var i = 0; i < count; i++) {
         answers[`r${i + 1}`] = { value: removeTrailingEscape(m[i].trim()) };
@@ -339,11 +426,14 @@ const advancedSessionResponse = (question) =>
         completeAnswer: answer,
       });
       // eslint-disable-next-line no-console
-      console.error(e.toString());
+      console.error((e as Error).toString());
     }
   });
 
-export const createCorrectResponseSession = (question, env) => {
+export const createCorrectResponseSession = (
+  question: MathInlineModel,
+  env: PieEnvironment,
+): Promise<MathInlineSession | null> => {
   if (env.mode === 'evaluate' || env.role !== 'instructor') {
     // eslint-disable-next-line no-console
     console.error('can not create correct response session if mode is evaluate or role is not instructor');
@@ -352,25 +442,25 @@ export const createCorrectResponseSession = (question, env) => {
   }
 
   if ((question.responseType || '').toLowerCase() === 'simple') {
-    return simpleSessionResponse(question, env);
+    return simpleSessionResponse(question);
   } else {
-    return advancedSessionResponse(question, env);
+    return advancedSessionResponse(question);
   }
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<MathInlineModel> = {},
+  config: MathInlineConfiguration = {},
+): MathInlineValidationErrors => {
   const { expression = '', responses, responseType } = model;
   const { maxResponseAreas } = config;
-  const responsesErrors = {};
-  const errors = {};
+  const responsesErrors: Record<number, Record<string, string>> = {};
+  const errors: MathInlineValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -379,8 +469,8 @@ export const validate = (model = {}, config = {}) => {
   (responses || []).forEach((response, index) => {
     const { answer } = response;
     const reversedAlternates = [...Object.entries(response.alternates || {})].reverse();
-    const alternatesErrors = {};
-    const responseError = {};
+    const alternatesErrors: Record<string, string> = {};
+    const responseError: { answer?: string } = {};
 
     if (answer === '') {
       responseError.answer = 'Content should not be empty.';
@@ -407,7 +497,8 @@ export const validate = (model = {}, config = {}) => {
   if (responseType === 'Advanced Multi') {
     const nbOfResponseAreas = (expression.match(/\{\{response\}\}/g) || []).length;
 
-    if (nbOfResponseAreas > maxResponseAreas) {
+    // `undefined > n` is false, so an absent `maxResponseAreas` sets no upper bound.
+    if (nbOfResponseAreas > (maxResponseAreas as number)) {
       errors.responseAreasError = `No more than ${maxResponseAreas} response areas should be defined.`;
     } else if (nbOfResponseAreas < 1) {
       errors.responseAreasError = 'There should be at least 1 response area defined.';
