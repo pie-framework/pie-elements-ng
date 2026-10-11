@@ -97,7 +97,7 @@ export interface DialogContent {
   text?: string;
 }
 
-/** Config Object for @pie-element/multi-trait-rubric */
+/** Config Object for `@pie-element/multi-trait-rubric` */
 export interface MultiTraitRubricConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled
