@@ -154,7 +154,7 @@ export interface NumberLineFeedback {
   partial?: NumberLineFeedbackLevel;
 }
 
-/** Model Object for @pie-element/number-line */
+/** Model Object for `@pie-element/number-line` */
 export interface NumberLineModel extends PieModel {
   /** Feedback for student responses */
   feedback?: NumberLineFeedback;
@@ -234,7 +234,7 @@ export interface NumberLineTitleConfiguration extends EditableHtmlPluginConfigur
   enabled?: boolean;
 }
 
-/** Config Object for @pie-element/number-line */
+/** Config Object for `@pie-element/number-line` */
 export interface NumberLineConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled
