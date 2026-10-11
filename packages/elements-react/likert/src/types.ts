@@ -19,8 +19,11 @@ export type LikertType = 'agreement' | 'frequency' | 'yesNo' | 'importance' | 'l
 export type LikertOrientation = 'horizontal' | 'vertical';
 
 export interface LikertChoice {
-  /** the value that will be stored if this likert choice is selected */
-  value: number;
+  /**
+   * the value that will be stored if this likert choice is selected. Content saved by the legacy
+   * author carries it as a string; the author converts it to a number on load.
+   */
+  value: number | string;
   /** the text label that will be presented to the user for this likert choice */
   label: string;
 }
@@ -106,5 +109,5 @@ export interface LikertSession {
   /** The element the session belongs to */
   element?: string;
   /** The `value` of the selected choice */
-  value?: number;
+  value?: number | string;
 }

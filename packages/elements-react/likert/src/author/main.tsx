@@ -226,9 +226,9 @@ const LikertType = (props: ModelEditorProps) => {
 };
 
 const buildValuesMap = (model: AuthorModel) =>
-  model.choices.reduce<Record<number, number>>((acc, choice) => {
+  model.choices.reduce<Record<string, number>>((acc, choice) => {
     const accClone = { ...acc };
-    const choiceValue = parseInt(choice.value as unknown as string);
+    const choiceValue = parseInt(choice.value as string);
 
     if (!accClone[choiceValue]) {
       accClone[choiceValue] = 0;

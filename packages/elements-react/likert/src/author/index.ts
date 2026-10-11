@@ -53,7 +53,7 @@ export default class Likert extends HTMLElement {
     this._model = Likert.createDefaultModel(s);
     this._model = {
       ...this._model,
-      choices: this._model.choices.map((choice) => ({ ...choice, value: parseInt(choice.value as unknown as string) })),
+      choices: this._model.choices.map((choice) => ({ ...choice, value: parseInt(choice.value as string) })),
     };
     this._render();
   }
