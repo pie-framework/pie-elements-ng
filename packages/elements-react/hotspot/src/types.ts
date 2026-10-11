@@ -9,6 +9,7 @@ import type {
   EditableHtmlConfigureProp,
   EditableHtmlPluginConfigureRequired,
   ExtraCSSRules,
+  PieEnvironment,
   PieModel,
 } from '@pie-element/shared-types';
 
@@ -72,7 +73,7 @@ export interface Dimensions {
   width: number;
 }
 
-/** Model for the @pie-elements/hotspot Interaction */
+/** Model for the `@pie-element/hotspot` Interaction */
 export interface HotspotModel extends PieModel {
   /** The question prompt or item stem */
   prompt?: string;
@@ -142,9 +143,13 @@ export interface HotspotModel extends PieModel {
   customAudioButton?: CustomAudioButton;
   /** Host-supplied CSS scoped to the element */
   extraCSSRules?: ExtraCSSRules;
+  /** Not read by this element: the controller derives it from the environment's mode. Demo-app samples carry it. */
+  disabled?: boolean;
+  /** Not read by this element: the controller takes it from the environment. Demo-app samples carry it. */
+  mode?: PieEnvironment['mode'];
 }
 
-/** Config Object for @pie-elements/hotspot */
+/** Config Object for `@pie-element/hotspot` */
 export interface HotspotConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled
