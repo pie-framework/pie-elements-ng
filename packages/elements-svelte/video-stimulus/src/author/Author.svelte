@@ -24,6 +24,7 @@ import type {
   AudioContentDeclaration,
   CaptionSupportDeclaration,
   VideoStimulusAccessibilityProfile,
+  VideoStimulusConfiguration,
   VideoStimulusFieldKey,
   VideoStimulusModel,
   VideoStimulusValidationErrors,
@@ -43,7 +44,7 @@ let {
 }: {
   model?: VideoStimulusModel;
   /** Declared for the Authoring Contract; this view has no settings for it to customize yet. */
-  configuration?: Record<string, unknown>;
+  configuration?: VideoStimulusConfiguration;
   onChange?: (model: VideoStimulusModel) => void;
   locale?: string;
 } = $props();

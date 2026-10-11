@@ -9,8 +9,12 @@
 />
 
 <script lang="ts">
+import type { McPopulatedBlankConfiguration, McPopulatedBlankModel } from '../types.js';
+
 // A player sets `model` and `configuration`, both declared above; the placeholder renders nothing from them yet.
-let { model = $bindable() }: { model?: any } = $props();
+let {
+  model = $bindable(),
+}: { model?: McPopulatedBlankModel; configuration?: McPopulatedBlankConfiguration } = $props();
 </script>
 
 <div class="mc-populated-blank-author-placeholder" role="status" aria-live="polite">

@@ -150,8 +150,9 @@ export function createDefaultModel(
         sources: [],
       };
 
+  // The defaults carry no `id`: the item config supplies it.
   return cloneModel({
-    ...DEFAULT_MODEL,
+    ...(DEFAULT_MODEL as VideoStimulusModel),
     ...overrides,
     media,
     presentation: {
