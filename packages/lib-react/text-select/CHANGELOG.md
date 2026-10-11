@@ -1,5 +1,13 @@
 # @pie-lib/text-select
 
+## 4.0.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @pie-element/shared-utils@0.1.4
+  - @pie-lib/render-ui@8.0.4
+
 ## 4.0.3
 
 ### Patch Changes

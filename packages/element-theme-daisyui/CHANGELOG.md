@@ -1,5 +1,14 @@
 # @pie-element/element-theme-daisyui
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf)]:
+  - @pie-element/shared-types@0.2.1
+  - @pie-element/shared-theming@0.2.2
+  - @pie-element/element-theme@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

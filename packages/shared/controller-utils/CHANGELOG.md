@@ -1,5 +1,12 @@
 # @pie-element/shared-controller-utils
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf)]:
+  - @pie-element/shared-types@0.2.1
+
 ## 0.1.1
 
 ### Patch Changes

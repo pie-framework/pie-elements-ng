@@ -1,5 +1,21 @@
 # @pie-lib/charting
 
+## 8.0.4
+
+### Patch Changes
+
+- [#411](https://github.com/pie-framework/pie-elements-ng/pull/411) [`441375f`](https://github.com/pie-framework/pie-elements-ng/commit/441375fde99451cf503b0627dc93fdade766fb90) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(charting): keep a fraction category label visible after clicking into it and leaving + adjust UI PIE-1216
+
+- [#412](https://github.com/pie-framework/pie-elements-ng/pull/412) [`2c4f966`](https://github.com/pie-framework/pie-elements-ng/commit/2c4f966cddf58ba925119900dadd3746113a6feb) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - fix(charting): change action button to mui menu for improved accesibi…
+
+- [#415](https://github.com/pie-framework/pie-elements-ng/pull/415) [`b9d8158`](https://github.com/pie-framework/pie-elements-ng/commit/b9d815883b6186b324937e670f1809530c64ae15) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - fix(charting): keep category label and Actions colors off the theme (…
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf), [`f600063`](https://github.com/pie-framework/pie-elements-ng/commit/f6000632b8ca95914198b3a0ebdf773b8892090b), [`ce83f89`](https://github.com/pie-framework/pie-elements-ng/commit/ce83f89eec053f50be278a69a954bfc7e7df182c), [`1c65ab1`](https://github.com/pie-framework/pie-elements-ng/commit/1c65ab17d87e71d8fb5c46d776f26e44f5a2053b)]:
+  - @pie-lib/config-ui@14.0.4
+  - @pie-element/shared-math-rendering-mathjax@0.1.5
+  - @pie-lib/plot@5.0.4
+  - @pie-element/shared-utils@0.1.4
+  - @pie-lib/render-ui@8.0.4
+
 ## 8.0.3
 
 ### Patch Changes

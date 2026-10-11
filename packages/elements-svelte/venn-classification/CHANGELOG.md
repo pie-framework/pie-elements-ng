@@ -1,5 +1,16 @@
 # @pie-element/venn-classification
 
+## 0.1.5
+
+### Patch Changes
+
+- [#429](https://github.com/pie-framework/pie-elements-ng/pull/429) [`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf) Thanks [@chillenious](https://github.com/chillenious)! - Each element publishes JSON Schemas for its model and session, and for its authoring configuration when it has one, at `@pie-element/<name>/schemas/<kind>.schema.json`. The root entry exports the `<Name>Model`, `<Name>Session` and `<Name>Configuration` types they are generated from. `@pie-element/shared-types` adds the authoring building blocks those types share.
+  
+  `docs:generate` in `@pie-element/cli` documents each property from the element's schemas, with its defaults alongside. `@pie-element/shared-types` drops `PieDocsPropertyMetadata`, `PieDocsViewMetadata` and the `description` and `metadata` fields of `PieDocsViewContract`, which no element set.
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf)]:
+  - @pie-element/shared-types@0.2.1
+  - @pie-element/shared-utils@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

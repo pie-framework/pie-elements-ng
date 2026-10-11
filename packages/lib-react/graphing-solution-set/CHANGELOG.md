@@ -1,5 +1,18 @@
 # @pie-lib/graphing-solution-set
 
+## 5.0.4
+
+### Patch Changes
+
+- [#431](https://github.com/pie-framework/pie-elements-ng/pull/431) [`20c1c98`](https://github.com/pie-framework/pie-elements-ng/commit/20c1c98ba8e0891a3a97705f9c583bbc228bdae6) Thanks [@chillenious](https://github.com/chillenious)! - fix: declare renderUi before the interop fallbacks that read it
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf), [`ce83f89`](https://github.com/pie-framework/pie-elements-ng/commit/ce83f89eec053f50be278a69a954bfc7e7df182c), [`1c65ab1`](https://github.com/pie-framework/pie-elements-ng/commit/1c65ab17d87e71d8fb5c46d776f26e44f5a2053b)]:
+  - @pie-lib/config-ui@14.0.4
+  - @pie-lib/plot@5.0.4
+  - @pie-element/shared-utils@0.1.4
+  - @pie-lib/drag@5.0.4
+  - @pie-lib/editable-html-tip-tap@3.0.4
+  - @pie-lib/render-ui@8.0.4
+
 ## 5.0.3
 
 ### Patch Changes

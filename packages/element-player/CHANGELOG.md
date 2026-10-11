@@ -1,5 +1,12 @@
 # @pie-element/element-player
 
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [[`f600063`](https://github.com/pie-framework/pie-elements-ng/commit/f6000632b8ca95914198b3a0ebdf773b8892090b)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.5
+
 ## 0.1.5
 
 ### Patch Changes
