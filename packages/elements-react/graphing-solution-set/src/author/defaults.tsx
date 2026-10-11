@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { GraphingSolutionSetConfiguration, GraphingSolutionSetModel, Mark, Point } from '../types.js';
 
 /*
  * This file contains the default configuration for the Graphing Solution Set Item Type.
@@ -12,7 +13,7 @@ export default {
     answers: {
       correctAnswer: {
         name: 'Correct Answer',
-        marks: [],
+        marks: [] as Mark[],
       },
     },
     arrows: {
@@ -21,7 +22,7 @@ export default {
       up: true,
       down: true,
     },
-    marks: [],
+    marks: [] as Mark[],
     defaultGridConfiguration: 0,
     domain: {
       min: -5,
@@ -37,7 +38,7 @@ export default {
     gssLineData: {
       numberOfLines: 1,
       selectedTool: 'lineA',
-      sections: [],
+      sections: [] as Point[][],
       lineA: {
         lineType: 'Solid',
       },
@@ -348,11 +349,11 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     mathMlOptions: {
       mmlOutput: false,
       mmlEditing: false,
     },
   },
-};
+} satisfies { model: Omit<GraphingSolutionSetModel, 'id' | 'element'>; configuration: GraphingSolutionSetConfiguration };

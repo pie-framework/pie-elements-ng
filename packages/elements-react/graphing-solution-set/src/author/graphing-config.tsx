@@ -56,6 +56,7 @@ export class GraphingConfig extends React.Component {
     graphDimensions: PropTypes.object,
     gridConfigurations: PropTypes.array,
     labelsPlaceholders: PropTypes.object,
+    mathMlOptions: PropTypes.object,
     model: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     showLabels: PropTypes.bool,
