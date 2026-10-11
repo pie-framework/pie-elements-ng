@@ -1,14 +1,13 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import MultipleChoiceConfigure from '@pie-element/multiple-choice/author';
 import { defaults } from '@pie-element/shared-lodash';
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 import { EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG } from '../private-tags.js';
 
 import sensibleDefaults from './defaults.js';
+import type { EbsrConfiguration, EbsrPart } from '../types.js';
 
 const MODEL_UPDATED = ModelUpdatedEvent.TYPE;
 const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG;
@@ -22,7 +21,7 @@ const defineMultipleChoice = () => {
 
 defineMultipleChoice();
 
-const prepareCustomizationObject = (config, model) => {
+const prepareCustomizationObject = (config: EbsrConfiguration, model: AuthorModel) => {
   const configuration = defaults(config, sensibleDefaults.configuration);
 
   return {
@@ -33,8 +32,21 @@ const prepareCustomizationObject = (config, model) => {
 
 const { model: modelDefault } = sensibleDefaults || {};
 
+/** A model handed to the author, whose parts may be incomplete. */
+type AuthorModelInput = Omit<Partial<AuthorModel>, 'partA' | 'partB'> & {
+  partA?: Partial<EbsrPart>;
+  partB?: Partial<EbsrPart>;
+};
+
 export default class EbsrConfigure extends HTMLElement {
-  static createDefaultModel = ({ partA = {}, partB = {}, ...model } = {}, defaults = modelDefault) => ({
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: EbsrConfiguration;
+
+  static createDefaultModel = (
+    { partA = {}, partB = {}, ...model }: AuthorModelInput = {},
+    defaults: AuthorModel = modelDefault,
+  ): AuthorModel => ({
     ...defaults,
     ...model,
     partA: {
@@ -61,26 +73,26 @@ export default class EbsrConfigure extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(m) {
+  set model(m: AuthorModelInput) {
     this._model = EbsrConfigure.createDefaultModel(m, this._model);
 
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged: any = (m, reset) => {
+  onModelChanged = (m: AuthorModel, reset?: boolean) => {
     this._model = EbsrConfigure.createDefaultModel(m, this._model);
 
     this.dispatchModelUpdated(reset);
     this._render();
   };
 
-  set configuration(c) {
+  set configuration(c: EbsrConfiguration) {
     const info = prepareCustomizationObject(c, this._model);
 
     const newConfiguration = {
@@ -99,16 +111,16 @@ export default class EbsrConfigure extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -120,7 +132,7 @@ export default class EbsrConfigure extends HTMLElement {
     this._render();
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: EbsrConfiguration) {
     this._configuration = prepareCustomizationObject(c, this._model).configuration;
 
     if (this._model) {
@@ -130,19 +142,22 @@ export default class EbsrConfigure extends HTMLElement {
     this._render();
   }
 
-  onModelUpdated: any = (e) => {
-    if (e.target === this) {
+  onModelUpdated = (event: Event) => {
+    const e = event as ModelUpdatedEvent;
+    const target = e.target as HTMLElement | null;
+
+    if (target === this) {
       return;
     }
 
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const part = e.target && e.target.getAttribute('data-part');
+    const part = target && target.getAttribute('data-part');
 
     if (part) {
       if (e.update) {
-        this._model[`part${part}`] = e.update;
+        this._model[`part${part}` as 'partA' | 'partB'] = e.update;
       }
 
       this.dispatchEvent(new ModelUpdatedEvent(this._model));
