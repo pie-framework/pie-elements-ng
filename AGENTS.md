@@ -263,7 +263,7 @@ of 2026-10-05 kept `mathml` for every student, and the provider ships with its f
 
 When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-demo/test/a11y/**`, `apps/element-a11y-demo/src/lib/samples/**`, or `docs/a11y/**`:
 
-- Use `.claude/skills/accessibility-reviewer-assessments/SKILL.md` for the detailed assessment-specific checklist.
+- Use `.agents/skills/accessibility-reviewer-assessments/SKILL.md` for the detailed assessment-specific checklist.
 - Prefer dedicated a11y scenarios in `apps/element-a11y-demo/src/lib/a11y/scenarios/catalog.ts` over broad demo inventory coverage.
 - Keep automated scope explicit: document Axe-covered checks, custom Playwright checks, manual-only concerns, and unclear gaps in `docs/a11y/`.
 - Add reusable checks in `apps/element-a11y-demo/test/a11y/axe-scenarios.spec.ts` only when the concern applies across multiple elements.
@@ -321,7 +321,8 @@ Workflows: `ci.yml` (pushes and PRs), `a11y.yml` (PRs), `e2e.yml` and `iife-test
 
 ## Skills
 
-Canonical project skills live in `.claude/skills/`:
+Canonical project skills live in `.agents/skills/`; each `.claude/skills/<name>/SKILL.md` carries only
+the frontmatter Claude Code discovers it by and a pointer to the record:
 
 - `accessibility-reviewer-assessments` — WCAG 2.2 AA and assessment-specific accessibility
   review of test-taking interfaces.

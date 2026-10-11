@@ -41,21 +41,20 @@ src/
     index.ts                 # Pure TS controller (no DOM, no Svelte)
   index.ts                   # ESM root — re-exports the delivery default and `export type * from './types.js'`
   index.iife.ts              # IIFE entry — exports delivery component default; NO customElements.define
+  runtime-support.ts         # Runtime support metadata
   types.ts                   # <Name>Model, <Name>Configuration, <Name>Session (the JSON Schema source), ViewModel — no `any`
 
 package.json                 # "pie": { "controller": "@pie-element/<slug>/controller" }
                              # "exports" map with ./delivery, ./controller, ./controller.js, ./author, ./schemas/<kind>.schema.json subpaths
                              # "files" includes controller.js
+                             # "scripts" copied verbatim from venn-classification
 controller.js                # Shim: export * from './dist/controller/index.js'
 docs.contract.json           # PieDocsContract
-vite.config.ts               # ESM delivery build
-vite.config.iife.ts          # IIFE delivery build
-vite.config.controller.ts    # Controller build
-vite.config.author.ts        # Author build
-vitest.config.ts
+svelte.config.js
+tsconfig.json
 ```
 
-The build ends by generating the JSON Schemas from `src/types.ts`; `docs/ELEMENT_SCHEMAS.md` sets out how to declare the contract types and what the schema test validates.
+The package has no Vite or Vitest config. The build script runs the shared configs in `tools/vite/` (see `docs/PACKAGING_ARCHITECTURE.md`), which discover lanes from the `src/` entries present, and the root `vitest.config.ts` runs the package's tests. The build ends by generating the JSON Schemas from `src/types.ts`; `docs/ELEMENT_SCHEMAS.md` sets out how to declare the contract types and what the schema test validates.
 
 ## Controller Contract
 
@@ -98,6 +97,8 @@ Use Svelte 5 runes throughout. Key rules:
 - Side effects: `$effect(() => { … })` — not `$: { … }`.
 - No `$:` reactive statements — those are Svelte 4 and silently misbehave in Svelte 5 rune-mode files.
 - Never add `tag: '...'` inside `<svelte:options customElement={...}>`. Svelte auto-defines that tag at module evaluation, conflicting with player-controlled registration and causing `CustomElementRegistry` duplicate-name errors.
+- Never use `createEventDispatcher` in a custom-element component: in Svelte 5 its events reach only listeners added on the element itself, never an ancestor's, where players listen. Dispatch a DOM event on `$host()`, or use the helpers the dispatch sections below name.
+- Prefix every class name in an element rendered with `shadow: 'none'` (`pie-settings-toggle`, not `toggle`): the host page's CSS reaches it, and a daisyUI `.toggle` or Tailwind `.contents` restyles a bare name.
 
 ## `session-changed` Event Dispatch
 
@@ -136,6 +137,42 @@ The element writes each update into the player's session object (`writeSessionIn
 
 Never change the session except through `onSessionChange` — the player will not see the response.
 
+## `model.updated` Event Dispatch
+
+The author element meets the Authoring Contract in `docs/PIE_ELEMENT_CONTRACT.md`. `src/author/index.ts` exports the compiled element with no wrapper class:
+
+```typescript
+import AuthorComponent from './Author.svelte';
+
+export default (AuthorComponent as any).element;
+```
+
+`Author.svelte` declares both properties a player sets, fills the model from the controller's defaults and the configuration from `defaults.ts`, and dispatches each edit on `$host()` after assigning it to the host's `model`:
+
+```svelte
+<svelte:options customElement={{ shadow: 'none', props: { model: { type: 'Object' }, configuration: { type: 'Object' } } }} />
+
+<script lang="ts">
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
+import { mergeConfiguration } from '@pie-lib/config-ui-svelte';
+import { createDefaultModel } from '../controller/index';
+import defaults from '../controller/defaults';
+
+let { model, configuration } = $props();
+const m = $derived(createDefaultModel(model || undefined));
+const config = $derived(mergeConfiguration(defaults.configuration, configuration));
+
+function emitModelUpdate(patch: Record<string, unknown>) {
+  const next = { ...m, ...patch };
+  // Through the host: a remount after a detach starts from the host's property.
+  $host<HTMLElement & { model: unknown }>().model = next;
+  $host().dispatchEvent(new ModelUpdatedEvent(next));
+}
+</script>
+```
+
+Settings come from `configuration`: each entry's `label` names its field and its setting, and `settings: true` offers the setting. Lay the view out with `ConfigLayout` and `SettingsPanel` from `@pie-lib/config-ui-svelte`, hiding the panel when `config.settingsPanelDisabled` is true, and pass each rich-text field's label to `EditableHtml` as `ariaLabel`, since its visible label is not tied to the text box. `simple-cloze` is the smallest complete example. An author view that cannot edit yet still declares both properties and sets `supports.esm.author: false` in `src/runtime-support.ts`, as `mc-populated-blank` does.
+
 ## Testing Requirements
 
 Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
@@ -160,6 +197,13 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 - [ ] Listed in the shared contract test, `packages/lib-svelte/delivery-events/tests/delivery-session-contract.test.ts`.
 - [ ] `session.completed` is true after the last required interaction.
 - [ ] Passes axe-core with zero violations in each mode.
+
+**Author element tests** (happy-dom, `tests/author-model-contract.test.ts`):
+
+- [ ] `assertAuthorModelUpdate` from `@pie-element/shared-test-utils` passes for an edit, and the returned event's `detail.update` is the whole edited model.
+- [ ] A second edit builds on the first.
+- [ ] Configured labels name the fields and settings, a `settings: false` entry leaves its setting out, and `settingsPanelDisabled: true` hides the panel.
+- [ ] A placeholder author view runs `assertAuthorElementProperties` instead.
 
 **E2E / accessibility** (Playwright):
 
