@@ -32,6 +32,7 @@
 "@pie-element/venn-classification": patch
 "@pie-element/video-stimulus": patch
 "@pie-lib/config-ui": patch
+"@pie-lib/rubric": patch
 ---
 
 Each element publishes JSON Schemas for its model and session, and for its authoring configuration when it has one, at `@pie-element/<name>/schemas/<kind>.schema.json`. The root entry exports the `<Name>Model`, `<Name>Session` and `<Name>Configuration` types they are generated from. `@pie-element/shared-types` adds the authoring building blocks those types share.
