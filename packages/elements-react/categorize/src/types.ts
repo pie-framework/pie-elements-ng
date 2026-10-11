@@ -67,7 +67,7 @@ export interface CategorizeFeedback {
 /** Whether a choice may be placed in more than one category: for every choice, for none, or per choice */
 export type MultiplePlacements = 'Yes' | 'No' | 'Set Per Choice';
 
-/** Pie Model Object for @pie-element/categorize */
+/** Pie Model Object for `@pie-element/categorize` */
 export interface CategorizeModel extends PieModel {
   /** Indicates if alternate correct answers are allowed */
   allowAlternateEnabled?: boolean;
@@ -164,7 +164,7 @@ export interface MaxImageDimensions extends ConfigureMaxImageDimensionsProp {
   categoryLabel?: number;
 }
 
-/** Config Object for @pie-element/categorize */
+/** Config Object for `@pie-element/categorize` */
 export interface CategorizeConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled

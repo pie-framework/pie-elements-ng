@@ -43,7 +43,7 @@ export interface MatchFeedback {
   partial?: MatchFeedbackLevel;
 }
 
-/** Model for the @pie-element/match Interaction */
+/** Model for the `@pie-element/match` Interaction */
 export interface MatchModel extends PieModel {
   /** Feedback for student responses */
   feedback?: MatchFeedback;
@@ -112,7 +112,7 @@ export interface MatchMaxImageDimensions extends ConfigureMaxImageDimensionsProp
   rowTitles?: number;
 }
 
-/** Config Object for @pie-element/match */
+/** Config Object for `@pie-element/match` */
 export interface MatchConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled
