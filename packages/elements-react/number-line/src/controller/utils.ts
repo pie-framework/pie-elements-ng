@@ -1,7 +1,6 @@
-// @ts-nocheck
-
 import * as math from 'mathjs';
 import { generateMajorValuesForMinor, generateMinorValues, getMinorLimits } from './tickUtils.js';
+import type { NumberLineGraph, NumberLineTicks } from '../types.js';
 
 /*
  * This function is duplicated in configure/main.js
@@ -9,7 +8,7 @@ import { generateMajorValuesForMinor, generateMinorValues, getMinorLimits } from
  * @param graph object containing domain, ticks and width value
  * @return graph object with updated ticks values
  * */
-const updateMajorValue = (graph) => {
+const updateMajorValue = (graph: NumberLineGraph): NumberLineGraph => {
   const { domain, ticks, width } = graph;
   const majorValues = generateMajorValuesForMinor(ticks.minor, domain, width);
   if (majorValues.decimal.indexOf(ticks.major) === -1) {
@@ -33,8 +32,8 @@ const updateMajorValue = (graph) => {
  * @return graph object with updated ticks values
  * */
 
-export const reloadTicksData = (graph) => {
-  const { domain, ticks = {}, width } = graph;
+export const reloadTicksData = (graph: NumberLineGraph): NumberLineGraph => {
+  const { domain, ticks = {} as NumberLineTicks, width } = graph;
   //Set tick interval type if not present for legacy number line models depending upon minor value
   if (!ticks.tickIntervalType) {
     if (ticks.minor > 0.5) {
@@ -59,7 +58,6 @@ export const reloadTicksData = (graph) => {
         ? ticks.minor
         : math.number(math.ceil(minorLimits.min));
     ticks.integerTick = ticks.minor;
-    const minorValues = { decimal: [], fraction: [] };
     ticks.fractionTick = '0';
     ticks.decimalTick = 0;
   } else if (minorLimits.min >= 0 && minorLimits.max < 1) {
@@ -73,7 +71,7 @@ export const reloadTicksData = (graph) => {
     let minValue = math.number(math.fraction(minorValues.fraction[0]));
     let maxValue = math.number(math.fraction(minorValues.fraction[minorValues.fraction.length - 1]));
     if (ticks.minor < minValue || ticks.minor > maxValue) {
-      switch (ticks.tickIntervalType) {
+      switch (ticks.tickIntervalType as NumberLineTicks['tickIntervalType']) {
         case 'Fraction':
           ticks.minor = math.number(math.fraction(minorValues.fraction[minorValues.fraction.length - 1]));
           ticks.fractionTick = minorValues.fraction[minorValues.fraction.length - 1];
@@ -86,7 +84,7 @@ export const reloadTicksData = (graph) => {
           ticks.fractionTick = minorValues.fraction[0];
       }
     } else {
-      switch (ticks.tickIntervalType) {
+      switch (ticks.tickIntervalType as NumberLineTicks['tickIntervalType']) {
         case 'Fraction':
           let fraction = math.fraction(math.number(ticks.minor));
           ticks.fractionTick = fraction.n + '/' + fraction.d;

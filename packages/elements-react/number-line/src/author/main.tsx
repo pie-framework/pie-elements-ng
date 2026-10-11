@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import React from 'react';
 import { FormSection, InputContainer, AlertDialog, settings, layout } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
@@ -7,7 +5,6 @@ import { NumberLineComponent, dataConverter, tickUtils } from '../delivery/index
 import NumberTextField from './number-text-field.js';
 import CardBar from './card-bar.js';
 import Size from './size.js';
-import PropTypes from 'prop-types';
 import Domain from './domain.js';
 import Arrows from './arrows.js';
 import PointConfig from './point-config.js';
@@ -20,8 +17,63 @@ import Ticks from './ticks.js';
 import { model as defaultModel } from './defaults.js';
 import { generateValidationMessage } from './utils.js';
 import * as math from 'mathjs';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { NumberLineValidationErrors } from '../controller/index.js';
+import type { MinorLimits, TickValues } from '../controller/tickUtils.js';
+import type {
+  NumberLineArrows,
+  NumberLineAvailableTypes,
+  NumberLineConfiguration,
+  NumberLineGraph,
+  NumberLineModel,
+  NumberLinePointType,
+  NumberLineRay,
+  NumberLineResponse,
+  NumberLineTicks,
+  NumberLineTitleConfiguration,
+} from '../types.js';
 
-const trimModel = (model) => ({
+/** The model the author edits; `createDefaultModel()` fills `graph` and `correctResponse`, and the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<NumberLineModel> & {
+  graph: NumberLineGraph;
+  correctResponse: NumberLineResponse[];
+  /** `rationale` is read, but `validate()` never sets it */
+  errors?: NumberLineValidationErrors & { rationale?: string };
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: NumberLineConfiguration;
+  onConfigurationChanged: (configuration: NumberLineConfiguration) => void;
+  onChange: (model: Partial<AuthorModel>) => void;
+  imageSupport: MediaSupport<ImageHandler>;
+  uploadSoundSupport: MediaSupport<SoundHandler>;
+};
+
+type DialogState = { open: boolean; text?: string };
+
+type State = {
+  dialog: DialogState;
+  /** `indices` are the correct responses the graph change would drop; `graph` is the graph before it */
+  correctAnswerDialog: DialogState & { indices?: number[]; graph?: NumberLineGraph };
+};
+
+/** A response in the delivery graph's format: a line's `position` holds both ends */
+type GraphElement = {
+  type: NumberLineResponse['type'];
+  position: number | { left: number; right: number };
+  pointType?: NumberLinePointType;
+  direction?: NumberLineRay['direction'];
+  leftPoint?: NumberLinePointType;
+  rightPoint?: NumberLinePointType;
+};
+
+const trimModel = (model: AuthorModel) => ({
   ...model,
   feedback: undefined,
   prompt: undefined,
@@ -33,9 +85,9 @@ const trimModel = (model) => ({
 const { lineIsSwitched, switchGraphLine, toGraphFormat, toSessionFormat } = dataConverter;
 const { Panel, toggle } = settings;
 
-let minorLimits = {};
-let minorValues = {};
-let majorValues = {};
+let minorLimits = {} as MinorLimits;
+let minorValues = {} as TickValues;
+let majorValues = {} as TickValues;
 
 const StyledNumberTextField: any = styled(NumberTextField)({
   width: '150px',
@@ -89,8 +141,8 @@ const Description: any = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
 }));
 
-export const toPointType = (response) => {
-  function rest(response) {
+export const toPointType = (response: NumberLineResponse) => {
+  function rest(response: Omit<Partial<GraphElement>, 'type' | 'position'>) {
     if (response.pointType) {
       if (response.direction) {
         return `${response.pointType[0]}${response.direction[0]}`;
@@ -99,23 +151,14 @@ export const toPointType = (response) => {
       return response.pointType[0];
     }
 
-    return `${response.leftPoint[0]}${response.rightPoint[0]}`;
+    return `${(response.leftPoint as string)[0]}${(response.rightPoint as string)[0]}`;
   }
 
   return `${response.type[0]}${rest(response)}`.toUpperCase();
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    onChange: PropTypes.func.isRequired,
-    imageSupport: PropTypes.object.isRequired,
-    uploadSoundSupport: PropTypes.object.isRequired,
-  };
-
-  constructor(props) {
+export class Main extends React.Component<MainProps, State> {
+  constructor(props: MainProps) {
     super(props);
     const {
       model: {
@@ -141,16 +184,19 @@ export class Main extends React.Component {
     const { title } = configuration || {};
     const { titleEnabled: showTitle } = model || {};
 
-    const titleEnabled = showTitle === undefined || showTitle === null ? title.enabled : showTitle;
+    const titleEnabled =
+      showTitle === undefined || showTitle === null ? (title as NumberLineTitleConfiguration).enabled : showTitle;
 
     onChange && onChange({ ...model, titleEnabled });
   }
 
-  graphChange: any = (obj) => {
+  graphChange = (obj: Partial<NumberLineGraph>) => {
     const { model, onChange } = this.props;
     let graph = { ...model.graph, ...obj };
-    let respIndex = [];
-    model.correctResponse.forEach((correctResp, key) => {
+    let respIndex: number[] = [];
+    model.correctResponse.forEach((response, key) => {
+      // Only a line has a size.
+      const correctResp = response as { domainPosition: number; size?: number };
       if (
         correctResp.domainPosition < graph.domain.min ||
         correctResp.domainPosition > graph.domain.max ||
@@ -180,9 +226,9 @@ export class Main extends React.Component {
     onChange({ graph });
   };
 
-  changeSize = ({ width, height }) => this.graphChange({ width, height });
+  changeSize = ({ width, height }: { width: number; height?: number }) => this.graphChange({ width, height });
 
-  getAdjustedHeight: any = (availableTypes, maxNumberOfPoints) => {
+  getAdjustedHeight = (availableTypes: NumberLineAvailableTypes | undefined, maxNumberOfPoints: number | undefined) => {
     let onlyPFAvailable = true;
     Object.entries(availableTypes || {}).forEach(([type, value]) => {
       if (type !== 'PF' && value) {
@@ -195,7 +241,7 @@ export class Main extends React.Component {
       : 50 + (maxNumberOfPoints || 20) * 25;
   };
 
-  changeMaxNoOfPoints: any = (e, maxNumberOfPoints) => {
+  changeMaxNoOfPoints = (_event: unknown, maxNumberOfPoints: number) => {
     maxNumberOfPoints = Math.floor(maxNumberOfPoints);
     if (this.props.model.correctResponse.length > maxNumberOfPoints) {
       this.setState({
@@ -216,12 +262,12 @@ export class Main extends React.Component {
     this.graphChange({ maxNumberOfPoints, height });
   };
 
-  changeGraphTitle = (title) => this.graphChange({ title });
+  changeGraphTitle = (title: string) => this.graphChange({ title });
 
   /*
    * Gets triggered whenever ticks related data is changed by user.
    * */
-  changeTicks: any = (object) => {
+  changeTicks = (object: { ticks: NumberLineTicks }) => {
     const { model, onChange } = this.props;
     let { ticks } = object;
     const correctResponse = tickUtils.snapElements(model.graph.domain, ticks, model.correctResponse);
@@ -240,7 +286,7 @@ export class Main extends React.Component {
    * @param graph object containing domain, ticks and width value
    * @return graph object with updated ticks values
    * */
-  reloadTicksData: any = (graph) => {
+  reloadTicksData = (graph: NumberLineGraph): NumberLineGraph => {
     const { domain, ticks, width } = graph;
     //Set tick interval type if not present for legacy number line models depending upon minor value
     if (!ticks.tickIntervalType) {
@@ -279,8 +325,9 @@ export class Main extends React.Component {
       minorValues = tickUtils.generateMinorValues(minorLimits);
       let minValue = math.number(math.fraction(minorValues.fraction[0]));
       let maxValue = math.number(math.fraction(minorValues.fraction[minorValues.fraction.length - 1]));
+      // The cast undoes the narrowing above: the Integer cases are unreachable.
       if (ticks.minor < minValue || ticks.minor > maxValue) {
-        switch (ticks.tickIntervalType) {
+        switch (ticks.tickIntervalType as NumberLineTicks['tickIntervalType']) {
           case 'Fraction':
             ticks.minor = math.number(math.fraction(minorValues.fraction[minorValues.fraction.length - 1]));
             ticks.fractionTick = minorValues.fraction[minorValues.fraction.length - 1];
@@ -293,7 +340,7 @@ export class Main extends React.Component {
             ticks.fractionTick = minorValues.fraction[0];
         }
       } else {
-        switch (ticks.tickIntervalType) {
+        switch (ticks.tickIntervalType as NumberLineTicks['tickIntervalType']) {
           case 'Fraction':
             let fraction = math.fraction(math.number(ticks.minor));
             ticks.fractionTick = fraction.n + '/' + fraction.d;
@@ -363,7 +410,7 @@ export class Main extends React.Component {
    * @param graph object containing domain, ticks and width value
    * @return graph object with updated ticks values
    * */
-  updateMajorValue: any = (graph) => {
+  updateMajorValue = (graph: NumberLineGraph): NumberLineGraph => {
     const { domain, ticks, width } = graph;
     majorValues = tickUtils.generateMajorValuesForMinor(ticks.minor, domain, width);
     if (majorValues.decimal.indexOf(ticks.major) === -1) {
@@ -379,9 +426,9 @@ export class Main extends React.Component {
     return { ...graph, ticks };
   };
 
-  changeArrows = (arrows) => this.graphChange({ arrows });
+  changeArrows = (arrows: NumberLineArrows) => this.graphChange({ arrows });
 
-  setDefaults: any = () => {
+  setDefaults = () => {
     const {
       graph: { availableTypes, maxNumberOfPoints },
     } = defaultModel;
@@ -391,18 +438,20 @@ export class Main extends React.Component {
     this.props.onChange({ graph });
   };
 
-  moveCorrectResponse: any = (index, el, position) => {
+  moveCorrectResponse = (index: number, el: GraphElement, position: GraphElement['position']) => {
     el.position = position;
 
     const { onChange, model } = this.props;
-    const update = toSessionFormat(el.type === 'line' && lineIsSwitched(el) ? switchGraphLine(el) : el);
+    const update = toSessionFormat(
+      el.type === 'line' && lineIsSwitched(el) ? switchGraphLine(el) : el,
+    ) as NumberLineResponse;
     const correctResponse = [...model.correctResponse];
     correctResponse[index] = update;
 
     onChange({ correctResponse });
   };
 
-  availableTypesChange: any = (availableTypes) => {
+  availableTypesChange = (availableTypes: NumberLineAvailableTypes) => {
     const { model, onChange } = this.props;
     const {
       correctResponse,
@@ -410,7 +459,7 @@ export class Main extends React.Component {
     } = model;
 
     new Set(correctResponse.map(toPointType)).forEach((pointType) => {
-      availableTypes[pointType] = true;
+      availableTypes[pointType as keyof NumberLineAvailableTypes] = true;
     });
 
     const height = this.getAdjustedHeight(availableTypes, maxNumberOfPoints);
@@ -419,28 +468,28 @@ export class Main extends React.Component {
     onChange({ graph });
   };
 
-  deleteCorrectResponse: any = (indices) => {
+  deleteCorrectResponse = (indices: number[]) => {
     const { model, onChange } = this.props;
-    const correctResponse = model.correctResponse.filter((v, index) => !indices.some((d) => d === index));
+    const correctResponse = model.correctResponse.filter((_v, index) => !indices.some((d) => d === index));
 
     onChange({ correctResponse });
   };
 
-  addCorrectResponse: any = (data) => {
+  addCorrectResponse = (data: GraphElement) => {
     const { model, onChange } = this.props;
     const correctResponse = [...model.correctResponse];
-    correctResponse.push(toSessionFormat(data));
+    correctResponse.push(toSessionFormat(data) as NumberLineResponse);
 
     onChange({ correctResponse });
   };
 
-  clearCorrectResponse: any = () => {
+  clearCorrectResponse = () => {
     const { onChange } = this.props;
 
     onChange({ correctResponse: [] });
   };
 
-  undoCorrectResponse: any = () => {
+  undoCorrectResponse = () => {
     const { model, onChange } = this.props;
     const correctResponse = [...model.correctResponse];
     correctResponse.pop();
@@ -492,8 +541,8 @@ export class Main extends React.Component {
     } = errors || {};
     const validationMessage = generateValidationMessage();
     const correctResponse = cloneDeep(model.correctResponse || []).map(toGraphFormat);
-    const initialModel = cloneDeep(model);
-    initialModel['disabled'] = true;
+    const initialModel: AuthorModel & { disabled?: boolean } = cloneDeep(model);
+    initialModel.disabled = true;
     const toolbarOpts = {
       position: toolbarEditorPosition === 'top' ? 'top' : 'bottom',
     };
@@ -536,7 +585,7 @@ export class Main extends React.Component {
           <StyledInputContainer label={teacherInstructions.label}>
             <EditableHtml
               markup={model.teacherInstructions || ''}
-              onChange={(teacherInstructions) => onChange({ teacherInstructions })}
+              onChange={(teacherInstructions: string) => onChange({ teacherInstructions })}
               nonEmpty={false}
               disableUnderline
               error={teacherInstructionsError}
@@ -556,7 +605,7 @@ export class Main extends React.Component {
           <StyledInputContainer label={prompt.label}>
             <EditableHtml
               markup={model.prompt || ''}
-              onChange={(prompt) => onChange({ prompt })}
+              onChange={(prompt: string) => onChange({ prompt })}
               nonEmpty={false}
               disableUnderline
               error={promptError}
@@ -750,7 +799,7 @@ export class Main extends React.Component {
           <StyledInputContainer label={rationale.label || 'Rationale'}>
             <EditableHtml
               markup={model.rationale || ''}
-              onChange={(rationale) => onChange({ rationale })}
+              onChange={(rationale: string) => onChange({ rationale })}
               error={rationaleError}
               toolbarOpts={toolbarOpts}
               spellCheck={spellCheckEnabled}

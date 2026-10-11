@@ -102,7 +102,14 @@ const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
   paddingBottom: theme.spacing(2),
 }));
 
-export class NumberLine extends React.Component {
+/** Sizing props the author passes; `propTypes` declares the rest */
+type NumberLineSizeProps = {
+  minWidth?: number;
+  maxWidth?: number;
+  maxHeight?: number;
+};
+
+export class NumberLine extends React.Component<NumberLineSizeProps> {
   static propTypes = {
     onMoveElement: PropTypes.func.isRequired,
     onDeleteElements: PropTypes.func.isRequired,
