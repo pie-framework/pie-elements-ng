@@ -39,7 +39,7 @@ src/
     index.ts
   controller/
     index.ts                 # Pure TS controller (no DOM, no Svelte)
-  index.ts                   # ESM root — re-exports all three sub-entries
+  index.ts                   # ESM root — re-exports the delivery default and `export type * from './types.js'`
   index.iife.ts              # IIFE entry — exports delivery component default; NO customElements.define
   types.ts                   # <Name>Model, <Name>Configuration, <Name>Session (the JSON Schema source), ViewModel — no `any`
 
@@ -54,6 +54,8 @@ vite.config.controller.ts    # Controller build
 vite.config.author.ts        # Author build
 vitest.config.ts
 ```
+
+The build ends by generating the JSON Schemas from `src/types.ts`; `docs/ELEMENT_SCHEMAS.md` sets out how to declare the contract types and what the schema test validates.
 
 ## Controller Contract
 

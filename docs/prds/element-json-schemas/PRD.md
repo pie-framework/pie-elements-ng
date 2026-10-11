@@ -17,7 +17,7 @@ Legacy `pie-elements` publishes a model schema and a configuration schema per el
 ## Non-goals
 
 - **A schema library** (Zod, TypeBox, hand-written schemas). The TypeScript interfaces are the single source; a schema library would be a second one to keep in step.
-- **Runtime validation in elements or players.** The schemas describe the contract; delivery does not validate against them.
+- **Runtime validation in elements, players or `pie-api-aws`.** The schemas describe the contract; delivery does not validate against them. `pie-api-aws` stores models as given and validates only request envelopes. Its Learnosity transform writes keys the closed roots reject, such as `weights` on every multiple-choice model, and content on legacy element versions has no ng schema. Validating at store time is a `pie-api-aws` change of its own, resolving the schema of each model's element version. A host validates where it accepts or stores content.
 - **Committed schema copies.** A committed copy drifts from the build that published it; the npm package and its jsDelivr URL are the record.
 - **Changing behaviour to match legacy.** Typing is annotation-only. A legacy difference or a bug found while typing is recorded, and fixing it is a separate change.
 - **Matching legacy schemas key for key.** ng's types describe what ng reads and writes.
@@ -26,9 +26,10 @@ Legacy `pie-elements` publishes a model schema and a configuration schema per el
 
 - **Contract types.** Each element's `src/types.ts` exports `<Name>Model`, `<Name>Session` and, when the package has `./author`, `<Name>Configuration`, where `<Name>` is the PascalCase package name. Shared building blocks live in `@pie-element/shared-types`: `PieModel` and the authoring types (`ConfigureProp`, `EditableHtmlPluginConfigure`, `ConfigureMathMLProp` and the rest). JSDoc carries descriptions, `@default`, `@minimum` and `@deprecated` into the schema. Element entries re-export the types (`export type * from './types.js'`).
 - **Typed element code.** The controller, the authoring surface and the defaults files compile against those types. Defaults use `satisfies`, so a key the element writes and its type omits fails `tsc`.
-- **Generation.** `tools/schemas` runs ts-json-schema-generator over `src/types.ts` as the last step of the package build, writing `dist/schemas/<kind>.schema.json`. The package's `exports` entries `./schemas/<kind>.schema.json` decide which kinds it publishes.
+- **Generation.** `tools/schemas/build.ts` runs ts-json-schema-generator over `src/types.ts` as the last step of the package build, writing `dist/schemas/<kind>.schema.json`. The package's `exports` entries `./schemas/<kind>.schema.json` decide which kinds it publishes.
 - **Schema shape.** Draft-07, `$id` set to the file's versioned jsDelivr URL (`https://cdn.jsdelivr.net/npm/<name>@<version>/dist/schemas/<kind>.schema.json`). Model and configuration roots are closed (`additionalProperties: false`), as in legacy; nested objects and the session stay open, because players and controllers write extra state into the session. `@deprecated reason` becomes `deprecated: true` with the reason appended to the description.
 - **Gates.** `tools/schemas/element-schemas.test.ts` generates every declared schema, compiles it under strict Ajv, and validates every value the element produces itself: controller defaults, `createDefaultModel()`, author defaults, demo models and sessions, and `createCorrectResponseSession()` on each demo model. Each declared kind must be exercised by at least one of those values. `scripts/check-publish-surface.mjs` requires the model and session exports on every element package, and the configuration export when `./author` exists.
+- **Documentation.** The element-demo docs pages take their property rows from the schemas, generated in-process from `src/types.ts` by the module the package build uses (`tools/cli/src/lib/schemas`), so descriptions, enums, bounds and required keys come from the JSDoc. Defaults come from the defaults files `docs.contract.json` points at; the contract's unused `metadata` and `description` fields are removed. A named object type is documented once per section and linked from each property of that type: expanded inline, the shared rich-text toolbar types put 400 to 1,000 rows on a configuration page.
 - **Migration.** One change per element batch, all under PIE-1255. venn-classification and multiple-choice are the reference shapes for Svelte and React. Legacy differences are recorded in [`notes/legacy-contract-changes.md`](./notes/legacy-contract-changes.md).
 
 ## Worked example
@@ -39,12 +40,7 @@ A host validates an authored multiple-choice model before saving it:
 import Ajv from 'ajv';
 import schema from '@pie-element/multiple-choice/schemas/model.schema.json' with { type: 'json' };
 
-const validate = new Ajv().compile(schema);
+const validate = new Ajv({ allowUnionTypes: true }).compile(schema);
 validate({ id: '1', element: 'multiple-choice', choices: [], choicePrefx: 'letters' });
 // false: `choicePrefx` is not a model property
 ```
-
-## Open questions
-
-- [ ] Whether docs generation reads descriptions, defaults and enums from the schemas in place of `docs.contract.json` metadata, which no element uses today.
-- [ ] Whether a player or `pie-api-aws` validates models against the published schemas.

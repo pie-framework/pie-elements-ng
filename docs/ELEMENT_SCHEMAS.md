@@ -170,7 +170,9 @@ validate({ id: '1', element: 'multiple-choice', choices: [], choicePrefx: 'lette
 
 Validate a model against the schema of the element version that renders it. A key added in a later release fails an earlier schema's closed root.
 
-Validation is structural. Whether a model is authorable, for example whether a correct answer is marked, is the controller's `validate(model, config)`, which returns authoring errors. Elements and players do not validate at runtime: a host validates where it accepts or stores content.
+Validation is structural. Whether a model is authorable, for example whether a correct answer is marked, is the controller's `validate(model, config)`, which returns authoring errors.
+
+Elements, players and `pie-api-aws` do not validate against the schemas: a host validates where it accepts or stores content. `pie-api-aws` stores models as given and checks only request envelopes. Multiple-choice models its Learnosity transform writes carry `weights`, which the schema does not declare, so they fail the closed root.
 
 ### TypeScript
 
@@ -184,6 +186,4 @@ The import is type-only and adds nothing to a bundle.
 
 A schema is also the element's data reference. `description` says what a key does, `default` the value the defaults supply, `enum` the allowed values, `required` what the element cannot render without, and `deprecated` what to stop writing. JSON Schema tooling, such as editor completion, documentation viewers and form generators, reads the files as published.
 
-## Open Questions
-
-The [PRD](prds/element-json-schemas/PRD.md#open-questions) tracks two: whether docs generation reads descriptions, defaults and enums from the schemas, and whether a player or `pie-api-aws` validates models against them.
+The element demo's docs pages render the same schemas: a Model, a Configuration and a Session section per view, with each element's defaults beside every property. [Docs generation](SCHEMA_GENERATION.md) describes how the pages are built.
