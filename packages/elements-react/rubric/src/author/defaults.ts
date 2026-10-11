@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { RubricConfiguration, RubricModel } from '../types.js';
 
 export default {
   model: {
@@ -42,4 +42,7 @@ export default {
     },
     maxMaxPoints: 9,
   },
+} satisfies {
+  model: Omit<RubricModel, 'id' | 'element'>;
+  configuration: RubricConfiguration;
 };

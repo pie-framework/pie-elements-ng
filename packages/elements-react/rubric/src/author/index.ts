@@ -1,18 +1,32 @@
-// @ts-nocheck
-
-import { ModelUpdatedEvent, InsertImageEvent, DeleteImageEvent } from '@pie-element/shared-configure-events';
+import {
+  ModelUpdatedEvent,
+  InsertImageEvent,
+  DeleteImageEvent,
+  type DeleteDone,
+  type ImageHandler,
+} from '@pie-element/shared-configure-events';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import debug from 'debug';
 
-import Main from './main.js';
+import Main, { type AuthorConfiguration, type AuthorModel } from './main.js';
 import defaults from './defaults.js';
+import type { RubricConfiguration, RubricModel } from '../types.js';
 
-const modelWithDefaults = (m) => ({ ...defaults.model, ...m });
+type ModelInput = Partial<RubricModel> & Pick<Partial<AuthorModel>, 'errors'>;
 
-const configurationWithDefaults = (c) => ({ ...defaults.configuration, ...c });
+const modelWithDefaults = (m?: ModelInput): AuthorModel => ({ ...defaults.model, ...m });
+
+const configurationWithDefaults = (c?: RubricConfiguration): AuthorConfiguration => ({
+  ...defaults.configuration,
+  ...c,
+});
 
 export default class RubricElement extends HTMLElement {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: AuthorConfiguration;
+
   constructor() {
     super();
     this._root = null;
@@ -23,7 +37,7 @@ export default class RubricElement extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  updateModelAccordingToReceivedProps: any = (nextModel) => {
+  updateModelAccordingToReceivedProps = (nextModel: AuthorModel): AuthorModel => {
     const currentModel = { ...this._model };
 
     if (!nextModel) {
@@ -75,23 +89,23 @@ export default class RubricElement extends HTMLElement {
     return validatedModel;
   };
 
-  set model(m) {
+  set model(m: ModelInput) {
     this._model = this.updateModelAccordingToReceivedProps(modelWithDefaults(m));
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: RubricConfiguration) {
     this._configuration = configurationWithDefaults(c);
     this._render();
   }
 
-  onModelChanged(m) {
+  onModelChanged(m: AuthorModel) {
     this._model = this.updateModelAccordingToReceivedProps(m);
     this._render();
     this.dispatchEvent(new ModelUpdatedEvent(this._model, false));
   }
 
-  onConfigurationChanged: any = (c) => {
+  onConfigurationChanged = (c: RubricConfiguration) => {
     this._configuration = configurationWithDefaults(c);
 
     if (this._model) {
@@ -101,11 +115,11 @@ export default class RubricElement extends HTMLElement {
     this._render();
   };
 
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 

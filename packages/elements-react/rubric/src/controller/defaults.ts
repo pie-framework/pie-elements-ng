@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { RubricModel } from '../types.js';
 
 export default {
   points: ['', '', '', ''],
@@ -7,4 +7,4 @@ export default {
   maxPointsEnabled: true,
   excludeZero: false,
   excludeZeroEnabled: true,
-};
+} satisfies Omit<RubricModel, 'id' | 'element'>;
