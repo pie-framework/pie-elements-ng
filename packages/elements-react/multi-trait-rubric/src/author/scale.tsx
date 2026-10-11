@@ -13,6 +13,35 @@ import TraitsHeader from './traitsHeader.js';
 import TraitTile from './trait.js';
 import { Arrow, BlockWidth, DragHandleSpace, MultiTraitButton, PrimaryBlockWidth } from './common.js';
 import { DecreaseMaxPoints, DeleteScale, DeleteTrait, InfoDialog } from './modals.js';
+import type { ConfigureMathMLProp, EditableHtmlConfigureProp } from '@pie-element/shared-types';
+import type { MultiTraitRubricValidationErrors } from '../controller/index.js';
+import type { Scale as ScaleModel } from '../types.js';
+import type { MainProps } from './main.js';
+
+export type ScaleProps = {
+  errors?: MultiTraitRubricValidationErrors;
+  scale: ScaleModel;
+  scaleIndex: number;
+  onScaleChanged: (scaleIndex: number, params: Partial<ScaleModel>) => void;
+  onScaleRemoved: (scaleIndex: number) => void;
+  showStandards?: boolean;
+  showScorePointLabels?: boolean;
+  showDescription?: boolean;
+  showLevelTagInput?: boolean;
+  excludeZero?: boolean;
+  enableDragAndDrop?: boolean;
+  spellCheck?: boolean;
+  width?: string | number;
+  uploadSoundSupport?: MainProps['uploadSoundSupport'];
+  imageSupport?: MainProps['imageSupport'];
+  maxPointsEnabled?: boolean;
+  maxNoOfTraits?: number;
+  minNoOfTraits?: number;
+  mathMlOptions?: ConfigureMathMLProp;
+  maxMaxPoints?: number;
+  expandedPluginProps?: EditableHtmlConfigureProp;
+  labelPluginProps?: EditableHtmlConfigureProp;
+};
 
 const AdjustedBlockWidth = BlockWidth + 2 * 8; // 8 is padding
 
@@ -24,7 +53,7 @@ const ScaleWrapper: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
 }));
 
-export class Scale extends React.Component {
+export class Scale extends React.Component<ScaleProps> {
   state = {
     showDecreaseMaxPointsDialog: false,
     showDeleteScaleDialog: false,

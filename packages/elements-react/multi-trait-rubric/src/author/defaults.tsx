@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { MultiTraitRubricConfiguration, MultiTraitRubricModel, Scale } from '../types.js';
 
 export default {
   model: {
@@ -8,7 +8,7 @@ export default {
     halfScoring: false,
     maxPointsEnabled: true,
     pointLabels: true,
-    scales: [],
+    scales: [] as Scale[],
     standards: false,
     visibleToStudent: true,
   },
@@ -146,4 +146,7 @@ export default {
     },
     maxMaxPoints: 10,
   },
+} satisfies {
+  model: Omit<MultiTraitRubricModel, 'id' | 'element'>;
+  configuration: MultiTraitRubricConfiguration;
 };

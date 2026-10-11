@@ -1,9 +1,8 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { cloneDeep, debounce, isEmpty } from '@pie-element/shared-lodash';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { EditableHtmlConfigureProp } from '@pie-element/shared-types';
 
 import { styled } from '@mui/material/styles';
 
@@ -13,6 +12,58 @@ import Scale from './scale.js';
 import { MultiTraitButton } from './common.js';
 import { ExcludeZeroDialog, excludeZeroTypes, IncludeZeroDialog, InfoDialog } from './modals.js';
 import { addOrRemoveScaleColumn } from './utils.js';
+import type { MultiTraitRubricValidationErrors } from '../controller/index.js';
+import type { MultiTraitRubricConfiguration, MultiTraitRubricModel, Scale as ScaleModel } from '../types.js';
+
+/** The model the author edits: the defaults supply `scales`; a host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<MultiTraitRubricModel> & {
+  scales: ScaleModel[];
+  errors?: MultiTraitRubricValidationErrors;
+};
+
+/** The configuration the author renders: the defaults supply its Settings Panel controls. */
+export type AuthorConfiguration = MultiTraitRubricConfiguration &
+  Required<
+    Pick<
+      MultiTraitRubricConfiguration,
+      | 'addScale'
+      | 'dragAndDrop'
+      | 'showDescription'
+      | 'showExcludeZero'
+      | 'showHalfScoring'
+      | 'showLevelTagInput'
+      | 'showMaxPoint'
+      | 'showScorePointLabels'
+      | 'showStandards'
+      | 'showVisibleToStudent'
+    >
+  >;
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: AuthorConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: MultiTraitRubricConfiguration) => void;
+  uploadSoundSupport?: {
+    add: (handler: SoundHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+  imageSupport?: {
+    add: (handler: ImageHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+};
+
+type MainState = {
+  showDecreaseMaxPointsDialog: boolean;
+  showDeleteScaleDialog: boolean;
+  showDeleteTraitDialog: boolean;
+  showExcludeZeroDialog: boolean;
+  showInfoDialog: boolean;
+  infoDialogText: string;
+  adjustedWidth: string | number;
+  initialUpdateCompleted: boolean;
+};
 
 const { Panel, toggle } = settings;
 const MIN_WIDTH = '650px';
@@ -23,7 +74,14 @@ const StyledDiv: any = styled('div')(({ theme }) => ({
   padding: '16px 0',
 }));
 
-const ShowModal = ({ showExcludeZeroDialog, excludeZero, changeExcludeZero, cancel }) => {
+type ShowModalProps = {
+  showExcludeZeroDialog?: boolean;
+  excludeZero?: boolean;
+  changeExcludeZero: (excludeZeroType: string) => void;
+  cancel: () => void;
+};
+
+const ShowModal = ({ showExcludeZeroDialog, excludeZero, changeExcludeZero, cancel }: ShowModalProps) => {
   if (showExcludeZeroDialog && !excludeZero) {
     return (
       <ExcludeZeroDialog
@@ -45,21 +103,16 @@ const ShowModal = ({ showExcludeZeroDialog, excludeZero, changeExcludeZero, canc
   }
 };
 
-ShowModal.propTypes = {
-  showExcludeZeroDialog: PropTypes.bool,
-  excludeZero: PropTypes.bool,
-  changeExcludeZero: PropTypes.func,
-  cancel: PropTypes.func,
-};
+export class Main extends React.Component<MainProps, MainState> {
+  divRef: React.RefObject<HTMLDivElement>;
 
-export class Main extends React.Component {
-  constructor(props) {
+  constructor(props: MainProps) {
     super(props);
     this.divRef = React.createRef();
     this.updateDivWidth = this.updateDivWidth.bind(this);
   }
 
-  state = {
+  state: MainState = {
     showDecreaseMaxPointsDialog: false,
     showDeleteScaleDialog: false,
     showDeleteTraitDialog: false,
@@ -103,7 +156,7 @@ export class Main extends React.Component {
 
   updateDivWidthDebounced = debounce(() => this.updateDivWidth(), 50);
 
-  onScaleAdded: any = () => {
+  onScaleAdded = () => {
     const { model, onModelChanged, configuration } = this.props;
     let { scales, excludeZero } = model || {};
     const { maxNoOfScales } = configuration || {};
@@ -135,14 +188,14 @@ export class Main extends React.Component {
     onModelChanged({ ...model, scales });
   };
 
-  onScaleChanged: any = (scaleIndex, params) => {
+  onScaleChanged = (scaleIndex: number, params: Partial<ScaleModel>) => {
     const { model, onModelChanged } = this.props;
     let scales = cloneDeep((model || {}).scales);
 
     if (scaleIndex < 0 || scaleIndex >= scales.length || isEmpty(params)) return false;
 
-    Object.keys(params).forEach((key) => {
-      scales[scaleIndex][key] = params[key];
+    (Object.keys(params) as (keyof ScaleModel)[]).forEach(<K extends keyof ScaleModel>(key: K) => {
+      scales[scaleIndex][key] = params[key] as ScaleModel[K];
     });
 
     if (model.excludeZero && params.maxPoints === 1) {
@@ -154,7 +207,7 @@ export class Main extends React.Component {
     onModelChanged({ ...model, scales });
   };
 
-  onScaleRemoved: any = (scaleIndex) => {
+  onScaleRemoved = (scaleIndex: number) => {
     const { model, onModelChanged, configuration } = this.props;
     let { scales } = model || {};
     const { minNoOfScales } = configuration || {};
@@ -175,23 +228,23 @@ export class Main extends React.Component {
     onModelChanged({ ...model, scales });
   };
 
-  onHalfScoringChanged: any = () => {
+  onHalfScoringChanged = () => {
     const { model, onModelChanged } = this.props;
     let { halfScoring } = model || {};
 
     onModelChanged({ ...model, halfScoring: !halfScoring });
   };
 
-  onVisibleToStudentChanged: any = () => {
+  onVisibleToStudentChanged = () => {
     const { model, onModelChanged } = this.props;
     let { visibleToStudent } = model || {};
 
     onModelChanged({ ...model, visibleToStudent: !visibleToStudent });
   };
 
-  set = (newState) => this.setState(newState);
+  set = <K extends keyof MainState>(newState: Pick<MainState, K>) => this.setState(newState);
 
-  changeShowScorePointLabels: any = () => {
+  changeShowScorePointLabels = () => {
     const { model, onModelChanged } = this.props || {};
     let { pointLabels } = model || {};
 
@@ -200,7 +253,7 @@ export class Main extends React.Component {
     onModelChanged({ ...model, pointLabels });
   };
 
-  changeShowDescription: any = () => {
+  changeShowDescription = () => {
     const { model, onModelChanged } = this.props || {};
     let { description } = model || {};
 
@@ -209,7 +262,7 @@ export class Main extends React.Component {
     onModelChanged({ ...model, description });
   };
 
-  changeShowStandards: any = () => {
+  changeShowStandards = () => {
     const { model, onModelChanged } = this.props || {};
     let { standards } = model || {};
 
@@ -221,13 +274,13 @@ export class Main extends React.Component {
   // Exclude Zero
   showToggleExcludeZeroModal = () => this.set({ showExcludeZeroDialog: true });
 
-  hideToggleExcludeZeroModal: any = () => {
+  hideToggleExcludeZeroModal = () => {
     this.set({ showExcludeZeroDialog: false });
   };
 
   onCloseInfoDialog = () => this.set({ showInfoDialog: false });
 
-  changeExcludeZero: any = (excludeZeroType) => {
+  changeExcludeZero = (excludeZeroType: string) => {
     const { model, onModelChanged } = this.props || {};
     const { scales } = model || {};
     let { excludeZero } = model || {};
@@ -242,7 +295,7 @@ export class Main extends React.Component {
     this.hideToggleExcludeZeroModal();
   };
 
-  onModelChanged: any = (updatedModel, updatedProperty) => {
+  onModelChanged = (updatedModel: AuthorModel, updatedProperty?: string) => {
     const { onModelChanged } = this.props || {};
 
     if (updatedProperty === 'excludeZero') {
@@ -310,7 +363,7 @@ export class Main extends React.Component {
       addScaleEnabled: addScale.settings && toggle(addScale.label),
     };
 
-    const getPluginProps = (props) => {
+    const getPluginProps = (props?: EditableHtmlConfigureProp) => {
       return Object.assign(
         {
           ...baseInputConfiguration,
@@ -383,17 +436,5 @@ export class Main extends React.Component {
     );
   }
 }
-
-Main.propTypes = {
-  model: PropTypes.object,
-  uploadSoundSupport: PropTypes.object,
-  configuration: PropTypes.object,
-  onModelChanged: PropTypes.func,
-  onConfigurationChanged: PropTypes.func,
-  imageSupport: PropTypes.shape({
-    add: PropTypes.func.isRequired,
-    delete: PropTypes.func.isRequired,
-  }),
-};
 
 export default Main;
