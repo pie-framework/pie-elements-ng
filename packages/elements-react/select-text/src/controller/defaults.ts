@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { SelectTextModel, TextToken } from '../types.js';
 
 export default {
   feedbackEnabled: false,
@@ -15,6 +15,6 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   text: '',
-  tokens: [],
+  tokens: [] as TextToken[],
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<SelectTextModel, 'id' | 'element'>;

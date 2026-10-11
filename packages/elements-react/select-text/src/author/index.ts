@@ -1,20 +1,26 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Main from './design.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Main, { type AuthorModel } from './design.js';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import defaultValues from './defaultConfiguration.js';
 import { generateModel } from './utils.js';
+import type { SelectTextConfiguration, SelectTextModel } from '../types.js';
 
 export default class SelectTextConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: SelectTextConfiguration;
+
+  static createDefaultModel = (model: Partial<SelectTextModel> = {}): AuthorModel => {
     const newModel = {
       ...defaultValues.model,
       ...model,
@@ -30,12 +36,12 @@ export default class SelectTextConfigure extends HTMLElement {
     this._configuration = defaultValues.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<SelectTextModel>) {
     this._model = SelectTextConfigure.createDefaultModel(m);
     this.render();
   }
 
-  set configuration(c) {
+  set configuration(c: SelectTextConfiguration) {
     const newConfiguration = {
       ...defaultValues.configuration,
       ...c,
@@ -52,16 +58,16 @@ export default class SelectTextConfigure extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find(option => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -77,17 +83,17 @@ export default class SelectTextConfigure extends HTMLElement {
     this.render();
   }
 
-  modelChanged(m) {
+  modelChanged(m: AuthorModel) {
     this._model = m;
-    this.dispatchEvent(new ModelUpdatedEvent(this._model), true);
+    this.dispatchEvent(new ModelUpdatedEvent(this._model));
     this.render();
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: SelectTextConfiguration) {
     this._configuration = c;
 
     if (this._model) {
-      this.dispatchEvent(new ModelUpdatedEvent(this._model), false);
+      this.dispatchEvent(new ModelUpdatedEvent(this._model));
     }
 
     this.render();
@@ -97,19 +103,19 @@ export default class SelectTextConfigure extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
