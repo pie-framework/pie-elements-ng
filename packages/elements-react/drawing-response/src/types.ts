@@ -29,7 +29,7 @@ export interface ConfigureWithForceProp extends ConfigureProp {
   forceEnabled?: boolean;
 }
 
-/** Model for the @pie-elements/drawing-response Interaction */
+/** Model for the `@pie-element/drawing-response` Interaction */
 export interface DrawingResponseModel extends PieModel {
   /** The question prompt or item stem */
   prompt?: string;
@@ -67,7 +67,7 @@ export interface DrawingResponseModel extends PieModel {
   extraCSSRules?: ExtraCSSRules;
 }
 
-/** Config Object for @pie-elements/drawing-response */
+/** Config Object for `@pie-element/drawing-response` */
 export interface DrawingResponseConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled
