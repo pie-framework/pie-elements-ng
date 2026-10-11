@@ -9,7 +9,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/tools/vite/**",
-        "$TURBO_ROOT$/tools/schemas/generate.ts",
+        "$TURBO_ROOT$/tools/cli/src/lib/schemas/**",
         "$TURBO_ROOT$/tools/schemas/build.ts",
         "$TURBO_ROOT$/packages/shared/editor-runtime/package.json"
       ],
@@ -23,8 +23,14 @@
         "../../packages/**/docs.contract.json",
         "../../packages/**/README.md",
         "../../packages/**/src/controller/defaults.ts",
+        "../../packages/**/src/author/defaults.ts",
+        "../../packages/**/src/author/defaults.tsx",
+        "../../packages/**/src/author/defaultConfiguration.ts",
+        "../../packages/**/src/types.ts",
+        "../../packages/shared/types/src/**",
         "../../tools/cli/src/commands/docs/**",
-        "../../tools/cli/src/lib/docs/**"
+        "../../tools/cli/src/lib/docs/**",
+        "../../tools/cli/src/lib/schemas/**"
       ],
       "outputs": ["build/**", "static/element-docs/**"],
       "env": ["NODE_ENV"]

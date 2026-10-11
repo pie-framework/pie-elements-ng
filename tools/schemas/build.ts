@@ -6,7 +6,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { generateElementSchemas, readElementManifest } from './generate.ts';
+import { generateElementSchemas, readElementManifest } from '../cli/src/lib/schemas/generate.ts';
 
 const packageDir = process.cwd();
 const schemas = Object.entries(generateElementSchemas(packageDir));

@@ -9,7 +9,7 @@ import {
   generateElementSchemas,
   readElementManifest,
   type SchemaKind,
-} from './generate.ts';
+} from '../cli/src/lib/schemas/generate.ts';
 
 /**
  * Every element that publishes schemas is checked against the values it produces itself: the
