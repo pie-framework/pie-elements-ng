@@ -3,8 +3,8 @@ import { normalizeRegion, regionsEqual } from './region.js';
 import type {
   Region,
   ScoringPolicy,
-  VennModel,
-  VennSession,
+  VennClassificationModel,
+  VennClassificationSession,
   VennTile,
   VennViewModel,
 } from '../types.js';
@@ -21,8 +21,8 @@ export type {
   Region,
   ScoringPolicy,
   VennCircle,
-  VennModel,
-  VennSession,
+  VennClassificationModel,
+  VennClassificationSession,
   VennTile,
   VennViewModel,
 } from '../types.js';
@@ -41,13 +41,15 @@ function tilePlainLabel(label: unknown): string {
     .trim();
 }
 
-export function createDefaultModel(model: Partial<VennModel> = {}): VennModel {
-  const merged: VennModel = {
-    ...(defaults.model as VennModel),
+export function createDefaultModel(
+  model: Partial<VennClassificationModel> = {}
+): VennClassificationModel {
+  const merged: VennClassificationModel = {
+    ...(defaults.model as VennClassificationModel),
     ...model,
   };
   if (!Array.isArray(merged.circles) || merged.circles.length === 0) {
-    merged.circles = (defaults.model as VennModel).circles.map((c) => ({ ...c }));
+    merged.circles = (defaults.model as VennClassificationModel).circles.map((c) => ({ ...c }));
   }
   if (!Array.isArray(merged.tiles)) {
     merged.tiles = [];
@@ -67,10 +69,10 @@ export function createDefaultModel(model: Partial<VennModel> = {}): VennModel {
  * don't lose them), and arrays are normalized to sorted-ascending.
  */
 export function normalizeSession(
-  session: VennSession | null | undefined,
-  model?: VennModel
-): VennSession {
-  const base: VennSession = { ...(session || {}) };
+  session: VennClassificationSession | null | undefined,
+  model?: VennClassificationModel
+): VennClassificationSession {
+  const base: VennClassificationSession = { ...(session || {}) };
   const inputPlacements = (session?.placements ?? {}) as Record<string, Region | null>;
   const placements: Record<string, Region | null> = {};
 
@@ -103,8 +105,8 @@ export function normalizeSession(
  * contribute to completeness.
  */
 export function isComplete(
-  model: VennModel | null | undefined,
-  session: VennSession | null | undefined
+  model: VennClassificationModel | null | undefined,
+  session: VennClassificationSession | null | undefined
 ): boolean {
   if (!model || !Array.isArray(model.tiles) || model.tiles.length === 0) return false;
   const placements = session?.placements ?? {};
@@ -128,8 +130,8 @@ export function getTileCorrectness(
 
 /** Map tile id -> correctness, for convenience in delivery `evaluate` mode. */
 export function getCorrectnessMap(
-  model: VennModel,
-  session: VennSession | null | undefined
+  model: VennClassificationModel,
+  session: VennClassificationSession | null | undefined
 ): Record<string, Correctness> {
   const out: Record<string, Correctness> = {};
   const placements = session?.placements ?? {};
@@ -157,7 +159,7 @@ export interface OutcomeEnv {
  * elements apply through `partialScoring.enabled(model, env)`.
  */
 export function effectiveScoringPolicy(
-  model: Pick<VennModel, 'scoringPolicy'>,
+  model: Pick<VennClassificationModel, 'scoringPolicy'>,
   env?: OutcomeEnv | null
 ): ScoringPolicy {
   if (model.scoringPolicy === 'allOrNothing' || env?.partialScoring === false) {
@@ -177,12 +179,12 @@ const EMPTY_OUTCOME: VennOutcome = {
  * calls this with the env it scores under, not only `evaluate`.
  */
 export function outcome(
-  question: VennModel | null | undefined,
-  session: VennSession | null | undefined,
+  question: VennClassificationModel | null | undefined,
+  session: VennClassificationSession | null | undefined,
   env: OutcomeEnv | null = {}
 ): Promise<VennOutcome> {
   return new Promise((resolve) => {
-    const model = createDefaultModel((question as VennModel) || undefined);
+    const model = createDefaultModel((question as VennClassificationModel) || undefined);
     const tiles = model.tiles;
     const placements = session?.placements ?? {};
 
@@ -226,12 +228,14 @@ export function outcome(
  * authored answers don't leak in `gather`.
  */
 export function model(
-  question: VennModel | null | undefined,
-  session: VennSession | null | undefined,
+  question: VennClassificationModel | null | undefined,
+  session: VennClassificationSession | null | undefined,
   env: { mode?: string; role?: string; [key: string]: unknown } = {}
 ): Promise<VennViewModel> {
   return new Promise((resolve) => {
-    const normalizedQuestion = createDefaultModel((question as VennModel) || undefined);
+    const normalizedQuestion = createDefaultModel(
+      (question as VennClassificationModel) || undefined
+    );
     const safeEnv = env || {};
 
     const out: VennViewModel = {
@@ -282,15 +286,15 @@ export function model(
 }
 
 export function createCorrectResponseSession(
-  question: VennModel | null | undefined,
+  question: VennClassificationModel | null | undefined,
   env: { mode?: string; role?: string } = {}
-): Promise<VennSession | null> {
+): Promise<VennClassificationSession | null> {
   return new Promise((resolve) => {
     if (env.mode === 'evaluate' || env.role !== 'instructor') {
       resolve(null);
       return;
     }
-    const model = createDefaultModel((question as VennModel) || undefined);
+    const model = createDefaultModel((question as VennClassificationModel) || undefined);
     const placements: Record<string, Region> = {};
     for (const tile of model.tiles) {
       placements[tile.id] = normalizeRegion(tile.correctRegion);
@@ -309,11 +313,11 @@ export function createCorrectResponseSession(
  * `{field: message}`; an empty map means "valid enough to save".
  */
 export function validate(
-  model: VennModel | null | undefined,
+  model: VennClassificationModel | null | undefined,
   _config: unknown = {}
 ): Record<string, string> {
   const errors: Record<string, string> = {};
-  const m = (model || {}) as VennModel;
+  const m = (model || {}) as VennClassificationModel;
 
   if (m.promptEnabled) {
     const p = (m.prompt ?? '').trim();
@@ -404,7 +408,9 @@ export function validate(
  * its authored correct region. Used by the authoring live preview so authors
  * see the intended final state of the diagram.
  */
-export function buildPreviewSession(model: VennModel | null | undefined): VennSession {
+export function buildPreviewSession(
+  model: VennClassificationModel | null | undefined
+): VennClassificationSession {
   const m = createDefaultModel(model || undefined);
   const placements: Record<string, Region> = {};
   for (const tile of m.tiles) {

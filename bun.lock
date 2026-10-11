@@ -18,6 +18,7 @@
         "@vitejs/plugin-react": "^6.1.1",
         "@vitest/coverage-v8": "^5.0.1",
         "@vitest/ui": "^5.0.3",
+        "ajv": "^8.20.0",
         "bun-types": "^1.4.2",
         "glob": "^13.0.0",
         "happy-dom": "^20.14.5",
@@ -30,6 +31,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "svelte": "^5.57.1",
+        "ts-json-schema-generator": "^2.9.0",
         "turbo": "^2.11.7",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
@@ -150,6 +152,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/categorize": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
@@ -188,6 +191,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/charting": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -219,6 +223,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
@@ -254,6 +259,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/drag": "workspace:*",
@@ -292,6 +298,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
@@ -326,6 +333,7 @@
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
@@ -360,6 +368,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -399,6 +408,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -435,6 +445,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -471,6 +482,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -503,6 +515,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -535,6 +548,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -573,6 +587,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -613,6 +628,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -649,6 +665,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -688,6 +705,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -729,6 +747,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/drag": "workspace:*",
@@ -763,6 +782,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-framework/math-validation": "^1.0.0",
         "@pie-lib/config-ui": "workspace:*",
@@ -803,6 +823,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-framework/math-validation": "^1.0.0",
         "@pie-lib/config-ui": "workspace:*",
@@ -842,6 +863,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
@@ -879,6 +901,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/drag": "workspace:*",
@@ -916,6 +939,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -932,6 +956,7 @@
         "@testing-library/dom": "^10.4.2",
         "@testing-library/jest-dom": "^7.0.1",
         "@testing-library/react": "^16.3.2",
+        "@types/debug": "^4.1.12",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.1.1",
@@ -954,6 +979,7 @@
         "@pie-element/shared-feedback": "workspace:*",
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -995,6 +1021,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -1030,6 +1057,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -1070,6 +1098,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
@@ -1106,6 +1135,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -1149,6 +1179,7 @@
       "name": "@pie-element/simple-cloze",
       "version": "0.1.7",
       "dependencies": {
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
@@ -1172,6 +1203,7 @@
       "name": "@pie-element/venn-classification",
       "version": "0.1.4",
       "dependencies": {
+        "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
@@ -2923,6 +2955,8 @@
 
     "@types/d3-timer": ["@types/d3-timer@3.0.2", "", {}, "sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw=="],
 
+    "@types/debug": ["@types/debug@4.1.13", "", { "dependencies": { "@types/ms": "*" } }, "sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw=="],
+
     "@types/deep-eql": ["@types/deep-eql@4.0.2", "", {}, "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw=="],
 
     "@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
@@ -2934,6 +2968,8 @@
     "@types/js-yaml": ["@types/js-yaml@4.0.9", "", {}, "sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg=="],
 
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
+
+    "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
     "@types/node": ["@types/node@26.6.4", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg=="],
 
@@ -3169,7 +3205,7 @@
 
     "combined-stream": ["combined-stream@1.0.8", "", { "dependencies": { "delayed-stream": "~1.0.0" } }, "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg=="],
 
-    "commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
+    "commander": ["commander@14.0.3", "", {}, "sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw=="],
 
     "complex.js": ["complex.js@2.4.3", "", {}, "sha512-UrQVSUur14tNX6tiP4y8T4w4FeJAX3bi2cIv0pu/DTLFNxoq7z2Yh83Vfzztj6Px3X/lubqQ9IrPp7Bpn6p4MQ=="],
 
@@ -3717,6 +3753,8 @@
 
     "nopt": ["nopt@9.0.0", "", { "dependencies": { "abbrev": "^4.0.0" }, "bin": { "nopt": "bin/nopt.js" } }, "sha512-Zhq3a+yFKrYwSBluL4H9XP3m3y5uvQkB/09CwDruCiRmR/UJYnn9W4R48ry0uGC70aeTPKLynBtscP9efFFcPw=="],
 
+    "normalize-path": ["normalize-path@3.0.0", "", {}, "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="],
+
     "npm-bundled": ["npm-bundled@5.0.0", "", { "dependencies": { "npm-normalize-package-bin": "^5.0.0" } }, "sha512-JLSpbzh6UUXIEoqPsYBvVNVmyrjVZ1fzEFbqxKkTJQkWBO3xFzFT+KDnSKQWwOQNbuWRwt5LSD6HOTLGIWzfrw=="],
 
     "npm-install-checks": ["npm-install-checks@8.0.0", "", { "dependencies": { "semver": "^7.1.1" } }, "sha512-ScAUdMpyzkbpxoNekQ3tNRdFI8SJ86wgKZSQZdUxT+bj0wVFpsEMWnkXP0twVe1gJyNF5apBWDJhhIbgrIViRA=="],
@@ -3907,6 +3945,8 @@
 
     "safe-regex-test": ["safe-regex-test@1.1.0", "", { "dependencies": { "call-bound": "^1.0.2", "es-errors": "^1.3.0", "is-regex": "^1.2.1" } }, "sha512-x/+Cz4YrimQxQccJf5mKEbIa1NzeCRNI5Ecl/ekmlYaampdNLPalVyIcCZNNH3MvmqBugV5TMYZXv0ljslUlaw=="],
 
+    "safe-stable-stringify": ["safe-stable-stringify@2.5.0", "", {}, "sha512-b3rppTKm9T+PsVCBEOUR46GWI7fdOs00VKZ1+9c1EWDaDMvjQc6tUwuFyIprgGgTcWoVHSKrU8H31ZHA2e0RHA=="],
+
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
 
     "saxes": ["saxes@6.0.0", "", { "dependencies": { "xmlchars": "^2.2.0" } }, "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA=="],
@@ -4034,6 +4074,8 @@
     "trigonometry-equations": ["trigonometry-equations@2.0.1", "", { "dependencies": { "degrees-radians": "^1.0.3", "radians-degrees": "^1.0.0" } }, "sha512-gnoew4Byfw/olOYOB5R+9TolqaDJlvIOiMzwzgDjeI70IGvGUZVMtcw6Dr9iYiqvbVZazRy7xRpjh1LoetoZkw=="],
 
     "ts-invariant": ["ts-invariant@0.10.3", "", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ=="],
+
+    "ts-json-schema-generator": ["ts-json-schema-generator@2.9.0", "", { "dependencies": { "@types/json-schema": "^7.0.15", "commander": "^14.0.3", "glob": "^13.0.6", "json5": "^2.2.3", "normalize-path": "^3.0.0", "safe-stable-stringify": "^2.5.0", "tslib": "^2.8.1", "typescript": "^5.9.3" }, "bin": { "ts-json-schema-generator": "bin/ts-json-schema-generator.js" } }, "sha512-NR5ZE108uiPtBHBJNGnhwoUaUx5vWTDJzDFG9YlRoqxPU76n+5FClRh92dcGgysbe1smRmYalM9Saj97GW1J4Q=="],
 
     "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
@@ -4325,13 +4367,13 @@
 
     "source-map-support/source-map": ["source-map@0.6.1", "", {}, "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="],
 
-    "speech-rule-engine/commander": ["commander@14.0.3", "", {}, "sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw=="],
-
     "svelte/aria-query": ["aria-query@5.3.1", "", {}, "sha512-Z/ZeOgVl7bcSYZ/u/rh0fOpvEpq//LZmdbkXyc7syVzjPAhfOa9ebsdTSjEBDU4vs5nC98Kfduj1uFo0qyET3g=="],
 
     "svelte/magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
     "terser/acorn": ["acorn@8.16.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw=="],
+
+    "terser/commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
 
     "tinyglobby/picomatch": ["picomatch@4.0.4", "", {}, "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A=="],
 

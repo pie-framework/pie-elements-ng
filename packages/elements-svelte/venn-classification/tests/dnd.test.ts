@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { applyPlacement, isSamePlacement } from '../src/delivery/dnd.js';
-import type { VennModel } from '../src/types.js';
+import type { VennClassificationModel } from '../src/types.js';
 
-const model: VennModel = {
+const model: VennClassificationModel = {
   circles: [{ label: 'A' }, { label: 'B' }],
   tiles: [
     { id: 't1', label: 'one', correctRegion: [0] },

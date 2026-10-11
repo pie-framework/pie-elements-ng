@@ -27,7 +27,8 @@
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@pie-element/shared-types": "workspace:*"
   },
   "exports": {
     ".": {

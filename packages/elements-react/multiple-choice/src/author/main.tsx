@@ -1,7 +1,4 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import {
@@ -19,7 +16,41 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Info from '@mui/icons-material/Info';
 import { merge } from '@pie-element/shared-lodash';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
 import { generateValidationMessage } from './utils.js';
+import type { MultipleChoiceValidationErrors } from '../controller/index.js';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
+import type { Choice, MultipleChoiceConfiguration, MultipleChoiceModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<MultipleChoiceModel> & {
+  choices: Choice[];
+  errors?: MultipleChoiceValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: MultipleChoiceConfiguration;
+  disableSidePanel?: boolean;
+  onModelChanged: (model: Partial<AuthorModel>, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: MultipleChoiceConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type DesignProps = MainProps & {
+  onChangeModel: (model: AuthorModel, key?: string) => void;
+  onRemoveChoice: (index: number) => void;
+  onAddChoice: () => void;
+  onChoiceChanged: (index: number, choice: Choice) => void;
+  onPromptChanged: (prompt: string) => void;
+  onTeacherInstructionsChanged: (teacherInstructions: string) => void;
+};
 
 const { Panel, toggle, radio, dropdown } = settings;
 
@@ -87,7 +118,7 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-const Design = (props) => {
+const Design = (props: DesignProps) => {
   const {
     model,
     configuration,
@@ -117,16 +148,16 @@ const Design = (props) => {
     scoringType = {},
     sequentialChoiceLabels = {},
     settingsPanelDisabled,
-    choicesLayout,
+    choicesLayout = {},
     spellCheck = {},
-    gridColumns,
+    gridColumns = {},
     maxImageWidth = {},
     maxImageHeight = {},
     prompt = {},
     withRubric = {},
     mathMlOptions = {},
     language = {},
-    languageChoices = {},
+    languageChoices = {} as Partial<ConfigureLanguageOptions>,
   } = configuration || {};
   let { maxAnswerChoices } = configuration || {};
   const {
@@ -277,7 +308,7 @@ const Design = (props) => {
         </StyledTooltip>
       </FlexContainer>
 
-      {choices.map((choice, index) => (
+      {choices.map((choice: Choice, index: number) => (
         <ChoiceConfigurationHolder key={`choice-${index}`}>
           <ChoiceConfiguration
             key={index}
@@ -289,7 +320,7 @@ const Design = (props) => {
             imageSupport={imageSupport}
             disableImageAlignmentButtons={true}
             onDelete={() => onRemoveChoice(index)}
-            onChange={(c) => onChoiceChanged(index, c)}
+            onChange={(c: Choice) => onChoiceChanged(index, c)}
             allowFeedBack={feedbackEnabled}
             allowDelete={deleteChoice.settings}
             noLabels
@@ -308,7 +339,7 @@ const Design = (props) => {
             <RationaleHolder key={`rationale-${index}`} label={rationale.label}>
                 <EditableHtml
                   markup={choice.rationale || ''}
-                  onChange={(c) => onChoiceChanged(index, { ...choice, rationale: c })}
+                  onChange={(c: string) => onChoiceChanged(index, { ...choice, rationale: c })}
                   imageSupport={imageSupport}
                   error={rationaleErrors?.[choice.value] || null}
                   toolbarOpts={toolbarOpts}
@@ -357,22 +388,10 @@ const Design = (props) => {
   );
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    disableSidePanel: PropTypes.bool,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-  };
-
+export class Main extends React.Component<MainProps, { showWarning: boolean }> {
   state = { showWarning: false };
 
-  onRemoveChoice: any = (index) => {
+  onRemoveChoice = (index: number) => {
     const { model, configuration, onModelChanged } = this.props;
     const { minAnswerChoices } = configuration || {};
 
@@ -388,7 +407,7 @@ export class Main extends React.Component {
     });
   };
 
-  onAddChoice: any = () => {
+  onAddChoice = () => {
     const { model, configuration, onModelChanged } = this.props;
     let { maxAnswerChoices } = configuration || {};
     const { limitChoicesNumber } = model || {};
@@ -416,11 +435,11 @@ export class Main extends React.Component {
     });
   };
 
-  onChoiceChanged: any = (index, choice) => {
+  onChoiceChanged = (index: number, choice: Choice) => {
     const { model, onModelChanged } = this.props;
 
     if (choice.correct && model.choiceMode === 'radio') {
-      model.choices = model.choices.map((c) => merge({}, c, { correct: false }));
+      model.choices = model.choices.map((c) => merge({}, c, { correct: false }) as Choice);
     }
 
     model.choices.splice(index, 1, choice);
@@ -429,19 +448,19 @@ export class Main extends React.Component {
     });
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.props.onModelChanged({
       prompt,
     });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.props.onModelChanged({
       teacherInstructions,
     });
   };
 
-  onModelChanged: any = (model, key) => {
+  onModelChanged = (model: AuthorModel, key?: string) => {
     const { onModelChanged } = this.props;
 
     switch (key) {

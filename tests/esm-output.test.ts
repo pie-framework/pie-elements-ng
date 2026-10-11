@@ -82,9 +82,9 @@ describe('ESM build outputs', () => {
       }
 
       for (const target of distTargets) {
-        // Allow CSS files for packages that need them (e.g., mathquill)
-        const isCss = target.endsWith('.css');
-        if (!isCss && !target.endsWith('.js') && !target.endsWith('.mjs')) {
+        // CSS and JSON exports are data, not modules: mathquill's stylesheet, element JSON Schemas.
+        const isData = target.endsWith('.css') || target.endsWith('.json');
+        if (!isData && !target.endsWith('.js') && !target.endsWith('.mjs')) {
           failures.push(`${pkg.name ?? pkgPath}: export target is not .js/.mjs (${target})`);
         }
 
@@ -94,8 +94,7 @@ describe('ESM build outputs', () => {
           continue;
         }
 
-        // Skip ESM validation for CSS files
-        if (isCss) {
+        if (isData) {
           continue;
         }
 

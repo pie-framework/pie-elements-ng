@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import debug from 'debug';
 import {
   DeleteImageEvent,
@@ -9,19 +7,23 @@ import {
   ModelUpdatedEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 import { choiceUtils as utils } from '@pie-lib/config-ui';
 import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
+import type { Choice, MultipleChoiceConfiguration, MultipleChoiceModel } from '../types.js';
 
 const log = debug('multiple-choice:configure');
 
-const generateFormattedChoices = (choices, choiceCount = 0) => {
+const generateFormattedChoices = (choices: Choice[], choiceCount = 0): Choice[] => {
   if (!choices || choices.length === 0) {
-    let formattedChoices = [];
+    let formattedChoices: Choice[] = [];
 
     for (let i = 0; i < choiceCount; i++) {
       formattedChoices.push({
@@ -40,7 +42,7 @@ const generateFormattedChoices = (choices, choiceCount = 0) => {
   return choices;
 };
 
-const prepareCustomizationObject = (config, model) => {
+const prepareCustomizationObject = (config: MultipleChoiceConfiguration, model: AuthorModel) => {
   const configuration = defaults(config, sensibleDefaults.configuration);
 
   return {
@@ -56,8 +58,14 @@ const prepareCustomizationObject = (config, model) => {
 };
 
 export default class MultipleChoice extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
-    const normalizedModel = utils.normalizeChoices({
+  private _root: Root | null;
+  private _reactContainer: HTMLDivElement | null;
+  private _model: AuthorModel;
+  private _configuration: MultipleChoiceConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static createDefaultModel = (model: Partial<MultipleChoiceModel> = {}): AuthorModel => {
+    const normalizedModel: AuthorModel = utils.normalizeChoices({
       ...sensibleDefaults.model,
       ...model,
       choices: generateFormattedChoices((model && model.choices) || []),
@@ -80,13 +88,13 @@ export default class MultipleChoice extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: Partial<MultipleChoiceModel>) {
     this._model = MultipleChoice.createDefaultModel(s);
 
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: MultipleChoiceConfiguration) {
     const info = prepareCustomizationObject(c, this._model);
 
     this.onModelChanged(info.model);
@@ -106,16 +114,16 @@ export default class MultipleChoice extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -127,18 +135,18 @@ export default class MultipleChoice extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: Partial<AuthorModel>, reset?: boolean) {
     this._model = {
       ...this._model,
       ...m,
@@ -148,7 +156,7 @@ export default class MultipleChoice extends HTMLElement {
     this.dispatchModelUpdated(reset);
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: MultipleChoiceConfiguration) {
     this._configuration = prepareCustomizationObject(c, this._model).configuration;
 
     if (this._model) {
@@ -159,19 +167,19 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   /** @param {done, progress, file} handler */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
@@ -216,7 +224,7 @@ export default class MultipleChoice extends HTMLElement {
       log('_render - Render completed successfully');
     } catch (error) {
       console.error('❌ [multiple-choice-configure] Render error:', error);
-      console.error('Error stack:', error.stack);
+      console.error('Error stack:', (error as Error).stack);
       throw error;
     }
   }

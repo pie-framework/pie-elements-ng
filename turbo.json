@@ -9,6 +9,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/tools/vite/**",
+        "$TURBO_ROOT$/tools/schemas/generate.ts",
+        "$TURBO_ROOT$/tools/schemas/build.ts",
         "$TURBO_ROOT$/packages/shared/editor-runtime/package.json"
       ],
       "outputs": ["dist/**", "esm/**", "build/**", "module/**"],

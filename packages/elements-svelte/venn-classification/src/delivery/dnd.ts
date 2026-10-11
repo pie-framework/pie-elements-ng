@@ -7,7 +7,12 @@
  * keyboard paths.
  */
 
-import type { Region, VennModel, VennSession, VennTile } from '../types.js';
+import type {
+  Region,
+  VennClassificationModel,
+  VennClassificationSession,
+  VennTile,
+} from '../types.js';
 import {
   isComplete,
   normalizeRegion,
@@ -18,8 +23,8 @@ import {
 export type PlacementValue = Region | null;
 
 export interface ApplyPlacementArgs {
-  model: VennModel;
-  session: VennSession | null | undefined;
+  model: VennClassificationModel;
+  session: VennClassificationSession | null | undefined;
   tileId: string;
   /** `null` means "return to tray", otherwise the region to drop into. */
   placement: PlacementValue;
@@ -43,9 +48,9 @@ export function applyPlacement({
   session,
   tileId,
   placement,
-}: ApplyPlacementArgs): VennSession {
+}: ApplyPlacementArgs): VennClassificationSession {
   const base = normalizeSession(session, model);
-  const nextSession: VennSession = {
+  const nextSession: VennClassificationSession = {
     ...base,
     placements: {
       ...base.placements,
@@ -58,7 +63,7 @@ export function applyPlacement({
 
 /** The tile's current placement: `null` when it is in the tray or has no key. */
 export function currentPlacement(
-  session: VennSession | null | undefined,
+  session: VennClassificationSession | null | undefined,
   tileId: string
 ): PlacementValue {
   const p = session?.placements?.[tileId];
@@ -67,7 +72,7 @@ export function currentPlacement(
 
 /** True when dropping `tileId` at `placement` would leave the session as it is. */
 export function isSamePlacement(
-  session: VennSession | null | undefined,
+  session: VennClassificationSession | null | undefined,
   tileId: string,
   placement: PlacementValue
 ): boolean {
@@ -80,8 +85,8 @@ export function isSamePlacement(
  * Compute the list of unplaced tile ids (in `model.tiles` order).
  */
 export function unplacedTiles(
-  model: VennModel,
-  session: VennSession | null | undefined
+  model: VennClassificationModel,
+  session: VennClassificationSession | null | undefined
 ): VennTile[] {
   const placements = session?.placements ?? {};
   return (model.tiles || []).filter((tile) => {
@@ -96,8 +101,8 @@ export function unplacedTiles(
  * indices within a region.
  */
 export function groupTilesByRegion(
-  model: VennModel,
-  session: VennSession | null | undefined
+  model: VennClassificationModel,
+  session: VennClassificationSession | null | undefined
 ): Record<string, VennTile[]> {
   const placements = session?.placements ?? {};
   const groups: Record<string, VennTile[]> = {};

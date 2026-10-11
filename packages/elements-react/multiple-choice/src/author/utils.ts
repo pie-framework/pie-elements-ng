@@ -1,6 +1,6 @@
-// @ts-nocheck
+import type { MultipleChoiceConfiguration } from '../types.js';
 
-export const generateValidationMessage = (config) => {
+export const generateValidationMessage = (config: MultipleChoiceConfiguration) => {
   const { minAnswerChoices, maxAnswerChoices } = config;
 
   const answerChoicesMessage =

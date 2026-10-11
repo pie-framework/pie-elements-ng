@@ -30,7 +30,8 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@pie-element/shared-types": "workspace:*"
   },
   "exports": {
     ".": {
