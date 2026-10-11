@@ -67,7 +67,7 @@ export interface VennClassificationModel extends PieModel {
   language?: string;
 }
 
-/** Config Object for @pie-element/venn-classification */
+/** Config Object for `@pie-element/venn-classification` */
 export interface VennClassificationConfiguration {
   /** Settings Panel control for the prompt; `label` titles the prompt editor */
   prompt?: ConfigureProp;
