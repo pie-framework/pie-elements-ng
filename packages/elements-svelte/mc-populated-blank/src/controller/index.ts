@@ -4,11 +4,12 @@ import authorDefaults from '../author/defaults.js';
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults.js';
 import type {
   McpbChoice,
-  McpbQuestion,
-  McpbSession,
-  McpbEnv,
   McpbCorrectness,
-} from '../shared/types.js';
+  McpbEnv,
+  McPopulatedBlankConfiguration,
+  McPopulatedBlankModel,
+  McPopulatedBlankSession,
+} from '../types.js';
 import { selectedChoiceId } from '../shared/session.js';
 
 const isEmptyObject = (value: unknown): boolean =>
@@ -23,7 +24,10 @@ export function countBlankTokens(template: string): number {
   return (template.match(re) || []).length;
 }
 
-export const getCorrectness = (question: McpbQuestion, session: McpbSession): McpbCorrectness => {
+export const getCorrectness = (
+  question: Partial<McPopulatedBlankModel>,
+  session: McPopulatedBlankSession
+): McpbCorrectness => {
   const picked = selectedChoiceId(session);
   if (!picked) {
     return 'unanswered';
@@ -36,11 +40,17 @@ export const getCorrectness = (question: McpbQuestion, session: McpbSession): Mc
 };
 
 /** One blank, one key: an answered session scores 1 only when it picked the key. */
-export const getPartialScore = (question: McpbQuestion, session: McpbSession) =>
-  getCorrectness(question, session) === 'correct' ? 1 : 0;
+export const getPartialScore = (
+  question: Partial<McPopulatedBlankModel>,
+  session: McPopulatedBlankSession
+) => (getCorrectness(question, session) === 'correct' ? 1 : 0);
 
-export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbEnv) =>
-  new Promise((resolve) => {
+export const outcome = (
+  question: McPopulatedBlankModel,
+  session: McPopulatedBlankSession,
+  env: McpbEnv
+) =>
+  new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
     if (!session || isEmptyObject(session)) {
       resolve({
         score: 0,
@@ -73,7 +83,10 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
     resolve({ score, empty: false, traceLog });
   });
 
-const withDefaults = (base: McpbQuestion, model: McpbQuestion = {}) => ({
+const withDefaults = (
+  base: Partial<McPopulatedBlankModel>,
+  model: Partial<McPopulatedBlankModel> = {}
+) => ({
   ...base,
   ...model,
   layoutLimits: {
@@ -83,7 +96,7 @@ const withDefaults = (base: McpbQuestion, model: McpbQuestion = {}) => ({
 });
 
 /** The authoring starting point: a question that passes `validate()` as it stands. */
-export const createDefaultModel = (model: McpbQuestion = {}) =>
+export const createDefaultModel = (model: Partial<McPopulatedBlankModel> = {}) =>
   withDefaults(authorDefaults.model, model);
 
 /**
@@ -91,7 +104,7 @@ export const createDefaultModel = (model: McpbQuestion = {}) =>
  * values for the rest. Starter content here would reach a learner as the
  * item's prompt or choices.
  */
-export const normalize = (question: McpbQuestion = {}) => {
+export const normalize = (question: Partial<McPopulatedBlankModel> = {}) => {
   const { shuffle, ...rest } = question || {};
   return {
     ...withDefaults(defaults.model, rest),
@@ -102,7 +115,9 @@ export const normalize = (question: McpbQuestion = {}) => {
   };
 };
 
-export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
+export const normalizeSession = (s: McPopulatedBlankSession): McPopulatedBlankSession => ({
+  ...s,
+});
 
 /**
  * The fields delivery renders. An imported choice can carry more, such as a
@@ -116,12 +131,12 @@ const toDeliveryChoice = ({ id, labelHtml, imageUrl, imageAlt }: McpbChoice): Mc
 });
 
 export const model = async (
-  question: McpbQuestion,
-  session: McpbSession | null,
+  question: McPopulatedBlankModel,
+  session: McPopulatedBlankSession | null,
   env: McpbEnv | null,
   updateSession?: PieUpdateSession
 ) => {
-  const safeSession: McpbSession = session || {};
+  const safeSession: McPopulatedBlankSession = session || {};
   const safeEnv: McpbEnv = env || {};
   const normalizedQuestion = normalize(question);
   let orderedChoices = Array.isArray(normalizedQuestion.choices)
@@ -195,8 +210,8 @@ export const model = async (
   return out;
 };
 
-export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEnv) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: McPopulatedBlankModel, env: McpbEnv) => {
+  return new Promise<McPopulatedBlankSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       // The player sets `id` and `element` on the entry from the item config.
       resolve({
@@ -213,18 +228,14 @@ export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEn
 const getContent = (html?: string) =>
   (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '').trim();
 
-type ValidateConfig = {
-  minAnswerChoices?: number;
-  maxAnswerChoices?: number;
-  prompt?: { required?: boolean };
-  teacherInstructions?: { required?: boolean };
-};
-
 /**
  * Authoring errors in multiple-choice's shape: a message per field, and under
  * `choices` a message per choice keyed by its id.
  */
-export const validate = (question: McpbQuestion = {}, config: ValidateConfig = {}) => {
+export const validate = (
+  question: Partial<McPopulatedBlankModel> = {},
+  config: McPopulatedBlankConfiguration = {}
+) => {
   const errors: Record<string, string | Record<string, string>> = {};
   const { minAnswerChoices = 2, maxAnswerChoices } = config;
 
