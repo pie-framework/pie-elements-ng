@@ -1,18 +1,23 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import debug from 'debug';
-import { ModelUpdatedEvent, InsertSoundEvent, DeleteSoundEvent } from '@pie-element/shared-configure-events';
+import {
+  ModelUpdatedEvent,
+  InsertSoundEvent,
+  DeleteSoundEvent,
+  type DeleteDone,
+  type SoundHandler,
+} from '@pie-element/shared-configure-events';
 
-import Main from './Main.js';
+import Main, { type AuthorModel } from './Main.js';
 import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
+import type { MatrixConfiguration, MatrixModel } from '../types.js';
 
 const log = debug('matrix:configure');
 
-const prepareCustomizationObject = (config, model) => {
+const prepareCustomizationObject = (config: MatrixConfiguration, model: AuthorModel) => {
   const configuration = defaults(config, sensibleDefaults.configuration);
 
   return {
@@ -22,7 +27,12 @@ const prepareCustomizationObject = (config, model) => {
 };
 
 export default class Matrix extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: MatrixConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static createDefaultModel = (model: Partial<MatrixModel> = {}): AuthorModel => ({
     ...sensibleDefaults.model,
     ...model,
   });
@@ -36,12 +46,12 @@ export default class Matrix extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: Partial<MatrixModel>) {
     this._model = Matrix.createDefaultModel(s);
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: MatrixConfiguration) {
     const info = prepareCustomizationObject(c, this._model);
 
     this.onModelChanged(info.model);
@@ -49,24 +59,24 @@ export default class Matrix extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: AuthorModel, reset?: boolean) {
     this._model = m;
     this._render();
     this.dispatchModelUpdated(reset);
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: MatrixConfiguration) {
     this._configuration = prepareCustomizationObject(c, this._model).configuration;
 
     if (this._model) {
@@ -76,11 +86,11 @@ export default class Matrix extends HTMLElement {
     this._render();
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

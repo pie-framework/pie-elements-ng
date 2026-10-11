@@ -1,13 +1,13 @@
-// @ts-nocheck
+import type { CategorizeModel, Category, CategoryChoice, CategoryCorrectResponse } from '../types.js';
 
 export default {
-  alternates: [],
-  categories: [],
+  alternates: [] as unknown[],
+  categories: [] as Category[],
   categoriesPerRow: 2,
-  choices: [],
+  choices: [] as CategoryChoice[],
   choicesLabel: '',
   choicesPosition: 'below',
-  correctResponse: [],
+  correctResponse: [] as CategoryCorrectResponse[],
   feedbackEnabled: false,
   lockChoiceOrder: true,
   maxAnswerChoices: 6,
@@ -23,4 +23,4 @@ export default {
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
   minRowHeight: '80px',
-};
+} satisfies Omit<CategorizeModel, 'id' | 'element'>;

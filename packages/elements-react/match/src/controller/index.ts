@@ -1,15 +1,54 @@
-// @ts-nocheck
-
 import { cloneDeep, isEmpty, isEqual } from '@pie-element/shared-lodash';
-import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import { getFeedbackForCorrectness, type Correctness, type Feedback } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import debug from 'debug';
+import type { MatchConfiguration, MatchModel, MatchRow, MatchSession } from '../types.js';
 
 const log = debug('@pie-element:match:controller');
 
 import defaults from './defaults.js';
 
-const getResponseCorrectness = (model, answers, env = {}) => {
+/** The learner's selections: for each row id, one flag per answer column. */
+type Answers = Record<string, boolean[]>;
+
+/** The session shape the shared choice utilities take; ours may carry numeric row ids. */
+type SharedSession = Parameters<typeof getShuffledChoices>[1];
+
+/** Errors `validate()` reports; `rowsErrors` is keyed by row id, `columnsErrors` by column index. */
+export type MatchValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  noOfRowsError?: string;
+  rowsErrors?: Record<string, string>;
+  correctResponseError?: string;
+  columnsLengthError?: string;
+  columnsErrors?: Record<number, string>;
+};
+
+/** The model `model()` hands the delivery. */
+type MatchViewModel = Omit<
+  MatchModel,
+  'feedback' | 'feedbackEnabled' | 'prompt' | 'promptEnabled' | 'lockChoiceOrder' | 'rationale' | 'teacherInstructions'
+> & {
+  allowFeedback?: boolean;
+  prompt: string | null;
+  shuffled: boolean;
+  feedback?: string;
+  disabled: boolean;
+  view: boolean;
+  rationale?: string | null;
+  teacherInstructions?: string | null;
+  correctResponse?: Answers;
+  correctness?: { score: string; correctness?: Correctness };
+};
+
+const getResponseCorrectness = (
+  model: MatchModel,
+  answers: Answers | undefined,
+  env: Partial<PieEnvironment> = {},
+): Correctness => {
   const isPartialScoring = partialScoring.enabled(model, env);
   const rows = model.rows;
   const checkboxMode = model.choiceMode === 'checkbox';
@@ -19,7 +58,7 @@ const getResponseCorrectness = (model, answers, env = {}) => {
   }
 
   const totalCorrectAnswers = checkboxMode ? getTotalCorrectAnswers(model) : getTotalCorrect(model);
-  let correctAnswers;
+  let correctAnswers: number;
   let incorrectAnswers = 0;
 
   if (checkboxMode) {
@@ -42,13 +81,17 @@ const getResponseCorrectness = (model, answers, env = {}) => {
   return 'incorrect';
 };
 
-const getCorrectness = (question, env, answers = {}) => {
+const getCorrectness = (
+  question: MatchModel,
+  env: Partial<PieEnvironment>,
+  answers: Answers = {},
+): Correctness | undefined => {
   if (env.mode === 'evaluate') {
     return getResponseCorrectness(question, answers, env);
   }
 };
 
-const getCheckboxes = (rows, answers) => {
+const getCheckboxes = (rows: MatchRow[], answers: Answers) => {
   let correctAnswers = 0;
   let incorrectAnswers = 0;
 
@@ -69,7 +112,7 @@ const getCheckboxes = (rows, answers) => {
   return { correctAnswers, incorrectAnswers };
 };
 
-const getCorrectRadios = (rows, answers) => {
+const getCorrectRadios = (rows: MatchRow[], answers: Answers) => {
   let correctAnswers = 0;
 
   rows.forEach((row) => {
@@ -81,13 +124,13 @@ const getCorrectRadios = (rows, answers) => {
   return correctAnswers;
 };
 
-const getTotalCorrect = (question) => {
+const getTotalCorrect = (question: MatchModel) => {
   const checkboxMode = question.choiceMode === 'checkbox';
-  const matchingTable = checkboxMode ? question.layout - 1 : 1;
+  const matchingTable = checkboxMode ? (question.layout as number) - 1 : 1;
   return (question.rows.length || 0) * matchingTable;
 };
 
-const getTotalCorrectAnswers = (question) => {
+const getTotalCorrectAnswers = (question: MatchModel) => {
   let noOfTotalCorrectAnswers = 0;
 
   question.rows.forEach((row) => {
@@ -101,7 +144,7 @@ const getTotalCorrectAnswers = (question) => {
   return noOfTotalCorrectAnswers;
 };
 
-const getPartialScore = (question, answers) => {
+const getPartialScore = (question: MatchModel, answers: Answers) => {
   const checkboxMode = question.choiceMode === 'checkbox';
 
   if (checkboxMode) {
@@ -126,7 +169,7 @@ const getPartialScore = (question, answers) => {
   }
 };
 
-const getOutComeScore = (question, env, answers = {}) => {
+const getOutComeScore = (question: MatchModel, env: Partial<PieEnvironment>, answers: Answers = {}) => {
   const correctness = getCorrectness(question, env, answers);
   const isPartialScoring = partialScoring.enabled(question, env);
 
@@ -144,8 +187,12 @@ const getOutComeScore = (question, env, answers = {}) => {
  * @param {Object} env
  * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  question: MatchModel,
+  session: MatchSession | undefined,
+  env: Partial<PieEnvironment>,
+) => {
+  const traceLog: string[] = [];
 
   const answers = session?.answers || {};
   const rows = question?.rows || [];
@@ -236,8 +283,8 @@ export const getLogTrace = (question, session, env) => {
   return traceLog;
 };
 
-export const outcome = (question, session, env) => {
-  return new Promise((resolve) => {
+export const outcome = (question: MatchModel, session: MatchSession | undefined, env: PieEnvironment) => {
+  return new Promise<{ score?: number; completed?: boolean; empty?: boolean; logTrace: string[] }>((resolve) => {
     if (env.mode !== 'evaluate') {
       resolve({ score: undefined, completed: undefined, logTrace: [] });
     } else {
@@ -246,7 +293,7 @@ export const outcome = (question, session, env) => {
       }
 
       const out = {
-        score: getOutComeScore(question, env, session.answers),
+        score: getOutComeScore(question, env, (session as MatchSession).answers),
         empty: false,
         logTrace: getLogTrace(question, session, env),
       };
@@ -256,8 +303,8 @@ export const outcome = (question, session, env) => {
   });
 };
 
-export function createDefaultModel(model = {}) {
-  return new Promise((resolve) => {
+export function createDefaultModel(model: Partial<MatchModel> = {}) {
+  return new Promise<Partial<MatchModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
@@ -265,7 +312,7 @@ export function createDefaultModel(model = {}) {
   });
 }
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: MatchModel) => ({ ...defaults, ...question });
 
 /**
  *
@@ -274,9 +321,14 @@ export const normalize = (question) => ({ ...defaults, ...question });
  * @param {*} env
  * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export async function model(question, session, env, updateSession) {
+export async function model(
+  question: MatchModel,
+  session: MatchSession | undefined,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+) {
   const normalizedQuestion = cloneDeep(normalize(question));
-  let correctness, score;
+  let correctness: Correctness | undefined, score: string;
 
   if ((!session || isEmpty(session)) && env.mode === 'evaluate') {
     correctness = 'unanswered';
@@ -286,29 +338,38 @@ export async function model(question, session, env, updateSession) {
     score = `${getOutComeScore(normalizedQuestion, env, session && session.answers) * 100}%`;
   }
 
-  const correctResponse = {};
+  const correctResponse: Answers = {};
   const correctInfo = {
     score,
     correctness,
   };
 
-  const lockChoiceOrder = lockChoices(normalizedQuestion, session, env);
+  const lockChoiceOrder = lockChoices(normalizedQuestion, session as SharedSession, env);
 
   if (!lockChoiceOrder) {
-    normalizedQuestion.rows = await getShuffledChoices(normalizedQuestion.rows, session, updateSession, 'id');
+    // `undefined` without a session, which the `forEach` below then throws on
+    normalizedQuestion.rows = (await getShuffledChoices(
+      normalizedQuestion.rows,
+      session as SharedSession,
+      updateSession,
+      'id',
+    )) as MatchRow[];
   }
 
   normalizedQuestion.rows.forEach((row) => {
     correctResponse[row.id] = row.values;
 
     if (env.mode !== 'evaluate') {
-      delete row.values;
+      delete (row as Partial<MatchRow>).values;
     }
   });
 
   const feedback =
     env.mode === 'evaluate' && normalizedQuestion.feedbackEnabled
-      ? await getFeedbackForCorrectness(correctInfo.correctness, normalizedQuestion.feedback)
+      ? await getFeedbackForCorrectness(
+          correctInfo.correctness as Correctness,
+          normalizedQuestion.feedback as Partial<Feedback> | undefined,
+        )
       : undefined;
 
   const {
@@ -319,7 +380,7 @@ export async function model(question, session, env, updateSession) {
     lockChoiceOrder: _,
     ...essentials
   } = normalizedQuestion;
-  const out = {
+  const out: MatchViewModel = {
     ...essentials,
     extraCSSRules,
     allowFeedback: feedbackEnabled,
@@ -351,11 +412,11 @@ export async function model(question, session, env, updateSession) {
   return out;
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: MatchModel, env: PieEnvironment) => {
+  return new Promise<MatchSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { rows } = question;
-      const answers = {};
+      const answers: Answers = {};
 
       rows.forEach((r) => {
         answers[r.id] = r.values;
@@ -372,12 +433,15 @@ export const createCorrectResponseSession = (question, env) => {
 };
 
 // remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
+const getInnerText = (html: string | undefined) => (html || '').replaceAll(/<[^>]*>/g, '');
 
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<MatchModel> = {},
+  config: MatchConfiguration = {},
+): MatchValidationErrors => {
   const { rows, choiceMode, headers } = model;
   const {
     minQuestions,
@@ -387,19 +451,20 @@ export const validate = (model = {}, config = {}) => {
     maxLengthAnswers,
     maxLengthFirstColumnHeading,
   } = config;
-  const rowsErrors = {};
-  const columnsErrors = {};
-  const errors = {};
+  const rowsErrors: Record<string, string> = {};
+  const columnsErrors: Record<number, string> = {};
+  const errors: MatchValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
   });
 
-  if (rows.length < minQuestions) {
+  // without `rows` this throws; a missing bound compares false
+  if ((rows as MatchRow[]).length < (minQuestions as number)) {
     errors.noOfRowsError = `There should be at least ${minQuestions} question rows.`;
-  } else if (rows.length > maxQuestions) {
+  } else if ((rows as MatchRow[]).length > (maxQuestions as number)) {
     errors.noOfRowsError = `No more than ${maxQuestions} question rows should be defined.`;
   }
 
@@ -415,7 +480,9 @@ export const validate = (model = {}, config = {}) => {
       rowsErrors[id] += 'Content should not be empty. ';
     } else {
       // check for identical content with the previous answers
-      const identicalAnswer = rows.slice(0, index).some((r) => getContent(r.title) === getContent(title));
+      const identicalAnswer = (rows as MatchRow[])
+        .slice(0, index)
+        .some((r) => getContent(r.title) === getContent(title));
 
       if (identicalAnswer) {
         rowsErrors[id] += 'Content should be unique. ';
@@ -429,11 +496,11 @@ export const validate = (model = {}, config = {}) => {
     }
   });
 
-  if (maxAnswers && headers.length - 1 > maxAnswers) {
+  if (maxAnswers && (headers as string[]).length - 1 > maxAnswers) {
     errors.columnsLengthError = `There should be maximum ${maxAnswers} answers.`;
   }
 
-  if (maxLengthFirstColumnHeading && headers[0].length > maxLengthFirstColumnHeading) {
+  if (maxLengthFirstColumnHeading && (headers as string[])[0].length > maxLengthFirstColumnHeading) {
     columnsErrors[0] = `Content length should be maximum ${maxLengthFirstColumnHeading} characters.`;
   }
 

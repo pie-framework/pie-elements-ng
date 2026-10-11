@@ -1,14 +1,42 @@
-// @ts-nocheck
-
 import { getPluginProps } from './utils.js';
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { FeedbackConfig, settings, layout, InputContainer, AlertDialog } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import PropTypes from 'prop-types';
 import debug from 'debug';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 import GeneralConfigBlock from './general-config-block.js';
 import AnswerConfigBlock from './answer-config-block.js';
+import type { MatchValidationErrors } from '../controller/index.js';
+import type { MatchConfiguration, MatchFeedback, MatchModel, MatchRow } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<MatchModel> & {
+  headers: string[];
+  layout: number;
+  rows: MatchRow[];
+  errors?: MatchValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type ConfigureProps = {
+  model: AuthorModel;
+  configuration: MatchConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: MatchConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type ConfigureState = {
+  activeTab: number;
+  dialog: { open: boolean; text?: string };
+};
 
 const log = debug('@pie-element:match:configure');
 const { Panel, toggle, radio, dropdown } = settings;
@@ -31,31 +59,17 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-class Configure extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-    uploadSoundSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-  };
+class Configure extends React.Component<ConfigureProps, ConfigureState> {
+  rowIdCounter: number;
 
-  static defaultProps = {};
-
-  constructor(props) {
+  constructor(props: ConfigureProps) {
     super(props);
 
     let maxId = 0;
 
     if (props.model.rows && props.model.rows.length > 0) {
-      maxId = Math.max(...props.model.rows.map((row) => row.id));
+      // `Math.max` coerces string ids to numbers
+      maxId = Math.max(...props.model.rows.map((row) => row.id as number));
     }
 
     this.rowIdCounter = maxId + 1;
@@ -78,7 +92,7 @@ class Configure extends React.Component {
     }
   }
 
-  validateRowsID(rows) {
+  validateRowsID(rows: MatchRow[] | undefined) {
     let wasChanged = false;
 
     const updatedRows = (rows || []).map((row, index) => {
@@ -94,26 +108,26 @@ class Configure extends React.Component {
     return { updatedRows, wasChanged };
   }
 
-  onTabChange: any = (event, value) => {
+  onTabChange = (_event: unknown, value: number) => {
     this.setState({ activeTab: value });
   };
 
-  onChangeTabIndex: any = (index) => {
+  onChangeTabIndex = (index: number) => {
     this.setState({ activeTab: index });
   };
 
-  onChange: any = (model) => {
+  onChange = (model: AuthorModel) => {
     this.props.onModelChanged(model);
   };
 
-  onFeedbackChange: any = (feedback) => {
+  onFeedbackChange = (feedback: MatchFeedback) => {
     const { model, onModelChanged } = this.props;
     model.feedback = feedback;
 
     onModelChanged(model);
   };
 
-  onDeleteRow: any = (rowIndex) => {
+  onDeleteRow = (rowIndex: number) => {
     const { model } = this.props;
     const newModel = { ...model };
 
@@ -122,7 +136,7 @@ class Configure extends React.Component {
     this.onChange(newModel);
   };
 
-  onAddRow: any = () => {
+  onAddRow = () => {
     const { model, configuration } = this.props;
     const newModel = { ...model };
     const { maxQuestions } = configuration || {};
@@ -148,7 +162,7 @@ class Configure extends React.Component {
     this.onChange(newModel);
   };
 
-  onLayoutChange: any = (newLayout) => {
+  onLayoutChange = (newLayout: number) => {
     const { model } = this.props;
     const oldLayout = model.layout;
     const newModel = { ...model };
@@ -176,16 +190,19 @@ class Configure extends React.Component {
     this.onChange(newModel);
   };
 
-  onResponseTypeChange: any = (newChoiceMode) => {
+  onResponseTypeChange = (newChoiceMode: MatchModel['choiceMode']) => {
     const { model } = this.props;
     const newModel = { ...model };
 
     // if we're switching to radio and we have more than one true, reset
     if (newChoiceMode === 'radio') {
       newModel.rows.forEach((row) => {
-        const trueCount = row.values.reduce((total, current) => (current === true ? total + 1 : total));
+        // No initial value: the first value seeds the total as a boolean, which `+` and `>` coerce to 0 or 1.
+        const trueCount = (row.values as (boolean | number)[]).reduce((total, current) =>
+          current === true ? Number(total) + 1 : total,
+        );
 
-        if (trueCount > 1) {
+        if (Number(trueCount) > 1) {
           row.values = new Array(model.layout - 1).fill(false);
         }
       });
@@ -196,21 +213,21 @@ class Configure extends React.Component {
     this.onChange(newModel);
   };
 
-  onPartialScoringChange: any = (partialScoring) => {
+  onPartialScoringChange = (partialScoring: boolean) => {
     this.props.model.partialScoring = partialScoring;
 
     this.props.onModelChanged(this.props.model);
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.props.onModelChanged({ ...this.props.model, prompt });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     this.props.onModelChanged({ ...this.props.model, teacherInstructions });
   };
 
-  onRationaleChanged: any = (rationale) => {
+  onRationaleChanged = (rationale: string) => {
     this.props.onModelChanged({ ...this.props.model, rationale });
   };
 
@@ -234,7 +251,7 @@ class Configure extends React.Component {
       teacherInstructions = {},
       withRubric = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
     } = configuration || {};
     const {
       errors,

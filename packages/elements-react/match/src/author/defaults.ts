@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { MatchConfiguration, MatchModel, MatchRow } from '../types.js';
 
 /** NOTE: teacherInstructions, studentInstructions, rationale & scoringType
  * functionalities are not defined yet - the value for those can belong to
@@ -17,7 +18,7 @@ export default {
     promptEnabled: true,
     rationale: '',
     rationaleEnabled: true,
-    rows: [],
+    rows: [] as MatchRow[],
     scoringType: 'auto',
     studentInstructionsEnabled: true,
     teacherInstructions: '',
@@ -147,7 +148,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
   },
-};
+} satisfies { model: Omit<MatchModel, 'id' | 'element'>; configuration: MatchConfiguration };
