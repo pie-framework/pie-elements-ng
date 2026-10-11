@@ -1,14 +1,21 @@
-// @ts-nocheck
-
 import { differenceWith, isEqual, uniq } from '@pie-element/shared-lodash';
 import { Combination } from 'js-combinatorics';
 import debug from 'debug';
+import type { CorrectResponse, PlacementOrderingModel, PlacementOrderingSession } from '../types.js';
 
 const log = debug('pie-elements:placement-ordering:controller');
 
-export const illegalArgumentError = (answer) =>
+type ScoringOptions = { allowDuplicates?: boolean; orderMustBeComplete?: boolean };
+
+/** The model keys scoring reads. */
+export type ScoringQuestion = Pick<PlacementOrderingModel, 'correctResponse' | 'alternateResponses'> & {
+  /** No model sets this, so `score` always allows duplicates. */
+  configure?: { removeTilesAfterPlacing?: boolean };
+};
+
+export const illegalArgumentError = (answer: unknown) =>
   new Error(`Cant score answer: ${answer} it has duplicates and allowDuplicates is false`);
-export const pairwiseCombinationScore = (correct, answer, opts) => {
+export const pairwiseCombinationScore = (correct: unknown[], answer: unknown[], opts?: ScoringOptions): number => {
   opts = { allowDuplicates: false, orderMustBeComplete: false, ...opts };
 
   if (!opts.allowDuplicates && !isEqual(uniq(correct), correct)) {
@@ -61,14 +68,16 @@ export const pairwiseCombinationScore = (correct, answer, opts) => {
  * Flattens the correctResponse into an array of ordered identifiers representing the
  * correct response.
  */
-export const flattenCorrect = (question) =>
-  question.correctResponse ? question.correctResponse.map((r) => (r && r.id ? r.id : r)) : [];
+export const flattenCorrect = (question: Pick<PlacementOrderingModel, 'correctResponse'>): Array<string | CorrectResponse> =>
+  question.correctResponse
+    ? question.correctResponse.map((r) => (r && typeof r !== 'string' && r.id ? r.id : r))
+    : [];
 
 /**
  * Returns all correct responses for this question
  * @param question - array
  */
-export const getAllCorrectResponses = (question) => {
+export const getAllCorrectResponses = (question: ScoringQuestion): Array<Array<string | CorrectResponse>> => {
   const alternates = (question.alternateResponses || [])
     .map((alternate) => {
       if (Array.isArray(alternate)) {
@@ -89,7 +98,7 @@ export const getAllCorrectResponses = (question) => {
  * for all correct) will be used.
  */
 
-export const score = (question, session) => {
+export const score = (question: ScoringQuestion, session: PlacementOrderingSession | null | undefined): number => {
   const { value } = session || {};
 
   if (!value) {
