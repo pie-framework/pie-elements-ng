@@ -1,5 +1,13 @@
 # @pie-element/shared-test-utils
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf)]:
+  - @pie-element/shared-types@0.2.1
+  - @pie-element/shared-utils@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,5 +1,22 @@
 # @pie-element/passage
 
+## 8.0.4
+
+### Patch Changes
+
+- [#429](https://github.com/pie-framework/pie-elements-ng/pull/429) [`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf) Thanks [@chillenious](https://github.com/chillenious)! - Each element publishes JSON Schemas for its model and session, and for its authoring configuration when it has one, at `@pie-element/<name>/schemas/<kind>.schema.json`. The root entry exports the `<Name>Model`, `<Name>Session` and `<Name>Configuration` types they are generated from. `@pie-element/shared-types` adds the authoring building blocks those types share.
+  
+  `docs:generate` in `@pie-element/cli` documents each property from the element's schemas, with its defaults alongside. `@pie-element/shared-types` drops `PieDocsPropertyMetadata`, `PieDocsViewMetadata` and the `description` and `metadata` fields of `PieDocsViewContract`, which no element set.
+
+- [#431](https://github.com/pie-framework/pie-elements-ng/pull/431) [`20c1c98`](https://github.com/pie-framework/pie-elements-ng/commit/20c1c98ba8e0891a3a97705f9c583bbc228bdae6) Thanks [@chillenious](https://github.com/chillenious)! - fix: declare renderUi before the interop fallbacks that read it
+- Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf), [`f600063`](https://github.com/pie-framework/pie-elements-ng/commit/f6000632b8ca95914198b3a0ebdf773b8892090b), [`1c65ab1`](https://github.com/pie-framework/pie-elements-ng/commit/1c65ab17d87e71d8fb5c46d776f26e44f5a2053b)]:
+  - @pie-element/shared-types@0.2.1
+  - @pie-lib/config-ui@14.0.4
+  - @pie-element/shared-math-rendering-mathjax@0.1.5
+  - @pie-element/shared-utils@0.1.4
+  - @pie-lib/editable-html-tip-tap@3.0.4
+  - @pie-lib/render-ui@8.0.4
+
 ## 8.0.3
 
 ### Patch Changes

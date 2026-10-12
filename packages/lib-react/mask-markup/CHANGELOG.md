@@ -1,5 +1,17 @@
 # @pie-lib/mask-markup
 
+## 4.0.4
+
+### Patch Changes
+
+- [#431](https://github.com/pie-framework/pie-elements-ng/pull/431) [`20c1c98`](https://github.com/pie-framework/pie-elements-ng/commit/20c1c98ba8e0891a3a97705f9c583bbc228bdae6) Thanks [@chillenious](https://github.com/chillenious)! - fix: declare renderUi before the interop fallbacks that read it
+- Updated dependencies [[`f600063`](https://github.com/pie-framework/pie-elements-ng/commit/f6000632b8ca95914198b3a0ebdf773b8892090b)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.5
+  - @pie-element/shared-utils@0.1.4
+  - @pie-lib/drag@5.0.4
+  - @pie-lib/editable-html-tip-tap@3.0.4
+  - @pie-lib/render-ui@8.0.4
+
 ## 4.0.3
 
 ### Patch Changes
