@@ -2057,7 +2057,7 @@
       "name": "@pie-element/shared-configure-events",
       "version": "0.1.1",
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
         "vitest": "^4.1.11",
@@ -2070,7 +2070,7 @@
         "@pie-element/shared-types": "workspace:*",
       },
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
         "vitest": "^4.1.11",
@@ -2104,7 +2104,7 @@
       "name": "@pie-element/shared-feedback",
       "version": "0.1.2",
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
         "vitest": "^4.1.11",
@@ -2114,7 +2114,7 @@
       "name": "@pie-element/shared-lodash",
       "version": "0.1.2",
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "lodash-es": "4.17.21",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
@@ -2140,7 +2140,7 @@
       "name": "@pie-element/shared-player-events",
       "version": "0.1.1",
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
         "vitest": "^4.1.11",
@@ -2154,7 +2154,7 @@
         "@pie-element/shared-utils": "workspace:*",
       },
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
       },
     },
@@ -2199,7 +2199,7 @@
         "dompurify": "^3.4.16",
       },
       "devDependencies": {
-        "@types/bun": "latest",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
         "vitest": "^4.1.11",
