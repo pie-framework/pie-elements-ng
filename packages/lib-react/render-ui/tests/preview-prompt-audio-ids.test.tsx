@@ -130,6 +130,22 @@ describe('preview prompt audio ids', () => {
     expect({ audio: a.audio().id, button: a.button().id }).toEqual(before);
   });
 
+  it('plays each prompt’s audio from its image link, also when two prompts author the same audio id', () => {
+    // Star's listening prompt: an `<audio>` without controls, played from an image link by id.
+    const listening = (name: string) =>
+      `<audio id="${name}.mp3"><source src="https://example.test/${name}.mp3" type="audio/mpeg"></audio>` +
+      `<a href="#" onclick="document.getElementById('${name}.mp3').play(); return false;">` +
+      '<img src="https://example.test/listen.svg" alt="Listen"></a>';
+    const a = item('a', { prompt: listening('same'), customAudioButton: undefined });
+    const b = item('b', { prompt: listening('same'), customAudioButton: undefined });
+    const link = (host: HTMLElement) => host.querySelector('a') as HTMLAnchorElement;
+
+    act(() => link(b.host).click());
+    act(() => link(a.host).click());
+
+    expect(play.mock.contexts).toEqual([b.audio(), a.audio()]);
+  });
+
   it('leaves the other prompt working when one unmounts', () => {
     const a = item('a');
     const b = item('b');
