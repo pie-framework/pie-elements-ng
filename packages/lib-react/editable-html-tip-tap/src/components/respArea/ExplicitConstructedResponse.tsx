@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
+import { color } from '@pie-lib/render-ui';
 import CustomToolbarWrapper from '../../extensions/custom-toolbar-wrapper.js';
 import { setToolbarOpened } from '../../utils/toolbar.js';
 
@@ -82,7 +83,7 @@ const ExplicitConstructedResponse = (props) => {
           minHeight: '46px',
           height: '46px',
           backgroundColor: '#FFF',
-          border: `1px solid ${error ? 'red' : '#C0C3CF'}`,
+          border: `1px solid ${error ? 'red' : color.borderDark()}`,
           boxSizing: 'border-box',
           borderRadius: '4px',
           overflow: 'hidden',
