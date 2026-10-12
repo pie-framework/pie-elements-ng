@@ -8,11 +8,11 @@ import { valueToSize } from '../utils/size.js';
 import StyledMenuBar from './MenuBar.js';
 
 const StyledRoot: any = styled('div', {
-  shouldForwardProp: (prop) => !['noBorder', 'error', 'highlightShape'].includes(prop),
-})(({ theme, noBorder, error, highlightShape }) => ({
+  shouldForwardProp: (prop) => !['noBorder', 'error'].includes(prop),
+})(({ theme, noBorder, error }) => ({
   position: 'relative',
   padding: '0px',
-  border: noBorder ? 'none' : `1px solid ${highlightShape ? color.borderDark() : color.border()}`,
+  border: noBorder ? 'none' : `1px solid ${color.borderDark()}`,
   borderRadius: '4px',
   cursor: 'text',
   '& [data-slate-editor="true"]': {
@@ -228,7 +228,6 @@ function TiptapContainer(props) {
     <StyledRoot
       noBorder={toolbarOpts && toolbarOpts.noBorder}
       error={toolbarOpts && toolbarOpts.error}
-      highlightShape={highlightShape}
       className={props.className}
       style={{ width: sizeStyle.width, minWidth: sizeStyle.minWidth, maxWidth: sizeStyle.maxWidth }}
       ref={rootRef}
