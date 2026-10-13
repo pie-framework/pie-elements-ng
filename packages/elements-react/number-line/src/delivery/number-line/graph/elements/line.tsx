@@ -242,7 +242,7 @@ export class Line extends React.Component {
                 onMove={onMoveRight}
                 onClick={onRectClick}
               />
-              <CorrectnessMark x={Math.max(xScale(left), xScale(right)) + 16} correct={correct} />
+              <CorrectnessMark x={Math.max(xScale(left), xScale(right))} correct={correct} />
             </g>
           </StyledLineGroup>
         )}
