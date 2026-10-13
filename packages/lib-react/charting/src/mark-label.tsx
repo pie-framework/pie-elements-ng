@@ -238,7 +238,10 @@ export const MarkLabel = (props) => {
             paddingLeft: 0,
             paddingRight: 0,
             border: 'none',
-            ...(disabled ? { color: disabledLabelColor, WebkitTextFillColor: disabledLabelColor } : {}),
+            // set rather than left to the page, whose input color may follow its theme
+            ...(disabled
+              ? { color: disabledLabelColor, WebkitTextFillColor: disabledLabelColor }
+              : { color: color.defaults.TEXT, WebkitTextFillColor: color.defaults.TEXT }),
             ...extraStyle,
           }}
           value={label}
