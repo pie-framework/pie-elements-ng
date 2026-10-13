@@ -175,7 +175,8 @@ These apply to every element that has the key, and are not repeated below.
 - `uiStyle.fontsize` is optional and not read; legacy requires it.
 - `uiStyle.possibilityListPosition` defaults to `bottom` and accepts `below`, which imported content carries and which renders as `bottom`.
 - New model keys `teacherInstructions`, `rationale`, `lockChoiceOrder` and `extraCSSRules`. `rationaleEnabled` and `studentInstructionsEnabled` are declared and not read.
-- The model accepts the snake-case keys imported content carries, which the controller camelizes: `possible_responses`, `response_containers`, `ui_style` (`possibility_list_position`, `fontsize`), `duplicate_responses`, `max_response_per_zone` (default 1), `validation.valid_response` and `validation.alt_responses`.
+- New response container key `responseContainers[].ariaLabel`: plain text that names the container for screen readers in place of "Response area {index} of {total}". A blank label keeps that name.
+- The model accepts the snake-case keys imported content carries, which the controller camelizes: `possible_responses`, `response_containers` (`aria_label`), `ui_style` (`possibility_list_position`, `fontsize`), `duplicate_responses`, `max_response_per_zone` (default 1), `validation.valid_response` and `validation.alt_responses`.
 - Model `published`, `shuffle_options`, `response_container`, `metadata`, `is_math`, `response_id` and `metadatadistractor_rationale` are declared and not read: imported content and the demo models carry them. `shuffle` controls shuffling.
 - New configuration key `mathMlOptions`.
 

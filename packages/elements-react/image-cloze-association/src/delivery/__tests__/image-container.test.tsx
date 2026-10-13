@@ -87,6 +87,20 @@ describe('ImageContainer drop targets', () => {
     expect(screen.getByRole('group', { name: 'Response area 3 of 3' })).toHaveFocus();
   });
 
+  it('name a target by its authored label, in place of its position', () => {
+    renderImageContainer({
+      responseContainers: responseContainers.map((container, index) => ({
+        ...container,
+        ariaLabel: ['Stem', '  Leaf  ', ' '][index],
+      })),
+    });
+
+    expect(screen.getByRole('button', { name: 'Stem' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Leaf' })).toBeInTheDocument();
+    // a blank label leaves the position name
+    expect(screen.getByRole('button', { name: 'Response area 3 of 3' })).toBeInTheDocument();
+  });
+
   it('drop the targets out of the tab order when dragging is off', () => {
     renderImageContainer({ canDrag: false });
 
