@@ -115,7 +115,7 @@ A self-hosted root holds those paths, and only the mathmaps of the listed locale
 
 **Math spans:** the adapter rewrites the LaTeX in each `[data-latex]` element as inline math and marks it handled, as the legacy renderer does, so math saved by the editors typesets whatever delimiters it was saved with. `\embed{newLine}[]` becomes `\newline`.
 
-**Macros:** `\parallelogram`, `\overarc`, `\napprox`, `\longdiv`, and `\abs{x}` for an absolute value.
+**Macros:** `\parallelogram`, `\overarc`, `\napprox`, `\longdiv`, `\perpendicular` (as `\perp`), `\divide` (as `\div`), and `\abs{x}` for an absolute value.
 
 **MathML:** `<math>` elements typeset as MathML input, at display size (`displaystyle="true"`) as the legacy renderer sets it. A prefixed root such as `<mml:math>` typesets too. Elementary math, `mstack` and `mlongdiv`, is rewritten as the `mtable` it describes before MathJax reads it: MathJax 4 reads it only through its `mml3` extension, which depends on XSLT.
 
