@@ -8,7 +8,7 @@ import { useDraggable, useDndMonitor } from '@dnd-kit/core';
  * Shared dnd-kit wrapper for Line + Point.
  *
  * Props:
- *  - id: string (unique)
+ *  - id: string (a readable prefix; made unique per instance)
  *  - disabled: boolean
  *  - grid: [stepX] (like grid={[is]})
  *  - bounds: { left: number, right: number } in px (like scaledLineBounds)
@@ -29,8 +29,14 @@ export function Draggable({
   onDragEnd,
   children,
 }) {
+  // Callers build `id` from position, and the points inside lines and rays all sit at y=0 of
+  // their own row, so endpoints at the same value on different rows share it. dnd-kit then
+  // treats them as one draggable and every one of them follows the drag.
+  const instanceId = React.useId();
+  const draggableId = `${id}-${instanceId}`;
+
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id,
+    id: draggableId,
     disabled,
   });
 
@@ -76,16 +82,16 @@ export function Draggable({
 
   useDndMonitor({
     onDragStart(event) {
-      if (event.active.id !== id || disabled) return;
+      if (event.active.id !== draggableId || disabled) return;
       onDragStart?.();
     },
     onDragMove(event) {
-      if (event.active.id !== id || disabled) return;
+      if (event.active.id !== draggableId || disabled) return;
       const deltaX = event.delta.x || 0;
       onDragMove?.(snapClampDeltaX(deltaX));
     },
     onDragEnd(event) {
-      if (event.active.id !== id || disabled) return;
+      if (event.active.id !== draggableId || disabled) return;
       const deltaX = event.delta.x || 0;
       onDragEnd?.(snapClampDeltaX(deltaX));
     },
