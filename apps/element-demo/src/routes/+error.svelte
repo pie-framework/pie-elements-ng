@@ -3,10 +3,10 @@
  * Root error page
  * Handles all errors including non-existent element routes
  */
-import { page } from '$app/stores';
+import { page } from '$app/state';
 
-const error = $derived($page.error as any);
-const status = $derived($page.status);
+const error = $derived(page.error as any);
+const status = $derived(page.status);
 
 // Check if this is an element not found error
 const isElementError = $derived(error?.message?.includes('not found in registry'));

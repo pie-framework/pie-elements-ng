@@ -70,7 +70,7 @@ describe('bundled CQT variant CSS', () => {
     expect(unanchored).toEqual([]);
   });
 
-  // The sheets reproduce Learnosity's light-only look, so a colour they pin meets
+  // The sheets reproduce the CQT's light-only look, so a colour they pin meets
   // whatever the host paints on the other side unless the same rule pins that
   // too: near-white text on #fcfcd3, or #cc3333 on a dark page.
   it.each(SHEETS)('%s pins background and text colour together', (name) => {
@@ -91,5 +91,21 @@ describe('bundled CQT variant CSS', () => {
       }
     }
     expect(unpaired).toEqual([]);
+  });
+
+  // ChoiceRow sizes the radio to the 24x24 minimum target; a sheet that scales or
+  // resizes it takes it under that.
+  const SIZING = ['transform', 'scale', 'zoom', 'width', 'height', 'max-width', 'max-height'];
+
+  it.each(SHEETS)('%s leaves the radio size to ChoiceRow', (name) => {
+    const resizing: string[] = [];
+    const css = readFileSync(join(CQT_CSS_DIR, name), 'utf8');
+    for (const { prelude, declarations } of rulesOf(css)) {
+      if (!prelude.includes('pie-choice-radio')) continue;
+      for (const property of SIZING.filter((p) => declarations.has(p))) {
+        resizing.push(`${prelude} { ${property} }`);
+      }
+    }
+    expect(resizing).toEqual([]);
   });
 });

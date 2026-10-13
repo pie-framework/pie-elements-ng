@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing-solution-set/src/graph-with-controls.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -243,6 +235,7 @@ export class GraphWithControls extends React.Component {
           gssLineData={gssLineData}
           onSolutionSetSelected={onSolutionSetSelected}
           disabled={!!disabled}
+          language={language}
         />
       </GraphWithControlsRoot>
     );

@@ -1,4 +1,4 @@
-import type { LayoutLimits } from './layoutLimits';
+import type { LayoutLimits } from './layoutLimits.js';
 
 export type McpbChoiceMode = 'text' | 'image';
 export type McpbInteractionMode = 'populate_blank' | 'audio_mc_only';
@@ -48,7 +48,7 @@ export interface McpbQuestion {
    * the item's accessibility catalog, gated by the learner's profile (PIE-902).
    * It stays on the model for the print view, which has no toolkit and renders it
    * unconditionally until print resolves catalogs itself (PIE-904), and as the
-   * source the Learnosity import writes the card from.
+   * source the pie-api-aws import writes the card from.
    */
   audioTranscript?: string;
   useFeatureButtonAudio?: boolean;
@@ -71,6 +71,9 @@ export interface McpbQuestion {
 export interface McpbSession {
   id?: string;
   element?: string;
+  /** The picked choice id in a one-entry array, as multiple-choice stores it. */
+  value?: string[];
+  /** Where older sessions hold the pick; read, never written. */
   choiceId?: string;
   audioStartTime?: number;
   audioEndTime?: number;

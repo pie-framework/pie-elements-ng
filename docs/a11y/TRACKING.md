@@ -19,7 +19,7 @@ This directory tracks the WCAG 2.2 Level AA accessibility coverage for every PIE
 | [fraction-model](fraction-model.md) | Segment controls; configurable/improper models | Axe, labelled groups, control names, tab reach, target size, media alternatives | Confirm fraction visuals have equivalent text meaning. |
 | [graphing](graphing.md) | Toolbar; parabola graph | Axe, labelled groups, control names, tab reach, target size, media alternatives | Confirm graph construction can be completed without pointer input. |
 | [graphing-solution-set](graphing-solution-set.md) | Solution region; evaluate feedback | Axe, labelled groups, control names, tab reach, target size, media alternatives, status messages | Confirm shaded solution regions do not rely on color or position alone. |
-| [hotspot](hotspot.md) | Hotspot region names | Axe, labelled groups, control names, tab reach, target size, media alternatives | Confirm hotspot labels are descriptive without revealing answers. |
+| [hotspot](hotspot.md) | Hotspot region names | Axe, labelled groups, control names, tab reach, media alternatives | Confirm hotspot labels are descriptive without revealing answers. |
 | [image-cloze-association](image-cloze-association.md) | Image targets and responses | Axe, labelled groups, control names, tab reach, target size, media alternatives | Confirm image/drop target relationship is understandable without sight. |
 | [inline-dropdown](inline-dropdown.md) | Combobox blanks; evaluate feedback | Axe, labelled groups, control names, tab reach, target size, status messages | Confirm dropdown open/close and option navigation behavior with screen readers. |
 | [likert](likert.md) | Scale radio group; evaluate feedback | Axe, labelled groups, control names, tab reach, target size, status messages | Confirm scale endpoints and selected state are announced clearly. |
@@ -43,4 +43,4 @@ This directory tracks the WCAG 2.2 Level AA accessibility coverage for every PIE
 
 - Automated checks do not prove complete keyboard workflows or screen-reader usability; those are tracked as manual gaps in the per-element files.
 - Findings are currently non-blocking unless `A11Y_ENFORCE=1` is set.
-- If an issue requires changing a synced React element or shared React lib, fix it upstream before syncing into this repository.
+- If an issue requires changing a React element or shared React lib, fix it in this repository.

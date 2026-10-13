@@ -1,11 +1,11 @@
 /**
  * @pie-element/math-rendering-mathjax
  *
- * MathJax adapter for PIE math rendering (~2.7MB)
+ * MathJax adapter for PIE math rendering.
  * Full-featured LaTeX and MathML rendering with accessibility support.
  *
- * This adapter wraps the upstream @pie-lib/math-rendering package,
- * which must be loaded separately (e.g., via a script tag or bundled).
+ * It also implements the legacy @pie-lib/math-rendering API (renderMath, wrapMath,
+ * unWrapMath, mmlToLatex) on MathJax 4; @pie-lib/math-rendering re-exports it.
  *
  * @example
  * ```typescript
@@ -18,6 +18,12 @@
 
 export { createMathjaxRenderer, getMathjaxCssUrls } from './adapter.js';
 export type { MathRenderer, MathRenderingAPI, MathjaxOptions } from './types.js';
+export { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from './unsupported-page.js';
+export type { MathjaxConflictCondition, MathjaxConflictDetail } from './unsupported-page.js';
+export { NO_ASSET_ROOT_EVENT } from './assets.js';
+export type { NoAssetRootDetail, NoAssetRootEffect } from './assets.js';
+
+export { speakMathml } from './math-speech.js';
 
 // Legacy @pie-lib/math-rendering API for backward compatibility
 export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math.js';

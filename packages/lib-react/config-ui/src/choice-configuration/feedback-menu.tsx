@@ -1,14 +1,6 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/config-ui/src/choice-configuration/feedback-menu.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
-import { InlineMenu as MenuImport } from '@pie-lib/render-ui';
+import { createUniqueId, InlineMenu as MenuImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -56,6 +48,7 @@ export class IconMenu extends React.Component {
       anchorEl: undefined,
       open: false,
     };
+    this.menuId = createUniqueId('feedback-menu');
   }
 
   handleClick: any = (event) => {
@@ -79,7 +72,7 @@ export class IconMenu extends React.Component {
       <div>
         <div onClick={this.handleClick}>{this.props.iconButtonElement}</div>
         <Menu
-          id="simple-menu"
+          id={this.menuId}
           anchorEl={this.state.anchorEl}
           open={this.state.open}
           onClose={this.handleRequestClose}

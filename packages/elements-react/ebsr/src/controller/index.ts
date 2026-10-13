@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/ebsr/controller/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import defaults from './defaults.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
@@ -70,6 +62,7 @@ const normalizePart = (model, base) => ({
 export const normalize = ({ partA = {}, partB = {}, language, ...question }) => ({
   ...defaults,
   ...question,
+  language,
   partA: normalizePart(partA, { ...defaults.partA, language }),
   partB: normalizePart(partB, { ...defaults.partB, language }),
 });
@@ -167,6 +160,7 @@ export async function model(question, session, env, updateSession) {
       disabled: env.mode !== 'gather',
       mode: env.mode,
       extraCSSRules: normalizedQuestion.extraCSSRules,
+      language: normalizedQuestion.language,
       partA,
       partB,
     });

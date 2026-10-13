@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/inline-dropdown/src/inline-dropdown.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -47,6 +39,10 @@ const renderUi =
     : renderUiNamespaceAny;
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -154,11 +150,13 @@ export class InlineDropdown extends React.Component {
 
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules} style={{ display: `${displayType}` }}>
-        {mode === 'gather' && <SrOnly>Inline Dropdown Question</SrOnly>}
+        {mode === 'gather' && (
+          <SrOnly>{translator.t('inlineDropdown.inlineDropdownQuestion', { lng: language })}</SrOnly>
+        )}
 
         {showTeacherInstructions && (
           <StyledCollapsible
-            labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
           >
             <PreviewPrompt prompt={teacherInstructions} />
           </StyledCollapsible>
@@ -177,7 +175,7 @@ export class InlineDropdown extends React.Component {
 
         {choiceRationalesHaveText && (
           <StyledCollapsible
-            labels={{ hidden: 'Show Rationale for choices', visible: 'Hide Rationale for choices' }}
+            labels={{ hidden: translator.t('inlineDropdown.showRationaleForChoices', { lng: language }), visible: translator.t('inlineDropdown.hideRationaleForChoices', { lng: language }) }}
           >
             {choiceRationales.map((choices, index) => (
               <ChoiceRationaleWrapper key={index}>
@@ -186,7 +184,7 @@ export class InlineDropdown extends React.Component {
                     <ChoiceRationale key={choice.label}>
                       <ChoiceRationaleLabel
                         correct={choice.correct}
-                        dangerouslySetInnerHTML={{ __html: `${choice.label}: ` }}
+                        dangerouslySetInnerHTML={{ __html: `${sanitizeModelHtml(choice.label)}: ` }}
                       />
                       <PreviewPrompt prompt={choice.rationale} />
                     </ChoiceRationale>
@@ -197,7 +195,7 @@ export class InlineDropdown extends React.Component {
         )}
 
         {showRationale && (
-          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}

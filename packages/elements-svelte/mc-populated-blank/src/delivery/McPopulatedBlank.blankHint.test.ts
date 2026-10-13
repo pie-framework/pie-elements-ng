@@ -3,7 +3,7 @@
  * they pick will appear on the blank line above the choices — otherwise the
  * live-region update on the blank slot is easy to miss (PIE a11y direction
  * from Amber: static sr-only hint, same fallback Star uses for unreliable
- * aria-live in Learnosity).
+ * aria-live in its CQT host).
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';

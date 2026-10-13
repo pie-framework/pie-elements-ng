@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/mask-markup/src/inline-dropdown.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import Dropdown from './components/dropdown.js';
@@ -17,7 +9,7 @@ export default withMask('dropdown', (props) => (node, data, onChange) => {
   const dataset = node.data ? node.data.dataset || {} : {};
   if (dataset.component === 'dropdown') {
     // eslint-disable-next-line react/prop-types
-    const { choices, disabled, feedback, showCorrectAnswer } = props;
+    const { choices, disabled, feedback, showCorrectAnswer, language } = props;
     const correctAnswer = choices && choices[dataset.id] && choices[dataset.id].find((c) => c.correct);
     const finalChoice = showCorrectAnswer ? correctAnswer && correctAnswer.value : data[dataset.id];
 
@@ -33,6 +25,7 @@ export default withMask('dropdown', (props) => (node, data, onChange) => {
         choices={choices[dataset.id]}
         showCorrectAnswer={showCorrectAnswer}
         singleQuery={Object.keys(choices).length == 1}
+        language={language}
       />
     );
   }

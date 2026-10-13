@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/components/respArea/MathTemplated.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -18,8 +10,8 @@ import { color } from '@pie-lib/render-ui';
 const StyledSpanContainer: any = styled('span')(() => ({
   display: 'inline-flex',
   /*
-   * #C0C3CF is `--pie-blue-grey-300`'s default value, but that token is a fill: it
-   * measures 1.00:1 against black-on-rose's own background. The box outline is what
+   * `--pie-blue-grey-300` is the select-text hover fill, picked for the ink on it: it
+   * measures 1.35:1 against purple-on-light-green's own background. The box outline is what
    * marks the response slot in running text, so it takes the stroke token instead.
    */
   border: `1px solid ${color.border()}`,

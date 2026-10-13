@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/mask-markup/src/components/blank.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -17,20 +9,23 @@ import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { grey } from '@mui/material/colors';
+
+const { translator } = Translator;
 
 const log = debug('pie-lib:mask-markup:blank');
 
 const StyledContent: any = styled('span')(({ dragged, over, selected, showsPointerCursor }) => ({
   border: `solid 0px ${color.primary()}`,
-  minWidth: '200px',
-  overflow: 'hidden',
+  // The named target takes the chip's box (WCAG 2.5.8); as a plain inline span it measured one text line.
+  display: 'inline-flex',
   whiteSpace: 'nowrap',
   opacity: 1,
   cursor: 'default',
   ...(over && {
     whiteSpace: 'nowrap',
-    overflow: 'hidden',
   }),
   ...((dragged || selected) && {
     opacity: 0.5,
@@ -53,6 +48,8 @@ const StyledChip: any = styled(Chip)(() => ({
   touchAction: 'none',
   color: color.text(),
   fontSize: 'inherit',
+  // MUI 7's Chip sets a 1.5 line height; the legacy blank inherited normal, as its choices do.
+  lineHeight: 'normal',
   maxWidth: '374px',
   position: 'relative',
   borderRadius: '3px',
@@ -304,7 +301,7 @@ function BlankContent({
               over: isOver,
               hidden: draggedLabel,
             })}
-            dangerouslySetInnerHTML={{ __html: label || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(label) }}
           />
           {draggedLabel && (
             <StyledChipLabel
@@ -313,7 +310,7 @@ function BlankContent({
                 over: isOver,
                 dragged: true,
               })}
-              dangerouslySetInnerHTML={{ __html: draggedLabel || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(draggedLabel) }}
             />
           )}
         </React.Fragment>
@@ -360,6 +357,7 @@ function DragDropBlank({
   emptyResponseAreaWidth,
   emptyResponseAreaHeight,
   instanceId,
+  language,
   selectedItem,
   onSelectClick,
   onPlacementClick,
@@ -445,6 +443,9 @@ function DragDropBlank({
   // stop for the same visual chip would add an extra stop to the existing Tab order —
   // the same double-tab-stop bug already found and fixed once in match-list/image-
   // cloze-association's equivalent code.
+  // A group when it is no tab stop, named by its position in every state: a keyboard placement turns
+  // the focused button into a group, and focus stays on it. Blank ids are the authored {{n}}
+  // placeholders, numbered from 0.
   const isNativeTabStop = !choice && !disabled;
   const isInnerDraggable = !!choice && !disabled;
 
@@ -456,12 +457,18 @@ function DragDropBlank({
   };
 
   const hasSelection = !!selectedItem;
-  const showsHoverEffect = isOver || (hasSelection && isHovered && !disabled);
+  // While a drag is live, dnd-kit's `isOver` is the only authority on which blank will receive the
+  // drop: it is picked by rectIntersection against the overlay, not by the pointer. A drag also sets
+  // a selection (see DragInTheBlank.handleDragStart), so letting pointer hover count here would
+  // light up the blank under the pointer as well as the one dnd-kit chose, and only one of them
+  // actually takes the drop. Pointer hover only signals receptiveness for click-to-place.
+  const showsHoverEffect = !!dragItem ? isOver : isOver || (hasSelection && isHovered && !disabled);
 
   return (
     <StyledContent
       ref={setDropNodeRef}
-      role={isNativeTabStop ? 'button' : undefined}
+      role={isNativeTabStop ? 'button' : 'group'}
+      aria-label={translator.t('dragInTheBlank.blank', { lng: language, index: Number(id) + 1 })}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}
@@ -506,6 +513,7 @@ DragDropBlank.propTypes = {
   emptyResponseAreaWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   emptyResponseAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   instanceId: PropTypes.string,
+  language: PropTypes.string,
   selectedItem: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,

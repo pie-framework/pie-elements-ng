@@ -1,30 +1,21 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing-solution-set/src/coordinates-label.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
-import InputBase from '@mui/material/InputBase';
 import { roundNumber } from './utils.js';
 
-const StyledInputBase: any = styled(InputBase)(({ theme }) => ({
+// read-only text: the label only shows the hovered point's coordinates
+const StyledCoordinates: any = styled('div')(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
   fontSize: theme.typography.fontSize,
   borderRadius: '8px',
   background: theme.palette.common.white,
   color: color.defaults.BLACK,
-  '& .MuiInputBase-input': {
-    padding: 0,
-  },
+  lineHeight: '1.4375em',
+  whiteSpace: 'nowrap',
 }));
 
 export const getLabelPosition = (graphProps, x, y, labelLength) => {
@@ -60,7 +51,7 @@ export const CoordinatesLabel = ({ x, y, graphProps }) => {
     ...labelPosition,
   };
 
-  return <StyledInputBase style={style} value={label} inputProps={{ ariaLabel: 'naked' }} />;
+  return <StyledCoordinates style={style}>{label}</StyledCoordinates>;
 };
 
 CoordinatesLabel.propTypes = {

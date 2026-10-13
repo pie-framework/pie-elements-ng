@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/rubric/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import Rubric from './main.js';
 import React from 'react';
@@ -92,6 +84,7 @@ export default class RubricRender extends HTMLElement {
     this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

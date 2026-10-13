@@ -29,7 +29,8 @@
       "!apps/*/src/lib/elements/registry.ts",
       "!apps/*/src/lib/element-imports.js",
       "!apps/*/src/lib/element-imports.d.ts",
-      "!apps/esm-player-test/index.html"
+      "!apps/esm-player-test/index.html",
+      "!packages/elements-svelte/mc-populated-blank/src/delivery/assets/*.svg"
     ]
   },
   "formatter": {

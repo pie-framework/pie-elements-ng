@@ -1,6 +1,6 @@
 <script lang="ts">
-import { iifeBundleMode } from '$lib/config/player-runtime';
-import { iifeBuildLoading, iifeBuildMeta, requestIifeRebuild } from '$lib/stores/demo-state';
+import { iifeBundleMode } from '#lib/config/player-runtime.ts';
+import { iifeBuildLoading, iifeBuildMeta, requestIifeRebuild } from '#lib/stores/demo-state.ts';
 </script>
 
 <div class="flex items-center gap-2 text-xs">

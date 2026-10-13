@@ -1,21 +1,14 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/match-list/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import { swap } from '@pie-lib/drag';
-import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
-import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode } from '@dnd-kit/core';
+import { restrictToWindowEdges  } from '@dnd-kit/modifiers';
+import { closestResponseArea } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { color, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { color, createUniqueId, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -46,7 +39,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
-import { findKey, isUndefined, uniqueId } from '@pie-element/shared-lodash';
+import { findKey, isUndefined } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer, buildDragId } from './answer.js';
@@ -114,7 +107,10 @@ export class Main extends React.Component {
   constructor(props) {
     super(props);
 
-    this.instanceId = uniqueId();
+    // Random rather than a counter: two versions of this element on one page each count from 1, and
+    // tile focus, prompt label ids and dnd-kit's drag instructions are looked up across the whole
+    // document.
+    this.instanceId = createUniqueId('match-list');
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
@@ -462,12 +458,13 @@ export class Main extends React.Component {
 
     return (
       <DndContext
+        id={this.instanceId}
         sensors={sensors}
-        collisionDetection={rectIntersection}
+        collisionDetection={closestResponseArea}
         onDragStart={this.onDragStart}
         onDragEnd={this.onPlaceAnswer}
         onDragCancel={this.onDragCancel}
-        modifiers={[restrictToFirstScrollableAncestor]}
+        modifiers={[restrictToWindowEdges]}
         accessibility={{
           screenReaderInstructions: {
             draggable:

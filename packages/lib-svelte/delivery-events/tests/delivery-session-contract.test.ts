@@ -72,8 +72,8 @@ const mcPopulatedBlank: ElementUnderTest = {
     input.checked = true;
     input.dispatchEvent(new Event('change', { bubbles: true }));
   },
-  response: { choiceId: 'b' },
-  complete: { choiceId: 'a' },
+  response: { value: ['b'] },
+  complete: { value: ['a'] },
   incomplete: {},
   showsResponse: (element) => !!element.querySelector('input[type="radio"]:checked'),
 };

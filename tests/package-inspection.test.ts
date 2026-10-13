@@ -3,7 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  collectDeclarationImportViolations,
   collectPublishSurfaceViolations,
+  collectSharedRuntimeDependencyViolations,
   collectSvelteLeakViolations,
 } from '../scripts/check-publish-surface.mjs';
 import { createPackageSnapshots } from '../scripts/lib/package-inspection.mjs';
@@ -152,6 +154,61 @@ describe('package inspection quality-gate helpers', () => {
     expect(violations).not.toContain(
       'non-browser-ESM element packages must expose exports["./runtime-support"] marking esm unsupported'
     );
+  });
+
+  it('flags declaration imports a client install cannot resolve', async () => {
+    const dir = join(tmpdir(), `pie-declaration-imports-${process.pid}-${Date.now()}`);
+    await mkdir(join(dir, 'dist'), { recursive: true });
+    await writeFile(
+      join(dir, 'dist', 'index.d.ts'),
+      [
+        "import './styles.css';",
+        "import type { Shell } from '@pie-lib/dev-only';",
+        "import type { Model } from '@pie-lib/declared/types';",
+        "export { helper } from './helper';",
+        "export { other } from './other.js';",
+        "export type { Readable } from 'node:stream';",
+        "/** Comments are not imports: from '@pie-lib/in-a-comment' */",
+        "export declare const Element: typeof import('@pie-element/example').default;",
+        'export type { Shell, Model };',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const violations = collectDeclarationImportViolations({
+      dir,
+      pkg: {
+        name: '@pie-element/example',
+        dependencies: { '@pie-lib/declared': '1.0.0' },
+        devDependencies: { '@pie-lib/dev-only': '1.0.0' },
+      },
+      files: ['dist/index.d.ts'],
+    });
+
+    expect(violations).toEqual([
+      'dist/index.d.ts imports "./helper", which does not resolve under moduleResolution node16 (add the .js extension)',
+      'dist/index.d.ts imports "@pie-lib/dev-only", which is not a dependency, peer or optional dependency',
+    ]);
+  });
+
+  it('flags entry point targets that are not in the tarball', () => {
+    const violations = collectPublishSurfaceViolations({
+      dir: join(process.cwd(), 'packages', 'example-theme'),
+      relativeDir: 'packages/example-theme',
+      pkg: {
+        name: '@pie-element/example-theme',
+        version: '1.0.0',
+        files: ['dist'],
+        types: './dist/index.d.ts',
+        exports: {
+          '.': { types: './dist/index.d.ts', default: './dist/index.js' },
+          './parts/*': './dist/parts/*.js',
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/index.js', 'dist/src/index.d.ts']),
+    });
+
+    expect(violations).toEqual(['entry point target is not packed: ./dist/index.d.ts']);
   });
 
   it('requires element packages to export their package.json', () => {
@@ -318,7 +375,7 @@ describe('package inspection quality-gate helpers', () => {
     // Orphan left behind by an earlier build, larger than the whole budget.
     await writeFile(
       join(packageDir, 'dist', 'browser', 'shared-BBBBBBBB.js'),
-      `export const stale = "${'x'.repeat(5 * 1024 * 1024)}";\n`,
+      `export const stale = "${'x'.repeat(7 * 1024 * 1024)}";\n`,
       'utf8'
     );
 
@@ -338,7 +395,7 @@ describe('package inspection quality-gate helpers', () => {
       packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
     });
 
-    // The 5 MiB stale chunk must not be charged against the 4 MiB budget: the
+    // The 7 MiB stale chunk must not be charged against the 6 MiB budget: the
     // tripwire exists to catch dependency drift in the real payload, and a
     // leftover chunk from an earlier build is not drift.
     expect(violations.some((violation) => violation.includes('exceeds policy budget'))).toBe(false);
@@ -357,7 +414,7 @@ describe('package inspection quality-gate helpers', () => {
     );
     await writeFile(
       join(packageDir, 'dist', 'browser', 'vendor-AAAAAAAA.js'),
-      `export const vendor = "${'x'.repeat(5 * 1024 * 1024)}";\n`,
+      `export const vendor = "${'x'.repeat(7 * 1024 * 1024)}";\n`,
       'utf8'
     );
 
@@ -634,5 +691,68 @@ describe('package inspection quality-gate helpers', () => {
         pkg: { name: '@pie-element/element-bundler', peerDependencies: { svelte } },
       })
     ).toEqual(['peerDependencies.svelte is not allowed']);
+  });
+
+  it('requires element React in dependencies and rejects React peers', () => {
+    const pie = {
+      controller: '@pie-element/sample/controller',
+      browserSharedDependencies: { react: '18.2.0', 'react-dom': '18.2.0' },
+    };
+    const react = { react: '^18.2.0', 'react-dom': '^18.2.0' };
+
+    expect(collectSharedRuntimeDependencyViolations({ pie, dependencies: react })).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        pie,
+        dependencies: react,
+        peerDependencies: { react: '^18.2.0 || ^19.0.0' },
+      })
+    ).toEqual([
+      "peerDependencies.react is not allowed: a peer binds the element to the host's react; declare it in dependencies only",
+    ]);
+    expect(
+      collectSharedRuntimeDependencyViolations({ pie, dependencies: { react: '18.2.0' } })
+    ).toEqual([
+      'dependencies.react must be "^18.2.0" (matching pie.browserSharedDependencies 18.2.0), got "18.2.0"; an exact pin duplicates React and breaks hooks',
+      'dependencies.react-dom is missing: elements install their own react-dom, and webpack bundlers install no peers; use "^18.2.0"',
+    ]);
+    // Svelte elements declare no React.
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        pie: { controller: '@pie-element/svelte/controller' },
+      })
+    ).toEqual([]);
+  });
+
+  it('keeps library React peer-only', () => {
+    const peerDependencies = { react: '^18.0.0 || ^19.0.0', 'react-dom': '^18.0.0 || ^19.0.0' };
+
+    expect(
+      collectSharedRuntimeDependencyViolations({ name: '@pie-lib/render-ui', peerDependencies })
+    ).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        name: '@pie-lib/render-ui',
+        dependencies: { react: '^18.2.0' },
+        peerDependencies,
+      })
+    ).toEqual([
+      'dependencies.react is not allowed in a library: the consuming element owns the installable react; declare it in peerDependencies only',
+    ]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        name: '@pie-element/shared-utils',
+        optionalDependencies: { 'react-dom': '^18.2.0' },
+      })
+    ).toEqual([
+      'optionalDependencies.react-dom is not allowed in a library: the consuming element owns the installable react-dom; declare it in peerDependencies only',
+    ]);
+    // Build tooling outside the library scopes may install React.
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        name: '@pie-element/element-bundler',
+        dependencies: { react: '^18.2.0' },
+      })
+    ).toEqual([]);
   });
 });

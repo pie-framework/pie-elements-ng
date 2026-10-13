@@ -1,17 +1,10 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/tools/ray/component.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { lineBase, lineToolComponent, styles } from '../shared/line/index.js';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ArrowMarker, genUid } from '../shared/arrow-head.js';
+import { useUniqueId } from '@pie-lib/render-ui';
+import { ArrowMarker } from '../shared/arrow-head.js';
 import { trig, types } from '@pie-lib/plot';
 import classNames from 'clsx';
 import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
@@ -43,7 +36,7 @@ const StyledRayRoot: any = styled('g')(({ theme, disabled, correctness }) => ({
 }));
 
 export const RayLine = (props) => {
-  const markerId = genUid();
+  const markerId = useUniqueId('arrow');
   const { graphProps, from, to, disabled, correctness, className, markerId: propMarkerId, ...rest } = props;
   const { scale } = graphProps;
   const { domain, range } = getAdjustedGraphLimits(graphProps);

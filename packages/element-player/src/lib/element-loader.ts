@@ -5,7 +5,7 @@
  * Based on the ESM loader pattern from pie-players.
  */
 
-import type { PieElementRuntimeSupport } from './runtime-support';
+import type { PieElementRuntimeSupport } from './runtime-support.js';
 
 export type ElementModuleKind = 'delivery' | 'author' | 'print' | 'controller' | 'runtime-support';
 

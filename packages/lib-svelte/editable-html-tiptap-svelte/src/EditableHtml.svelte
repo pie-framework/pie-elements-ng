@@ -8,11 +8,11 @@ import SuperScript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
-import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
 import { Placeholder } from '@tiptap/extensions';
+import { ExternalPaste } from './external-paste.js';
+import { SemanticTable, SemanticTableHeader } from './semantic-table.js';
 import type { EditableHtmlProps } from './types.js';
 
 let {
@@ -35,6 +35,9 @@ function editorAttributes(): Record<string, string> {
   return {
     role: 'textbox',
     'aria-multiline': 'true',
+    // MathJax's default ignore class. A typeset pass over an ancestor would otherwise typeset the
+    // editor's text, and ProseMirror reads MathJax's output back into the document.
+    class: 'mathjax_ignore',
     ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
   };
 }
@@ -116,6 +119,7 @@ onMount(() => {
         },
       }),
       TextStyle,
+      ExternalPaste,
       CharacterCount.configure({
         limit: 1000000,
       }),
@@ -126,14 +130,14 @@ onMount(() => {
         alignments: ['left', 'right', 'center'],
       }),
       Image,
-      Table.configure({
+      SemanticTable.configure({
         resizable: true,
         HTMLAttributes: {
           border: '0',
         },
       }),
       TableRow,
-      TableHeader,
+      SemanticTableHeader,
       TableCell,
       // A function, so a `placeholder` the host changes shows from the editor's next update.
       Placeholder.configure({ placeholder: () => placeholder }),

@@ -1,5 +1,5 @@
-import defaults from './defaults';
-import { toPlainText } from './plain-text';
+import defaults from './defaults.js';
+import { toPlainText } from './plain-text.js';
 
 export type SimpleClozeQuestion = {
   id?: string;

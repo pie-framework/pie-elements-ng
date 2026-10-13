@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/mask-markup/src/mask.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -14,6 +6,7 @@ import { get } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { MARK_TAGS } from './serialization.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const Paragraph: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(0.5),
@@ -62,7 +55,7 @@ export const renderChildren = (layout, value, onChange, rootRenderChildren, pare
       children.push(
         <span
           dangerouslySetInnerHTML={{
-            __html: `<math displaystyle="true">${n.nodes[0].innerHTML}</math>`,
+            __html: sanitizeModelHtml(`<math displaystyle="true">${n.nodes[0].innerHTML}</math>`),
           }}
         />,
       );
@@ -72,15 +65,17 @@ export const renderChildren = (layout, value, onChange, rootRenderChildren, pare
     if (rootRenderChildren) {
       const c = rootRenderChildren(n, value, onChange);
       if (c) {
-        const isDndComponent = n.data?.dataset?.component === 'blank';
+        // A table cell's padding already separates its blank; spacers there push apart
+        // items that lay out one letter tile per cell (PD-4704).
+        const isSpacedBlank = n.data?.dataset?.component === 'blank' && parentNode?.type !== 'td';
 
-        if (isDndComponent) {
+        if (isSpacedBlank) {
           children.push(<Spacer key={`spacer-${index}-before`} />);
         }
 
         children.push(c);
 
-        if (isDndComponent) {
+        if (isSpacedBlank) {
           children.push(<Spacer key={`spacer-${index}-after`} />);
         }
         return;

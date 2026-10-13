@@ -4,7 +4,7 @@ import {
   loadElement,
   loadRuntimeSupport,
   type ElementModuleResolver,
-} from './element-loader';
+} from './element-loader.js';
 import {
   DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
   type IifeBundleRetryConfig,
@@ -12,20 +12,20 @@ import {
   loadIifePackage,
   type IifeBundleLoadError,
   type LocalBundleMeta,
-} from './iife-bundle-loader';
+} from './iife-bundle-loader.js';
 import {
   normalizeElementPlayerStrategy,
   normalizeElementPlayerView,
   type ElementPlayerStrategy,
   type ElementPlayerView,
-} from './player-strategy';
+} from './player-strategy.js';
 import {
   isRuntimeSupportEnabled,
   isStrategySupportedForView,
   normalizeRuntimeSupportCheck,
   type PieElementRuntimeSupport,
   type RuntimeSupportCheck,
-} from './runtime-support';
+} from './runtime-support.js';
 
 export interface UnifiedPlayerLoadRequest {
   strategy: string | null | undefined;

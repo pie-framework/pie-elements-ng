@@ -6,9 +6,10 @@ import { Categories } from '../categories';
 
 vi.mock('../category', () => ({
   __esModule: true,
-  default: ({ id, label, selectedItem, onSelectClick, onPlacementClick }: any) => (
+  default: ({ id, label, labelId, selectedItem, onSelectClick, onPlacementClick }: any) => (
     <div
       data-testid={`category-${id}`}
+      data-label-id={labelId}
       data-selected-item={selectedItem ? JSON.stringify(selectedItem) : undefined}
       data-has-onselectclick={typeof onSelectClick === 'function' ? 'true' : 'false'}
       data-has-onplacementclick={typeof onPlacementClick === 'function' ? 'true' : 'false'}
@@ -78,6 +79,21 @@ describe('Categories', () => {
       // Multiple elements may contain the same text (label + category mock)
       expect(screen.getAllByText('First Category').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Second Category').length).toBeGreaterThan(0);
+    });
+
+    it('names each category by its own label', () => {
+      renderCategories({
+        categories: [
+          { id: '1', label: 'First Category', choices: [] },
+          { id: '2', label: 'Second Category', choices: [] },
+        ],
+        model: { categoriesPerRow: 2 },
+      });
+      const ids = ['1', '2'].map((id) => screen.getByTestId(`category-${id}`).getAttribute('data-label-id') as string);
+
+      expect(new Set(ids).size).toBe(2);
+      expect(document.getElementById(ids[0])).toHaveTextContent('First Category');
+      expect(document.getElementById(ids[1])).toHaveTextContent('Second Category');
     });
   });
 

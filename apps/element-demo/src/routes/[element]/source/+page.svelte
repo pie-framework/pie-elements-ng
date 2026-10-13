@@ -3,8 +3,8 @@
  * Source Route
  * Shows and allows editing of the raw model JSON
  */
-import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
-import SourceView from '$lib/element-player/components/SourceView.svelte';
+import PlayerLayout from '#lib/element-player/components/PlayerLayout.svelte';
+import SourceView from '#lib/element-player/components/SourceView.svelte';
 import {
   elementName,
   model,
@@ -16,7 +16,7 @@ import {
   capabilities,
   updateModel,
   sessionVersion,
-} from '$lib/stores/demo-state';
+} from '#lib/stores/demo-state.ts';
 import type { LayoutData } from '../$types';
 
 let { data }: { data: LayoutData } = $props();

@@ -20,10 +20,3 @@ export interface PieController {
   outcome?: (model: any, session: any, env: any) => Promise<any>;
   createCorrectResponseSession?: (model: any, env: any) => Promise<any>;
 }
-
-export interface Tab {
-  id: string;
-  label: string;
-  description?: string;
-  disabled?: boolean;
-}

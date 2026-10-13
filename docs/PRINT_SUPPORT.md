@@ -73,11 +73,6 @@ Where `itemConfig` includes:
 
 **Location:** `packages/print-player` in the `pie-players` repository.
 
-> Note: this repo also contains a `packages/print-player` (`@pie-element/print-player`).
-> It is **superseded** — its resolver loads `dist/print/index.js` (the bundler
-> artifact, which is not browser-loadable) and it does not inject a React import
-> map. Use `@pie-players/pie-print-player` for production print.
-
 ## Print Element Architecture
 
 **Current Coverage**: Print support is available for 12 out of 30 elements. Print components are being added incrementally as elements are developed.
@@ -314,12 +309,12 @@ player.resolve = (tagName, pkg) => {
 
 1. **Start the demo server:**
    ```bash
-   bun cli dev:demo multiple-choice
+   bun cli dev:demo
    ```
 
 2. **Navigate to print route:**
    ```
-   http://localhost:5173/multiple-choice/print
+   http://localhost:5222/multiple-choice/print
    ```
 
 3. **Toggle between student/instructor roles**

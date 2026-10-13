@@ -6,16 +6,15 @@
 // same problem one layer down: the sibling prosemirror-* packages depend on them by caret, and
 // two copies make tiptap warn "prosemirror-model is loaded more than once. Wrapping and
 // splitting nodes will fail." Neither failure shows up as a build or type error — the editor
-// just misbehaves at runtime — and packages/lib-react/** is excluded from this suite, so the
-// React editor has no tests of its own to catch it. Asserted against the lockfile and the
-// manifests instead. See the `overrides` note in the root package.json. PIE-1042.
+// just misbehaves at runtime — so it is asserted against the lockfile and the manifests. See
+// the `overrides` note in the root package.json. PIE-1042.
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { glob } from 'glob';
 import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = join(import.meta.dirname, '..');
-const EXPECTED_TIPTAP = '3.31.3';
+const EXPECTED_TIPTAP = '3.31.4';
 const SINGLE_COPY_PROSEMIRROR = ['prosemirror-model', 'prosemirror-view'];
 
 function resolvedVersions(lockfile: string, packageName: string): Set<string> {
@@ -77,5 +76,53 @@ describe('editor dependency single-copy invariant', () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  it('declares every @tiptap/* package that tiptap itself reaches through a range', async () => {
+    // The root `overrides` hold this tree's copies; a consumer has no overrides and resolves a
+    // ranged @tiptap/* dependency to the newest release, past the rest of the set. @tiptap/react
+    // takes both menus by caret, so a published manifest has to declare them exactly itself.
+    const lockfile = await readFile(join(REPO_ROOT, 'bun.lock'), 'utf8');
+    const tiptapDeps = new Map<string, Record<string, string>>();
+    for (const match of lockfile.matchAll(
+      /^\s*"(@tiptap\/[a-z0-9-]+)": \["[^"]+", "[^"]*", (\{.*\}), "sha/gm
+    )) {
+      const meta = JSON.parse(match[2]);
+      const deps = { ...meta.dependencies, ...meta.optionalDependencies };
+      tiptapDeps.set(
+        match[1],
+        Object.fromEntries(Object.entries(deps).filter(([name]) => name.startsWith('@tiptap/')))
+      );
+    }
+    expect(tiptapDeps.size).toBeGreaterThan(0);
+
+    const manifests = await glob('**/package.json', {
+      cwd: REPO_ROOT,
+      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.svelte-kit/**'],
+      absolute: true,
+    });
+
+    const offenders: string[] = [];
+    for (const manifest of manifests) {
+      const pkg = JSON.parse(await readFile(manifest, 'utf8'));
+      if (pkg.private) continue;
+      const declared = new Set(
+        Object.keys(pkg.dependencies ?? {}).filter((name) => name.startsWith('@tiptap/'))
+      );
+      const queue = [...declared];
+      const seen = new Set(queue);
+      while (queue.length > 0) {
+        for (const [name, version] of Object.entries(tiptapDeps.get(queue.pop() ?? '') ?? {})) {
+          if (version !== EXPECTED_TIPTAP && !declared.has(name)) {
+            offenders.push(`${manifest.slice(REPO_ROOT.length + 1)} ${name} (${version})`);
+          }
+          if (!seen.has(name)) {
+            seen.add(name);
+            queue.push(name);
+          }
+        }
+      }
+    }
+    expect([...new Set(offenders)]).toEqual([]);
   });
 });

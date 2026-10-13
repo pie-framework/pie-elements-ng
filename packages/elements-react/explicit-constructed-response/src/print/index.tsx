@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/explicit-constructed-response/src/print.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -78,11 +70,16 @@ export default class ExplicitConstructedResponsePrint extends HTMLElement {
     this._rerender();
   }
 
-  connectedCallback() {}
+  connectedCallback() {
+    // Disconnecting unmounts the React root, so a reinserted element renders again.
+    this._rerender();
+  }
 
   disconnectedCallback() {
+    this._rerender.cancel();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/placement-ordering",
-  "version": "14.1.2-next.23",
+  "version": "15.0.3",
   "description": "",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
@@ -34,10 +35,6 @@
     "@pie-element/shared-player-events": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "peerDependencies": {
-    "react": "^18.2.0 || ^19.0.0",
-    "react-dom": "^18.2.0 || ^19.0.0"
   },
   "exports": {
     ".": {
@@ -97,7 +94,12 @@
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+    "@types/react-dom": "^18.2.0",
+    "vitest": "^4.1.11",
+    "happy-dom": "^20.14.5",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
@@ -114,7 +116,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.1-next.0",
+      "version": "0.1.2",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

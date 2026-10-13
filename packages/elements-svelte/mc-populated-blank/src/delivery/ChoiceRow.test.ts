@@ -108,6 +108,14 @@ describe('ChoiceRow — horizontal layout (isHorizontal=true)', () => {
   });
 });
 
+describe('ChoiceRow — radio target size', () => {
+  it.each([false, true])('radio is 24x24 (isHorizontal=%s)', (isHorizontal) => {
+    const target = mountRow({ ...BASE, isHorizontal });
+    const style = getComputedStyle(target.querySelector('input[type="radio"]') as HTMLInputElement);
+    expect([style.width, style.height]).toEqual(['24px', '24px']);
+  });
+});
+
 describe('ChoiceRow — CSS state classes', () => {
   it('applies is-selected and pie-choice-selected when isSelected=true', () => {
     const target = mountRow({ ...BASE, isSelected: true });

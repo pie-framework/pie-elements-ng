@@ -5,12 +5,12 @@
  */
 import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { ELEMENT_REGISTRY, getElement } from '$lib/elements/registry';
+import { ELEMENT_REGISTRY, getElement } from '#lib/elements/registry.ts';
 import {
   discoverElementViews,
   hasControllerExport,
   type ElementView,
-} from '$lib/utils/view-discovery';
+} from '#lib/utils/view-discovery.ts';
 
 // Player routes are client-rendered only; CE bundles reference browser-only globals (customElements/window).
 export const ssr = false;
@@ -97,7 +97,7 @@ export const load: LayoutLoad = async ({
 
   // Load sample config from JSON file
   try {
-    const configModule = await import(`$lib/samples/${elementName}.json`);
+    const configModule = await import(`../../lib/samples/${elementName}.json`);
 
     if (configModule.default?.demos && Array.isArray(configModule.default.demos)) {
       demos = configModule.default.demos;

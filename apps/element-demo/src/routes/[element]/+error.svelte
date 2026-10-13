@@ -3,11 +3,11 @@
  * Error page for element routes
  * Displays friendly error messages when elements are not found
  */
-import { page } from '$app/stores';
+import { page } from '$app/state';
 
 // Extract error message
-const error = $derived($page.error as any);
-const status = $derived($page.status);
+const error = $derived(page.error as any);
+const status = $derived(page.status);
 
 // Parse the error message to extract suggestions
 const errorMessage = $derived(error?.message || 'Unknown error occurred');

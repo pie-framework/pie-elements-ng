@@ -1,21 +1,17 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/mark-label.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import { AutosizeInput } from './autosize-input.js';
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 import SvgIcon from './label-svg-icon.js';
+import { roundNumber } from './utils.js';
+
+const { translator } = Translator;
 
 const DEBOUNCE_DELAY = 500;
 // A new label insists on the focus and the caret for this long, and again on each of the ticks
@@ -146,12 +142,13 @@ const caretIsInside = (node) => {
   return anchor === node || anchor === node.parentNode || node.contains(anchor);
 };
 
-const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, minWidth, onChange, onBlur }) => (
+const LabelInput = ({ _ref, externalInputRef, ariaLabel, label, disabled, inputStyle, minWidth, onChange, onBlur }) => (
   <AutosizeInput
     inputRef={(r) => {
       _ref(r);
       externalInputRef(r);
     }}
+    aria-label={ariaLabel}
     disabled={disabled}
     inputStyle={inputStyle}
     minWidth={minWidth}
@@ -161,9 +158,40 @@ const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, minWi
   />
 );
 
+// The node's size, measured again whenever it changes. AutosizeInput sets the input's width after
+// the label has rendered, so a size read during render is one width behind.
+const useSize = (node) => {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    if (!node) {
+      return undefined;
+    }
+
+    const measure = () => {
+      const { width, height } = node.getBoundingClientRect();
+      setSize((s) => (s.width === width && s.height === height ? s : { width, height }));
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [node]);
+
+  return size;
+};
+
 LabelInput.propTypes = {
   _ref: PropTypes.func,
   externalInputRef: PropTypes.func,
+  ariaLabel: PropTypes.string,
   label: PropTypes.string,
   disabled: PropTypes.bool,
   inputStyle: PropTypes.object,
@@ -173,7 +201,7 @@ LabelInput.propTypes = {
 };
 
 export const MarkLabel = (props) => {
-  // the state repositions the label once the input has a size, the ref is never a render behind
+  // the state measures each new input, the ref is never a render behind
   const inputNode = useRef(null);
   const [input, setInput] = useState(null);
   const _ref = useCallback((node) => {
@@ -182,7 +210,7 @@ export const MarkLabel = (props) => {
   }, []);
   const theme = useTheme();
 
-  const { mark, graphProps, disabled, autoFocus, inputRef: externalInputRef } = props;
+  const { mark, graphProps, disabled, autoFocus, inputRef: externalInputRef, language } = props;
 
   const [label, setLabel] = useState(mark.label);
   const { correctness, correctnesslabel, correctlabel } = mark;
@@ -357,7 +385,7 @@ export const MarkLabel = (props) => {
     };
   }, [autoFocus]);
 
-  const rect = input ? input.getBoundingClientRect() : { width: 0, height: 0 };
+  const rect = useSize(input);
   const pos = position(graphProps, mark, rect);
   const leftTop = coordinates(graphProps, mark, rect, pos);
 
@@ -377,10 +405,16 @@ export const MarkLabel = (props) => {
 
   const disabledInput = disabled || mark.disabled;
 
-  const renderInput = (inputStyle, labelValue) => (
+  const nameAt = (key) =>
+    Number.isFinite(mark.x) && Number.isFinite(mark.y)
+      ? translator.t(`graphing.${key}`, { lng: language, x: roundNumber(mark.x), y: roundNumber(mark.y) })
+      : translator.t('graphing.label', { lng: language });
+
+  const renderInput = (inputStyle, labelValue, ariaLabel = nameAt('markLabel')) => (
     <LabelInput
       _ref={_ref}
       externalInputRef={externalInputRef}
+      ariaLabel={ariaLabel}
       label={labelValue}
       disabled={disabledInput}
       inputStyle={inputStyle}
@@ -420,7 +454,9 @@ export const MarkLabel = (props) => {
             renderInput(studentInputStyle, label)
           )}
         </StyledInputIncorrect>
-        <StyledInputMissing style={secondLabelStyle}>{renderInput(studentInputStyle, correctlabel)}</StyledInputMissing>
+        <StyledInputMissing style={secondLabelStyle}>
+          {renderInput(studentInputStyle, correctlabel, nameAt('correctMarkLabel'))}
+        </StyledInputMissing>
       </>
     );
   }
@@ -449,6 +485,7 @@ MarkLabel.propTypes = {
   onChange: PropTypes.func,
   graphProps: types.GraphPropsType,
   inputRef: PropTypes.func,
+  language: PropTypes.string,
   mark: PropTypes.object,
 };
 

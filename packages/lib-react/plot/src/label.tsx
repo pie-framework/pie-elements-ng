@@ -1,16 +1,8 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/plot/src/label.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Readable as ReadableImport } from '@pie-lib/render-ui';
+import { Readable as ReadableImport, color } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -42,6 +34,7 @@ const renderUi =
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import PropTypes from 'prop-types';
 import { extractTextFromHTML, isEmptyString } from './utils.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const styles = {
   axisLabel: {
@@ -62,7 +55,8 @@ const styles = {
   },
   editLabel: {
     position: 'absolute',
-    backgroundColor: 'white',
+    // The editor inside takes the theme's text; white keeps the box opaque when no theme is set.
+    backgroundColor: color.v('pie')('background', 'white'),
     borderRadius: 4,
     boxShadow: '0px 5px 8px rgba(0,0,0,0.15)',
     zIndex: 10,
@@ -139,7 +133,8 @@ const LabelComponent = (props) => {
       (isChartLeftLabel && `${graphHeight - 70}px`) ||
       (side === 'left' && `${graphHeight - 8}px`) ||
       (isChartBottomLabel && `${graphHeight - 60 + titleHeight}px`) ||
-      (side === 'bottom' && `${graphHeight - 120 + titleHeight}px`) ||
+      // as far below the category labels as in delivery: the pixel guides above the chart leave it 14px higher
+      (side === 'bottom' && `${graphHeight - 106 + titleHeight}px`) ||
       0,
     left:
       (side === 'right' && `${graphWidth - 8}px`) ||
@@ -193,7 +188,7 @@ const LabelComponent = (props) => {
         }}
       >
         {disabledLabel ? (
-          <LabelContent dangerouslySetInnerHTML={{ __html: text || '' }} />
+          <LabelContent dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(text) }} />
         ) : (
           <EditableHtml
             markup={text || ''}

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/bars/common/bars.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -19,6 +11,7 @@ import { color } from '@pie-lib/render-ui';
 import { types } from '@pie-lib/plot';
 import { bandKey } from '../../utils.js';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import MarkSlider from '../../common/mark-slider.js';
 import { CorrectCheckIcon } from './correct-check-icon.js';
 
 const log = debug('pie-lib:chart:bars');
@@ -65,6 +58,9 @@ const StyledVisxBar: any = styled(VisxBar)(() => ({
   fill: color.defaults.TERTIARY,
 }));
 
+// how far above the bar's top its focus ring reaches, so a bar of no height still shows one
+const FOCUS_HEADROOM = 10;
+
 export class RawBar extends React.Component {
   static propTypes = {
     barColor: PropTypes.string,
@@ -75,12 +71,14 @@ export class RawBar extends React.Component {
     index: PropTypes.number.isRequired,
     graphProps: types.GraphPropsType.isRequired,
     interactive: PropTypes.bool,
+    disabled: PropTypes.bool,
     correctness: PropTypes.shape({
       value: PropTypes.string,
       label: PropTypes.string,
     }),
     correctData: PropTypes.array,
     defineChart: PropTypes.bool,
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -123,13 +121,19 @@ export class RawBar extends React.Component {
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
-  dragStop: any = () => {
+  // the change a drag and a key both commit through
+  changeValue: any = (value) => {
     const { label, onChangeCategory } = this.props;
+
+    onChangeCategory({ label, value });
+  };
+
+  dragStop: any = () => {
     const { dragValue } = this.state;
     log('[dragStop]', dragValue);
 
     if (dragValue !== undefined) {
-      onChangeCategory({ label, value: dragValue });
+      this.changeValue(dragValue);
     }
 
     this.setDragValue(undefined);
@@ -142,8 +146,20 @@ export class RawBar extends React.Component {
   };
 
   render() {
-    const { graphProps, value, label, xBand, index, interactive, correctness, barColor, defineChart, correctData } =
-      this.props;
+    const {
+      graphProps,
+      value,
+      label,
+      xBand,
+      index,
+      interactive,
+      disabled,
+      correctness,
+      barColor,
+      defineChart,
+      correctData,
+      language,
+    } = this.props;
     const { scale, range } = graphProps;
     const { dragValue, isHovered } = this.state;
 
@@ -161,12 +177,25 @@ export class RawBar extends React.Component {
     const isHistogram = !!barColor;
 
     return (
-      <g
+      <MarkSlider
         ref={(ref) => (this.gRef = ref)}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
         onTouchStart={this.handleMouseEnter}
         onTouchEnd={this.handleMouseLeave}
+        enabled={interactive && !disabled}
+        label={label}
+        index={index}
+        value={v}
+        graphProps={graphProps}
+        language={language}
+        focusBox={{
+          x: barX,
+          y: scale.y(yy) - FOCUS_HEADROOM,
+          width: barWidth,
+          height: Math.max(0, barHeight) + FOCUS_HEADROOM,
+        }}
+        onChange={this.changeValue}
       >
         <StyledVisxBar x={barX} y={scale.y(yy)} width={barWidth} height={barHeight} style={{ fill: fillColor }} />
         {correctness &&
@@ -201,6 +230,7 @@ export class RawBar extends React.Component {
           y={v}
           defineChart={defineChart}
           interactive={interactive}
+          disabled={disabled}
           width={barWidth}
           onDrag={(v) => this.dragValue(value, v)}
           onDragStop={this.dragStop}
@@ -209,7 +239,7 @@ export class RawBar extends React.Component {
           isHovered={isHovered}
           color={fillColor}
         />
-      </g>
+      </MarkSlider>
     );
   }
 }
@@ -225,10 +255,12 @@ export class Bars extends React.Component {
     xBand: PropTypes.func,
     graphProps: types.GraphPropsType.isRequired,
     histogram: PropTypes.bool,
+    language: PropTypes.string,
   };
 
   render() {
-    const { data, graphProps, xBand, onChangeCategory, defineChart, histogram, correctData } = this.props;
+    const { data, graphProps, xBand, onChangeCategory, defineChart, histogram, correctData, disabled, language } =
+      this.props;
 
     return (
       <Group>
@@ -237,14 +269,17 @@ export class Bars extends React.Component {
             value={d.value}
             interactive={defineChart || d.interactive}
             defineChart={defineChart}
+            disabled={disabled}
             label={d.label}
             xBand={xBand}
             index={index}
-            key={`bar-${d.label}-${d.value}-${index}`}
+            // the value stays out of the key, so a change keeps the bar mounted and focused
+            key={`bar-${d.label}-${index}`}
             onChangeCategory={(category) => onChangeCategory(index, category)}
             graphProps={graphProps}
             correctness={d.correctness}
             correctData={correctData}
+            language={language}
             barColor={
               histogram &&
               (histogramColors[index] ? histogramColors[index] : histogramColors[index % histogramColors.length])

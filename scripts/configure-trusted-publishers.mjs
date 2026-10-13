@@ -172,7 +172,7 @@ function repositorySlug() {
  * This repo's `workspaces` mixes three shapes — plain globs (`packages/lib-react/*`),
  * literal paths (`packages/element-player`, `tools/cli`) and a nested glob (`packages/elements-react/
  * *​/demo`) — so a `endsWith("/*")` shortcut would silently skip most of the repo, including
- * every package under packages/shared, packages/element-*, print-player and tools/cli. A
+ * every package under packages/shared, packages/element-* and tools/cli. A
  * missed package is a package that publishes without a trusted publisher, which is exactly
  * the failure this script exists to prevent, so `*` is expanded at any position.
  */

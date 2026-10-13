@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/ebsr/configure/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -206,7 +198,7 @@ export class Main extends React.Component {
       >
         {model.partLabels && <PartLabel>{firstPart}</PartLabel>}
         <MultipleChoiceConfigureElement
-          id="A"
+          data-part="A"
           key="partA"
           ref={(ref) => {
             if (ref) {
@@ -228,7 +220,7 @@ export class Main extends React.Component {
 
         {model.partLabels && <PartLabel>{secondPart}</PartLabel>}
         <MultipleChoiceConfigureElement
-          id="B"
+          data-part="B"
           key="partB"
           ref={(ref) => {
             if (ref) {

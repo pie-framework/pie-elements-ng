@@ -7,6 +7,7 @@ export interface LayoutProfileParams {
   layoutProfile?: string;
   hasAudio?: boolean;
   useFeatureButtonAudio?: boolean | null;
+  prompt?: string;
 }
 
 export interface LayoutProfileResult {
@@ -16,6 +17,26 @@ export interface LayoutProfileResult {
   isHorizontalChoices: boolean;
   hasInlineSentenceAudioLayout: boolean;
   useFeatureButtonAudio: boolean;
+  hasVisiblePrompt: boolean;
+}
+
+// Media that shows without any text beside it, such as a picture-only passage.
+const VISIBLE_MEDIA = /<(img|svg|video|audio|iframe|object|embed|canvas|picture|math)\b/i;
+
+/**
+ * Whether authored HTML shows anything. Imported items carry empty prompt
+ * wrappers (`<div class="iat-html-container"></div>`), which render nothing but
+ * would still take a grid row and label the choices with an empty name.
+ */
+export function hasVisibleHtmlContent(html: string | undefined): boolean {
+  if (!html) return false;
+  if (VISIBLE_MEDIA.test(html)) return true;
+  return (
+    html
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;|&#160;|&#xa0;/gi, ' ')
+      .trim() !== ''
+  );
 }
 
 const FEATURE_BUTTON_PROFILES = new Set([
@@ -32,6 +53,7 @@ export function computeLayoutProfile(params: LayoutProfileParams): LayoutProfile
     layoutProfile = '',
     hasAudio = false,
     useFeatureButtonAudio: configuredFeatureButton,
+    prompt,
   } = params;
 
   const isAudioOnlyMode = interactionMode === 'audio_mc_only';
@@ -68,5 +90,6 @@ export function computeLayoutProfile(params: LayoutProfileParams): LayoutProfile
     isHorizontalChoices,
     hasInlineSentenceAudioLayout,
     useFeatureButtonAudio,
+    hasVisiblePrompt: hasVisibleHtmlContent(prompt),
   };
 }

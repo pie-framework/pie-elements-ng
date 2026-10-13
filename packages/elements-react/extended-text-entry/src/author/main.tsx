@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/configure/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { FeedbackSelector, InputContainer, settings, layout } from '@pie-lib/config-ui';
@@ -83,6 +75,7 @@ export class Main extends React.Component {
       dimensions = {},
       equationEditor = {},
       feedback = {},
+      playerPasteFormatting = {},
       playerSpellCheck = {},
       prompt = {},
       settingsPanelDisabled,
@@ -150,6 +143,7 @@ export class Main extends React.Component {
       annotationsEnabled: annotations.settings && toggle(annotations.label),
       spellCheckEnabled: spellCheck.settings && toggle(spellCheck.label),
       playerSpellCheckDisabled: playerSpellCheck.settings && toggle(playerSpellCheck.label),
+      playerPasteFormattingDisabled: playerPasteFormatting.settings && toggle(playerPasteFormatting.label),
     };
     const panelProperties = {
       teacherInstructionsEnabled: teacherInstructions.settings && toggle(teacherInstructions.label),

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/drawing-response/src/drawing-response/drawable-main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -69,6 +61,15 @@ export class DrawableMain extends React.Component {
     };
     this.stage = null;
     this.layer = null;
+    this.stageContainer = null;
+  }
+
+  componentDidMount() {
+    this.labelStage();
+  }
+
+  componentDidUpdate() {
+    this.labelStage();
   }
 
   componentWillUnmount() {
@@ -237,6 +238,20 @@ export class DrawableMain extends React.Component {
 
   toggleTextSelected = (textIsSelected) => this.setState({ textIsSelected });
 
+  labelStage: any = () => {
+    const { imageUrl, backgroundImageEnabled = true, language } = this.props;
+    const label = translator.t(
+      backgroundImageEnabled && imageUrl ? 'drawingResponse.drawingAreaOverImage' : 'drawingResponse.drawingArea',
+      { lng: language },
+    );
+
+    // Konva creates one canvas per layer
+    for (const canvas of this.stageContainer?.querySelectorAll('canvas') ?? []) {
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', label);
+    }
+  };
+
   render() {
     const {
       disabled,
@@ -316,6 +331,7 @@ export class DrawableMain extends React.Component {
 
           {/* Wrap Stage in a styled div instead of styling Stage directly */}
           <div
+            ref={(ref) => (this.stageContainer = ref)}
             style={{
               position: 'absolute',
               left: 0,

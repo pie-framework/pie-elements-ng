@@ -217,17 +217,15 @@ Tests must cover all 10 dimensions from `CLAUDE.md`. At minimum:
 Run these from the repo root; all must pass:
 
 ```bash
-bun run lint:fix          # Biome auto-fix
-bunx tsc --noEmit         # TypeScript type check
-bunx svelte-check         # Svelte component validation (from apps/element-demo)
-bun test                  # Unit + component tests
+bun run lint:fix                                       # Biome auto-fix
+bunx tsc --noEmit -p packages/elements-svelte/<slug>   # TypeScript type check of the element
+bun run test                                           # Unit + component tests (Vitest)
 ```
 
 Before a merge request also run:
 
 ```bash
-bun run typecheck
-bun run check
+bun run lint:all          # Biome and the element contracts
+bun run build             # every package's build type-checks it
 bun run test:e2e
-bun run lint
 ```

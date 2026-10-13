@@ -1,18 +1,13 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/inline-dropdown/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import InlineDropdown from './inline-dropdown.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 export default class RootInlineDropdown extends HTMLElement {
   constructor() {
@@ -37,6 +32,11 @@ export default class RootInlineDropdown extends HTMLElement {
 
   get session() {
     return this._session;
+  }
+
+  /** Names the region in the item language, which can change with any model set. */
+  setRegionLabel() {
+    this.setAttribute('aria-label', translator.t('inlineDropdown.inlineDropdownQuestion', { lng: this._model?.language }));
   }
 
   setLangAttribute() {
@@ -64,6 +64,7 @@ export default class RootInlineDropdown extends HTMLElement {
       });
 
       this.setLangAttribute();
+      this.setRegionLabel();
 
       if (!this._root) {
         this._root = createRoot(this);
@@ -86,7 +87,7 @@ export default class RootInlineDropdown extends HTMLElement {
   };
 
   connectedCallback() {
-    this.setAttribute('aria-label', 'Inline Dropdown Question');
+    this.setRegionLabel();
     this.setAttribute('role', 'region');
 
     this._render();

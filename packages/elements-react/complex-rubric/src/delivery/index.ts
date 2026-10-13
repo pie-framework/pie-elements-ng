@@ -1,16 +1,9 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/complex-rubric/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import Rubric from '@pie-element/rubric';
 import MultiTraitRubric from '@pie-element/multi-trait-rubric';
 import { RUBRIC_TYPES } from '@pie-lib/rubric';
+import { createUniqueId } from '@pie-lib/render-ui';
 import { COMPLEX_RUBRIC_MULTI_TRAIT_TAG, COMPLEX_RUBRIC_SIMPLE_TAG } from '../private-tags.js';
 
 const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_TAG;
@@ -37,6 +30,8 @@ class ComplexRubric extends HTMLElement {
     super();
     this._model = {};
     this._type = RUBRIC_TYPES.SIMPLE_RUBRIC;
+    // The rubric is looked up by id, and a fixed id repeats when two items share a page.
+    this._idPrefix = createUniqueId('complex-rubric');
   }
 
   set type(t) {
@@ -110,15 +105,15 @@ class ComplexRubric extends HTMLElement {
   }
 
   get multiTraitRubric() {
-    return this.querySelector(`${MULTI_TRAIT_RUBRIC_TAG_NAME}#multiTraitRubric`);
+    return this.querySelector(`${MULTI_TRAIT_RUBRIC_TAG_NAME}#${this._idPrefix}-multiTraitRubric`);
   }
 
   get simpleRubric() {
-    return this.querySelector(`${RUBRIC_TAG_NAME}#simpleRubric`);
+    return this.querySelector(`${RUBRIC_TAG_NAME}#${this._idPrefix}-simpleRubric`);
   }
 
   get rubricless() {
-    return this.querySelector(`${RUBRIC_TAG_NAME}#rubricless`);
+    return this.querySelector(`${RUBRIC_TAG_NAME}#${this._idPrefix}-rubricless`);
   }
 
   connectedCallback() {
@@ -128,11 +123,11 @@ class ComplexRubric extends HTMLElement {
   _render() {
     let rubricTag;
     if (this._type === RUBRIC_TYPES.SIMPLE_RUBRIC) {
-      rubricTag = `<${RUBRIC_TAG_NAME} id="simpleRubric" />`;
+      rubricTag = `<${RUBRIC_TAG_NAME} id="${this._idPrefix}-simpleRubric" />`;
     } else if (this._type === RUBRIC_TYPES.RUBRICLESS) {
-      rubricTag = `<${RUBRIC_TAG_NAME} id="rubricless" />`;
+      rubricTag = `<${RUBRIC_TAG_NAME} id="${this._idPrefix}-rubricless" />`;
     } else {
-      rubricTag = `<${MULTI_TRAIT_RUBRIC_TAG_NAME} id="multiTraitRubric" />`;
+      rubricTag = `<${MULTI_TRAIT_RUBRIC_TAG_NAME} id="${this._idPrefix}-multiTraitRubric" />`;
     }
 
     this.innerHTML = rubricTag;

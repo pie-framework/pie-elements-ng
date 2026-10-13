@@ -9,7 +9,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['@pie-element/shared-types'],
+      external: ['@pie-element/shared-types', 'dompurify'],
     },
   },
   test: {

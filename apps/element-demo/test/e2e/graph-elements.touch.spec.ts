@@ -48,7 +48,9 @@ const TWO_POINTS: GraphPoint[] = [
 const DEFAULT_DRAG = { y: -120 };
 
 const CASES: TouchCase[] = [
-  // Charting renders its bars up front, so a handle is draggable immediately.
+  // Charting renders its bars up front, so a handle is draggable immediately. It
+  // has no place-a-mark test because a tap places nothing: a bar's value only
+  // changes by drag or keyboard, so the drag test is its mark-setting coverage.
   { element: 'charting' },
   { element: 'graphing', selectTool: true, seedTaps: CENTER },
   // The default tool is a solid line: one tap starts it, the second commits it.
@@ -177,15 +179,7 @@ test.describe('graph elements under touch', () => {
       });
     }
 
-    const dragTest = item.element === 'number-line' ? test.fixme : test;
-
-    // number-line is a confirmed touch defect, not a flaky test: its dnd-kit
-    // handles leave `touch-action` at `auto`, so Chromium claims the gesture as
-    // a pan and fires `pointercancel` after the first `pointermove`. dnd-kit's
-    // PointerSensor aborts there and the point never moves. The same drag with
-    // `page.mouse` moves it, so this is touch-only. Un-fixme this once the
-    // handles set `touch-action: none`, as @dnd-kit requires.
-    dragTest(`${title}: a finger can drag a handle`, async ({ page }) => {
+    test(`${title}: a finger can drag a handle`, async ({ page }) => {
       const root = await openForTouch(page, item);
 
       if (seedTaps) {

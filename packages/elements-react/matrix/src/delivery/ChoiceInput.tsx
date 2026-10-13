@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/matrix/src/ChoiceInput.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -28,7 +20,7 @@ const StyledRadio: any = styled(Radio)({
 });
 
 const ChoiceInput = (props) => {
-  const { disabled, checked, matrixKey, matrixValue, onChange } = props;
+  const { disabled, checked, labelledBy, matrixKey, matrixValue, name, onChange } = props;
 
   const onChangeWrapper = () => {
     if (disabled) {
@@ -43,8 +35,10 @@ const ChoiceInput = (props) => {
   return (
     <StyledRadio
       checked={checked}
+      name={name}
       onChange={onChangeWrapper}
       disabled={disabled}
+      slotProps={{ input: { 'aria-labelledby': labelledBy } }}
     />
   );
 };
@@ -52,8 +46,10 @@ const ChoiceInput = (props) => {
 ChoiceInput.propTypes = {
   checked: PropTypes.bool.isRequired,
   disabled: PropTypes.bool.isRequired,
+  labelledBy: PropTypes.string,
   matrixValue: PropTypes.number.isRequired,
   matrixKey: PropTypes.string.isRequired,
+  name: PropTypes.string,
   onChange: PropTypes.func.isRequired,
 };
 

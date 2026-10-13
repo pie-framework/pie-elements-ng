@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/configure/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import Main from './main.js';
 import React from 'react';
@@ -59,8 +51,9 @@ export default class NumberLine extends HTMLElement {
       }
     }
 
+    // A copy: updateTicks and the graph edits in Main write into the graph in place.
     const normalizedModel = {
-      ...defaults.model,
+      ...cloneDeep(defaults.model),
       ...model,
       language,
     };
@@ -101,10 +94,12 @@ export default class NumberLine extends HTMLElement {
   };
 
   set configuration(c) {
-    const newConfiguration = {
+    // A copy of both: the language branch below writes into language and languageChoices,
+    // and hosts pass the same configuration object to every number-line in an item.
+    const newConfiguration = cloneDeep({
       ...defaults.configuration,
       ...c,
-    };
+    });
 
     this._configuration = newConfiguration;
 
@@ -150,7 +145,7 @@ export default class NumberLine extends HTMLElement {
 
   onConfigurationChanged: any = (config) => {
     this._configuration = config;
-    this._render();
+    this._rerender();
   };
 
   insertImage(handler) {

@@ -3,15 +3,15 @@
  * Author Route
  * Shows the configure component for authoring questions
  */
-import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
-import '$lib/element-player/configure-loader';
-import { page } from '$app/stores';
+import PlayerLayout from '#lib/element-player/components/PlayerLayout.svelte';
+import '#lib/element-player/configure-loader.ts';
+import { page } from '$app/state';
 import {
   iifeBundleEndpoint,
   iifeBundleHost,
   parsePlayerType,
   type PlayerType,
-} from '$lib/config/player-runtime';
+} from '#lib/config/player-runtime.ts';
 import '@pie-element/element-player';
 import {
   model,
@@ -21,7 +21,7 @@ import {
   iifeBuildLoading,
   iifeBuildRequestVersion,
   theme,
-} from '$lib/stores/demo-state';
+} from '#lib/stores/demo-state.ts';
 import type { LayoutData } from '../$types';
 
 let { data }: { data: LayoutData } = $props();
@@ -29,7 +29,7 @@ let { data }: { data: LayoutData } = $props();
 const debug = false;
 let syncing = $state(false);
 let authorPlayerEl = $state<HTMLElement | null>(null);
-const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
+const playerType = $derived<PlayerType>(parsePlayerType(page.url.searchParams.get('player')));
 
 type AssetUploadHandler = {
   isPasted?: boolean;

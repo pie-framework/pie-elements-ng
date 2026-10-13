@@ -194,13 +194,9 @@ _Avoid_: Version file, changelog entry
 The default bump magnitude for a release; use `minor` or `major` only when explicitly requested.
 _Avoid_: Bump, hotfix
 
-**Upstream sync**:
-The `upstream:*` CLI process that copies source from `../pie-elements` and `../pie-lib` into `packages/elements-react` and `packages/lib-react`.
-_Avoid_: Merge, import
-
-**Synced packages**:
-The packages under `packages/elements-react/` and `packages/lib-react/` whose source is managed by **Upstream sync**.
-_Avoid_: Vendored packages
+**Legacy repositories**:
+`pie-elements` and `pie-lib`, superseded by this repo, which is the source of truth for `packages/elements-react/` and `packages/lib-react/`. Nothing syncs from them.
+_Avoid_: Upstream
 
 ## Relationships
 

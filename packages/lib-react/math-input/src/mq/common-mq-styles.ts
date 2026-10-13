@@ -1,12 +1,46 @@
 // @ts-nocheck
+
+import { color } from '@pie-lib/render-ui';
+
+// A MathQuill rule matched on the styled root itself or on a field nested inside it, one class
+// above mathquill.css, so it wins wherever that stylesheet loads.
+const inMathMode = (selector) => `&.mq-math-mode ${selector}, & .mq-math-mode ${selector}`;
+
 /**
- * @synced-from pie-lib/packages/math-input/src/mq/common-mq-styles.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
+ * MathQuill's ink, which mathquill.css paints in black, #4d4d4d, grey and gray literals. The caret
+ * and the bars take the field's text colour, and an unfocused field's border takes
+ * --pie-border-dark. A focused field keeps MathQuill's focus border and glow.
  */
+export const mqInkStyles = {
+  '&.mq-editable-field .mq-cursor, & .mq-editable-field .mq-cursor': {
+    borderLeftColor: 'currentColor',
+  },
+  '&.mq-editable-field:not(.mq-focused), & .mq-editable-field:not(.mq-focused)': {
+    borderColor: color.borderDark(),
+  },
+  [[
+    '.mq-overline .mq-overline-inner',
+    '.mq-overarrow',
+    '.mq-overarrow .mq-overarrow-inner',
+    '.mq-overleftrightarrow .mq-overleftrightarrow-inner',
+    '.mq-overarc',
+    '.mq-longdiv .mq-longdiv-inner',
+  ]
+    .map(inMathMode)
+    .join(', ')]: {
+    borderTopColor: 'currentColor',
+  },
+  [['.mq-underline', '.mq-xarrow .mq-xarrow-over'].map(inMathMode).join(', ')]: {
+    borderBottomColor: 'currentColor',
+  },
+  [inMathMode('.mq-abs')]: {
+    borderLeftColor: 'currentColor',
+    borderRightColor: 'currentColor',
+  },
+  [inMathMode('.mq-matrix td.mq-empty')]: {
+    borderColor: 'currentColor',
+  },
+};
 
 export const commonMqFontStyles = {
   fontFamily: 'MJXZERO, MJXTEX !important',
@@ -112,6 +146,7 @@ export const commonMqKeyboardStyles = {
 };
 
 export default {
+  mqInkStyles,
   commonMqFontStyles,
   longdivStyles,
   supsubStyles,

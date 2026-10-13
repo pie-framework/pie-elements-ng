@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/text-select/src/text-select.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -31,6 +23,7 @@ export default class TextSelect extends React.Component {
     highlightChoices: PropTypes.bool,
     animationsDisabled: PropTypes.bool,
     maxNoOfSelections: PropTypes.number,
+    language: PropTypes.string,
   };
 
   change: any = (tokens) => {
@@ -54,6 +47,7 @@ export default class TextSelect extends React.Component {
       highlightChoices,
       maxNoOfSelections,
       animationsDisabled,
+      language,
     } = this.props;
 
     const normalized = normalize(text, tokens);
@@ -83,6 +77,7 @@ export default class TextSelect extends React.Component {
         onChange={this.change}
         maxNoOfSelections={maxNoOfSelections}
         animationsDisabled={animationsDisabled}
+        language={language}
       />
     );
   }

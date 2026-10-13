@@ -2,15 +2,15 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { ELEMENT_REGISTRY } from '$lib/elements/registry';
-import { getA11yScenario } from '$lib/a11y/scenarios/catalog';
+import { ELEMENT_REGISTRY } from '#lib/elements/registry.ts';
+import { getA11yScenario } from '#lib/a11y/scenarios/catalog.ts';
 import type {
   A11yReportLink,
   A11yRunJobSnapshot,
   A11yRunRequest,
   A11yRunScope,
   A11yRunStatus,
-} from '$lib/a11y/run-types';
+} from '#lib/a11y/run-types.ts';
 
 type InternalA11yRunJob = A11yRunJobSnapshot & {
   process?: ChildProcessWithoutNullStreams;

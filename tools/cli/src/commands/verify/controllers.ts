@@ -3,7 +3,6 @@ import { Logger } from '../../utils/logger.js';
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { EXCLUDED_UPSTREAM_ELEMENTS } from '../../lib/upstream/sync-constants.js';
 
 type CheckResult = {
   element: string;
@@ -249,13 +248,8 @@ export default class VerifyControllers extends Command {
 
     this.logger.section('🧩 Verifying published controller modules');
 
-    const excludedElements = new Set<string>(EXCLUDED_UPSTREAM_ELEMENTS as readonly string[]);
-
     const reactItems = await readdir(ELEMENTS_REACT_DIR, { withFileTypes: true });
-    const reactNames = reactItems
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .filter((name) => !excludedElements.has(name));
+    const reactNames = reactItems.filter((d) => d.isDirectory()).map((d) => d.name);
 
     const svelteItems = await readdir(ELEMENTS_SVELTE_DIR, { withFileTypes: true });
     const svelteNames = svelteItems.filter((d) => d.isDirectory()).map((d) => d.name);

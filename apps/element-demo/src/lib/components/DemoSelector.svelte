@@ -3,8 +3,8 @@
  * Demo Selector Component
  * Dropdown to select from multiple demo configurations
  */
-import { page } from '$app/stores';
-import { clearPersistedDemoStateForElement, type DemoConfig } from '$lib/stores/demo-state';
+import { page } from '$app/state';
+import { clearPersistedDemoStateForElement, type DemoConfig } from '#lib/stores/demo-state.ts';
 
 interface Props {
   demos: DemoConfig[];
@@ -14,7 +14,7 @@ interface Props {
 let { demos, activeDemoId }: Props = $props();
 
 // Get the active demo ID from URL query parameter, falling back to the prop
-const currentActiveDemoId = $derived($page.url.searchParams.get('demo') || activeDemoId);
+const currentActiveDemoId = $derived(page.url.searchParams.get('demo') || activeDemoId);
 
 // Get the active demo
 const activeDemo = $derived(demos.find((d) => d.id === currentActiveDemoId) || demos[0]);
@@ -26,8 +26,8 @@ function selectDemo(demoId: string) {
     document.activeElement.blur();
   }
 
-  const url = new URL($page.url);
-  const currentElementName = $page.url.pathname.split('/')[1];
+  const url = new URL(page.url);
+  const currentElementName = page.url.pathname.split('/')[1];
   if (currentElementName) {
     // Demo switches should start from sample/default model/session, not prior persisted edits.
     clearPersistedDemoStateForElement(currentElementName);

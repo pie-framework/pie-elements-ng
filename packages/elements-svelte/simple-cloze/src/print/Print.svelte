@@ -9,6 +9,7 @@
 />
 
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { toPlainText } from '../controller/plain-text';
 import { t } from '../i18n';
@@ -47,11 +48,11 @@ $effect(() => {
 
 <div class="simple-cloze-print">
   {#if teacherInstructions}
-    <div class="simple-cloze-print-teacher-instructions">{@html teacherInstructions}</div>
+    <div class="simple-cloze-print-teacher-instructions">{@html sanitizeModelHtml(teacherInstructions)}</div>
   {/if}
 
   {#if prompt}
-    <div bind:this={promptElement} class="simple-cloze-print-prompt">{@html prompt}</div>
+    <div bind:this={promptElement} class="simple-cloze-print-prompt">{@html sanitizeModelHtml(prompt)}</div>
   {/if}
 
   <div class="simple-cloze-print-response">

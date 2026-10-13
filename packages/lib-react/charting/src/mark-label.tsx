@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/mark-label.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'clsx';
@@ -18,6 +10,7 @@ import { types } from '@pie-lib/plot';
 import { correct, disabled, incorrect } from './common/styles.js';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const StyledContainer: any = styled('div')({
   display: 'flex',
@@ -66,6 +59,10 @@ const StyledMathInput: any = styled('div')(({ theme }) => ({
   '&.incorrect': {
     ...incorrect('color'),
   },
+  '&:focus-visible': {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '2px',
+  },
 }));
 
 function isFractionFormat(label) {
@@ -113,6 +110,8 @@ export const MarkLabel = (props) => {
     isHiddenLabel,
     limitCharacters,
     correctnessIndicator,
+    ariaLabel,
+    mathAriaLabel,
   } = props;
 
   const [label, setLabel] = useState(mark.label);
@@ -130,6 +129,15 @@ export const MarkLabel = (props) => {
 
   const isMathRendering = () => {
     return isEditing === false && mathLabel !== undefined;
+  };
+
+  const openEditing = () => setIsEditing(true);
+
+  const onMathKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openEditing();
+    }
   };
 
   const onChangeProp = (e) => {
@@ -155,7 +163,7 @@ export const MarkLabel = (props) => {
     const el = rootRef.current;
 
     if (el && mathLabel) {
-      el.innerHTML = mathLabel;
+      el.innerHTML = sanitizeModelHtml(mathLabel);
       renderMath(el);
     }
   }, [label, mathLabel]);
@@ -171,13 +179,21 @@ export const MarkLabel = (props) => {
               externalInputRef(r);
             }
           }}
+          data-math-label
           className={classNames({
             disabledMarkLabel: disabled,
             error: error,
             correct: mark.editable && correctness?.label === 'correct',
             incorrect: mark.editable && correctness?.label === 'incorrect',
           })}
-          onClick={() => setIsEditing(true)}
+          // an editable label in math form is a button that opens the input
+          {...(!disabled && {
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': mathAriaLabel || ariaLabel,
+            onClick: openEditing,
+            onKeyDown: onMathKeyDown,
+          })}
           style={{
             minWidth: barWidth,
             position: 'fixed',
@@ -196,6 +212,7 @@ export const MarkLabel = (props) => {
             }
           }}
           name="mark-label-input"
+          aria-label={ariaLabel}
           autoFocus={isEditing || autoFocus}
           disabled={disabled}
           inputClassName={classNames(
@@ -251,6 +268,9 @@ MarkLabel.propTypes = {
   isHiddenLabel: PropTypes.bool,
   limitCharacters: PropTypes.bool,
   correctnessIndicator: PropTypes.node,
+  ariaLabel: PropTypes.string,
+  // names the label while it renders as math, as a button; ariaLabel names the input
+  mathAriaLabel: PropTypes.string,
 };
 
 export default MarkLabel;

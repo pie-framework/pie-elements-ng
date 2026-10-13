@@ -12,7 +12,7 @@ Reviews `controller/index.ts` implementations for correctness, scoring accuracy,
 
 - Finishing a new controller and want a pre-commit sanity check.
 - Reviewing a PR that touches scoring logic, `outcome()`, `model()`, or `createCorrectResponseSession()`.
-- Auditing an upstream-synced element's controller for contract compliance with this repo (no `any`, score in `[0, 1]`, etc.).
+- Auditing a React element's controller for contract compliance with this repo (no `any`, score in `[0, 1]`, etc.).
 
 ## The 5-Method Contract
 

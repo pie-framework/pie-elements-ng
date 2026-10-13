@@ -9,7 +9,6 @@ element demo app. Broader local suites remain opt-in:
 
 - `bun run test:e2e`: public `apps/element-demo` e2e suite.
 - `bun run test:e2e:all`: every workspace with a `test:e2e` script.
-- `bun run test:learnosity-parity`: optional `apps/learnosity-parity-demo` parity harness.
 - `bun run test:iife:*`: optional IIFE bundle and browser suites.
 
 ## ESM Coverage Status
@@ -86,6 +85,10 @@ Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice 
 9. **Author Changes** - Editing in author tab and seeing changes in other views
 10. **Complete Workflow** - End-to-end scenario combining multiple operations
 
+### [mathjax-version.spec.ts](./mathjax-version.spec.ts)
+
+The MathJax each player type runs, on the `math-algebra-quadratic` delivery view. `player=iife` pages typeset with the legacy MathJax 3 renderer and load no MathJax 4; `player=esm` pages typeset with MathJax 4 and load no MathJax 3. Neither dispatches `pie-mathjax-version-conflict`.
+
 ### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
 
 Dedicated interaction coverage for high-risk spatial and drag/drop elements:
@@ -107,6 +110,10 @@ Each element test asserts:
 - Gather-mode interaction path
 - Session mutation signal (when session-supported)
 - Evaluate-mode rendering/scoring/correctness signal
+
+### [dnd-release-outside.spec.ts](./dnd-release-outside.spec.ts)
+
+Drags released outside the element, by mouse and by touch. In `categorize`, a placed choice released above, below or beside the element goes back to the pool, and a release just outside a category with the choice overlapping it still lands there. In `placement-ordering`, with a placement area, a placed tile released above, below or beside the element goes back to the pool though the element holds the drawn tile over its own slot, and a release just outside a slot with the tile overlapping it still lands there. Keyboard drags move a placed choice or tile with Space, Tab, Space and leave it with Space, Space.
 
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 

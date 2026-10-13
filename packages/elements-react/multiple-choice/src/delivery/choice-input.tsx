@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/multiple-choice/src/choice-input.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import FormControlLabel from '@mui/material/FormControlLabel';
 import React from 'react';
@@ -14,7 +6,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import { Feedback as FeedbackImport, color, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { Feedback as FeedbackImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -134,11 +126,11 @@ const getInputStyles = (correctness) => {
       pointerEvents: 'initial !important',
     },
     focusVisibleUnchecked: {
-      outline: `2px solid ${color.keyBoardFocusIndicator()}`,
+      outline: `2px solid ${color.focusOutline()}`,
       backgroundColor: 'transparent',
     },
     focusVisibleChecked: {
-      outline: `2px solid ${color.keyBoardFocusIndicator()}`,
+      outline: `2px solid ${color.focusOutline()}`,
       backgroundColor: 'transparent',
     },
   };
@@ -156,7 +148,7 @@ const StyledCheckboxBase: any = styled(Checkbox, {
       '&.Mui-checked': styles[key('checked')],
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
       '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.keyBoardFocusIndicator()}`,
+        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
         borderRadius: '4px',
       },
     },
@@ -199,7 +191,7 @@ const StyledRadioBase: any = styled(Radio, {
       '&.Mui-focusVisible:not(.Mui-checked)': styles.focusVisibleUnchecked,
       '&.Mui-focusVisible.Mui-checked': styles.focusVisibleChecked,
       '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.keyBoardFocusIndicator()}`,
+        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
         borderRadius: '50%',
       },
     },
@@ -257,16 +249,12 @@ export class ChoiceInput extends React.Component {
   constructor(props) {
     super(props);
     this.onToggleChoice = this.onToggleChoice.bind(this);
-    this.choiceId = this.generateChoiceId();
+    this.choiceId = createUniqueId('choice');
     this.descId = `${this.choiceId}-desc`;
   }
 
   onToggleChoice(event) {
     this.props.onChange(event);
-  }
-
-  generateChoiceId() {
-    return 'choice-' + (Math.random() * 10000).toFixed();
   }
 
   handleKeyDown: any = (event) => {

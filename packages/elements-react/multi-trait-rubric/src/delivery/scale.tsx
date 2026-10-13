@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/multi-trait-rubric/src/scale.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -15,6 +7,7 @@ import { color } from '@pie-lib/render-ui';
 import Trait from './trait.js';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const Wrapper: any = styled('div')({
   display: 'flex',
@@ -203,7 +196,7 @@ class Scale extends React.Component {
             <thead>
               <tr>
                 <th>
-                  <div dangerouslySetInnerHTML={{ __html: traitLabel }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(traitLabel) }} />
                 </th>
 
                 {standards ? (
@@ -237,7 +230,7 @@ class Scale extends React.Component {
                               <tr>
                                 <td>
                                   <PointLabel
-                                    dangerouslySetInnerHTML={{ __html: pointLabel }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(pointLabel) }}
                                   />
                                 </td>
                               </tr>

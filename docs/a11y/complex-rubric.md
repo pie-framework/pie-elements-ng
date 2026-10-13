@@ -9,6 +9,8 @@ Instructors review detailed rubric criteria and score responses across long desc
 - `rubric-scale-structure`: rubric headings, labels, table-like relationships, and descriptor readability.
 - `complex-rubric-evaluate-feedback`: evaluate-mode score controls, status feedback, and labelled groups.
 
+The simple rubric renders the rubric element's toggle, a native disclosure button ([PIE-1185](https://illuminate.atlassian.net/browse/PIE-1185)); see [rubric.md](rubric.md).
+
 ## Not Covered / Manual
 
 - Confirm long descriptors are announced in a usable order by screen readers.

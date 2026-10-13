@@ -263,26 +263,6 @@ export function getItemById(itemId) {
 }
 
 /**
- * Get all unique element types used across all items
- * @returns {string[]}
- */
-export function getAllElementTypes() {
-  const types = new Set();
-
-  for (const item of SAMPLE_ITEMS) {
-    if (item.elements) {
-      for (const element of item.elements) {
-        if (element.element) {
-          types.add(element.element);
-        }
-      }
-    }
-  }
-
-  return Array.from(types).sort();
-}
-
-/**
  * Get element types used in a specific item
  * @param {Object} item
  * @returns {string[]}

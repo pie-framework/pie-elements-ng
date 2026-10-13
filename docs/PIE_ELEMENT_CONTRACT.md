@@ -206,15 +206,17 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
 - Bare imports are allowed only when listed in `allowedBareImports`.
 - Shared browser singleton versions are exact and declared in `pie.browserSharedDependencies`.
 - The browser ESM React contract is React 18, the version `pie.browserSharedDependencies`
-  names for the player's import map. A host that bundles the elements provides React 18.2 or a
-  later 18.x. Element `peerDependencies` accept React 19, but element `dependencies` also pin
-  React `^18.2.0` for legacy webpack builders, which install `dependencies` and never peers. Under
-  a React 19 root, npm therefore installs React 18 under each element package while the
-  `@pie-lib` libraries resolve the host's React 19, so an element and the libraries it renders
-  run on different copies of React. Players that load browser ESM through an import map are
-  unaffected. Synced packages must not preserve React 16/17 compatibility shims in
-  browser-facing dependency policy.
-- `dependencies` and `peerDependencies` are install metadata only; they are not browser runtime singleton contracts.
+  names for the player's import map. Elements declare `react` and `react-dom` at `^18.2.0` in
+  `dependencies` and declare no React peer, so every package manager installs an element its own
+  React 18 and never binds it to the host's React. The `./browser/*` entries bundle the
+  `@pie-lib` libraries and resolve React from the element package; hosts bundle these. The
+  `./delivery` entries import the `@pie-lib` libraries, whose React peer resolves the host's React,
+  so hosts do not bundle them: under a React 19 host an element and its libraries can run on
+  different copies of React. The dependency also installs React for legacy webpack builders, which
+  install `dependencies` and never peers. React element packages must not preserve React 16/17
+  compatibility shims in browser-facing dependency policy.
+- The import-map path takes its singleton versions from `pie.browserSharedDependencies`;
+  `dependencies` and `peerDependencies` do not affect it.
 - Browser JS output must stay within the policy size budget unless the policy is intentionally changed.
 - Hosts load no element CSS. The chunk that imports a stylesheet installs its rules before its
   own code runs, and the assets they reference ship in `dist/browser/assets`; see
@@ -227,7 +229,7 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
   [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-commonjs-interop);
   unsupported helper targets must fail the build.
 
-If a new dependency should become a shared browser singleton, update `tools/vite/browser-esm-policy.json`, package generation, publish checks, and `pie-players` import-map handling in the same change.
+If a new dependency should become a shared browser singleton, update `tools/vite/browser-esm-policy.json`, each browser-ESM package's `pie.browserSharedDependencies`, publish checks, and `pie-players` import-map handling in the same change.
 
 ### Shared Editor Runtime
 
@@ -367,4 +369,4 @@ The aggregate verifier runs the contract-relevant checks for:
 - runtime-support export coverage,
 - sourcemap source content.
 
-Release publishing and full lint checks must include this verifier so new elements and regenerated packages cannot silently drift from the contract.
+Release publishing and full lint checks must include this verifier so new and changed packages cannot silently drift from the contract.

@@ -1,6 +1,6 @@
 <script lang="ts">
-import A11yRunControls from '$lib/a11y/A11yRunControls.svelte';
-import { wcagUnderstandingUrl } from '$lib/a11y/wcag';
+import A11yRunControls from '#lib/a11y/A11yRunControls.svelte';
+import { wcagUnderstandingUrl } from '#lib/a11y/wcag.ts';
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();

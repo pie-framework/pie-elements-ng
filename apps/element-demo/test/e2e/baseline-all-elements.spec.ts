@@ -73,6 +73,7 @@ const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set([
   'rubric',
   'complex-rubric',
   'multi-trait-rubric',
+  'video-stimulus',
 ]);
 const NON_ACTIONABLE_AUTHOR_ELEMENTS = new Set(['rubric', 'complex-rubric']);
 const ELEMENT_FILTER = process.env.E2E_BASELINE_ELEMENT?.trim();
@@ -856,6 +857,17 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
   },
   'math-templated': {
     assertGatherAcceptsInput: async (page) => assertMathGatherInput(page, 'math-templated'),
+  },
+  'inline-dropdown': {
+    // Choosing an option closes the menu, which would otherwise take evaluate's role-switch click.
+    assertGatherAcceptsInput: async (page) => {
+      await switchMode(page, 'gather');
+      const before = await getSessionState(page);
+      const root = await getDeliveryContainer(page);
+      await root.getByRole('combobox').first().click();
+      await page.getByRole('option').first().click();
+      await expect.poll(() => getSessionState(page)).not.toEqual(before);
+    },
   },
 };
 

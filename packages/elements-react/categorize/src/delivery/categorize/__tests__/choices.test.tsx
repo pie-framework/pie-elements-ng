@@ -19,9 +19,10 @@ vi.mock('../choice', () => ({
 }));
 vi.mock('../droppable-placeholder', () => ({
   __esModule: true,
-  default: ({ children, id, selectedItem, onPlacementClick }: any) => (
+  default: ({ children, id, labelId, selectedItem, onPlacementClick }: any) => (
     <div
       data-testid={`droppable-${id}`}
+      data-label-id={labelId}
       data-selected-item={selectedItem ? JSON.stringify(selectedItem) : undefined}
       data-has-onplacementclick={typeof onPlacementClick === 'function' ? 'true' : 'false'}
     >
@@ -107,6 +108,23 @@ describe('Choices', () => {
         model: { choicesLabel: '', categoriesPerRow: 1 },
       });
       expect(screen.queryByText('Available Choices')).not.toBeInTheDocument();
+    });
+
+    it('names the choices pool by its label', () => {
+      renderChoices({
+        model: { choicesLabel: 'Available Choices', categoriesPerRow: 1 },
+      });
+      const labelId = screen.getByTestId('droppable-choices-board').getAttribute('data-label-id') as string;
+
+      expect(document.getElementById(labelId)).toHaveTextContent('Available Choices');
+    });
+
+    it('leaves the choices pool unnamed without a label', () => {
+      renderChoices({
+        model: { choicesLabel: '', categoriesPerRow: 1 },
+      });
+
+      expect(screen.getByTestId('droppable-choices-board')).not.toHaveAttribute('data-label-id');
     });
   });
 

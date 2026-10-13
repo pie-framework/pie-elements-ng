@@ -3,15 +3,15 @@
  * Delivery Route
  * Shows the rendered PIE element for interaction
  */
-import { page } from '$app/stores';
-import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
-import '$lib/element-player/configure-loader';
+import { page } from '$app/state';
+import DeliveryPlayerLayout from '#lib/element-player/components/DeliveryPlayerLayout.svelte';
+import '#lib/element-player/configure-loader.ts';
 import {
   iifeBundleEndpoint,
   iifeBundleHost,
   parsePlayerType,
   type PlayerType,
-} from '$lib/config/player-runtime';
+} from '#lib/config/player-runtime.ts';
 import { get } from 'svelte/store';
 import '@pie-element/element-player';
 import {
@@ -28,7 +28,7 @@ import {
   iifeBuildLoading,
   iifeBuildRequestVersion,
   theme,
-} from '$lib/stores/demo-state';
+} from '#lib/stores/demo-state.ts';
 import type { LayoutData } from '../$types';
 
 let { data }: { data: LayoutData } = $props();
@@ -40,7 +40,7 @@ let modelError = $state<string | null>(null);
 let esmModelReady = $state(false);
 let modelRequestId = 0;
 const debug = false;
-const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
+const playerType = $derived<PlayerType>(parsePlayerType(page.url.searchParams.get('player')));
 
 // Normalize session - ensure it's an object without imposing specific structure
 const normalizeSession = (nextSession: any) => {
@@ -151,8 +151,9 @@ const extractSessionFromEventDetail = (detail: unknown) => {
   return detailObj;
 };
 
-// Apply session update callback for controller
-const applySessionUpdate = (
+// The session an `updateSession` call makes of `baseSession`, or null when it changes nothing.
+const patchSession = (
+  baseSession: Record<string, unknown>,
   patchOrSessionId: Record<string, unknown> | string | null | undefined,
   maybeElementOrPatch?: Record<string, unknown> | string | null,
   maybePatch?: Record<string, unknown> | null
@@ -171,31 +172,39 @@ const applySessionUpdate = (
           ? maybeElementOrPatch
           : null;
   if (!patch || typeof patch !== 'object') {
-    return Promise.resolve(get(session));
+    return null;
   }
 
-  const baseSession = normalizeSession(cloneValue(get(session)));
-  const hasChanges = Object.entries(patch).some(
-    ([key, value]) => (baseSession as Record<string, unknown>)[key] !== value
-  );
+  const hasChanges = Object.entries(patch).some(([key, value]) => baseSession[key] !== value);
   if (!hasChanges) {
-    return Promise.resolve(get(session));
+    return null;
   }
 
   const patchWithCompatData = hasControllerSessionContext
     ? {
         ...patch,
         data: {
-          ...(((baseSession as Record<string, unknown>).data as Record<string, unknown>) ?? {}),
+          ...((baseSession.data as Record<string, unknown>) ?? {}),
           ...patch,
         },
       }
     : patch;
 
-  const nextSession = cloneValue({
-    ...(baseSession as Record<string, unknown>),
-    ...patchWithCompatData,
-  });
+  return cloneValue({ ...baseSession, ...patchWithCompatData });
+};
+
+// Apply session update callback for controller
+const applySessionUpdate = (
+  patchOrSessionId: Record<string, unknown> | string | null | undefined,
+  maybeElementOrPatch?: Record<string, unknown> | string | null,
+  maybePatch?: Record<string, unknown> | null
+) => {
+  const baseSession = normalizeSession(cloneValue(get(session)));
+  const nextSession = patchSession(baseSession, patchOrSessionId, maybeElementOrPatch, maybePatch);
+  if (!nextSession) {
+    return Promise.resolve(get(session));
+  }
+
   const currentMode = get(mode);
   if (
     !shouldCommitSession({
@@ -255,12 +264,18 @@ const buildModel = async (
     // (e.g., graphing-solution-set uses {answer: []})
     // IMPORTANT: Create a copy so we can detect if controller modifies it
     const sessionForController = JSON.parse(JSON.stringify(currentSession || {}));
+    // A save through the callback also lands on the session `model()` was given, as a player's
+    // does, so the commit below keeps it, a choice shuffle for one.
+    const updateControllerSession = (...args: Parameters<typeof applySessionUpdate>) => {
+      Object.assign(sessionForController, patchSession(sessionForController, ...args));
+      return applySessionUpdate(...args);
+    };
 
     const nextModel = await modelFn(
       currentModel,
       sessionForController,
       { mode: currentMode, role: currentRole, partialScoring: currentPartialScoring },
-      applySessionUpdate
+      updateControllerSession
     );
 
     if (requestId === modelRequestId) {

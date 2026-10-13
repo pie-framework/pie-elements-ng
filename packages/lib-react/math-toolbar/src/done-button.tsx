@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/math-toolbar/src/done-button.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 
@@ -20,12 +12,12 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
   verticalAlign: 'top',
   width: '28px',
   height: '28px',
-  color: '#00bb00',
+  // Clears 3:1 on the editable-html toolbar and the math Correct Answer card in every scheme (WCAG 1.4.11).
+  color: color.correctWithIcon(),
   ...(hideBackground && {
-    // `--pie-white` inverts with the scheme where `common.white` did not, so the
-    // button keeps reading as raised against the toolbar instead of staying a
-    // white chip on a dark surface.
-    backgroundColor: color.white(),
+    // `--pie-background` follows both the colour schemes and the dark theme; `--pie-white`
+    // stays white under the dark theme. White keeps the button opaque when no theme is set.
+    backgroundColor: color.v('pie')('background', color.defaults.WHITE),
     '&:hover': {
       backgroundColor: color.backgroundDark(),
     },

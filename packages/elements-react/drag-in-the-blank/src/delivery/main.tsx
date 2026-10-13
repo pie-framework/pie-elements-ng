@@ -1,18 +1,10 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/drag-in-the-blank/src/main.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { DragInTheBlank } from '@pie-lib/mask-markup';
-import { color, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import { color, createUniqueId, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -44,6 +36,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -73,6 +68,9 @@ export class Main extends React.Component {
   static defaultProps = {
     value: {},
   };
+
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
 
   state = {
     showCorrectAnswer: false,
@@ -104,12 +102,13 @@ export class Main extends React.Component {
     return (
       <StyledUiLayout
         extraCSSRules={extraCSSRules}
-        id={'main-container'}
+        id={this.mainContainerId}
+        className="main-container"
         fontSizeFactor={fontSizeFactor}
       >
         {showTeacherInstructions && (
           <StyledCollapsible
-            labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
           >
             <PreviewPrompt prompt={model.teacherInstructions} />
           </StyledCollapsible>
@@ -121,6 +120,7 @@ export class Main extends React.Component {
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
         )}
 
@@ -134,7 +134,7 @@ export class Main extends React.Component {
         <DragInTheBlank {...modelWithValue} onChange={onChange} showCorrectAnswer={showCorrectAnswer} />
 
         {showRationale && (
-          <StyledRationale labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <StyledRationale labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={model.rationale} />
           </StyledRationale>
         )}

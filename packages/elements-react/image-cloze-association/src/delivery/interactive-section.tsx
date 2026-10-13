@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/image-cloze-association/src/interactive-section.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -15,15 +7,22 @@ import { color } from '@pie-lib/render-ui';
 
 import EvaluationIcon from './evaluation-icon.js';
 
-const StyledContainer: any = styled('div')(({ theme }) => ({
-  marginTop: theme.spacing(2),
+// The main image is never shrunk to fit (its drop targets are pixel offsets against its
+// native size), so when the image plus the possible responses don't fit the available width
+// (e.g. under browser zoom) the whole section - image, responses and border - scrolls
+// horizontally as one. Scrolling only the image would leave the responses pool overflowing,
+// and keeping the whole section in one scroll box lets placed answers be dragged back to the pool.
+// The top padding (instead of a margin on the bordered box) keeps the evaluation icon, which
+// sits 14px above the border, inside the scroll box's padding area so it isn't clipped.
+const ScrollContainer: any = styled('div')(({ theme }) => ({
+  paddingTop: theme.spacing(2),
+  maxWidth: '100%',
+  overflowX: 'auto',
+}));
+
+const StyledContainer: any = styled('div')(() => ({
   display: 'flex',
   width: 'fit-content',
-  // without this, a 'fit-content' box with default (visible) overflow hugs its
-  // content's full natural width instead of clamping to the space actually available,
-  // which then makes image-container's own overflow-x:auto never see a width smaller
-  // than the image - the scrollbar never appears when the image doesn't fit
-  maxWidth: '100%',
   '&.default': {
     border: `1px solid ${color.disabled()}`,
   },
@@ -88,10 +87,12 @@ class InteractiveSection extends React.Component {
     };
 
     return (
-      <StyledContainer className={classname} style={style}>
-        <EvaluationIcon containerStyle={evaluationStyle} filled isCorrect={responseCorrect} />
-        {children}
-      </StyledContainer>
+      <ScrollContainer>
+        <StyledContainer className={classname} style={style}>
+          <EvaluationIcon containerStyle={evaluationStyle} filled isCorrect={responseCorrect} />
+          {children}
+        </StyledContainer>
+      </ScrollContainer>
     );
   }
 }

@@ -1,10 +1,10 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
- * The Svelte element packages may only read `--pie-*` names that the
+ * The Svelte element and library packages may only read `--pie-*` names that the
  * `pie-players` token registry owns. A name invented here is invisible to that
  * registry's gate, so no color scheme overrides it and no contrast rule covers
  * it — the failure mode PIE-857 closed by retiring the `--pie-correct-answer-*`
@@ -18,17 +18,24 @@ import { describe, expect, it } from 'vitest';
  * a registry entry over there first, not an entry here.
  */
 const REGISTERED_CANONICAL_TOKENS = new Set([
+  '--pie-background',
   '--pie-background-dark',
+  '--pie-black',
+  '--pie-border',
+  '--pie-border-dark',
   '--pie-border-light',
   '--pie-button-focus-outline',
   '--pie-correct-icon',
   '--pie-correct-secondary',
   '--pie-correct-tertiary',
+  '--pie-disabled',
+  '--pie-faded-primary',
   '--pie-focus-checked-border',
   '--pie-incorrect-icon',
   '--pie-incorrect-secondary',
   '--pie-primary',
   '--pie-secondary-background',
+  '--pie-surface',
   '--pie-tertiary',
   '--pie-tertiary-light',
   '--pie-text',
@@ -42,9 +49,20 @@ const REGISTERED_CANONICAL_TOKENS = new Set([
  */
 const REGISTERED_PLANNED_TOKENS = new Set(['--pie-focus-outline']);
 
-const SVELTE_ELEMENT_PACKAGES = ['mc-populated-blank', 'simple-cloze', 'venn-classification'];
 const SOURCE_EXTENSIONS = new Set(['.css', '.svelte', '.ts']);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+// Paths under `packages/`. Every Svelte library is scanned: an element paints with
+// whatever its libraries render.
+const SVELTE_SOURCE_PACKAGES = [
+  'elements-svelte/mc-populated-blank',
+  'elements-svelte/simple-cloze',
+  'elements-svelte/video-stimulus',
+  'elements-svelte/venn-classification',
+  ...readdirSync(join(repoRoot, 'packages/lib-svelte'))
+    .filter((entry) => existsSync(join(repoRoot, 'packages/lib-svelte', entry, 'src')))
+    .map((entry) => `lib-svelte/${entry}`),
+];
 
 /**
  * The React packages reach `--pie-*` through the `color.*()` accessors in
@@ -56,9 +74,9 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
  * These names are not in that registry and no scheme can reach them directly.
  * `--pie-primary-text`, `--pie-secondary-text` and the three `--pie-table-*`
  * names chain through to a registered token, so they degrade to a themed value;
- * the keypad and keyboard-focus names do not, and fall back to a fixed literal
- * under every scheme. Closing the gap means a registry entry in `pie-players`,
- * so they are recorded here rather than silently tolerated.
+ * the keypad names do not, and fall back to a fixed literal under every scheme.
+ * Closing the gap means a registry entry in `pie-players`, so they are recorded
+ * here rather than silently tolerated.
  *
  * The `--pie-table-*` trio arrived with the upstream `pie-lib` sync that added
  * `color.tableGrid()` / `tableGridLight()` / `tableStripe()` for authored tables.
@@ -76,7 +94,6 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
  */
 const KNOWN_UNREGISTERED_TOKENS = new Set([
   '--pie-disabled-text',
-  '--pie-keyboard-focus-indicator',
   '--pie-keypad-button',
   '--pie-keypad-button-hover',
   '--pie-keypad-button-operator',
@@ -161,7 +178,7 @@ function sourceFiles(dir: string): string[] {
 
 function pieTokensIn(pkg: string): Map<string, string[]> {
   const byToken = new Map<string, string[]>();
-  for (const file of sourceFiles(join(repoRoot, 'packages/elements-svelte', pkg, 'src'))) {
+  for (const file of sourceFiles(join(repoRoot, 'packages', pkg, 'src'))) {
     const contents = readFileSync(file, 'utf8');
     for (const [name] of contents.matchAll(/--pie-[a-z0-9-]+/g)) {
       const seenIn = byToken.get(name) ?? [];
@@ -172,7 +189,7 @@ function pieTokensIn(pkg: string): Map<string, string[]> {
   return byToken;
 }
 
-describe.each(SVELTE_ELEMENT_PACKAGES)('%s --pie-* token contract', (pkg) => {
+describe.each(SVELTE_SOURCE_PACKAGES)('%s --pie-* token contract', (pkg) => {
   const tokens = pieTokensIn(pkg);
 
   it('reads only registered --pie-* tokens', () => {
@@ -187,7 +204,7 @@ describe.each(SVELTE_ELEMENT_PACKAGES)('%s --pie-* token contract', (pkg) => {
 
   it('declares no --pie-* token of its own', () => {
     const declared: string[] = [];
-    for (const file of sourceFiles(join(repoRoot, 'packages/elements-svelte', pkg, 'src'))) {
+    for (const file of sourceFiles(join(repoRoot, 'packages', pkg, 'src'))) {
       const contents = readFileSync(file, 'utf8');
       // A declaration assigns the name; a read wraps it in var().
       for (const [, name] of contents.matchAll(/(?<!var\()(--pie-[a-z0-9-]+)\s*:/g)) {
@@ -221,7 +238,7 @@ function reactSourceFiles(): string[] {
  * comfortable in isolation and not under a loaded suite, and the failure mode
  * is a timeout that reads as a token regression.
  */
-describe('React --pie-* token contract', { timeout: 30_000 }, () => {
+describe('React --pie-* token contract', { timeout: 60_000 }, () => {
   it('every color.*() accessor resolves to a registered token', () => {
     const colorModule = readFileSync(
       join(repoRoot, 'packages/lib-react/render-ui/src/color.ts'),
@@ -235,7 +252,11 @@ describe('React --pie-* token contract', { timeout: 30_000 }, () => {
     )) {
       for (const [, token] of args.matchAll(/'([a-z0-9-]+)'/g)) {
         const name = `--pie-${token}`;
-        if (!REACT_ALLOWED_TOKENS.has(name) && !KNOWN_UNREGISTERED_TOKENS.has(name)) {
+        if (
+          !REACT_ALLOWED_TOKENS.has(name) &&
+          !REGISTERED_PLANNED_TOKENS.has(name) &&
+          !KNOWN_UNREGISTERED_TOKENS.has(name)
+        ) {
           emitted.push(`${name} (color.${accessor}())`);
         }
       }
@@ -248,7 +269,13 @@ describe('React --pie-* token contract', { timeout: 30_000 }, () => {
     const unregistered: string[] = [];
     for (const file of reactSourceFiles()) {
       for (const [name] of readFileSync(file, 'utf8').matchAll(/--pie-[a-z0-9-]+/g)) {
-        if (REACT_ALLOWED_TOKENS.has(name) || KNOWN_UNREGISTERED_TOKENS.has(name)) continue;
+        if (
+          REACT_ALLOWED_TOKENS.has(name) ||
+          REGISTERED_PLANNED_TOKENS.has(name) ||
+          KNOWN_UNREGISTERED_TOKENS.has(name)
+        ) {
+          continue;
+        }
         unregistered.push(`${name} (${file.slice(repoRoot.length + 1)})`);
       }
     }

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/mask-markup/src/choices/choice.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
@@ -15,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const DRAG_TYPE = 'MaskBlank';
 
@@ -27,7 +20,8 @@ const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
 }));
 
 const StyledChip: any = styled(Chip)(({selected}) => ({
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the chip opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
   border: selected ? `solid 2px ${color.buttonFocusOutline()}` : `1px solid ${color.text()}`,
   opacity: selected ? 0.7 : 1,
   color: color.text(),
@@ -36,6 +30,8 @@ const StyledChip: any = styled(Chip)(({selected}) => ({
   height: 'initial',
   minHeight: '32px',
   fontSize: 'inherit',
+  // MUI 7's Chip sets a 1.5 line height; the legacy tile inherited normal, and text tiles grew.
+  lineHeight: 'normal',
   whiteSpace: 'pre-wrap',
   maxWidth: '374px',
   // Added for touch devices, for image content.
@@ -109,7 +105,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
         disabled={disabled}
         selected={isSelected}
         ref={rootRef}
-        label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: choice.value }} />}
+        label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choice.value) }} />}
       />
     </StyledChoice>
   );

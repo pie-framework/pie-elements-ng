@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ELEMENT_REGISTRY, type ElementMetadata } from '../../src/lib/elements/registry';
 import { waitForMathRendering } from '../e2e/test-helpers';
+import { waitForRenderedScanSubject } from './scan-readiness';
 
 type ScanMode = 'gather' | 'evaluate';
 type ScanStatus = 'passed' | 'violations' | 'error';
@@ -117,11 +118,7 @@ function loadDemos(elementName: string): DemoSummary[] {
 }
 
 function buildRoute(elementName: string, demoId: string, mode: ScanMode): string {
-  const params = new URLSearchParams({
-    demo: demoId,
-    mode,
-    player: 'esm',
-  });
+  const params = new URLSearchParams({ demo: demoId, mode });
   return `/a11y/${elementName}/scan?${params.toString()}`;
 }
 
@@ -187,9 +184,7 @@ async function runAxeScan(page: Page, target: ScanTarget, testInfo: TestInfo): P
   try {
     await page.goto(target.route);
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForSelector('[data-testid="a11y-scan-root"][data-a11y-ready="true"]', {
-      timeout: 30_000,
-    });
+    await waitForRenderedScanSubject(page);
     await waitForMathRendering(page);
 
     const results = await new AxeBuilder({ page })

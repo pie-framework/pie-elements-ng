@@ -1,4 +1,5 @@
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { t } from './i18n';
 
 interface Choice {
@@ -48,10 +49,10 @@ let {
             src={choice.imageUrl}
             alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
             class="choice-image pie-choice-image"
-            style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
+            style="max-width:min(100%, var(--mpb-choice-image-max-width, 9.375rem));max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
         {:else}
-          <span class="choice-html pie-choice-label">{@html choice.labelHtml || ''}</span>
+          <span class="choice-html pie-choice-label">{@html sanitizeModelHtml(choice.labelHtml)}</span>
         {/if}
       </span>
       <input
@@ -83,7 +84,7 @@ let {
           style="max-height:var(--mpb-choice-image-max-height, 5rem);"
         />
       {:else}
-        <span class="choice-html pie-choice-label">{@html choice.labelHtml || ''}</span>
+        <span class="choice-html pie-choice-label">{@html sanitizeModelHtml(choice.labelHtml)}</span>
       {/if}
     </label>
   {/if}
@@ -126,16 +127,28 @@ let {
     text-align: center;
   }
 
+  /* A grid track gives the content's child the tile's width, where a flex box sized it to
+     its content. A host's image wrapper (pie-players' .pie-image-scroll) then fills the
+     tile, so an SVG with a viewBox and no width or height takes the tile's width instead
+     of collapsing to 0×0; and an image capped at 100% never overflows the wrapper into a
+     scroll bar. The image's auto margins centre it and keep a smaller one at its own size. */
   .choice-tile-content {
     width: 100%;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    justify-content: center;
+    justify-items: center;
     min-height: var(--mpb-choice-content-min-height, 7.5rem);
+  }
+
+  .choice-tile-content > :global(*) {
+    justify-self: stretch;
+    max-width: 100%;
   }
 
   .choice-image {
     display: block;
+    margin-inline: auto;
     object-fit: contain;
   }
 
@@ -217,7 +230,7 @@ let {
     font-size: 0.72rem;
     line-height: 1;
     font-weight: 700;
-    color: var(--pie-white, #ffffff);
+    color: var(--pie-background, #ffffff);
   }
 
   .pie-choice-feedback-correct {
@@ -256,13 +269,19 @@ let {
   }
 
   /* Only the top margin is spaced; the browser's own radio side margins would
-     otherwise offset the control from its label (the demo app's preflight zeroed them). */
+     otherwise offset the control from its label (the demo app's preflight zeroed them).
+     24px is the WCAG 2.5.8 minimum target size; the native radio scales its circle to the box. */
   .choice-radio-bottom {
     margin: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem) 0 0;
     padding: var(--mpb-choice-radio-padding, 0px);
+    width: 24px;
+    height: 24px;
   }
 
   .choice-radio-inline {
     margin: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem) 0 0;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   }
 </style>

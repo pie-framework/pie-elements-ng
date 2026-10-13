@@ -11,7 +11,6 @@ import selR1S3Css from './cqt-css/sel-r1-s3.css?raw';
 export type VariantCssConfig = {
   variantId: string;
   variantClass: string;
-  sourceUrl: string;
   cssText: string;
 };
 
@@ -19,57 +18,41 @@ const VARIANT_BY_CUSTOM_TYPE: Record<string, VariantCssConfig> = {
   'sel_r1-_plusggg': {
     variantId: 'sel-r1-plusggg',
     variantClass: 'variant-sel-r1-plusggg',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-_plusggg/0.0.1/question.css',
     cssText: selR1PlusgggCss,
   },
   'sr-vic': {
     variantId: 'sr-vic',
     variantClass: 'variant-sr-vic',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sr-vic/0.0.1/question.css',
     cssText: srVicCss,
   },
   sel_vic: {
     variantId: 'sel-vic',
     variantClass: 'variant-sel-vic',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_vic/0.0.1/question.css',
     cssText: selVicCss,
   },
   'sel_r1-_gplusggg': {
     variantId: 'sel-r1-gplusggg',
     variantClass: 'variant-sel-r1-gplusggg',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-_gplusggg/0.0.1/question.css',
     cssText: selR1GplusgggCss,
   },
   'sel_r1-g_plusggg': {
     variantId: 'sel-r1-g-stem',
     variantClass: 'variant-sel-r1-g-stem',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-g_plusggg/0.0.1/question.css',
     cssText: selR1GStemCss,
   },
   'sel_r1-gg_plusggg': {
     variantId: 'sel-r1-gg-plus',
     variantClass: 'variant-sel-r1-gg-plus',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-gg_plusggg/0.0.1/question.css',
     cssText: selR1GgPlusCss,
   },
   'sel_r1-_ggplusggg': {
     variantId: 'sel-r1-ggplus',
     variantClass: 'variant-sel-r1-ggplus',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-_ggplusggg/0.0.1/question.css',
     cssText: selR1GgplusCss,
   },
   'sel_r1-s3_plusggg': {
     variantId: 'sel-r1-s3',
     variantClass: 'variant-sel-r1-s3',
-    sourceUrl:
-      'https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-s3_plusggg/0.0.1/question.css',
     cssText: selR1S3Css,
   },
 };

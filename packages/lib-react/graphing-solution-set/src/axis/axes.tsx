@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing-solution-set/src/axis/axes.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { Axis } from '@visx/axis';
@@ -38,6 +30,7 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 }
 const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
 const renderUi =
@@ -166,7 +159,7 @@ export class RawXAxis extends React.Component {
         {domain.axisLabel && (
           <foreignObject x={size.width + 17} y={scale.y(0) - 9} width={necessaryWidth} height={20 * necessaryRows}>
             <Readable false>
-              <AxisLabelHolder dangerouslySetInnerHTML={{ __html: domain.axisLabel }} />
+              <AxisLabelHolder dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(domain.axisLabel) }} />
             </Readable>
           </foreignObject>
         )}
@@ -224,7 +217,7 @@ export class RawYAxis extends React.Component {
         {range.axisLabel && (
           <foreignObject x={scale.x(0) - necessaryWidth / 2} y={-33} width={necessaryWidth} height="20">
             <Readable false>
-              <AxisLabelHolder centered dangerouslySetInnerHTML={{ __html: range.axisLabel }} />
+              <AxisLabelHolder centered dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(range.axisLabel) }} />
             </Readable>
           </foreignObject>
         )}

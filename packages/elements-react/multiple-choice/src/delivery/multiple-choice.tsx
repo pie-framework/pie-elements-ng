@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/multiple-choice/src/multiple-choice.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -14,7 +6,7 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, transformDataHeadings } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, createUniqueId, PreviewPrompt as PreviewPromptImport, transformDataHeadings } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -102,9 +94,11 @@ const SrOnly: any = styled('h3')({
   overflow: 'hidden',
 });
 
+// --pie-missing holds 4.5:1 on the page in every pie-players scheme; the layout theme's error red
+// falls to 1.59:1 under yellow-on-navy.
 const ErrorText: any = styled('div')(({ theme }) => ({
   fontSize: theme.typography.fontSize - 2,
-  color: theme.palette.error.main,
+  color: color.missing(),
   paddingTop: theme.spacing(1),
 }));
 
@@ -163,6 +157,8 @@ export class MultipleChoice extends React.Component {
     // page) are always treated as independent radio groups by the browser,
     // regardless of any label-related model settings or bundle deduplication.
     this.groupName = `mc-group-${Math.random().toString(36).slice(2, 10)}`;
+    // The delivery element finds the container by its class, which authored CSS may also target.
+    this.mainContainerId = createUniqueId('main-container');
   }
 
   isSelected(value) {
@@ -277,7 +273,7 @@ export class MultipleChoice extends React.Component {
 
   // renderHeading function was added for accessibility.
   renderHeading() {
-    const { mode, choiceMode, includeSrHeading, baseHeadingLevel, partLabel } = this.props;
+    const { mode, choiceMode, includeSrHeading, baseHeadingLevel, partLabel, language } = this.props;
 
     // When a part label is present the item is an EBSR part — the SR heading
     // is provided by the EBSR element, not here.
@@ -289,7 +285,10 @@ export class MultipleChoice extends React.Component {
 
     const clampedLevel = baseHeadingLevel ? Math.min(6, baseHeadingLevel) : 2;
     const HeadingTag = SrOnly.withComponent(`h${clampedLevel}`);
-    const label = choiceMode === 'radio' ? 'Multiple Choice Question' : 'Multiple Select Question';
+    const label = translator.t(
+      choiceMode === 'radio' ? 'multipleChoice.multipleChoiceQuestion' : 'multipleChoice.multipleSelectQuestion',
+      { lng: language },
+    );
 
     return <HeadingTag>{label}</HeadingTag>;
   }
@@ -370,7 +369,7 @@ export class MultipleChoice extends React.Component {
         : Box;
 
     return (
-      <MainContainer id={'main-container'} className={classNames(className, 'multiple-choice')}>
+      <MainContainer id={this.mainContainerId} className={classNames(className, 'multiple-choice', 'main-container')}>
         {partLabel && <PartLabel as={baseHeadingLevel ? `h${Math.min(6, baseHeadingLevel + 1)}` : 'h2'}>{partLabel}</PartLabel>}
 
         {this.renderHeading()}
@@ -380,8 +379,8 @@ export class MultipleChoice extends React.Component {
             {!animationsDisabled ? (
               <Collapsible
                 labels={{
-                  hidden: 'Show Teacher Instructions',
-                  visible: 'Hide Teacher Instructions',
+                  hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                  visible: translator.t('common:hideTeacherInstructions', { lng: language }),
                 }}
               >
                 {teacherInstructionsDiv}
@@ -400,6 +399,7 @@ export class MultipleChoice extends React.Component {
             tagName={'legend'}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
 
           {!(options && alwaysShowCorrect) && (

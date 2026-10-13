@@ -1,7 +1,7 @@
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getA11yReportFile } from '$lib/server/a11y-runner';
+import { getA11yReportFile } from '#lib/server/a11y-runner.ts';
 import { readFileSync } from 'node:fs';
 
 type ReportType = 'scenarios' | 'inventory';

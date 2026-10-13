@@ -10,6 +10,8 @@ Students choose an answer for a populated blank in a stem, with variants that ca
 - `populated-blank-audio-transcript`: audio/transcript variant, labelled controls, media alternatives, and keyboard reachability.
 - `populated-blank-stem-association`: stem reading order, choice names, and blank association.
 
+Every variant renders the radios at 24×24 ([PIE-1171](https://illuminate.atlassian.net/browse/PIE-1171)), including `sel_r1-s3_plusggg`, whose CQT original scales them to 85%.
+
 ## Not Covered / Manual
 
 - Confirm transcripts are complete and synchronized enough for the task.

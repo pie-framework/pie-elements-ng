@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/drag/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import PlaceHolder from './placeholder.js';
 import DraggableChoice from './draggable-choice.js';
@@ -16,6 +8,18 @@ import * as uid from './uid-context.js';
 import MatchDroppablePlaceholder from './match-list-dp.js';
 import DragDroppablePlaceholder from './drag-in-the-blank-dp.js';
 import ICADroppablePlaceholder from './ica-dp.js';
+import { useDraggableControl } from './draggable-control.js';
+import { useDropTarget } from './drop-target.js';
+import { createDragCollision } from './collision.js';
+
+export type {
+  ContentNamer,
+  DraggableControl,
+  DraggableControlOptions,
+  DraggableControlProps,
+} from './draggable-control.js';
+export type { DropTarget, DropTargetOptions, DropTargetProps } from './drop-target.js';
+export type { DragCollision, DragCollisionOptions, PointerCoordinates } from './collision.js';
 
 export {
   PlaceHolder,
@@ -26,4 +30,7 @@ export {
   DraggableChoice,
   swap,
   uid,
+  useDraggableControl,
+  useDropTarget,
+  createDragCollision,
 };

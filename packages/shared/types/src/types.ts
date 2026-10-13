@@ -12,17 +12,21 @@
  * both read the same authored JSON, so structural typing is sufficient for
  * interop. Fixture parity — not a package edge — is what pins them together.
  *
- * Only the fields sign-language catalog cards need are declared. `poster`,
- * `thumbnail` and `durationSeconds` do not apply to a signing clip, and
- * `tracks`/`transcript` are meaningless for one: captions on a signing video
- * would be the English text already on screen. Add fields additively when a
- * second consumer (e.g. a video stimulus element) needs them.
+ * Sign-language catalog cards were the first consumer and use only the core
+ * source fields. The optional presentation, track, and transcript metadata is
+ * declared for broader consumers such as video stimuli; it remains meaningless
+ * for a signing clip, where captions would duplicate the text already on screen.
  */
 export interface MediaAssetRef {
   version: 1;
   id: string;
   kind: MediaKind;
   sources: MediaSource[];
+  poster?: string;
+  thumbnail?: string;
+  durationSeconds?: number;
+  tracks?: TextTrackRef[];
+  transcript?: TranscriptRef;
   label?: string;
   description?: string;
   /**
@@ -42,6 +46,31 @@ export interface MediaSource {
   type?: string;
   width?: number;
   height?: number;
+  bitrate?: number;
+}
+
+/** One authored text track associated with an audio or video asset. */
+export interface TextTrackRef {
+  src: string;
+  kind: 'captions' | 'subtitles' | 'descriptions' | 'chapters' | 'metadata';
+  lang: string;
+  label: string;
+  default?: boolean;
+}
+
+/** Inline or externally hosted transcript content for a media asset. */
+export interface TranscriptRef {
+  src?: string;
+  html?: string;
+  plainText?: string;
+  lang?: string;
+}
+
+/** Learner-facing strings for the transcript controls of a media element. */
+export interface MediaUiText {
+  showTranscript: string;
+  hideTranscript: string;
+  viewTranscript: string;
 }
 
 /**
@@ -74,7 +103,7 @@ export interface SignLanguageCardPayload {
    * only key on the generic field — and the player falls back to it when this is
    * absent. Author it only where the two differ: a card tagged with the item's
    * content language (`language: 'en-US'`, `signLang: 'ase'`) so resolution
-   * reaches it by the default-language rung. The Learnosity importer emits
+   * reaches it by the default-language rung. The pie-api-aws importer emits
    * `language` alone.
    */
   signLang?: string;
@@ -173,7 +202,7 @@ export interface SignLanguageCatalogCard extends CatalogCard {
  * absent — belongs to the consuming player, per the sign-language PRD.
  *
  * Deliberately says nothing about `signLang`. It once required a non-empty one,
- * which would have rejected every card the Learnosity importer produces: the
+ * which would have rejected every card the pie-api-aws importer produces: the
  * adaptation language lives on the card's `language`, and a payload that omits
  * `signLang` is the normal shape rather than a malformed one.
  */

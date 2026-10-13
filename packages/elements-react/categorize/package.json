@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/categorize",
-  "version": "13.2.0-next.22",
+  "version": "14.0.3",
   "description": "",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/categorize": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -30,10 +31,6 @@
     "@pie-element/shared-player-events": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "peerDependencies": {
-    "react": "^18.2.0 || ^19.0.0",
-    "react-dom": "^18.2.0 || ^19.0.0"
   },
   "exports": {
     ".": {
@@ -97,7 +94,7 @@
     "vitest": "^4.1.11",
     "happy-dom": "^20.14.5",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
@@ -115,7 +112,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.1-next.0",
+      "version": "0.1.2",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

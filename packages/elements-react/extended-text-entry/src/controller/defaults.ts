@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/controller/src/defaults.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 export default {
   annotationsEnabled: false,
@@ -14,6 +6,7 @@ export default {
   equationEditor: 'Grade 8 - HS',
   feedbackEnabled: false,
   mathInput: false,
+  playerPasteFormattingDisabled: false,
   playerSpellCheckDisabled: true,
   predefinedAnnotations: [
     { label: 'good', text: 'good', type: 'positive' },

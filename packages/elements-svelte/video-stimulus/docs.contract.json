@@ -1,0 +1,31 @@
+{
+  "elementName": "video-stimulus",
+  "packageName": "@pie-element/video-stimulus",
+  "framework": "svelte",
+  "summary": "Accessible native-video stimulus with ordered sources, text tracks, transcript, authoring review, and light-DOM timed-media discovery",
+  "supportedModes": ["gather", "view", "evaluate"],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/controller/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/controller/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts",
+        "path": "configuration"
+      }
+    }
+  ]
+}

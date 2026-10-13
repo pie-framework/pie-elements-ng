@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/placement-ordering/src/utils.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 export const haveSameValuesButDifferentOrder = (arr1, arr2) => {
     if (!Array.isArray(arr1) || !Array.isArray(arr2)) return false;

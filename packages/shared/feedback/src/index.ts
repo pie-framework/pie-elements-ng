@@ -16,6 +16,28 @@ import { defaultFeedback } from './defaults.js';
 import { normalizeCorrectness } from './utils.js';
 
 /**
+ * Resolve the configuration for a correctness level and the default message it falls back to.
+ * A level the feedback leaves unset takes the default configuration, and a configuration without
+ * a type takes the default message. A correctness without a default, such as the `'unknown'` a
+ * controller reports for an item without a correct response, gets an empty configuration and so
+ * no message.
+ */
+function getConfigForCorrectness(
+  correctness: Correctness | 'partially-correct',
+  feedback: Partial<Feedback>
+): { config: FeedbackConfig; fallback: string } {
+  const merged = { ...defaultFeedback, ...feedback };
+  const normalized = normalizeCorrectness(correctness);
+  const defaultConfig: Partial<FeedbackConfig> = defaultFeedback[normalized] || {};
+  const config = (merged[normalized] || defaultConfig) as FeedbackConfig;
+
+  return {
+    config,
+    fallback: defaultConfig[(config.type || 'default') as keyof FeedbackConfig] as string,
+  };
+}
+
+/**
  * Get the feedback message for a specific correctness level (async)
  *
  * @param correctness - The correctness level ('correct', 'incorrect', 'partial', 'unanswered')
@@ -35,12 +57,9 @@ export function getFeedbackForCorrectness(
   feedback: Partial<Feedback> = {}
 ): Promise<string | undefined> {
   return new Promise((resolve) => {
-    const merged = { ...defaultFeedback, ...feedback };
-    const normalized = normalizeCorrectness(correctness);
-    const config = merged[normalized];
-    const defaultConfig = defaultFeedback[normalized];
+    const { config, fallback } = getConfigForCorrectness(correctness, feedback);
 
-    getFeedback(config, defaultConfig[config.type as keyof FeedbackConfig] as string).then(resolve);
+    getFeedback(config, fallback).then(resolve);
   });
 }
 
@@ -88,12 +107,9 @@ export function getActualFeedbackForCorrectness(
   correctness: Correctness | 'partially-correct',
   feedback: Partial<Feedback> = {}
 ): string | undefined {
-  const merged = { ...defaultFeedback, ...feedback };
-  const normalized = normalizeCorrectness(correctness);
-  const config = merged[normalized];
-  const defaultConfig = defaultFeedback[normalized];
+  const { config, fallback } = getConfigForCorrectness(correctness, feedback);
 
-  return getActualFeedback(config, defaultConfig[config.type as keyof FeedbackConfig] as string);
+  return getActualFeedback(config, fallback);
 }
 
 /**

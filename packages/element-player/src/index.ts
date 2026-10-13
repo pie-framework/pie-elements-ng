@@ -16,7 +16,7 @@ import './app.css';
 import './players/index.js';
 
 // Re-export types
-export type { ElementPlayerProps, PieController, Tab } from './lib/types.js';
+export type { ElementPlayerProps, PieController } from './lib/types.js';
 export type { ElementPlayerStrategy, ElementPlayerView } from './lib/player-strategy.js';
 export type {
   RuntimeSupportCheck,

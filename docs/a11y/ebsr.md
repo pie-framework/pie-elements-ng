@@ -9,6 +9,8 @@ Students answer a two-part evidence-based selected response item where each part
 - `two-part-choice-groups`: independent Part A and Part B group labels, keyboard-reachable choices, and input assistance.
 - `ebsr-evaluate-feedback-status`: part-specific evaluate feedback and live/status semantics.
 
+Both parts render multiple-choice's choices, so they take its focus ring on the [THEMING.md](../THEMING.md) focus chain ([PIE-1200](https://illuminate.atlassian.net/browse/PIE-1200)).
+
 ## Not Covered / Manual
 
 - Confirm the relationship between parts is clear when navigating with a screen reader.

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/math-toolbar/src/editor-and-pad.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import debug from 'debug';
@@ -274,7 +266,17 @@ export class EditorAndPad extends React.Component {
   componentDidMount() {
     if (this.input && this.props.autoFocus) {
       // adding a timeout to wait for other stuff related to focus to be finished
-      setTimeout(() => this.input.focus(), 0);
+      // the toolbar can unmount before the timeout fires, so re-check the ref and clear on unmount
+      this.focusTimeout = setTimeout(() => {
+        this.focusTimeout = undefined;
+        this.input?.focus();
+      }, 0);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.focusTimeout) {
+      clearTimeout(this.focusTimeout);
     }
   }
 

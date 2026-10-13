@@ -106,7 +106,7 @@ pie-players resolves a card on, since resolution runs before anything knows the
 card is a signing card. The payload's optional `signLang` names the same code and
 is worth authoring only where the two differ, as in a card tagged with the item's
 content language so resolution reaches it by the default-language rung; the
-Learnosity importer emits `language` alone. Narrow a card with the exported
+pie-api-aws importer emits `language` alone. Narrow a card with the exported
 `isSignLanguageCard` guard; the open catalog vocabulary means TypeScript cannot
 statically rule out a bare URL in `content` on a `sign-language` card, and that
 legacy form is not supported. Rendering, resolution, and PNP gating belong to
@@ -114,7 +114,7 @@ the player, not to elements — see `sign-language-asl-support.md` in pie-player
 
 The card shape is pie-players' contract (`packages/players-shared`), restated
 here structurally rather than imported, since all three repos in the chain
-(this one, the Learnosity importer in pie-api-aws, and the player) read the same
+(this one, the item importer in pie-api-aws, and the player) read the same
 authored JSON. Keep them identical: when they diverged — the payload under
 `signLanguage` here and under `payload` in the player — an imported signing card
 rendered in the player and was simultaneously reported as having no alternate by

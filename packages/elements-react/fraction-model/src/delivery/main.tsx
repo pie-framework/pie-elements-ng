@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/fraction-model/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -218,6 +210,7 @@ export class Main extends React.Component {
             }
             showLabel={model.showGraphLabels}
             onChange={this.onResponseChange}
+            language={language}
           ></FractionModelChart>
 
           <AlertDialog

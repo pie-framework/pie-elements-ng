@@ -1,10 +1,11 @@
 import McPopulatedBlankComponent from './McPopulatedBlank.svelte';
 import { defineDeliveryElement } from '@pie-lib/delivery-events-svelte';
 import type { McpbQuestion, McpbSession } from '../shared/types.js';
+import { selectedChoiceId } from '../shared/session.js';
 
 const DeliveryElement = defineDeliveryElement<McpbQuestion, McpbSession>(
   McPopulatedBlankComponent,
-  { isComplete: (_model, session) => !!session?.choiceId }
+  { isComplete: (_model, session) => !!selectedChoiceId(session) }
 );
 
 /**

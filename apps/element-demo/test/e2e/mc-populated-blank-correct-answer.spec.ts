@@ -65,7 +65,7 @@ test.describe('mc-populated-blank correct-answer parity', () => {
       .check();
     await page.waitForTimeout(200);
     const sessionBefore = await getPlayerSession(page);
-    expect(sessionBefore?.choiceId).toBe(incorrectChoiceId);
+    expect(sessionBefore?.value?.[0]).toBe(incorrectChoiceId);
 
     await switchRole(page, 'instructor');
 
@@ -83,7 +83,7 @@ test.describe('mc-populated-blank correct-answer parity', () => {
     expect(checkedAfterToggle).toBe(correctChoiceId);
 
     const sessionAfterToggle = await getPlayerSession(page);
-    expect(sessionAfterToggle?.choiceId).toBe(incorrectChoiceId);
+    expect(sessionAfterToggle?.value?.[0]).toBe(incorrectChoiceId);
 
     await toggle.click();
     await expect(toggle).toContainText(/show correct answer/i);
@@ -146,7 +146,7 @@ test.describe('mc-populated-blank correct-answer parity', () => {
     await expect(root.locator('input[type="radio"]:checked')).toHaveCount(0);
 
     const session = await getPlayerSession(page);
-    expect(session?.choiceId ?? '').toBe('');
+    expect(session?.value?.[0] ?? '').toBe('');
   });
 
   test('iife scorer flow: delivery remains interactive-safe in evaluate path', async ({ page }) => {

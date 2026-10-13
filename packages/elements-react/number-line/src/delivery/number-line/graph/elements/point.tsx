@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/src/number-line/graph/elements/point.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -14,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
 import { Draggable } from '../../../draggable/index.js';
+import CorrectnessMark from './correctness-mark.js';
 
 const duration = '150ms';
 
@@ -62,6 +55,7 @@ export class Point extends React.Component {
     empty: false,
     disabled: false,
     correct: undefined,
+    showCorrectness: true,
   };
 
   static propTypes = {
@@ -74,6 +68,7 @@ export class Point extends React.Component {
     selected: PropTypes.bool,
     disabled: PropTypes.bool,
     correct: PropTypes.bool,
+    showCorrectness: PropTypes.bool,
     empty: PropTypes.bool,
     y: PropTypes.number,
     onMove: PropTypes.func.isRequired,
@@ -102,6 +97,7 @@ export class Point extends React.Component {
       position,
       disabled,
       correct,
+      showCorrectness,
       empty,
     } = this.props;
 
@@ -209,6 +205,7 @@ export class Point extends React.Component {
               $empty={empty}
               className={isDragging ? 'dnd-kit-dragging' : undefined}
             />
+            {showCorrectness && <CorrectnessMark x={xScale(position) + 16} y={y} correct={correct} />}
           </g>
         )}
       </ Draggable>

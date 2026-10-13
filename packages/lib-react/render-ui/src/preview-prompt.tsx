@@ -1,23 +1,37 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/render-ui/src/preview-prompt.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import Translator from '@pie-lib/translator';
 import * as color from './color.js';
+import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
+
+const { translator } = Translator;
+
+// Class hooks for the prompt's audio and its custom play button. Their ids are generated
+// per instance, and every lookup is scoped to this prompt's root, so each prompt on a
+// page drives only its own audio.
+const AUDIO_CLASS = 'pie-prompt-audio-player';
+const PLAY_BUTTON_CLASS = 'play-audio-button';
+
+// A table in the prompt's own markup, `rest` continuing the selector from it. The player
+// wraps a table in `.pie-table-scroll` so it scrolls instead of overflowing, which takes
+// it out of reach of a plain child selector.
+const promptTable = (rest: string) =>
+  `&:not(.MathJax) > table${rest}, &:not(.MathJax) > .pie-table-scroll > table${rest}`;
 
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
+  // The play button is built as markup and styled inline, which cannot reach :focus-visible.
+  [`& .${PLAY_BUTTON_CLASS}:focus-visible`]: {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '2px',
+  },
   // presentation tables should not have any custom style
   // Base promptTable styles
-  '&:not(.MathJax) > table:not([role="presentation"])': {
+  [promptTable(':not([role="presentation"])')]: {
     borderCollapse: 'collapse',
   },
   /*
@@ -35,12 +49,13 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
   // Apply vertical striping when first column is a header (th) and NOT mixed with td.
   // Ink stays at 5.44:1 or better on tableStripe in every scheme, so the cell inherits
   // its text colour rather than pinning the `color: black` this used to carry.
-  '&:not(.MathJax) > table:not([role="presentation"]):has(tbody tr > th:first-child):not(:has(tbody tr > td:first-child)) tbody td:nth-child(even)':
-    {
-      backgroundColor: color.tableStripe(),
-    },
+  [promptTable(
+    ':not([role="presentation"]):has(tbody tr > th:first-child):not(:has(tbody tr > td:first-child)) tbody td:nth-child(even)',
+  )]: {
+    backgroundColor: color.tableStripe(),
+  },
   // Apply horizontal striping for tables where first element is a data cell (td)
-  '&:not(.MathJax) > table:not([role="presentation"]):has(tbody tr > td:first-child) tbody tr:nth-child(even) td': {
+  [promptTable(':not([role="presentation"]):has(tbody tr > td:first-child) tbody tr:nth-child(even) td')]: {
     backgroundColor: color.tableStripe(),
   },
   // align table content to left as per STAR requirement PD-3687
@@ -49,7 +64,7 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
     textAlign: 'left',
   },
   // added this to fix alignment of text in prompt imported from studio (PD-3423)
-  '&:not(.MathJax) > table td > p.kds-indent': {
+  [promptTable(' td > p.kds-indent')]: {
     textAlign: 'initial',
   },
 
@@ -98,6 +113,8 @@ export class PreviewPrompt extends Component {
       playImage: PropTypes.string,
       pauseImage: PropTypes.string,
     }),
+    /** The item language, which the custom audio button's accessible name follows. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -106,10 +123,16 @@ export class PreviewPrompt extends Component {
 
   promptRef = React.createRef();
 
+  // instance fields because parsedText runs on every render and the ids must not change
+  audioId = createUniqueId(AUDIO_CLASS);
+  playButtonId = createUniqueId(PLAY_BUTTON_CLASS);
+
   parsedText: any = (text) => {
-    const { autoplayAudioEnabled, customAudioButton } = this.props;
+    const { autoplayAudioEnabled, customAudioButton, language } = this.props;
     const div = document.createElement('div');
-    div.innerHTML = text;
+    // A detached div still loads its images and fires their handlers, so the prompt is
+    // sanitized before it is parsed here.
+    div.innerHTML = sanitizeModelHtml(text);
 
     const audio = div.querySelector('audio');
     if (audio) {
@@ -119,21 +142,31 @@ export class PreviewPrompt extends Component {
       source.setAttribute('src', audio.getAttribute('src'));
 
       audio.removeAttribute('src');
-      audio.setAttribute('id', 'pie-prompt-audio-player');
+      audio.id = this.audioId;
+      audio.classList.add(AUDIO_CLASS);
 
       audio.appendChild(source);
 
       if (customAudioButton) {
         audio.style.display = 'none';
 
-        const playButton = document.createElement('div');
-        playButton.id = 'play-audio-button';
+        // A native button gives the control its role, a tab stop and Enter/Space activation.
+        const playButton = document.createElement('button');
+        playButton.setAttribute('type', 'button');
+        playButton.setAttribute('aria-label', translator.t('common:playAudio', { lng: language }));
+        playButton.id = this.playButtonId;
+        playButton.className = PLAY_BUTTON_CLASS;
 
         Object.assign(playButton.style, {
           cursor: 'pointer',
           display: 'block',
           width: '128px',
           height: '128px',
+          // reset the UA button styles the div never had
+          margin: '0',
+          padding: '0',
+          font: 'inherit',
+          backgroundColor: 'transparent',
           // pauseImage is the playing state. Only autoplay starts in it - with
           // autoplay off the audio is paused, so the button has to show
           // playImage or it advertises a state the audio is not in.
@@ -152,8 +185,9 @@ export class PreviewPrompt extends Component {
 
   addCustomAudioButtonControls() {
     const { autoplayAudioEnabled, customAudioButton } = this.props;
-    const playButton = document.getElementById('play-audio-button');
-    const audio = document.getElementById('pie-prompt-audio-player');
+    const root = this.promptRef.current;
+    const playButton = root?.querySelector(`.${PLAY_BUTTON_CLASS}`);
+    const audio = root?.querySelector(`.${AUDIO_CLASS}`);
 
     if (autoplayAudioEnabled && audio) {
       audio
@@ -206,7 +240,9 @@ export class PreviewPrompt extends Component {
     audio.addEventListener('pause', handleAudioPause);
     audio.addEventListener('ended', handleAudioEnded);
 
-    // store event handler references so they can be removed later
+    // store the elements and handlers so unmount removes exactly what was attached
+    this._playButton = playButton;
+    this._audio = audio;
     this._handlePlayClick = handlePlayClick;
     this._handleAudioPlay = handleAudioPlay;
     this._handleAudioPause = handleAudioPause;
@@ -214,8 +250,8 @@ export class PreviewPrompt extends Component {
   }
 
   removeCustomAudioButtonListeners() {
-    const playButton = document.getElementById('play-audio-button');
-    const audio = document.querySelector('audio');
+    const playButton = this._playButton;
+    const audio = this._audio;
 
     if (!playButton || !audio) return;
 

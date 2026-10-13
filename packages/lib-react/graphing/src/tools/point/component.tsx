@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/tools/point/component.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { BasePoint } from '../shared/point/index.js';
@@ -103,7 +95,7 @@ export class Point extends React.Component {
   };
 
   render() {
-    const { coordinatesOnHover, graphProps, labelNode, labelModeEnabled } = this.props;
+    const { coordinatesOnHover, graphProps, labelNode, labelModeEnabled, language } = this.props;
     const { editingLabel } = this.state;
     const mark = this.state.mark ? this.state.mark : this.props.mark;
 
@@ -136,6 +128,7 @@ export class Point extends React.Component {
               disabled={!labelModeEnabled}
               mark={mark}
               graphProps={graphProps}
+              language={language}
               onBlur={this.stopEditingLabel}
               onChange={this.labelChange}
             />,

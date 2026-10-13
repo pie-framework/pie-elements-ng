@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/config-ui/src/feedback-config/feedback-selector.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer as InputContainerImport, color } from '@pie-lib/render-ui';

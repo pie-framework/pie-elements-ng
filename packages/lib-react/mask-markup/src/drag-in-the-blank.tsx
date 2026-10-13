@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/mask-markup/src/drag-in-the-blank.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -38,6 +30,7 @@ const Masked = withMask('blank', (props) => (node, data, onChange) => {
       emptyResponseAreaHeight,
       instanceId,
       isDragging,
+      language,
       selectedItem,
       onSelectClick,
       onPlacementClick,
@@ -67,6 +60,7 @@ const Masked = withMask('blank', (props) => (node, data, onChange) => {
         }}
         instanceId={instanceId}
         isDragging={isDragging}
+        language={language}
         selectedItem={selectedItem}
         onSelectClick={onSelectClick}
         onPlacementClick={onPlacementClick}
@@ -101,6 +95,7 @@ export default class DragInTheBlank extends React.Component {
     emptyResponseAreaWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     emptyResponseAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     instanceId: PropTypes.string,
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -305,6 +300,7 @@ export default class DragInTheBlank extends React.Component {
       emptyResponseAreaHeight,
       layout,
       instanceId,
+      language,
     } = this.props;
 
     const choicePosition = choicesPosition || 'below';
@@ -347,6 +343,7 @@ export default class DragInTheBlank extends React.Component {
             emptyResponseAreaHeight={emptyResponseAreaHeight}
             instanceId={instanceId}
             isDragging={!!this.state.activeDragItem}
+            language={language}
             selectedItem={this.state.selectedItem}
             onSelectClick={this.onItemClick}
             onPlacementClick={this.onPlacementClick}

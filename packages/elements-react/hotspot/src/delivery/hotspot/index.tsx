@@ -1,18 +1,10 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/hotspot/src/hotspot/index.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { color, Collapsible as CollapsibleImport, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasMedia } from '@pie-lib/render-ui';
+import { color, createUniqueId, Collapsible as CollapsibleImport, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasMedia } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -47,6 +39,9 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 
 import Container from './container.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -59,6 +54,9 @@ const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
 }));
 
 class HotspotComponent extends React.Component {
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
+
   constructor(props) {
     super(props);
     this.state = {
@@ -155,9 +153,9 @@ class HotspotComponent extends React.Component {
       teacherInstructions && (hasText(teacherInstructions) || hasMedia(teacherInstructions));
 
     return (
-      <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
+      <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
-          <StyledCollapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+          <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
             <PreviewPrompt className="prompt" prompt={teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -168,6 +166,7 @@ class HotspotComponent extends React.Component {
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
         )}
 
@@ -186,6 +185,7 @@ class HotspotComponent extends React.Component {
             session={session}
             dimensions={dimensions}
             imageUrl={imageUrl}
+            language={language}
             hotspotColor={hotspotColor}
             hoverOutlineColor={isGatherMode ? hoverOutlineColor : undefined}
             selectedHotspotColor={selectedHotspotColor}
@@ -201,7 +201,7 @@ class HotspotComponent extends React.Component {
         ) : null}
 
         {showRationale && (
-          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt className="prompt" prompt={rationale} />
           </Collapsible>
         )}

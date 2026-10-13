@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { defineConfig, esmExternalRequirePlugin } from 'vite';
+import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 
 const packageDir = process.cwd();
@@ -55,6 +55,10 @@ export default defineConfig({
     }),
     browserCssLoaderPlugin(),
   ],
+  resolve: {
+    // A shared package exports its build for element browser bundles under this condition.
+    conditions: ['pie-browser-esm', ...defaultClientConditions],
+  },
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
   },

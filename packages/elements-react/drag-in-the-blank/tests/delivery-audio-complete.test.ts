@@ -5,6 +5,7 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () =>
 vi.mock('@pie-lib/render-ui', () => ({
   default: { EnableAudioAutoplayImage: () => null },
   EnableAudioAutoplayImage: () => null,
+  createUniqueId: (prefix: string) => `${prefix}-test`,
 }));
 vi.mock('react-dom/client', () => ({
   createRoot: () => ({ render: () => {}, unmount: () => {} }),
@@ -17,7 +18,7 @@ if (!customElements.get(TAG)) {
   customElements.define(TAG, DragInTheBlank as CustomElementConstructor);
 }
 
-const PROMPT_AUDIO = '<div id="main-container"><div class="preview-prompt"><audio></audio></div></div>';
+const PROMPT_AUDIO = '<div class="main-container"><div class="preview-prompt"><audio></audio></div></div>';
 
 // A model/session pair whose response alone counts as complete.
 const answeredModel = { responseAreasToBeFilled: 1 };
@@ -116,7 +117,7 @@ describe('drag-in-the-blank prompt audio tracking', () => {
 
     vi.advanceTimersByTime(600);
 
-    expect(element.querySelector('#play-audio-info')).toBeNull();
+    expect(element.querySelector('.play-audio-info')).toBeNull();
   });
 
   it('does not track the audio when neither flag is on', async () => {

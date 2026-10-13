@@ -2,7 +2,7 @@
   "elementName": "multiple-choice",
   "packageName": "@pie-element/multiple-choice",
   "framework": "react",
-  "summary": "React implementation of multiple-choice element synced from pie-elements",
+  "summary": "React implementation of multiple-choice element",
   "supportedModes": [
     "gather",
     "view",

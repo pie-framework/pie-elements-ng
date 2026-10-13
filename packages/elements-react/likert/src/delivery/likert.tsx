@@ -1,18 +1,15 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/likert/src/likert.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import ChoiceInput from './choice-input.js';
 import { styled } from '@mui/material/styles';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import {
+  color,
+  Collapsible as CollapsibleImport,
+  createUniqueId,
+  PreviewPrompt as PreviewPromptImport,
+} from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -43,6 +40,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { LIKERT_ORIENTATION } from './likertEntities.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const Main: any = styled('div')({
   color: color.text(),
@@ -72,11 +72,16 @@ export class Likert extends React.Component {
     choices: PropTypes.array,
     prompt: PropTypes.string,
     teacherInstructions: PropTypes.string,
+    language: PropTypes.string,
     session: PropTypes.object,
     disabled: PropTypes.bool.isRequired,
     onSessionChange: PropTypes.func.isRequired,
     likertOrientation: PropTypes.string.isRequired,
   };
+
+  // The radios share this name, so the browser gives the scale one tab stop and arrow-key selection.
+  groupName: string = createUniqueId('likert');
+  promptId: string = `${this.groupName}-prompt`;
 
   UNSAFE_componentWillReceiveProps() {}
 
@@ -93,6 +98,7 @@ export class Likert extends React.Component {
       teacherInstructions,
       className,
       likertOrientation,
+      language,
     } = this.props;
 
     const flexDirection = likertOrientation === LIKERT_ORIENTATION.vertical ? 'column' : 'row';
@@ -102,8 +108,8 @@ export class Likert extends React.Component {
         {teacherInstructions && (
           <StyledCollapsible
             labels={{
-              hidden: 'Show Teacher Instructions',
-              visible: 'Hide Teacher Instructions',
+              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
             }}
           >
             <PreviewPrompt prompt={teacherInstructions} />
@@ -111,17 +117,22 @@ export class Likert extends React.Component {
         )}
 
         {prompt && (
-          <Prompt>
+          <Prompt id={this.promptId}>
             <PreviewPrompt prompt={prompt} />
           </Prompt>
         )}
 
-        <ChoicesWrapper style={{ flexDirection }}>
+        <ChoicesWrapper
+          role="radiogroup"
+          aria-labelledby={prompt ? this.promptId : undefined}
+          style={{ flexDirection }}
+        >
           {choices.map((choice, index) => (
             <ChoiceInput
               key={`choice-${index}`}
               label={choice.label}
               value={choice.value}
+              name={this.groupName}
               index={index}
               disabled={disabled}
               onChange={onSessionChange}

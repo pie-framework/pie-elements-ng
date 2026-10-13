@@ -2,7 +2,7 @@
   "elementName": "multi-trait-rubric",
   "packageName": "@pie-element/multi-trait-rubric",
   "framework": "react",
-  "summary": "React implementation of multi-trait-rubric element synced from pie-elements",
+  "summary": "React implementation of multi-trait-rubric element",
   "supportedModes": [
     "gather",
     "view",

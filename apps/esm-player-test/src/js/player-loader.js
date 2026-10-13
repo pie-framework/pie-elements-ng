@@ -219,19 +219,3 @@ export async function checkLocalPlayerBuild() {
     return false;
   }
 }
-
-/**
- * Check if local element builds are available
- * @param {string} elementType - Element type to check
- * @returns {Promise<boolean>}
- */
-export async function checkLocalElementBuild(elementType) {
-  try {
-    const response = await fetch(`@local-elements/${elementType}/dist/index.js`, {
-      method: 'HEAD',
-    });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}

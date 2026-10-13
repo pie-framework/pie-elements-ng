@@ -54,7 +54,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'incorrect-icon': '#C62828',
 
   // Status colors - Missing/Warning (amber)
-  warning: '#F57C00',
+  warning: '#B45309', // --pie-missing, read as text: 5.0:1 on base-100 and 4.6:1 on background-dark
   'missing-icon': '#757575',
 
   // Disabled states
@@ -66,12 +66,12 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'background-dark': '#F5F5F5',
   'secondary-background': '#FAFAFA',
   'dropdown-background': '#ffffff',
-  surface: '#E0E1E6',
+  surface: '#EBECF1',
 
   // Borders
   border: '#BDBDBD',
   'border-light': '#E0E0E0',
-  'border-dark': '#757575',
+  'border-dark': '#66686A',
   'border-gray': '#9E9E9E',
 
   // Focus states
@@ -82,8 +82,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
 
   // Blue-grey palette
   'blue-grey-100': '#F3F5F7',
-  'blue-grey-300': '#C0C3CF',
-  'blue-grey-600': '#7E8494',
+  'blue-grey-300': '#9094A0',
   'blue-grey-900': '#152452',
 
   // Absolute colors
@@ -131,7 +130,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
   'secondary-dark': '#1E88E5',
 
   // Tertiary colors (indigo)
-  tertiary: '#5C6BC0',
+  tertiary: '#9FA8DA', // link text: 7.1:1 on base-100, and distinct from tertiary-light for hover states and two-tone icons
   'tertiary-light': '#7986CB',
 
   // Status colors - Correct (green)
@@ -174,7 +173,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
 
   // Blue-grey palette
   'blue-grey-100': '#37474F',
-  'blue-grey-300': '#546E7A',
+  'blue-grey-300': '#526B77', // select-text hover fill: keeps base-content at 4.57:1; 2.90:1 on base-100, as text on it (13.2:1) is under the 13.5:1 both need
   'blue-grey-600': '#78909C',
   'blue-grey-900': '#ECEFF1',
 

@@ -1,19 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/math-inline/src/simple-question-block.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { MathToolbar } from '@pie-lib/math-toolbar';
 import { mq } from '@pie-lib/math-input';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 
 const Expression: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -82,7 +74,9 @@ export class SimpleQuestionBlock extends React.Component {
   constructor(props) {
     super(props);
 
-    this.mathToolBarId = `math-toolbar-${new Date().getTime()}`;
+    // A timestamp repeats when two items construct in the same millisecond, and the toolbar is
+    // looked up in the whole document.
+    this.mathToolBarId = createUniqueId('math-toolbar');
   }
 
   mathToolBarContainsTarget = (e) => document.getElementById(this.mathToolBarId).contains(e.target);

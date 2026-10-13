@@ -1,19 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/select-text/src/utils.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
-
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 var createElementFromHTML = function createElementFromHTML() {
   var htmlString = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   var div = document.createElement('div');
-  div.innerHTML = htmlString.trim();
+  div.innerHTML = sanitizeModelHtml(htmlString).trim();
   return div;
 };
 

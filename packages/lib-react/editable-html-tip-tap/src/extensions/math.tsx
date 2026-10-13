@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/math.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -14,8 +6,9 @@ import { Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 import { setToolbarOpened } from '../utils/toolbar.js';
+import { TOOLBAR_BACKGROUND } from '../constants.js';
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
 
@@ -149,7 +142,9 @@ export const MathNode = Node.create({
       {
         tag: 'span[data-latex]',
         getAttrs: (el) => ({
-          latex: el.getAttribute('data-raw') || el.textContent,
+          // A span saved without `data-raw`, or with delimiters in it, holds delimited TeX, which
+          // `renderHTML` would wrap a second time.
+          latex: unWrapMath(el.getAttribute('data-raw') || el.textContent).unwrapped,
         }),
       },
       {
@@ -354,7 +349,16 @@ export const MathNodeView = (props) => {
   }, [editor, showToolbar]);
 
   useEffect(() => {
+    // The toolbar can open from the very click that is still bubbling to `document`
+    // (e.g. the toolbar's math button inserting a node). Ignore any event that
+    // started before this listener was registered, or it closes the toolbar at once.
+    const listenerAddedAt = performance.now();
+
     const handleClickOutside = (event) => {
+      if (event?.timeStamp < listenerAddedAt) {
+        return;
+      }
+
       const target = event?.target;
 
       // MUI's `Select` renders its dropdown options in a portal attached to `document.body`.
@@ -432,7 +436,7 @@ export const MathNodeView = (props) => {
               top: `${position.top}px`,
               left: `${position.left}px`,
               zIndex: 1000,
-              background: 'var(--editable-html-toolbar-bg, #efefef)',
+              background: TOOLBAR_BACKGROUND,
               boxShadow:
                 '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
             }}

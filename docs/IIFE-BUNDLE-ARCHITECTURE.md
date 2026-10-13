@@ -859,11 +859,11 @@ pie-elements-ng uses a **hybrid approach** during transition:
 1. **Elements are authored as ESM** (source code is ESM-first)
 2. **Published as ESM to NPM** (native modules)
 3. **Can generate IIFE bundles if needed** (for backwards compatibility)
-4. **Math rendering loads MathJax 4.1.3 at runtime** ([MATH-RENDERING.md](./MATH-RENDERING.md)); upstream bundles MathJax 3
+4. **Math rendering runs MathJax 4.1.3** ([MATH-RENDERING.md](./MATH-RENDERING.md#builds)): npm builds load it onto `window.MathJax` at runtime, element browser builds bundle a module-private copy; upstream bundles MathJax 3
 
 This allows:
 
-- New deployments to use ESM (modern, efficient, CDN-cached MathJax)
+- New deployments to use ESM (modern, efficient)
 - Legacy deployments to use IIFE (if required)
 - Gradual migration without breaking changes
 
@@ -911,16 +911,15 @@ Third element: +180KB (lib cached)
 Total: 3.3MB
 ```
 
-**ESM bundle (pie-elements-ng with MathJax v4):**
+**ESM browser builds (pie-elements-ng, MathJax 4 bundled per element):**
 
 ```text
-First load: 2.9MB (2.7MB MathJax v4 from CDN + 200KB element)
-Second element: +200KB (MathJax cached by browser)
-Third element: +180KB (MathJax cached by browser)
-Total: 3.3MB (same size, with native browser caching)
+First element type: element + 1.3MB engine chunk + ~1MB font ranges (~470KB gzipped)
+Each further element type: its own engine and font ranges again
+Same element type and release again: cached by the browser
 ```
 
-**Note:** Bundle sizes are comparable to IIFE, but ESM provides:
+**Note:** ESM pays for MathJax once per element type and release, a deliberate trade: each element keeps its own options, MathJax version and failures ([MATH-RENDERING.md](./MATH-RENDERING.md#builds)). ESM also provides:
 
 - **Native MathML support**: 100% fidelity, no conversion loss
 - **No bundler server infrastructure** (~$1000s/mo savings)
@@ -928,7 +927,6 @@ Total: 3.3MB (same size, with native browser caching)
 - **Simpler deployment pipeline** (npm publish vs bundler + CDN sync)
 - **Better browser caching** (per-module vs per-bundle)
 - **Native debugging** (no webpack source map complexity)
-- **CDN-loaded MathJax** (cached across all PIE deployments globally)
 
 ---
 
@@ -1208,10 +1206,10 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
 
 **Why this works:**
 
-- Elements import from `@pie-lib/math-rendering` (same as upstream)
-- Wrapper re-exports from MathJax v4 (full feature parity)
-- When elements are bundled as IIFE, wrapper is still external
-- Browser only loads one copy (CDN-cached MathJax for ESM, DLL bundle for IIFE)
+- The wrapper keeps the upstream API for code that imports `@pie-lib/math-rendering`; pie-elements-ng elements import the adapter directly
+- The adapter implements that API on MathJax v4 (full feature parity)
+- Each IIFE bundle carries the adapter's npm build, which hands math to the page's `window['@pie-lib/math-rendering']`, the MathJax 3 renderer the player installs under `iife`
+- Each ESM browser build bundles a private MathJax 4, shared with no other element type
 
 ---
 
@@ -1234,12 +1232,11 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
 
 ### Implications for pie-elements-ng
 
-- The **wrapper approach is validated** - upstream also externalizes math-rendering
-- Elements don't bundle it either way (IIFE external or ESM import)
-- The MathJax cost is **paid once** regardless of approach (MathJax 3 in the IIFE DLL, MathJax 4 loaded at runtime for ESM)
-- **ESM loads MathJax from CDN** - cached globally across all PIE deployments
+- The `@pie-lib/math-rendering` wrapper keeps the upstream API, but elements import the adapter itself, so neither build externalizes it
+- IIFE bundles typeset through the page's MathJax 3 renderer, so IIFE pays for MathJax **once per page**
+- ESM browser builds bundle a private MathJax 4, so ESM pays for it **once per element type and release**, about 470KB gzipped each ([MATH-RENDERING.md](./MATH-RENDERING.md#builds))
 
-The key difference: IIFE uses manual DLL tooling, ESM uses native browser module caching + CDN. Both avoid duplication, but ESM is simpler and provides better global caching (jsdelivr CDN vs per-deployment CDN).
+The key difference: IIFE shares one MathJax through manual DLL tooling; ESM loads through native modules and duplicates MathJax per element type in exchange for isolation.
 
 ---
 

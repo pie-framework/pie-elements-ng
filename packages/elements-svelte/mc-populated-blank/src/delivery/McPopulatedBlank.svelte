@@ -13,6 +13,7 @@
 />
 
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
@@ -33,6 +34,7 @@ import {
   VARIANT_CSS_KEY,
 } from './variant-css-map';
 import { t as translate, tCommon } from './i18n';
+import { selectedChoiceId } from '../shared/session';
 
 const BLANK_TOKEN = '{{blank}}';
 
@@ -82,6 +84,7 @@ const layoutProfileFlags = $derived(
     layoutProfile,
     hasAudio: model?.hasAudio,
     useFeatureButtonAudio: model?.useFeatureButtonAudio,
+    prompt: model?.prompt,
   })
 );
 const isAudioOnlyMode = $derived(layoutProfileFlags.isAudioOnlyMode);
@@ -89,6 +92,11 @@ const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
 const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
 const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
 const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
+const hasVisiblePrompt = $derived(layoutProfileFlags.hasVisiblePrompt);
+// What renders before the stem shares one block, so each grid lays it out as one row.
+const hasHeader = $derived(
+  !!model?.teacherInstructions || hasVisiblePrompt || shouldShowCorrectAnswerToggle
+);
 const layout = $derived(
   computeLayoutStyle({
     layoutProfile,
@@ -104,7 +112,7 @@ const layout = $derived(
 // ---------------------------------------------------------------------------
 const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
 const choiceMode = $derived(model?.choiceMode || 'text');
-const selectedId = $derived(session?.choiceId || localChoiceId || '');
+const selectedId = $derived(selectedChoiceId(session) || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
 const displayChoiceId = $derived(
   computeDisplayChoiceId({
@@ -150,9 +158,9 @@ const legendText = $derived(
     answerChoicesLabel: t('answerChoices'),
   })
 );
-const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
+const choicesGroupLabelledBy = $derived(hasVisiblePrompt ? promptId : undefined);
 const choicesGroupAriaLabel = $derived.by(() => {
-  if (model?.prompt) return undefined;
+  if (hasVisiblePrompt) return undefined;
   const explicit = String(model?.choiceGroupLabel || '').trim();
   if (explicit) return explicit;
   return legendText;
@@ -161,7 +169,7 @@ const choicesGroupAriaLabel = $derived.by(() => {
 // accessibility catalog (PIE-902), so this element neither owns the node nor has
 // an id to point at. It is placed immediately before this content in reading
 // order instead, as a labelled region.
-const templateDescribedBy = $derived.by(() => (model?.prompt ? promptId : undefined));
+const templateDescribedBy = $derived.by(() => (hasVisiblePrompt ? promptId : undefined));
 
 // ---------------------------------------------------------------------------
 // Misc — locale, audio error, template parsing, variant CSS, style strings
@@ -180,7 +188,7 @@ const templateParts = $derived.by(() => {
   if (idx < 0) return { before: t, after: '' };
   let before = t.slice(0, idx);
   let after = t.slice(idx + BLANK_TOKEN.length);
-  // LSY's shared cloze renderer (Renaissance components/src/cloze.js) emits
+  // The CQT's shared cloze renderer (Renaissance components/src/cloze.js) emits
   // literal `&nbsp;` on BOTH sides of the cloze span unconditionally:
   //   `&nbsp;<span ... -cloze-blank></span><span ... -cloze>…</span>&nbsp;`.
   // Mirror that ONLY for inline_sentence layouts (sel-vic, sr-vic, plain
@@ -189,7 +197,7 @@ const templateParts = $derived.by(() => {
   // they don't suffer the wrap-leader symptom either because each token has
   // its own grid placement. This (a) keeps the cloze glued to its neighbors
   // so it doesn't dangle at the start of a wrapped line (CONTOOL-2574), and
-  // (b) matches LSY's cloze→adjacent-text gap when the author wrote no
+  // (b) matches the CQT's cloze→adjacent-text gap when the author wrote no
   // whitespace around {{blank}} (CONTOOL-2572: e.g. `…word: {{blank}}.`).
   if (layoutProfile === 'inline_sentence') {
     before = `${before.replace(/\s+$/, '')} `;
@@ -204,8 +212,10 @@ function onRadioChange(e: Event) {
   const choiceId = input.value;
   localChoiceId = choiceId;
   // The player owns the session's `id` and `element` (the versioned tag it
-  // registered this element under), so neither is written here.
-  onSessionChange?.({ ...session, choiceId });
+  // registered this element under), so neither is written here. A pick
+  // drops an older session's `choiceId`.
+  const { choiceId: _legacyChoiceId, ...rest } = session || {};
+  onSessionChange?.({ ...rest, value: [choiceId] });
 }
 
 function toggleCorrectAnswer() {
@@ -252,7 +262,7 @@ const featureAudioSkin = $derived(
 // Follows the session both ways: a player that resets or replaces the session
 // clears the selection instead of leaving the previous pick on screen.
 $effect(() => {
-  localChoiceId = session?.choiceId || '';
+  localChoiceId = selectedChoiceId(session);
 });
 
 $effect(() => {
@@ -287,84 +297,88 @@ $effect(() => {
 
 <div
   bind:this={rootEl}
-  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} choice-mode-${choiceMode} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} choice-mode-${choiceMode} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''} ${hasHeader ? 'has-header' : ''}`}
   lang={lang}
   style={layout.rootStyle}
   data-mpb-css={VARIANT_CSS_KEY}
 >
-  {#if model?.teacherInstructions}
-    <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
-  {/if}
+  {#if hasHeader}
+    <div class="pie-header">
+      {#if model?.teacherInstructions}
+        <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
+      {/if}
 
-  {#if model?.prompt}
-    <div class="pie-prompt" id={promptId}>{@html model.prompt}</div>
-  {/if}
+      {#if hasVisiblePrompt}
+        <div class="pie-prompt" id={promptId}>{@html sanitizeModelHtml(model.prompt)}</div>
+      {/if}
 
-  {#if shouldShowCorrectAnswerToggle}
-    <div class="pie-correct-answer-toggle-row">
-      <button
-        bind:this={toggleCorrectAnswerButtonEl}
-        type="button"
-        class="pie-toggle-correct-answer"
-        style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
-        aria-pressed={showCorrectAnswer}
-        data-testid="show-correct-answer"
-      >
-        <span class="pie-correct-answer-toggle-content">
-          <span class="pie-correct-answer-toggle-icon-holder" aria-hidden="true">
-            {#if showCorrectAnswer}
-              <svg
-                class="pie-correct-answer-toggle-svg"
-                preserveAspectRatio="xMinYMin meet"
-                version="1.1"
-                viewBox="-283 359 34 35"
-              >
-                <circle cx="-266" cy="375.9" r="14" fill="var(--pie-tertiary-light, #d0e2f0)" />
-                <path
-                  d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z"
-                  fill="var(--pie-tertiary-light, #d0e2f0)"
-                />
-                <polygon
-                  points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6"
-                  fill="var(--pie-tertiary, #146eb3)"
-                />
-              </svg>
-            {:else}
-              <svg
-                class="pie-correct-answer-toggle-svg"
-                preserveAspectRatio="xMinYMin meet"
-                version="1.1"
-                viewBox="-129.5 127 34 35"
-              >
-                <path
-                  d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z"
-                  fill="#D0CAC5"
-                  stroke="#E6E3E0"
-                  stroke-width="0.75"
-                />
-                <path
-                  d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z"
-                  fill="#B3ABA4"
-                  stroke="#CDC7C2"
-                  stroke-width="0.5"
-                />
-                <circle cx="-114.2" cy="143.5" r="14" fill="white" />
-                <path
-                  d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z"
-                  fill="var(--pie-background-dark, #ecedf1)"
-                />
-                <polygon
-                  points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2"
-                  fill="var(--pie-tertiary, #146eb3)"
-                />
-              </svg>
-            {/if}
-          </span>
-          <span class="pie-correct-answer-toggle-label">
-            {tCommon(showCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
-          </span>
-        </span>
-      </button>
+      {#if shouldShowCorrectAnswerToggle}
+        <div class="pie-correct-answer-toggle-row">
+          <button
+            bind:this={toggleCorrectAnswerButtonEl}
+            type="button"
+            class="pie-toggle-correct-answer"
+            style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
+            aria-pressed={showCorrectAnswer}
+            data-testid="show-correct-answer"
+          >
+            <span class="pie-correct-answer-toggle-content">
+              <span class="pie-correct-answer-toggle-icon-holder" aria-hidden="true">
+                {#if showCorrectAnswer}
+                  <svg
+                    class="pie-correct-answer-toggle-svg"
+                    preserveAspectRatio="xMinYMin meet"
+                    version="1.1"
+                    viewBox="-283 359 34 35"
+                  >
+                    <circle cx="-266" cy="375.9" r="14" fill="var(--pie-tertiary-light, #d0e2f0)" />
+                    <path
+                      d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z"
+                      fill="var(--pie-tertiary-light, #d0e2f0)"
+                    />
+                    <polygon
+                      points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6"
+                      fill="var(--pie-tertiary, #146eb3)"
+                    />
+                  </svg>
+                {:else}
+                  <svg
+                    class="pie-correct-answer-toggle-svg"
+                    preserveAspectRatio="xMinYMin meet"
+                    version="1.1"
+                    viewBox="-129.5 127 34 35"
+                  >
+                    <path
+                      d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z"
+                      fill="var(--pie-border-light, #D0CAC5)"
+                      stroke="var(--pie-border-light, #E6E3E0)"
+                      stroke-width="0.75"
+                    />
+                    <path
+                      d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z"
+                      fill="var(--pie-border-light, #B3ABA4)"
+                      stroke="var(--pie-border-light, #CDC7C2)"
+                      stroke-width="0.5"
+                    />
+                    <circle cx="-114.2" cy="143.5" r="14" fill="var(--pie-background, white)" />
+                    <path
+                      d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z"
+                      fill="var(--pie-background-dark, #ecedf1)"
+                    />
+                    <polygon
+                      points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2"
+                      fill="var(--pie-tertiary, #146eb3)"
+                    />
+                  </svg>
+                {/if}
+              </span>
+              <span class="pie-correct-answer-toggle-label">
+                {tCommon(showCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
+              </span>
+            </span>
+          </button>
+        </div>
+      {/if}
     </div>
   {/if}
 
@@ -381,14 +395,15 @@ $effect(() => {
 
   {#if model?.sentenceHtml}
     <div class="sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
-      {@html model.sentenceHtml}
+      {@html sanitizeModelHtml(model.sentenceHtml)}
     </div>
   {/if}
 
   {#if !isAudioOnlyMode}
     <div class="template-line pie-template-line" aria-describedby={templateDescribedBy}
-      >{@html templateParts.before}<ClozeMarker
+      >{@html sanitizeModelHtml(templateParts.before)}<ClozeMarker
         {choiceMode}
+        {choices}
         displayChoice={displayChoice}
         {displayChoiceLabelHtml}
         isStandalone={isBlankOnlyTemplate}
@@ -396,7 +411,7 @@ $effect(() => {
         blankBorderWidth={layout.blankBorderWidth}
         ariaLabel={t('blankLabel')}
         language={model?.language}
-      />{@html templateParts.after}</div>
+      />{@html sanitizeModelHtml(templateParts.after)}</div>
   {/if}
 
   {#if resultText}
@@ -474,6 +489,12 @@ $effect(() => {
 
   .pie-prompt {
     margin-bottom: 1rem;
+  }
+
+  /* IAT-authored content marks its alignment with a class; the IAT stylesheet
+     that defines it does not ship with the item. */
+  .mc-populated-blank-root :global(.iat-align-center) {
+    text-align: center;
   }
 
   /* Flush paragraphs, as the demo app's preflight reset rendered them. */
@@ -611,6 +632,22 @@ $effect(() => {
     align-items: start;
   }
 
+  /* Each grid names only the areas it lays out, so the header gets a row of its own;
+     left to auto-placement it would land below the choices. */
+  .layout-stimulus_image_blank.has-header {
+    grid-template-areas:
+      'header header'
+      'sentence audio'
+      '. template'
+      'choices choices';
+  }
+
+  .layout-stimulus_image_blank .pie-header,
+  .layout-token_sequence .pie-header,
+  .layout-inline_sentence.has-inline-audio .pie-header {
+    grid-area: header;
+  }
+
   .layout-stimulus_image_blank :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
@@ -643,6 +680,14 @@ $effect(() => {
     column-gap: var(--mpb-token-grid-column-gap, 1.5rem);
     row-gap: var(--mpb-token-grid-row-gap, 0.8rem);
     align-items: start;
+  }
+
+  .layout-token_sequence.has-header {
+    grid-template-areas:
+      'header   header'
+      'audio    audio'
+      'template template'
+      'choices  choices';
   }
 
   .layout-token_sequence :global(.pie-audio-container) {
@@ -684,6 +729,13 @@ $effect(() => {
     align-items: start;
   }
 
+  .layout-inline_sentence.has-inline-audio.has-header {
+    grid-template-areas:
+      'header header'
+      'template audio'
+      'choices choices';
+  }
+
   .layout-inline_sentence.has-inline-audio :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
@@ -702,9 +754,10 @@ $effect(() => {
     margin-top: var(--mpb-inline-choices-margin-top, 0.25rem);
   }
 
-  /* Match Learnosity responsive behavior for CQT audio-blank layouts:
-     at smaller widths, audio control shifts left and answer tiles stack. */
-  @media (max-width: 760px) {
+  /* The CQT sheets (r1.scss, vic.scss, sel_r1-s3_plusggg) lay these layouts out in one
+     column below 850px: the listen button sits at the left above the stem, and the
+     answer tiles stack at the left edge. */
+  @media not all and (min-width: 850px) {
     .layout-audio_blank_only :global(.pie-audio-container),
     .layout-stimulus_image_blank :global(.pie-audio-container),
     .layout-token_sequence :global(.pie-audio-container),
@@ -716,6 +769,10 @@ $effect(() => {
       justify-self: start;
     }
 
+    .layout-audio_blank_only fieldset {
+      justify-content: flex-start;
+    }
+
     .layout-audio_blank_only .pie-choices,
     .layout-token_sequence .pie-choices,
     .layout-stimulus_image_blank .pie-choices,
@@ -723,6 +780,49 @@ $effect(() => {
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-start;
+      /* The vw cap fits a row of tiles across the viewport; stacked tiles keep their width. */
+      --mpb-choice-width-vw: 100vw;
+    }
+
+    .layout-stimulus_image_blank {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'audio'
+        'sentence'
+        'template'
+        'choices';
+    }
+
+    .layout-stimulus_image_blank.has-header {
+      grid-template-areas:
+        'header'
+        'audio'
+        'sentence'
+        'template'
+        'choices';
+    }
+
+    .layout-inline_sentence.has-inline-audio {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'audio'
+        'template'
+        'choices';
+    }
+
+    .layout-inline_sentence.has-inline-audio.has-header {
+      grid-template-areas:
+        'header'
+        'audio'
+        'template'
+        'choices';
+    }
+
+    .layout-stimulus_image_blank .template-line,
+    .layout-token_sequence .template-line,
+    .layout-inline_sentence.has-inline-audio .template-line {
+      justify-self: start;
+      text-align: start;
     }
   }
 </style>

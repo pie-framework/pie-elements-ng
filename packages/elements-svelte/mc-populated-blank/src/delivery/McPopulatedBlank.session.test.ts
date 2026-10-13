@@ -67,7 +67,7 @@ describe('mc-populated-blank delivery session', () => {
 
     selectChoice(target, 1);
 
-    expect(emitted).toEqual([{ id: '1', element: PLAYER_TAG, choiceId: 'b' }]);
+    expect(emitted).toEqual([{ id: '1', element: PLAYER_TAG, value: ['b'] }]);
   });
 
   it('adds no `id` or `element` the player did not set', () => {
@@ -75,7 +75,7 @@ describe('mc-populated-blank delivery session', () => {
 
     selectChoice(target, 1);
 
-    expect(emitted).toEqual([{ choiceId: 'b' }]);
+    expect(emitted).toEqual([{ value: ['b'] }]);
   });
 
   it('reports a fresh object so the component re-renders', () => {
@@ -89,10 +89,25 @@ describe('mc-populated-blank delivery session', () => {
     expect(emitted[0]).not.toBe(session);
   });
 
-  it('renders a restored `choiceId` into the blank', () => {
+  it('renders a restored `value` into the blank', () => {
+    const { target } = mountWithSession({ id: '1', element: PLAYER_TAG, value: ['b'] });
+
+    const checked = target.querySelector('input[type="radio"]:checked') as HTMLInputElement | null;
+    expect(checked?.value).toBe('b');
+  });
+
+  it("renders an older session's `choiceId` into the blank", () => {
     const { target } = mountWithSession({ id: '1', element: PLAYER_TAG, choiceId: 'b' });
 
     const checked = target.querySelector('input[type="radio"]:checked') as HTMLInputElement | null;
     expect(checked?.value).toBe('b');
+  });
+
+  it("replaces an older session's `choiceId` with `value` on the next pick", () => {
+    const { target, emitted } = mountWithSession({ id: '1', element: PLAYER_TAG, choiceId: 'b' });
+
+    selectChoice(target, 0);
+
+    expect(emitted).toEqual([{ id: '1', element: PLAYER_TAG, value: ['a'] }]);
   });
 });
