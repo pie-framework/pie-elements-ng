@@ -304,9 +304,10 @@ for every merged PR, and `latest` from `master` through a "Version Packages" PR 
 - **Default bump policy**: `patch`. Use `minor` or `major` only when the user explicitly requests
   it. A changeset added in the PR keeps its bump type and summary over the recorded one; write
   one whenever the change deserves more than its PR title or a `minor`/`major` bump.
-- **Non-shipping paths do not release**: changes confined to tests, specs, snapshots and
-  package-local vitest/playwright config select nothing and record no changeset. Private
-  packages and `.changeset/config.json`'s `ignore` list are never selected.
+- **Non-shipping paths do not release**: changes confined to tests, specs, snapshots,
+  package-local vitest/playwright config and a manifest's `@types/*` devDependencies select
+  nothing and record no changeset. Other devDependencies ship: a package can bundle them.
+  Private packages and `.changeset/config.json`'s `ignore` list are never selected.
 - **Selective publish only**: publish only selected packages and changeset-propagated
   dependents, never all unpublished packages.
 - **Manual npm publish command**: always `sh scripts/publish-with-env-token.sh --packages <pkg1,pkg2>`
