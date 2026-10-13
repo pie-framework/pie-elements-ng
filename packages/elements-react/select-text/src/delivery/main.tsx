@@ -26,10 +26,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
-const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
-const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -37,6 +33,10 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import generateModel from './utils.js';
@@ -72,6 +72,7 @@ const Types = {
   model: PropTypes.object,
   session: PropTypes.object,
   onSelectionChange: PropTypes.func.isRequired,
+  eliminatedTokens: PropTypes.arrayOf(PropTypes.shape({ start: PropTypes.number, end: PropTypes.number })),
 };
 
 export class Main extends React.Component {
@@ -120,7 +121,7 @@ export class Main extends React.Component {
   };
 
   render() {
-    const { session, onSelectionChange } = this.props;
+    const { session, onSelectionChange, eliminatedTokens } = this.props;
     const { showCorrectAnswer, model } = this.state;
     const { env, extraCSSRules } = model;
     const { mode } = env || {};
@@ -183,6 +184,7 @@ export class Main extends React.Component {
           maxNoOfSelections={model.maxSelections}
           animationsDisabled={model.animationsDisabled}
           language={model.language}
+          eliminatedTokens={eliminatedTokens}
         />
         {mode === 'evaluate' && <Legend language={model.language} showOnlyCorrect={showCorrectAnswer} />}
 
@@ -231,6 +233,13 @@ export default class Stateful extends React.Component {
 
   render() {
     const { model, session } = this.state;
-    return <Main model={model} session={session} onSelectionChange={this.change} />;
+    return (
+      <Main
+        model={model}
+        session={session}
+        onSelectionChange={this.change}
+        eliminatedTokens={this.props.eliminatedTokens}
+      />
+    );
   }
 }

@@ -23,7 +23,7 @@
  * region holds the tiles placed in it.
  */
 
-import type { Region, VennCircle, VennModel } from '../types.js';
+import type { Region, VennCircle, VennClassificationModel } from '../types.js';
 import { enumerateRegions, getRegionLabel, regionKey } from '../controller/region.js';
 
 /** A placed tile's grid cell, in viewBox units. */
@@ -455,7 +455,7 @@ export function fitGeometry2Set(
  * compose accessible names, and `model.regionLabels` for overrides).
  */
 export function buildLayout2Set(
-  model: Pick<VennModel, 'circles' | 'regionLabels' | 'language'>,
+  model: Pick<VennClassificationModel, 'circles' | 'regionLabels' | 'language'>,
   geometry: DiagramGeometry = defaultGeometry2Set(),
   cell: TileCell = TEXT_TILE_CELL
 ): DiagramLayout {
@@ -488,7 +488,7 @@ export function buildLayout2Set(
   const regionByKey: Record<string, RegionLayout> = {};
   const out: RegionLayout[] = regions.map((region) => {
     const key = regionKey(region);
-    const label = getRegionLabel(model as VennModel, region);
+    const label = getRegionLabel(model as VennClassificationModel, region);
     let pointInRegion: RegionLayout['pointInRegion'];
     let hitRect: Rect;
     let capacity: number;

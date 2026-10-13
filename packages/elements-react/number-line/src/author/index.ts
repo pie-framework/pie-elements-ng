@@ -1,22 +1,24 @@
-// @ts-nocheck
-
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import {
   ModelUpdatedEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
   InsertImageEvent,
   DeleteImageEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import * as defaults from './defaults.js';
 import * as math from 'mathjs';
 import { cloneDeep } from '@pie-element/shared-lodash';
+import type { NumberLineConfiguration, NumberLineGraph, NumberLineModel, NumberLineTicks } from '../types.js';
 
 // this function is duplicated in controller; at some point, use the same shared function
-const updateTicks = (model) => {
-  const { graph: { domain, labelStep, ticks = {} } = {} } = model;
+const updateTicks = <T extends { graph: NumberLineGraph }>(model: T): T => {
+  const { graph: { domain, labelStep, ticks = {} as NumberLineTicks } = {} as NumberLineGraph } = model;
   const { minor, major } = ticks;
 
   if (domain) {
@@ -29,7 +31,7 @@ const updateTicks = (model) => {
     ticks.tickIntervalType = 'Fraction';
 
     // update the ticks frequency and label value to match the label step if needed
-    const step = math.evaluate(labelStep);
+    const step: number = math.evaluate(labelStep);
 
     if (step !== major) {
       ticks.major = step;
@@ -41,7 +43,13 @@ const updateTicks = (model) => {
 };
 
 export default class NumberLine extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _modelCopy?: AuthorModel;
+  private _configuration: NumberLineConfiguration;
+  private hasPlayerAsParent?: boolean;
+
+  static createDefaultModel = (model: Partial<NumberLineModel> = {}): AuthorModel => {
     const c = defaults.configuration;
     let language = model.language || '';
 
@@ -68,14 +76,14 @@ export default class NumberLine extends HTMLElement {
     this._configuration = defaults.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<NumberLineModel>) {
     this._model = NumberLine.createDefaultModel(m);
     this._modelCopy = cloneDeep(this._model);
 
     this._rerender();
   }
 
-  resetModelAfterConfigurationIsSet: any = () => {
+  resetModelAfterConfigurationIsSet = () => {
     // In environments that use pie-player-components, model is set before configuration.
     // This is the reason why sometimes the model gets altered non-reversible
     // (altered using default configuration instead of client configuration, because at that point client configuration was not set yet)
@@ -93,7 +101,7 @@ export default class NumberLine extends HTMLElement {
     }
   };
 
-  set configuration(c) {
+  set configuration(c: NumberLineConfiguration) {
     // A copy of both: the language branch below writes into language and languageChoices,
     // and hosts pass the same configuration object to every number-line in an item.
     const newConfiguration = cloneDeep({
@@ -114,16 +122,17 @@ export default class NumberLine extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      // newConfiguration is this._configuration.
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -135,7 +144,7 @@ export default class NumberLine extends HTMLElement {
     this._rerender();
   }
 
-  onChange: any = (o) => {
+  onChange = (o: Partial<AuthorModel>) => {
     this._model = { ...this._model, ...o };
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model));
@@ -143,24 +152,24 @@ export default class NumberLine extends HTMLElement {
     this._rerender();
   };
 
-  onConfigurationChanged: any = (config) => {
+  onConfigurationChanged = (config: NumberLineConfiguration) => {
     this._configuration = config;
     this._rerender();
   };
 
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

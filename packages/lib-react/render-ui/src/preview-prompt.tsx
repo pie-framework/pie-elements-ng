@@ -7,7 +7,7 @@ import Translator from '@pie-lib/translator';
 import * as color from './color.js';
 import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { PLAY_AUDIO_ATTR, sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -142,6 +142,13 @@ export class PreviewPrompt extends Component {
       source.setAttribute('src', audio.getAttribute('src'));
 
       audio.removeAttribute('src');
+      // A link in the prompt that plays this audio names it by its authored id, which the
+      // generated one replaces, so the link follows it.
+      if (audio.id) {
+        for (const link of div.querySelectorAll(`[${PLAY_AUDIO_ATTR}]`)) {
+          if (link.getAttribute(PLAY_AUDIO_ATTR) === audio.id) link.setAttribute(PLAY_AUDIO_ATTR, this.audioId);
+        }
+      }
       audio.id = this.audioId;
       audio.classList.add(AUDIO_CLASS);
 

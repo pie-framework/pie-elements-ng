@@ -23,7 +23,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const PreviewLayout = unwrapReactInteropSymbol(PreviewLayoutImport, 'PreviewLayout') || unwrapReactInteropSymbol(renderUi.PreviewLayout, 'PreviewLayout');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -31,6 +30,7 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const PreviewLayout = unwrapReactInteropSymbol(PreviewLayoutImport, 'PreviewLayout') || unwrapReactInteropSymbol(renderUi.PreviewLayout, 'PreviewLayout');
 import MultipleChoice from './multiple-choice.js';
 
 class Main extends React.Component {
@@ -46,6 +46,7 @@ class Main extends React.Component {
     }),
     baseHeadingLevel: PropTypes.number,
     includeSrHeading: PropTypes.bool,
+    eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
   };
 
   static defaultProps = {
@@ -54,7 +55,16 @@ class Main extends React.Component {
   };
 
   render() {
-    const { model, onChoiceChanged, session, onShowCorrectToggle, options, baseHeadingLevel, includeSrHeading } = this.props;
+    const {
+      model,
+      onChoiceChanged,
+      session,
+      onShowCorrectToggle,
+      options,
+      baseHeadingLevel,
+      includeSrHeading,
+      eliminatedChoices,
+    } = this.props;
     const { extraCSSRules, fontSizeFactor } = model;
 
     // model.partLabel is a property used for ebsr
@@ -68,6 +78,7 @@ class Main extends React.Component {
           onShowCorrectToggle={onShowCorrectToggle}
           baseHeadingLevel={baseHeadingLevel}
           includeSrHeading={includeSrHeading}
+          eliminatedChoices={eliminatedChoices}
         />
       </PreviewLayout>
     );

@@ -1,7 +1,18 @@
-// @ts-nocheck
-
 import * as math from 'mathjs';
 import { isNumber, isObject, uniqWith } from '@pie-element/shared-lodash';
+import type { NumberLineDomain } from '../types.js';
+
+type Fraction = math.Fraction;
+
+/** A tick value: a mathjs Fraction or a plain number */
+type TickValue = Fraction | number;
+
+type TickPair = { minor: TickValue; major: TickValue };
+
+export type MinorLimits = { min: number; max: number };
+
+/** Tick values offered to the author, as fraction strings and as decimals */
+export type TickValues = { fraction: string[]; decimal: number[] };
 
 // All these functions are duplicated in  src/number-line/graph/tick-utils
 
@@ -33,7 +44,7 @@ const fractionTickValues = [
 
 /*This const will store possible multiplier for label interval that needs to be multiplied
 with tick interval with denominator represented with object key.*/
-const labelMultiplier = {
+const labelMultiplier: Record<number, number[]> = {
   1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   2: [1, 2, 4, 6, 8, 10],
   3: [1, 3, 6, 9],
@@ -56,7 +67,7 @@ const labelMultiplier = {
   1000: [1, 2, 4, 5, 8, 10],
 };
 
-const fractionRange = (start, end, interval) => {
+const fractionRange = (start: Fraction, end: Fraction, interval: Fraction): Fraction[] => {
   const m = math.mod(math.abs(start), math.abs(interval));
   if (!math.equal(m, 0)) {
     throw new Error('start point must be divisible by interval');
@@ -77,7 +88,7 @@ const fractionRange = (start, end, interval) => {
     throw new Error('start must be < end when doing increments');
   }
   const compareFn = direction === 'positive' ? math.smallerEq : math.equal(e, end) ? math.largerEq : math.larger;
-  const out = [];
+  const out: Fraction[] = [];
 
   let next = start;
   while (compareFn(next, e)) {
@@ -87,10 +98,10 @@ const fractionRange = (start, end, interval) => {
   return out;
 };
 
-const zbrErrorMessage = (start, end) =>
+const zbrErrorMessage = (start: Fraction, end: Fraction) =>
   `Can only do a positive or negative range, but got: start: ${start} and end:${end}`;
 
-const zeroBasedRange = (start, end, interval) => {
+const zeroBasedRange = (start: TickValue, end: TickValue, interval: TickValue): Fraction[] => {
   start = math.fraction(start);
   end = math.fraction(end);
   interval = math.fraction(interval);
@@ -111,7 +122,7 @@ const zeroBasedRange = (start, end, interval) => {
   const s = math.larger(m, 0) ? math.add(math.subtract(a.start, m), a.interval) : a.start;
 
   const r = fractionRange(s, a.end, a.interval);
-  const out = a.multiplier === -1 ? r.map((v) => math.multiply(v, -1)) : r;
+  const out = a.multiplier === -1 ? r.map((v) => math.multiply(v, -1) as Fraction) : r;
 
   if (math.smaller(interval, 0)) {
     out.reverse();
@@ -119,13 +130,13 @@ const zeroBasedRange = (start, end, interval) => {
   return out;
 };
 
-const fmin = (a, b) => {
+const fmin = (a: TickValue, b: TickValue): Fraction => {
   a = math.fraction(a);
   b = math.fraction(b);
   return math.smaller(a, b) ? a : b;
 };
 
-const fmax = (a, b) => {
+const fmax = (a: TickValue, b: TickValue): Fraction => {
   a = math.fraction(a);
   b = math.fraction(b);
   return math.larger(a, b) ? a : b;
@@ -135,28 +146,28 @@ const fmax = (a, b) => {
  * such that it was hard to round the numbers.
  * This is a more simplistic version but makes rounding work.
  */
-const simpleRange = (start, end, interval) => {
+const simpleRange = (start: TickValue, end: TickValue, interval: TickValue): Fraction[] => {
   start = math.fraction(start);
   end = math.fraction(end);
   interval = math.fraction(interval);
 
   const positiveRange = math.larger(end, 0) ? zeroBasedRange(fmax(0, start), end, interval) : [];
 
-  const negativeRange = math.smaller(start, 0) ? zeroBasedRange(fmin(0, end), start, math.multiply(interval, -1)) : [];
+  const negativeRange = math.smaller(start, 0) ? zeroBasedRange(fmin(0, end), start, math.multiply(interval, -1) as Fraction) : [];
   let together = negativeRange.concat(positiveRange);
 
-  const out = uniqWith(together, math.equal);
+  const out = uniqWith(together, math.equal as (a: Fraction, b: Fraction) => boolean);
   return out;
 };
 
-const closeTo = (a, b, precision) => {
+const closeTo = (a: number, b: number, precision?: number) => {
   precision = precision || 2;
   const expectedDiff = Math.pow(10, -precision) / 2;
   const receivedDiff = Math.abs(a - b);
   return receivedDiff < expectedDiff;
 };
 
-const limit = (v, min, max) => {
+const limit = (v: TickValue, min: TickValue, max: TickValue): TickValue => {
   if (math.smaller(fraction(v), fraction(min))) {
     return min;
   }
@@ -173,9 +184,9 @@ const limit = (v, min, max) => {
  * @param domain object containing max and min value.
  * @param width number represents width of number line.
  * */
-export const getMinorLimits = (domain, width) => {
+export const getMinorLimits = (domain: NumberLineDomain, width: number): MinorLimits => {
   const end = domain.max - domain.min;
-  const min = math.number(math.multiply(10, math.divide(math.fraction(end), width)));
+  const min = math.number(math.multiply(10, math.divide(math.fraction(end), width)) as Fraction);
   const max = math.number(math.multiply(20, min));
   return {
     min: min,
@@ -183,39 +194,48 @@ export const getMinorLimits = (domain, width) => {
   };
 };
 
-const isMultiple = (multiple, src) => {
+const isMultiple = (multiple: TickValue, src: TickValue) => {
   const mod = math.mod(multiple, src);
   return math.equal(mod, 0);
 };
 
 /**
- * Accepts a fraction object {n,d,s} or number.
+ * Accepts a fraction object {n,d,s} or number; any other value yields undefined.
  * @param {*} v
  * @return mathjs.fraction
  */
-const fraction = (v) => {
+function fraction(v: TickValue): Fraction;
+function fraction(v: TickValue | undefined): Fraction | undefined {
   if (isObject(v)) {
     return math.fraction(v.n * v.s, v.d);
   } else if (isNumber(v)) {
     return math.fraction(v);
   }
-};
+}
 
-const normalizeTicks = (domain, width, ticks, opts) => {
+type TickOptions = { limit?: boolean; fraction?: boolean };
+
+const normalizeTicks = (
+  domain: NumberLineDomain,
+  width: number,
+  ticks: TickPair,
+  opts?: TickOptions,
+): TickPair => {
   const useLimit = opts ? opts.limit !== false : true;
   const minorLimits = getMinorLimits(domain, width);
 
   const minor = useLimit ? limit(fraction(ticks.minor), minorLimits.min, minorLimits.max) : fraction(ticks.minor);
-  const major = useLimit ? limit(fraction(ticks.major), minor, math.multiply(minor, 20)) : fraction(ticks.major);
+  const major = useLimit ? limit(fraction(ticks.major), minor, math.multiply(minor, 20) as TickValue) : fraction(ticks.major);
 
   const isMajorMultiple = isMultiple(major, minor);
 
   if (!isMajorMultiple) {
-    const multiplier = math.divide(major, minor);
+    // A Fraction compares and rounds through valueOf.
+    const multiplier = math.divide(major, minor) as number;
     const multiplyBy = multiplier <= 2 ? 2 : Math.round(multiplier);
 
     // major must be a multiple of minor
-    return { minor, major: math.multiply(minor, multiplyBy) };
+    return { minor, major: math.multiply(minor, multiplyBy) as TickValue };
   }
 
   return { major, minor };
@@ -224,7 +244,7 @@ const normalizeTicks = (domain, width, ticks, opts) => {
 /**
  * Build ticks as an array of mathjs Fractions
  */
-const buildTickDataAsFractions = (domain, width, ticks, opts) => {
+const buildTickDataAsFractions = (domain: NumberLineDomain, width: number, ticks: TickPair, opts?: TickOptions) => {
   ticks = normalizeTicks(domain, width, ticks, opts);
   const rng = simpleRange(domain.min, domain.max, ticks.minor);
 
@@ -249,8 +269,8 @@ const buildTickDataAsFractions = (domain, width, ticks, opts) => {
  * @param minorLimits object containing min and max values
  * @return out object containing three arrays 1. fraction values, 2. decimal values,
  * */
-export const generateMinorValues = (minorLimits) => {
-  let out = { fraction: [], decimal: [] };
+export const generateMinorValues = (minorLimits: MinorLimits): TickValues => {
+  let out: TickValues = { fraction: [], decimal: [] };
   decimalTickValues.forEach((value) => {
     if (value >= minorLimits.min && value <= minorLimits.max) {
       out.decimal.push(value);
@@ -272,8 +292,8 @@ export const generateMinorValues = (minorLimits) => {
  * @param width number representing width of number line.
  * @return out object containing three arrays 1. fraction values, 2. decimal values,
  * */
-export const generateMajorValuesForMinor = (minor, domain, width) => {
-  let out = { decimal: [], fraction: [] };
+export const generateMajorValuesForMinor = (minor: number, domain: NumberLineDomain, width: number): TickValues => {
+  let out: TickValues = { decimal: [], fraction: [] };
   let fraction = math.fraction(math.number(math.number(minor)));
   // mathjs >= 13 (fraction.js 5) exposes Fraction n/d/s as BigInt; coerce so the
   // strict comparisons below (d === 1) and the labelMultiplier lookup still work.
@@ -292,7 +312,7 @@ export const generateMajorValuesForMinor = (minor, domain, width) => {
     }
   } else {
     for (const multiplierKey in labelMultiplier[d]) {
-      let num = math.multiply(math.fraction(n, d), labelMultiplier[d][multiplierKey]);
+      let num = math.multiply(math.fraction(n, d), labelMultiplier[d][Number(multiplierKey)]) as Fraction;
       //Here we check if this major value can plot at least 2 points on number line.
       let ticksData = { minor: minor, major: math.number(num) };
       let output = buildTickData(domain, width, ticksData, { fraction: undefined });
@@ -309,7 +329,7 @@ export const generateMajorValuesForMinor = (minor, domain, width) => {
   return out;
 };
 
-const buildTickData = (domain, width, ticks, opts) => {
+const buildTickData = (domain: NumberLineDomain, width: number, ticks: TickPair, opts: TickOptions) => {
   const result = buildTickDataAsFractions(domain, width, ticks, opts);
 
   const out = result.map((o) => (opts.fraction ? o : { ...o, x: math.number(o.x) || 0 }));

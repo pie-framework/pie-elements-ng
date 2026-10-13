@@ -1,14 +1,34 @@
-// @ts-nocheck
-
 import React from 'react';
 import { settings, layout, InputContainer } from '@pie-lib/config-ui';
-import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 
 import ImageContainer from './image-container.js';
 import { cloneDeep } from '@pie-element/shared-lodash';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
+import type { DrawingResponseValidationErrors } from '../controller/index.js';
+import type { Dimensions, DrawingResponseConfiguration, DrawingResponseModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<DrawingResponseModel> & {
+  errors?: DrawingResponseValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type RootProps = {
+  configuration: DrawingResponseConfiguration;
+  model: AuthorModel;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+  onModelChanged: (model: AuthorModel, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: DrawingResponseConfiguration) => void;
+};
 
 const { Panel, toggle, dropdown } = settings;
 
@@ -25,27 +45,27 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export class Root extends React.Component {
-  onPromptChanged: any = (prompt) => {
+export class Root extends React.Component<RootProps> {
+  onPromptChanged = (prompt: string) => {
     const { model, onModelChanged } = this.props;
     const update = cloneDeep(model);
 
     onModelChanged({ ...update, prompt });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     const { model, onModelChanged } = this.props;
 
     onModelChanged({ ...model, teacherInstructions });
   };
 
-  onUpdateImageDimension: any = (dimensions) => {
+  onUpdateImageDimension = (dimensions: Dimensions) => {
     const { model, onModelChanged } = this.props;
 
     onModelChanged({ ...model, imageDimensions: dimensions });
   };
 
-  onImageUpload: any = (imageUrl) => {
+  onImageUpload = (imageUrl: string) => {
     const { model, onModelChanged } = this.props;
 
     onModelChanged({ ...model, imageUrl });
@@ -66,7 +86,7 @@ export class Root extends React.Component {
       teacherInstructions = {},
       withRubric = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       mathMlOptions = {},
     } = configuration || {};
     const {
@@ -181,20 +201,5 @@ export class Root extends React.Component {
     );
   }
 }
-
-Root.propTypes = {
-  configuration: PropTypes.object,
-  model: PropTypes.object.isRequired,
-  imageSupport: PropTypes.shape({
-    add: PropTypes.func,
-    delete: PropTypes.func,
-  }),
-  uploadSoundSupport: PropTypes.shape({
-    add: PropTypes.func,
-    delete: PropTypes.func,
-  }),
-  onModelChanged: PropTypes.func.isRequired,
-  onConfigurationChanged: PropTypes.func.isRequired,
-};
 
 export default Root;

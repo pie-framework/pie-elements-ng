@@ -407,6 +407,8 @@ Reverse.propTypes = {
   value: RubricType,
   config: PropTypes.object,
   pluginOpts: PropTypes.object,
+  mathMlOptions: PropTypes.object,
+  imageSupport: PropTypes.object,
   rubricless: PropTypes.bool,
   getIndex: PropTypes.func,
   onChange: PropTypes.func,

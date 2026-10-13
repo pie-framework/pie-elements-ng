@@ -35,6 +35,7 @@ const ErrorMessage: any = styled('div')(({ theme }) => ({
 export class CorrectResponse extends React.Component {
   static propTypes = {
     errors: PropTypes.object,
+    mathMlOptions: PropTypes.object,
     model: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
   };

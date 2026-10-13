@@ -1,27 +1,38 @@
-// @ts-nocheck
-
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import Main from './main.js';
+import Main, { type AuthorModel } from './main.js';
 import debug from 'debug';
 import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
 import { processMarkup, createSlateMarkup } from './markupUtils.js';
+import type { DragInTheBlankConfiguration, DragInTheBlankModel } from '../types.js';
+
+/** The configuration once `sensibleDefaults.configuration` has filled the keys it carries. */
+type AuthorConfiguration = DragInTheBlankConfiguration &
+  Required<Pick<DragInTheBlankConfiguration, 'language' | 'languageChoices'>>;
 
 const log = debug('multiple-choice:configure');
 
 export default class DragInTheBlank extends HTMLElement {
-  static prepareModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: DragInTheBlankConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static prepareModel = (model: Partial<DragInTheBlankModel> = {}): AuthorModel => {
     const joinedObj = {
       ...sensibleDefaults.model,
       ...model,
@@ -47,7 +58,7 @@ export default class DragInTheBlank extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(m) {
+  set model(m: Partial<DragInTheBlankModel>) {
     const formModel = {
       ...m,
       markup: `<div>${m.markup || sensibleDefaults.model.markup}</div>`,
@@ -57,8 +68,8 @@ export default class DragInTheBlank extends HTMLElement {
     this._render();
   }
 
-  set configuration(c) {
-    const newConfiguration = defaults(c, sensibleDefaults.configuration);
+  set configuration(c: DragInTheBlankConfiguration) {
+    const newConfiguration = defaults(c, sensibleDefaults.configuration) as AuthorConfiguration;
 
     this._configuration = newConfiguration;
 
@@ -71,16 +82,16 @@ export default class DragInTheBlank extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find(option => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -92,42 +103,42 @@ export default class DragInTheBlank extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: Partial<DragInTheBlankModel>, reset?: boolean) {
     this._model = DragInTheBlank.prepareModel(m);
     this._render();
     this.dispatchModelUpdated(reset);
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: DragInTheBlankConfiguration) {
     this._configuration = c;
     this._render();
   }
 
   /** @param {done, progress, file} handler */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

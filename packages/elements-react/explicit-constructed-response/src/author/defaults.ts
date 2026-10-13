@@ -1,8 +1,13 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type {
+  Choices,
+  ExplicitConstructedResponseConfiguration,
+  ExplicitConstructedResponseModel,
+} from '../types.js';
 
 export default {
   model: {
-    choices: {},
+    choices: {} as Choices,
     displayType: 'block',
     markup: '',
     maxLengthPerChoiceEnabled: true,
@@ -119,7 +124,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     responseAreaInputConfiguration: {
       inputConfiguration: {
@@ -133,4 +138,7 @@ export default {
       label: 'Disable Spanish Characters',
     },
   },
+} satisfies {
+  model: Omit<ExplicitConstructedResponseModel, 'id' | 'element'>;
+  configuration: ExplicitConstructedResponseConfiguration;
 };

@@ -12,7 +12,7 @@ const StyledRoot: any = styled('div', {
 })(({ theme, noBorder, error }) => ({
   position: 'relative',
   padding: '0px',
-  border: noBorder ? 'none' : '1px solid #ccc',
+  border: noBorder ? 'none' : `1px solid ${color.borderDark()}`,
   borderRadius: '4px',
   cursor: 'text',
   '& [data-slate-editor="true"]': {
@@ -113,6 +113,7 @@ const StyledEditorHolder: any = styled('div', {
   overflowY: 'auto',
   color: color.text(),
   backgroundColor: highlightShape ? theme.palette.action.selected : color.background(),
+  borderRadius: '4px',
   ...(disableScrollbar && {
     '&::-webkit-scrollbar': {
       display: 'none',

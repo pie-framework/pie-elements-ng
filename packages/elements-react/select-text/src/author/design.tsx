@@ -1,7 +1,4 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
 import { cloneDeep, debounce } from '@pie-element/shared-lodash';
@@ -12,7 +9,31 @@ import Info from '@mui/icons-material/Info';
 import debug from 'debug';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Tooltip from '@mui/material/Tooltip';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
 import { generateValidationMessage } from './utils.js';
+import type { SelectTextValidationErrors } from '../controller/index.js';
+import type { ComplexFeedbackType, SelectTextConfiguration, SelectTextModel, TextToken } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<SelectTextModel> & { errors?: SelectTextValidationErrors };
+
+export type DesignProps = {
+  model: AuthorModel;
+  configuration: SelectTextConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: SelectTextConfiguration) => void;
+  imageSupport?: {
+    add: (handler: ImageHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+  uploadSoundSupport?: {
+    add: (handler: SoundHandler) => void;
+    delete: (src: string, done: DeleteDone) => void;
+  };
+};
+
+type DesignState = { text: string };
 
 const { Panel, toggle, radio, dropdown } = settings;
 
@@ -83,22 +104,10 @@ const StyledNumberTextField: any = styled(NumberTextField)(({ theme }) => ({
 
 const log = debug('@pie-element:select-text:configure');
 
-export class Design extends React.Component {
-  static propTypes = {
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-    uploadSoundSupport: PropTypes.object,
-  };
-
+export class Design extends React.Component<DesignProps, DesignState> {
   static defaultProps = {};
 
-  constructor(props) {
+  constructor(props: DesignProps) {
     super(props);
 
     const { model } = this.props;
@@ -108,7 +117,7 @@ export class Design extends React.Component {
     };
   }
 
-  UNSAFE_componentWillReceiveProps(nProps) {
+  UNSAFE_componentWillReceiveProps(nProps: DesignProps) {
     const { model } = nProps;
 
     if (model && model.text) {
@@ -118,32 +127,32 @@ export class Design extends React.Component {
     }
   }
 
-  updateText = debounce((val) => {
+  updateText = debounce((val: string) => {
     this.apply((u) => {
       u.text = val;
       u.tokens = [];
     });
   }, 200);
 
-  changeText = (event) => this.updateText(event.target.value);
+  changeText = (event: React.ChangeEvent<HTMLInputElement>) => this.updateText(event.target.value);
 
-  changeTokens: any = (tokens, mode) => {
+  changeTokens = (tokens: TextToken[], mode: SelectTextModel['mode']) => {
     this.apply((u) => {
       u.tokens = tokens;
       u.mode = mode;
 
       const correctTokenCount = tokens.filter((t) => t.correct).length;
-      const max = isFinite(u.maxSelections) ? u.maxSelections : 0;
+      const max = isFinite(u.maxSelections as number) ? (u.maxSelections as number) : 0;
 
       u.maxSelections = Math.max(max, correctTokenCount);
     });
   };
 
-  changeMaxSelections: any = (event, max) => {
+  changeMaxSelections = (_event: unknown, max: number) => {
     this.apply((u) => (u.maxSelections = max));
   };
 
-  apply: any = (fn) => {
+  apply = (fn: (update: AuthorModel) => void) => {
     const { onModelChanged, model } = this.props;
     const update = cloneDeep(model);
 
@@ -151,11 +160,11 @@ export class Design extends React.Component {
     onModelChanged(update);
   };
 
-  changeFeedback: any = (feedback) => {
+  changeFeedback = (feedback: ComplexFeedbackType) => {
     this.apply((u) => (u.feedback = feedback));
   };
 
-  changePartialScoring: any = (partialScoring) => {
+  changePartialScoring = (partialScoring: boolean) => {
     const { onModelChanged, model } = this.props;
     const update = cloneDeep(model);
     update.partialScoring = partialScoring;
@@ -163,7 +172,7 @@ export class Design extends React.Component {
     onModelChanged(update);
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     const { onModelChanged, model } = this.props;
     const update = cloneDeep(model);
 
@@ -171,7 +180,7 @@ export class Design extends React.Component {
     onModelChanged(update);
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     const { onModelChanged, model } = this.props;
     const update = cloneDeep(model);
 
@@ -179,7 +188,7 @@ export class Design extends React.Component {
     onModelChanged(update);
   };
 
-  onRationaleChanged: any = (rationale) => {
+  onRationaleChanged = (rationale: string) => {
     const { onModelChanged, model } = this.props;
 
     onModelChanged({ ...model, rationale });
@@ -213,7 +222,7 @@ export class Design extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
     } = configuration || {};
     const {
       errors,

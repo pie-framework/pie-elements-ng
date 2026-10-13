@@ -25,9 +25,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
-const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -35,6 +32,9 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { styled } from '@mui/material/styles';
 
 import Feedback from './feedback.js';
@@ -102,7 +102,14 @@ const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
   paddingBottom: theme.spacing(2),
 }));
 
-export class NumberLine extends React.Component {
+/** Sizing props the author passes; `propTypes` declares the rest */
+type NumberLineSizeProps = {
+  minWidth?: number;
+  maxWidth?: number;
+  maxHeight?: number;
+};
+
+export class NumberLine extends React.Component<NumberLineSizeProps> {
   static propTypes = {
     onMoveElement: PropTypes.func.isRequired,
     onDeleteElements: PropTypes.func.isRequired,

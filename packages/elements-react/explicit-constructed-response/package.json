@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/explicit-constructed-response",
-  "version": "12.0.3",
+  "version": "12.0.4",
   "description": "",
   "repository": {
     "type": "git",
@@ -28,7 +28,8 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "clsx": "^2.1.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@pie-element/shared-types": "workspace:*"
   },
   "exports": {
     ".": {
@@ -83,6 +84,9 @@
       "types": "./dist/runtime-support.d.ts",
       "default": "./dist/runtime-support.js"
     },
+    "./schemas/model.schema.json": "./dist/schemas/model.schema.json",
+    "./schemas/configuration.schema.json": "./dist/schemas/configuration.schema.json",
+    "./schemas/session.schema.json": "./dist/schemas/session.schema.json",
     "./package.json": "./package.json"
   },
   "type": "module",
@@ -101,6 +105,8 @@
     "vite": "^8.0.1",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
+    "@types/debug": "^4.1.12",
+    "@types/he": "^1.2.3",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "vitest": "^4.1.11",
@@ -110,7 +116,7 @@
     "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"

@@ -27,8 +27,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
-const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -36,6 +34,8 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import Translator from '@pie-lib/translator';
 
 import Choice from './choice.js';
@@ -114,6 +114,8 @@ export class MultipleChoice extends React.Component {
     teacherInstructions: PropTypes.string,
     session: PropTypes.object,
     disabled: PropTypes.bool,
+    // Choice values struck out by the answer eliminator, which cannot be selected.
+    eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
     onChoiceChanged: PropTypes.func,
     responseCorrect: PropTypes.bool,
     correctResponse: PropTypes.array,
@@ -316,6 +318,7 @@ export class MultipleChoice extends React.Component {
       customAudioButton,
       options,
       baseHeadingLevel,
+      eliminatedChoices = [],
     } = this.props;
     const { showCorrect, maxSelectionsErrorState } = this.state;
     const isEvaluateMode = mode === 'evaluate';
@@ -429,7 +432,7 @@ export class MultipleChoice extends React.Component {
                 showCorrect={showCorrect}
                 isEvaluateMode={isEvaluateMode}
                 choiceMode={choiceMode}
-                disabled={disabled}
+                disabled={disabled || eliminatedChoices.includes(String(choice.value))}
                 tagName={this.groupName}
                 onChoiceChanged={this.handleChange}
                 hideTick={choice.hideTick}

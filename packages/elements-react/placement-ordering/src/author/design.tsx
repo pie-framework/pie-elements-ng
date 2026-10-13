@@ -1,8 +1,6 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import debug from 'debug';
+import type { DragEndEvent } from '@dnd-kit/core';
 import { cloneDeep, isEmpty } from '@pie-element/shared-lodash';
 import { get, set } from 'nested-property';
 import pluralize from 'pluralize';
@@ -14,13 +12,40 @@ import { FeedbackConfig, FormSection, InputContainer, settings, layout } from '@
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { DragProvider } from '@pie-lib/drag';
 
-import ChoiceEditor from './choice-editor.js';
+import ChoiceEditor, { type AuthorOrdering, type AuthorTile } from './choice-editor.js';
 import { generateValidationMessage, buildTiles, updateResponseOrChoices, normalizeIndex } from './utils.js';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions, EditableHtmlConfigureProp } from '@pie-element/shared-types';
+import type { PlacementOrderingValidationErrors } from '../controller/index.js';
+import type { Choice, PlacementOrderingConfiguration, PlacementOrderingModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<PlacementOrderingModel> & {
+  choices: Choice[];
+  errors?: PlacementOrderingValidationErrors;
+};
+
+/** The data every choice tile registers with its draggable and droppable. */
+type TileDragData = Pick<AuthorTile, 'id' | 'type'> & { index: number };
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type DesignProps = {
+  model: AuthorModel;
+  configuration: PlacementOrderingConfiguration;
+  onModelChanged: (model: AuthorModel, resetSession?: boolean) => void;
+  onConfigurationChanged: (configuration: PlacementOrderingConfiguration, reset?: boolean) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
 
 const log = debug('@pie-element:placement-ordering:design');
 const { Panel, toggle, radio, dropdown } = settings;
 
-const getSingularAndPlural = (label) =>
+const getSingularAndPlural = (label: string) =>
   !pluralize.isPlural(label)
     ? {
         singularLabel: label,
@@ -60,14 +85,23 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-export class Design extends React.Component {
-  static propTypes = {
-    uploadSoundSupport: PropTypes.object,
+export class Design extends React.Component<DesignProps> {
+  static defaultProps = {
+    onModelChanged: () => {},
+    onConfigurationChanged: () => {},
   };
 
-  static defaultProps = {};
+  applyUpdate: (modelFn: (model: AuthorModel) => AuthorModel) => void;
+  changeHandler: (modelPath: string, valuePath?: string) => (value: unknown) => void;
+  onPromptChange: (value: unknown) => void;
+  onTeacherInstructionsChange: (value: unknown) => void;
+  onRationaleChange: (value: unknown) => void;
+  onChoiceAreaLabelChange: (value: unknown) => void;
+  onAnswerAreaLabelChange: (value: unknown) => void;
+  onFeedbackChange: (value: unknown) => void;
+  onChoiceEditorChange: (choices: Choice[], correctResponse?: AuthorOrdering['response']) => void;
 
-  constructor(props) {
+  constructor(props: DesignProps) {
     super(props);
 
     this.applyUpdate = (modelFn) => {
@@ -81,7 +115,7 @@ export class Design extends React.Component {
       return (value) => {
         log('[changeHandler] value: ', value);
 
-        const v = valuePath ? get(value, valuePath) : value;
+        const v = valuePath ? get(value as object, valuePath) : value;
 
         this.applyUpdate((model) => {
           set(model, modelPath, v);
@@ -108,7 +142,7 @@ export class Design extends React.Component {
       const update = cloneDeep(model);
 
       update.choices = choices;
-      update.correctResponse = correctResponse;
+      update.correctResponse = correctResponse as PlacementOrderingModel['correctResponse'];
       onModelChanged(update);
     };
   }
@@ -125,15 +159,15 @@ export class Design extends React.Component {
     }
   }
 
-  onDragEnd: any = (event, ordering) => {
+  onDragEnd = (event: DragEndEvent, ordering: AuthorOrdering) => {
     const { active, over } = event;
 
     if (!over || !active) {
       return;
     }
 
-    const target = over.data.current;
-    const source = active.data.current;
+    const target = over.data.current as TileDragData;
+    const source = active.data.current as TileDragData;
     const rawFrom = ordering.tiles.find((t) => t.id === source.id && t.type === source.type);
     const rawTo = target;
 
@@ -183,7 +217,7 @@ export class Design extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
     } = configuration || {};
     const {
       choiceLabelEnabled,
@@ -203,7 +237,7 @@ export class Design extends React.Component {
       teacherInstructions: teacherInstructionsError,
     } = errors || {};
 
-    const ordering = {
+    const ordering: AuthorOrdering = {
       choices: model.choices,
       response: !correctResponse || isEmpty(correctResponse) ? new Array(model.choices.length) : correctResponse,
       tiles: buildTiles(model.choices, correctResponse),
@@ -247,7 +281,7 @@ export class Design extends React.Component {
       rubricEnabled: withRubric?.settings && toggle(withRubric?.label),
     };
 
-    const getPluginProps = (props = {}) => ({
+    const getPluginProps = (props: EditableHtmlConfigureProp = {}) => ({
       ...baseInputConfiguration,
       ...props,
     });
@@ -421,7 +455,6 @@ export class Design extends React.Component {
             <FeedbackConfig
               feedback={model.feedback}
               onChange={this.onFeedbackChange}
-              imageSupport={imageSupport}
               toolbarOpts={toolbarOpts}
             />
           )}
@@ -430,18 +463,5 @@ export class Design extends React.Component {
     );
   }
 }
-
-Design.defaultProps = {
-  onModelChanged: () => {},
-  onConfigurationChanged: () => {},
-};
-
-Design.propTypes = {
-  model: PropTypes.object.isRequired,
-  configuration: PropTypes.object.isRequired,
-  onModelChanged: PropTypes.func,
-  onConfigurationChanged: PropTypes.func,
-  imageSupport: PropTypes.object,
-};
 
 export default Design;

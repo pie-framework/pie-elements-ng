@@ -1,4 +1,5 @@
 import { DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits.js';
+import type { McpbChoice, McPopulatedBlankModel } from '../types.js';
 
 export { DEFAULT_LAYOUT_LIMITS };
 
@@ -24,7 +25,7 @@ export default {
     sentenceHtml: '',
     template: '',
     choiceMode: 'text' as const,
-    choices: [],
+    choices: [] as McpbChoice[],
     choiceGroupLabel: '',
     correctChoiceId: '',
     hasAudio: false,
@@ -36,4 +37,4 @@ export default {
     teacherInstructions: '',
     teacherInstructionsEnabled: true,
   },
-};
+} satisfies { model: Omit<McPopulatedBlankModel, 'id' | 'element'> };

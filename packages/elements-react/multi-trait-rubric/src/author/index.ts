@@ -1,25 +1,36 @@
-// @ts-nocheck
-
 import {
   ModelUpdatedEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
   InsertImageEvent,
   DeleteImageEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 
-import Main from './main.js';
+import Main, { type AuthorConfiguration, type AuthorModel } from './main.js';
 import defaults from './defaults.js';
 import { addOrRemoveScaleColumn } from './utils.js';
 import { excludeZeroTypes } from './modals.js';
+import type { MultiTraitRubricConfiguration, MultiTraitRubricModel, Scale, Trait } from '../types.js';
 
-const modelWithDefaults = (m) => ({ ...defaults.model, ...m });
-const configurationWithDefaults = (c) => ({ ...defaults.configuration, ...c });
+type ModelInput = Partial<MultiTraitRubricModel> & Pick<Partial<AuthorModel>, 'errors'>;
+
+const modelWithDefaults = (m?: ModelInput): AuthorModel => ({ ...defaults.model, ...m });
+const configurationWithDefaults = (c?: MultiTraitRubricConfiguration): AuthorConfiguration => ({
+  ...defaults.configuration,
+  ...c,
+});
 
 export default class MultiTraitRubricElement extends HTMLElement {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: AuthorConfiguration;
+
   constructor() {
     super();
     this._root = null;
@@ -27,7 +38,7 @@ export default class MultiTraitRubricElement extends HTMLElement {
     this._configuration = configurationWithDefaults();
   }
 
-  updateModelAccordingToReceivedProps: any = (m) => {
+  updateModelAccordingToReceivedProps = (m: AuthorModel): AuthorModel => {
     const currentModel = { ...this._model };
 
     if (!m) {
@@ -37,9 +48,9 @@ export default class MultiTraitRubricElement extends HTMLElement {
     const validatedModel = { ...m };
     const { scales, excludeZero } = validatedModel || {};
 
-    (scales || []).forEach((scale) => {
+    (scales || []).forEach((scale: Scale | null | undefined) => {
       if (!scale) {
-        scale = { scorePointsLabels: [], traits: [] };
+        scale = { scorePointsLabels: [] as string[], traits: [] as Trait[] } as Scale;
       }
 
       const { maxPoints } = scale || {};
@@ -60,9 +71,9 @@ export default class MultiTraitRubricElement extends HTMLElement {
         }
       }
 
-      (scale.traits || []).forEach((trait) => {
+      (scale.traits || []).forEach((trait: Trait | null | undefined) => {
         if (!trait) {
-          trait = { scorePointsDescriptors: [] };
+          trait = { scorePointsDescriptors: [] as string[] } as Trait;
         }
 
         trait.scorePointsDescriptors = [...(trait.scorePointsDescriptors || [])];
@@ -96,41 +107,41 @@ export default class MultiTraitRubricElement extends HTMLElement {
     return validatedModel;
   };
 
-  set model(m) {
+  set model(m: ModelInput) {
     this._model = this.updateModelAccordingToReceivedProps(modelWithDefaults(m));
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: MultiTraitRubricConfiguration) {
     this._configuration = configurationWithDefaults(c);
     this._render();
   }
 
-  onModelChanged: any = (m) => {
+  onModelChanged = (m: AuthorModel) => {
     this._model = this.updateModelAccordingToReceivedProps(modelWithDefaults(m));
     this._render();
     this.dispatchEvent(new ModelUpdatedEvent(this._model, false));
   };
 
-  onConfigurationChanged: any = (c) => {
+  onConfigurationChanged = (c: MultiTraitRubricConfiguration) => {
     this._configuration = configurationWithDefaults(c);
 
     this._render();
   };
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 

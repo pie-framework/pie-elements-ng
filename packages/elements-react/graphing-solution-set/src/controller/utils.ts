@@ -1,13 +1,20 @@
-// @ts-nocheck
-
 import { isEqual, differenceWith, uniq, uniqWith } from '@pie-element/shared-lodash';
+import type { Mark, MarkPoint, MarkType, Point } from '../types.js';
+
+/** Two endpoints: a line mark, or one side of a polygon. */
+type Segment = { from?: MarkPoint; to?: MarkPoint; fill?: Mark['fill'] };
+
+type MarkComparator = (sessAnswer: Mark, mark: Mark) => boolean;
+
+/** Copies a point; a missing point copies to an empty object, whose coordinates read as undefined. */
+const copyPoint = (point: Partial<Point> | undefined): Point => ({ ...point }) as Point;
 
 /*
  * Constant to check equal segments
  * @param {Object} segment1 - segment 1
  * @param {Object} segment2 - segment 2
  * */
-export const equalSegment = (segment1, segment2) => {
+export const equalSegment = (segment1: Segment, segment2: Segment) => {
   // A.from = B.from, A.to = B.to OR A.from = B.to, A.to = B.from
   // x1 = x3 & y1 = y3 & x2 = x4 & y2 = y4
   return (
@@ -21,11 +28,11 @@ export const equalSegment = (segment1, segment2) => {
  * Constant to get sorted answers
  * @param {Object} answers - answers
  * */
-export const sortedAnswers = (answers) =>
+export const sortedAnswers = <T>(answers: Record<string, T> | undefined) =>
   Object.keys(answers || {})
     .sort()
-    .reduce((result, key) => {
-      if (key !== 'correctAnswer') {
+    .reduce<Record<string, T>>((result, key) => {
+      if (answers && key !== 'correctAnswer') {
         result[key] = answers[key];
       }
       return result;
@@ -35,12 +42,13 @@ export const sortedAnswers = (answers) =>
  * Constant to return line equation coefficients
  * @param {Object} line - line
  * */
-const returnLineEquationCoefficients = (line) => {
-  line = { ...line, to: { ...line.to }, from: { ...line.from } };
-  const xA = line.from.x;
-  const yA = line.from.y;
-  const xB = line.to.x;
-  const yB = line.to.y;
+const returnLineEquationCoefficients = (line: Segment) => {
+  const from = copyPoint(line.from);
+  const to = copyPoint(line.to);
+  const xA = from.x;
+  const yA = from.y;
+  const xB = to.x;
+  const yB = to.y;
   return {
     a: yB - yA,
     b: xA - xB,
@@ -52,14 +60,14 @@ const returnLineEquationCoefficients = (line) => {
  * Constant to get significant decimals
  * @param {Number} number - number
  * */
-const getSignificantDecimals = (number) => Math.round(number * 10000) / 10000;
+const getSignificantDecimals = (number: number) => Math.round(number * 10000) / 10000;
 
 /*
  * Constant to check equal lines
  * @param {Object} line1 - line 1
  * @param {Object} line2 - line 2
  * */
-export const equalLine = (line1, line2) => {
+export const equalLine = (line1: Segment, line2: Segment) => {
   // line equation: ax + by + c = 0
   // 2 lines are equal if a1/a2 = b1/b2 = c1/c2, where a, b, c are the coefficients in line equation
   // line equation knowing 2 points: (y - yA) / (yB - yA) = (x - xA) / (xB - xA)
@@ -67,7 +75,7 @@ export const equalLine = (line1, line2) => {
   // where a = yB - yA; b = xA - xB; c = xB * yA - xA * yB
   const { a: a1, b: b1, c: c1 } = returnLineEquationCoefficients(line1);
   const { a: a2, b: b2, c: c2 } = returnLineEquationCoefficients(line2);
-  const proportions = [];
+  const proportions: number[] = [];
   if (a2 !== 0) {
     proportions.push(getSignificantDecimals(a1 / a2));
   } else if (a1 !== a2) {
@@ -92,17 +100,18 @@ export const equalLine = (line1, line2) => {
  * Constant to construct segments from points
  * @param {Array} points - points
  * */
-export const constructSegmentsFromPoints = (points) => {
+export const constructSegmentsFromPoints = (points: MarkPoint[] | undefined): Segment[] => {
   // takes the list of points that represent a polygon and transforms it into a list of segments; eg.:
   // points: A, B, C, D => segments: AB, BC, CD, DA
-  return (points || []).map((point, index) => ({ from: point, to: points[(index + 1) % points.length] }));
+  const list = points || [];
+  return list.map((point, index) => ({ from: point, to: list[(index + 1) % list.length] }));
 };
 
 /*
  * Constant to remove duplicate segments
  * @param {Array} segments - segments
  * */
-export const removeDuplicateSegments = (segments) => {
+export const removeDuplicateSegments = (segments: Segment[] | undefined) => {
   segments = segments || [];
   // removes segments that are duplicates; eg. These segments are the same, so one will be removed:
   // segment1: from: { x: 1, y: 1 }, to: { x: 2, y: 1 }
@@ -114,7 +123,7 @@ export const removeDuplicateSegments = (segments) => {
  * Constant to remove invalid segments
  * @param {Array} segments - segments
  * */
-export const removeInvalidSegments = (segments) => {
+export const removeInvalidSegments = (segments: Segment[] | undefined) => {
   segments = segments || [];
   // removes segments that start in a point and end in the same point (eg.: from: { x: 1, y: 1 }, to: { x: 1, y: 1 })
   return segments.filter((segment) => !isEqual(segment.from, segment.to));
@@ -125,7 +134,7 @@ export const removeInvalidSegments = (segments) => {
  * @param {Object} poly1 - polygon 1 points
  * @param {Object} poly2 - polygon 2 points
  * */
-export const equalPolygon = (poly1, poly2) => {
+export const equalPolygon = (poly1: Mark, poly2: Mark) => {
   const { points: points1 } = poly1;
   const { points: points2 } = poly2;
   // generate segments
@@ -141,7 +150,7 @@ export const equalPolygon = (poly1, poly2) => {
 /*
  * Constant to compare equal marks
  * */
-export const equalMarks = {
+export const equalMarks: Record<MarkType, MarkComparator> = {
   line: (sessAnswer, mark) => equalLine(sessAnswer, mark),
   polygon: (sessAnswer, poly) => equalPolygon(sessAnswer, poly),
 };
@@ -150,19 +159,21 @@ export const equalMarks = {
  * Check if a point is correct and complete
  * @param {Object} point - point object
  * */
-const completePoint = (point) => point && Number.isFinite(point.x) && Number.isFinite(point.y);
+const completePoint = (point: Partial<Point> | undefined): boolean | undefined =>
+  point && Number.isFinite(point.x) && Number.isFinite(point.y);
 
 /*
  * Check if a line is complete
  * @param {Object} item - mark object
  * */
-const completeFromTo = (item) => item && completeMark.point(item.from) && completeMark.point(item.to);
+const completeFromTo = (item: Partial<Mark> | undefined): boolean | undefined =>
+  item && completeMark.point(item.from) && completeMark.point(item.to);
 
 /*
  * Check if a point is correct and complete
  * @param {Object} item - mark object
  * */
-const completePoints = (item) =>
+const completePoints = (item: Partial<Mark> | undefined): boolean | number | undefined =>
   item &&
   item.points &&
   item.points.length &&
@@ -181,7 +192,7 @@ const completeMark = {
  * Function to remove invalid answers
  * @param {Array} answers - answers array
  * */
-export const removeInvalidAnswers = (answers) =>
+export const removeInvalidAnswers = (answers: Mark[] | undefined): Mark[] =>
   answers
     ? (answers || []).filter(({ type, ...answer }) => (completeMark[type] ? completeMark[type](answer) : false))
     : [];

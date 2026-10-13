@@ -1,16 +1,75 @@
-// @ts-nocheck
-
 import debug from 'debug';
 
 import { cloneDeep, isEmpty, uniqWith } from '@pie-element/shared-lodash';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 import { equalMarks, equalPointWithLabel, sortedAnswers } from './utils.js';
 
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type {
+  Answer,
+  Arrows,
+  Graph,
+  GraphingConfiguration,
+  GraphingModel,
+  GraphingSession,
+  GraphingTool,
+  Mark,
+  MarkType,
+} from '../types.js';
 
 const log = debug('@pie-element:graphing:controller');
 
-const initializeGraphMap = () => ({
+type Correctness = 'correct' | 'incorrect' | 'missing';
+
+/** A session mark scored against an answer. */
+type CorrectedMark = Mark & {
+  correctness: Correctness;
+  /** Whether the mark's label matches the answer mark's label */
+  correctnesslabel?: 'correct' | 'incorrect';
+  /** The answer mark's label */
+  correctlabel?: string;
+};
+
+/** An answer as scoring reads it; the placeholder `initializeGraphMap()` holds no marks. */
+type PossibleAnswer = Partial<Answer>;
+
+type BestAnswer = {
+  bestScore: number;
+  bestScoreAnswerKey: string | null;
+  answersCorrected: CorrectedMark[];
+  foundOneSolution: boolean;
+};
+
+/** The model the delivery view receives. */
+type GraphingViewModel = Omit<
+  GraphingModel,
+  'arrows' | 'defaultTool' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
+> & {
+  arrows?: Arrows;
+  defaultTool: GraphingTool | '';
+  disabled: boolean;
+  prompt?: string | null;
+  rationale?: string | null;
+  size?: Graph;
+  showKeyLegend: boolean;
+  showToggle: boolean;
+  teacherInstructions?: string | null;
+  /** Session marks; in evaluate mode with a correct answer, each carries `correctness` */
+  answersCorrected?: Mark[];
+  correctResponse?: Mark[];
+};
+
+/** Errors `validate()` reports; `correctAnswerErrors` is keyed by answer key. */
+export type GraphingValidationErrors = {
+  toolbarToolsError?: string;
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  correctAnswerErrors?: Record<string, string>;
+};
+
+const initializeGraphMap = (): PossibleAnswer & Record<MarkType, Mark[]> => ({
   point: [],
   segment: [],
   line: [],
@@ -24,13 +83,13 @@ const initializeGraphMap = () => ({
   exponential: [],
 });
 
-const graphObjectsOrder = {
+const graphObjectsOrder: Record<Correctness, number> = {
   incorrect: 0,
   correct: 1,
   missing: 2,
 };
 
-export const compareMarks = (mark1, mark2) => {
+export const compareMarks = (mark1: Mark | undefined, mark2: Mark | undefined) => {
   // marks can be compared with equalMarks[type] function only if they have the same type;
   // if type is different, they are clearly not equal
   return !!(
@@ -42,23 +101,32 @@ export const compareMarks = (mark1, mark2) => {
   );
 };
 
-export const comparLabelMarks = (mark1, mark2) => {
+export const comparLabelMarks = (mark1: Mark, mark2: Mark) => {
   return mark1.label === mark2.label ? 'correct' : 'incorrect';
 };
 
-export const getAnswerCorrected = ({ sessionAnswers, marks: correctAnswers, withPointLabel = false }) => {
-  sessionAnswers = sessionAnswers || [];
-  correctAnswers = correctAnswers || [];
+export const getAnswerCorrected = ({
+  sessionAnswers: sessionAnswersInput,
+  marks: correctAnswersInput,
+  withPointLabel = false,
+}: {
+  sessionAnswers?: Mark[];
+  marks?: Mark[];
+  withPointLabel?: boolean;
+}): CorrectedMark[] => {
+  const sessionAnswers = sessionAnswersInput || [];
+  const correctAnswers = correctAnswersInput || [];
 
-  const rez = cloneDeep(sessionAnswers).reduce((correctedAnswer, answer) => {
-    const answerIsCorrect = correctAnswers.find((mark) => compareMarks(answer, mark));
+  const rez = cloneDeep(sessionAnswers).reduce<CorrectedMark[]>((correctedAnswer, sessionMark) => {
+    const answerIsCorrect = correctAnswers.find((mark) => compareMarks(sessionMark, mark));
 
     // For scoring points, check if both position AND label match
-    const isCorrectForScoring = answerIsCorrect && answer.type === 'point' && withPointLabel 
-      ? equalPointWithLabel(answer, answerIsCorrect)
+    const isCorrectForScoring = answerIsCorrect && sessionMark.type === 'point' && withPointLabel 
+      ? equalPointWithLabel(sessionMark, answerIsCorrect)
       : !!answerIsCorrect;
 
-    answer.correctness = isCorrectForScoring ? 'correct' : 'incorrect';
+    const correctness: Correctness = isCorrectForScoring ? 'correct' : 'incorrect';
+    const answer: CorrectedMark = Object.assign(sessionMark, { correctness });
     if (answerIsCorrect) {
       answer.correctnesslabel = comparLabelMarks(answer, answerIsCorrect);
       answer.correctlabel = answerIsCorrect.label ? answerIsCorrect.label : '';
@@ -68,7 +136,7 @@ export const getAnswerCorrected = ({ sessionAnswers, marks: correctAnswers, with
   }, []);
 
   // add missing objects from correct answer
-  const missingAnswers = cloneDeep(correctAnswers).reduce((correctedAnswer, answer) => {
+  const missingAnswers = cloneDeep(correctAnswers).reduce<CorrectedMark[]>((correctedAnswer, answer) => {
     const answerIndex = sessionAnswers.find((mark) => compareMarks(answer, mark));
 
     if (!answerIndex) {
@@ -82,8 +150,14 @@ export const getAnswerCorrected = ({ sessionAnswers, marks: correctAnswers, with
   return [...rez, ...missingAnswers];
 };
 
-const getPartialScoring = ({ scoringType, env }) => {
-  let pS = scoringType;
+const getPartialScoring = ({
+  scoringType,
+  env,
+}: {
+  scoringType: GraphingModel['scoringType'];
+  env: Partial<PieEnvironment> | undefined;
+}) => {
+  let pS: boolean | undefined;
 
   // if scoringType is undefined, partialScoring should be considered undefined (not set)
   // because partialScoring.enabled is using that information
@@ -95,30 +169,37 @@ const getPartialScoring = ({ scoringType, env }) => {
   return partialScoring.enabled({ partialScoring: pS }, env);
 };
 
-export const getBestAnswer = (question, session, env = {}) => {
-  // questionPossibleAnswers contains all possible answers (correct response and alternates);
-  let { answers: questionPossibleAnswers = {}, scoringType } = question || {};
-  let { answer } = session || {};
+export const getBestAnswer = (
+  question: GraphingModel | undefined,
+  session: GraphingSession | undefined,
+  env: Partial<PieEnvironment> = {},
+): BestAnswer => {
+  // questionAnswers contains all possible answers (correct response and alternates);
+  const questionAnswers: Record<string, Answer> = question?.answers ?? {};
+  const scoringType = question?.scoringType;
+  const { answer: sessionAnswer } = session || {};
 
   // filter the incomplete objects
-  Object.entries(questionPossibleAnswers || {}).forEach(
+  Object.entries(questionAnswers || {}).forEach(
     ([key, value]) =>
-      (questionPossibleAnswers[key] = { ...value, marks: value?.marks.filter((mark) => !mark.building) }),
+      (questionAnswers[key] = { ...value, marks: value?.marks.filter((mark) => !mark.building) }),
   );
 
   // initialize answer if no values
-  answer = answer || [];
+  let answer = sessionAnswer || [];
 
   //filter the incomplete objects for student response - Fix for SC-33160
   answer = answer.filter((mark) => !mark.building);
 
+  let questionPossibleAnswers: Record<string, PossibleAnswer | undefined>;
+
   // initialize one possible answer if no values
-  if (isEmpty(questionPossibleAnswers)) {
+  if (isEmpty(questionAnswers)) {
     questionPossibleAnswers = { correctAnswer: initializeGraphMap() };
   } else {
     questionPossibleAnswers = {
-      correctAnswer: questionPossibleAnswers.correctAnswer,
-      ...sortedAnswers(questionPossibleAnswers),
+      correctAnswer: questionAnswers.correctAnswer,
+      ...sortedAnswers<PossibleAnswer>(questionAnswers),
     };
   }
 
@@ -129,12 +210,12 @@ export const getBestAnswer = (question, session, env = {}) => {
   // array of possible answers entries
   const possibleAnswers = Object.entries(questionPossibleAnswers);
 
-  return possibleAnswers.reduce(
+  return possibleAnswers.reduce<BestAnswer>(
     (acc, entry) => {
       // iterating each possible answer (main + alternates)
       const possibleAnswerKey = entry[0];
       const possibleAnswer = entry[1] || {};
-      let { marks } = possibleAnswer;
+      const { marks } = possibleAnswer;
 
       if (!marks || !marks.length) {
         return acc;
@@ -178,15 +259,19 @@ export const getBestAnswer = (question, session, env = {}) => {
       bestScore: 0,
       bestScoreAnswerKey: null,
       // initially we just suppose all the answers are incorrect
-      answersCorrected: cloneDeep(sessionAnswers).map((answer) => ({ ...answer, correctness: 'incorrect' })),
+      answersCorrected: cloneDeep(sessionAnswers).map((answer): CorrectedMark => ({ ...answer, correctness: 'incorrect' })),
       foundOneSolution: false,
     },
   );
 };
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: GraphingModel): GraphingModel => ({ ...defaults, ...question });
 
-export function model(question, session, env) {
+export function model(
+  question: GraphingModel,
+  session: GraphingSession | null | undefined,
+  env: PieEnvironment,
+): Promise<GraphingViewModel> {
   return new Promise((resolve) => {
     const normalizedQuestion = normalize(question);
 
@@ -196,9 +281,10 @@ export function model(question, session, env) {
     }
     // console.log('normalizedQuestion', normalizedQuestion);
     const { defaultTool, extraCSSRules, prompt, promptEnabled, graph, answers, toolbarTools, ...questionProps } =
-      normalizedQuestion || {};
+      normalizedQuestion;
     let { arrows } = normalizedQuestion;
-    const { mode, role } = env || {};
+    const mode = env?.mode;
+    const role = env?.role;
 
     // This is used for offering support for old models which have the property arrows: boolean
     // Same thing is set in authoring : packages/graphing/configure/src/configure.jsx - componentDidMount
@@ -224,7 +310,7 @@ export function model(question, session, env) {
     const toolbarToolsNoLabel = (toolbarTools || []).filter((tool) => tool !== 'label');
     const normalizedDefaultTool = defaultTool || (toolbarToolsNoLabel.length && toolbarToolsNoLabel[0]) || '';
 
-    const base = {
+    const base: GraphingViewModel = {
       ...questionProps,
       answers,
       arrows,
@@ -246,7 +332,7 @@ export function model(question, session, env) {
     };
 
     if (role === 'instructor' && (mode === 'view' || mode === 'evaluate')) {
-      const { rationale, rationaleEnabled, teacherInstructions, teacherInstructionsEnabled } = normalizedQuestion || {};
+      const { rationale, rationaleEnabled, teacherInstructions, teacherInstructionsEnabled } = normalizedQuestion;
 
       base.rationale = rationaleEnabled ? rationale : null;
       base.teacherInstructions = teacherInstructionsEnabled ? teacherInstructions : null;
@@ -284,9 +370,14 @@ export function model(question, session, env) {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
-  const { answers = {}, scoringType } = question || {};
+export const getLogTrace = (
+  question: GraphingModel,
+  session: GraphingSession | undefined,
+  env: Partial<PieEnvironment> | undefined,
+) => {
+  const traceLog: string[] = [];
+  const answers: Record<string, Answer> = question?.answers ?? {};
+  const scoringType = question?.scoringType;
   const studentMarks = (session && session.answer) || [];
 
   if (!studentMarks.length) {
@@ -370,8 +461,12 @@ export const getLogTrace = (question, session, env) => {
 };
 
 
-export function outcome(question, session, env = {}) {
-  return new Promise((resolve) => {
+export function outcome(
+  question: GraphingModel,
+  session: GraphingSession | undefined,
+  env: Partial<PieEnvironment> = {},
+) {
+  return new Promise<{ score: number; empty: boolean; logTrace: string[] }>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ score: 0, empty: true, logTrace: ['Student did not interact with the graph.'] });
     }
@@ -390,11 +485,11 @@ export function outcome(question, session, env = {}) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: GraphingModel, env: PieEnvironment) => {
+  return new Promise<GraphingSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { answers } = question || {};
-      let marks = [];
+      let marks: Mark[] = [];
 
       if (answers && Object.values(answers)) {
         const correctAnswer = answers.correctAnswer || Object.values(answers)[0] || {};
@@ -411,23 +506,23 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<GraphingModel> = {},
+  config: GraphingConfiguration = {},
+): GraphingValidationErrors => {
   const { answers, toolbarTools } = model;
-  const errors = {};
-  const correctAnswerErrors = {};
+  const errors: GraphingValidationErrors = {};
+  const correctAnswerErrors: Record<string, string> = {};
   const toolbarToolsNoLabel = (toolbarTools || []).filter((tool) => tool !== 'label');
 
   if (!toolbarToolsNoLabel.length) {
     errors.toolbarToolsError = 'There should be at least 1 tool defined.';
   }
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }

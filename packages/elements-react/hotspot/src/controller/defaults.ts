@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { Circle, HotspotModel, Polygon, Rectangle } from '../types.js';
 
 export default {
   dimensions: { height: 0, width: 0 },
@@ -12,10 +12,10 @@ export default {
   prompt: '',
   promptEnabled: true,
   rationaleEnabled: true,
-  shapes: { rectangles: [], polygons: [], circles: [] },
+  shapes: { rectangles: [] as Rectangle[], polygons: [] as Polygon[], circles: [] as Circle[] },
   strokeWidth: 5,
   studentInstructionsEnabled: true,
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<HotspotModel, 'id' | 'element'>;

@@ -63,9 +63,7 @@ export function BlankContent({ n, children, isDragging, isOver, dragItem, value,
 
   const borderStyle = selected
     ? `2px solid ${color.primaryDark()}`
-    : isPreview
-      ? `1px solid ${color.defaults.BORDER_DARK}`
-      : `1px solid ${color.defaults.BORDER_LIGHT}`;
+    : `1px solid ${color.defaults.BORDER_DARK}`;
 
   return (
     <div

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-controller-utils",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Controller utility functions for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,7 +24,7 @@
     "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "^1.4.2",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
     "vitest": "^4.1.11"

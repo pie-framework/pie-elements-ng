@@ -1,10 +1,19 @@
-// @ts-nocheck
-
 import { isEmpty } from '@pie-element/shared-lodash';
 import { buildState, score } from '@pie-lib/categorize';
-import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
+import { getFeedbackForCorrectness, type Feedback } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import Translator from '@pie-lib/translator';
+import type {
+  CategorizeAnswer,
+  CategorizeConfiguration,
+  CategorizeModel,
+  CategorizeSession,
+  Category,
+  CategoryChoice,
+  CategoryCorrectResponse,
+  MultiplePlacements,
+} from '../types.js';
 
 const { translator } = Translator;
 import defaults from './defaults.js';
@@ -14,7 +23,33 @@ import { getCompleteResponseDetails, isAlternateDuplicated, isCorrectResponseDup
 
 export { score };
 
-export const getPartialScore = (correctResponse, builtCategories) => {
+type Correctness = 'correct' | 'incorrect' | 'partially-correct';
+
+/** A choice as `buildState` returns it inside a category. */
+type BuiltChoice = CategoryChoice & { correct?: boolean };
+
+/** A category as `buildState` returns it, holding the choices the learner placed in it. */
+type BuiltCategory = Omit<Category, 'choices'> & { choices?: BuiltChoice[] };
+
+type BuiltState = { categories: BuiltCategory[]; correct: boolean };
+
+/** The session shape the shared choice utilities take; ours may carry a numeric id. */
+type SharedSession = Parameters<typeof getShuffledChoices>[1];
+
+/** Errors `validate()` reports, keyed by field; `choicesErrors` and `categoriesErrors` are keyed by id. */
+export type CategorizeValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  categoriesError?: string;
+  choicesError?: string;
+  duplicateAlternate?: { index: number; category: string };
+  associationError?: string;
+  choicesErrors?: Record<string, string>;
+  categoriesErrors?: Record<string, string>;
+};
+
+export const getPartialScore = (correctResponse: CategoryCorrectResponse[], builtCategories: BuiltCategory[]) => {
   // in the resulted best scenario we make a sum with all the correct responses
   // and all the placements
   const { placements, score } = builtCategories.reduce(
@@ -40,10 +75,14 @@ export const getPartialScore = (correctResponse, builtCategories) => {
   return totalScore < 0 ? 0 : parseFloat(totalScore.toFixed(2));
 };
 
-const getAlternates = (correctResponse) =>
-  correctResponse.map((c) => c.alternateResponses).filter((alternate) => alternate);
+const getAlternates = (correctResponse: CategoryCorrectResponse[]) =>
+  correctResponse.map((c) => c.alternateResponses).filter((alternate): alternate is string[][] => !!alternate);
 
-export const getTotalScore = (question, session, env) => {
+export const getTotalScore = (
+  question: CategorizeModel,
+  session: CategorizeSession | undefined,
+  env: PieEnvironment | undefined,
+) => {
   if (!session) {
     return 0;
   }
@@ -51,15 +90,13 @@ export const getTotalScore = (question, session, env) => {
   if (Object.keys(session).length === 0) {
     return 0;
   }
-  const { categories, choices } = question || {};
-  let { correctResponse } = question || {};
-  let { answers } = session || {};
-  answers = answers || [];
-  correctResponse = correctResponse || [];
+  const { categories, choices } = question || ({} as Partial<CategorizeModel>);
+  const correctResponse = (question || ({} as Partial<CategorizeModel>)).correctResponse || [];
+  const answers = session.answers || [];
 
   // this function is used in pie-ui/categorize as well, in order to get the best scenario
   // so we get the best scenario and calculate the score
-  const { categories: builtCategories, correct } = buildState(categories, choices, answers, correctResponse);
+  const { categories: builtCategories, correct }: BuiltState = buildState(categories, choices, answers, correctResponse);
 
   const alternates = getAlternates(correctResponse);
   const enabled = partialScoring.enabled(question, env);
@@ -74,8 +111,12 @@ export const getTotalScore = (question, session, env) => {
   return correct ? 1 : 0;
 };
 
-export const getCorrectness = (question, session, env) => {
-  return new Promise((resolve) => {
+export const getCorrectness = (
+  question: CategorizeModel,
+  session: CategorizeSession | undefined,
+  env: PieEnvironment,
+) => {
+  return new Promise<Correctness | undefined>((resolve) => {
     if (env.mode === 'evaluate') {
       const score = getTotalScore(question, session, env);
       if (score === 1) {
@@ -91,15 +132,15 @@ export const getCorrectness = (question, session, env) => {
   });
 };
 
-export const createDefaultModel = (model = {}) =>
-  new Promise((resolve) => {
+export const createDefaultModel = (model: Partial<CategorizeModel> = {}) =>
+  new Promise<Partial<CategorizeModel>>((resolve) => {
     resolve({
       ...defaults,
       ...model,
     });
   });
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: CategorizeModel) => ({ ...defaults, ...question });
 
 /**
  *
@@ -108,11 +149,17 @@ export const normalize = (question) => ({ ...defaults, ...question });
  * @param {*} env
  * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export const model = async (question, session, env, updateSession) => {
+export const model = async (
+  question: CategorizeModel,
+  session: CategorizeSession | undefined,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+) => {
   const normalizedQuestion = normalize(question);
   const answerCorrectness = await getCorrectness(normalizedQuestion, session, env);
 
-  const { mode, role } = env || {};
+  const mode = env?.mode;
+  const role = env?.role;
 
   const {
     categories,
@@ -138,10 +185,11 @@ export const model = async (question, session, env, updateSession) => {
     completeAudioEnabled,
     customAudioButton,
   } = normalizedQuestion;
-  let { choices, note } = normalizedQuestion;
-  let fb;
+  let choices: CategoryChoice[] | undefined = normalizedQuestion.choices;
+  let { note } = normalizedQuestion;
+  let fb: string | undefined;
 
-  const lockChoiceOrder = lockChoices(normalizedQuestion, session, env);
+  const lockChoiceOrder = lockChoices(normalizedQuestion, session as SharedSession, env);
 
   const filteredCorrectResponse = correctResponse.map((response) => {
     const filteredChoices = (response.choices || []).filter((choice) => choice !== 'null');
@@ -149,14 +197,14 @@ export const model = async (question, session, env, updateSession) => {
   });
 
   if (mode === 'evaluate' && feedbackEnabled) {
-    fb = await getFeedbackForCorrectness(answerCorrectness, feedback);
+    fb = await getFeedbackForCorrectness(answerCorrectness as Correctness, feedback as Partial<Feedback> | undefined);
   }
 
   if (!lockChoiceOrder) {
-    choices = await getShuffledChoices(choices, session, updateSession, 'id');
+    choices = await getShuffledChoices(choices, session as SharedSession, updateSession, 'id');
   }
 
-  const resolvedAllowMultiple = (() => {
+  const resolvedAllowMultiple = ((): MultiplePlacements => {
     if (question.allowMultiplePlacementsEnabled != null) {
       return question.allowMultiplePlacementsEnabled;
     }
@@ -167,7 +215,7 @@ export const model = async (question, session, env, updateSession) => {
   })();
 
   choices = (choices || []).map((c) => {
-    let categoryCount;
+    let categoryCount: number;
     if (resolvedAllowMultiple === multiplePlacements.enabled) {
       categoryCount = 0;
     } else if (resolvedAllowMultiple === multiplePlacements.disabled) {
@@ -184,6 +232,7 @@ export const model = async (question, session, env, updateSession) => {
   }
 
   const alternates = getAlternates(filteredCorrectResponse);
+  const showInstructorContent = role === 'instructor' && (mode === 'view' || mode === 'evaluate');
   const { responseAreasToBeFilled, possibleResponses, hasUnplacedChoices } = getCompleteResponseDetails(
     filteredCorrectResponse,
     normalizedQuestion.allowAlternateEnabled ? alternates : [],
@@ -217,15 +266,9 @@ export const model = async (question, session, env, updateSession) => {
     responseAreasToBeFilled,
     hasUnplacedChoices,
     ...(question.allowMultiplePlacementsEnabled == null && { allowMultiplePlacementsEnabled: resolvedAllowMultiple }),
+    rationale: showInstructorContent && rationaleEnabled ? rationale : null,
+    teacherInstructions: showInstructorContent && teacherInstructionsEnabled ? teacherInstructions : null,
   };
-
-  if (role === 'instructor' && (mode === 'view' || mode === 'evaluate')) {
-    out.rationale = rationaleEnabled ? rationale : null;
-    out.teacherInstructions = teacherInstructionsEnabled ? teacherInstructions : null;
-  } else {
-    out.rationale = null;
-    out.teacherInstructions = null;
-  }
 
   return out;
 };
@@ -237,21 +280,21 @@ export const model = async (question, session, env, updateSession) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
-  const { answers } = session || {};
-  const { categories, choices, correctResponse } = model || {};
+export const getLogTrace = (model: CategorizeModel, session: CategorizeSession | undefined, env: PieEnvironment) => {
+  const traceLog: string[] = [];
+  const { answers } = session || ({} as CategorizeSession);
+  const { categories, choices, correctResponse } = model || ({} as Partial<CategorizeModel>);
 
-  const draggedChoices = answers.reduce(
+  const draggedChoices = (answers as CategorizeAnswer[]).reduce(
     (sum, a) => sum + (a.choices?.length || 0),
     0
   );
 
-  const alternates = getAlternates(correctResponse);
+  const alternates = getAlternates(correctResponse as CategoryCorrectResponse[]);
   const hasAlternates = alternates.length > 0;
   const partialScoringEnabled = partialScoring.enabled(model, env);
 
-  const builtState =
+  const builtState: BuiltState | null =
     draggedChoices > 0
       ? buildState(categories, choices, answers, correctResponse)
       : null;
@@ -325,11 +368,11 @@ export const getLogTrace = (model, session, env) => {
   return traceLog;
 }
 
-export const outcome = (question, session, env) => {
+export const outcome = (question: CategorizeModel, session: CategorizeSession | undefined, env: PieEnvironment) => {
   if (env.mode !== 'evaluate') {
     return Promise.reject(new Error('Can not call outcome when mode is not evaluate'));
   } else {
-    return new Promise((resolve) => {
+    return new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
       // A player sends an untouched item's session as `{ id, element }`, without `answers`.
       if (!session || isEmpty(session) || !session.answers) {
         resolve({
@@ -351,9 +394,10 @@ export const outcome = (question, session, env) => {
   }
 };
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
-    const { mode, role } = env || {};
+export const createCorrectResponseSession = (question: CategorizeModel, env: PieEnvironment) => {
+  return new Promise<CategorizeSession | null>((resolve) => {
+    const mode = env?.mode;
+    const role = env?.role;
 
     if (mode !== 'evaluate' && role === 'instructor') {
       const { correctResponse } = question;
@@ -366,12 +410,15 @@ export const createCorrectResponseSession = (question, env) => {
 };
 
 // remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
+const getInnerText = (html: string | undefined) => (html || '').replaceAll(/<[^>]*>/g, '');
 
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<CategorizeModel> = {},
+  config: CategorizeConfiguration = {},
+): CategorizeValidationErrors => {
   const { categories, choices, correctResponse, maxAnswerChoices } = model;
   const {
     minChoices = 1,
@@ -381,11 +428,11 @@ export const validate = (model = {}, config = {}) => {
     maxLengthPerCategory = 150,
   } = config;
   const reversedChoices = [...(choices || [])].reverse();
-  const errors = {};
-  const choicesErrors = {};
-  const categoriesErrors = {};
+  const errors: CategorizeValidationErrors = {};
+  const choicesErrors: Record<string, string> = {};
+  const categoriesErrors: Record<string, string> = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -428,7 +475,7 @@ export const validate = (model = {}, config = {}) => {
 
   if (nbOfChoices < minChoices) {
     errors.choicesError = `There should be at least ${minChoices} choices defined.`;
-  } else if (nbOfChoices > maxAnswerChoices) {
+  } else if (maxAnswerChoices !== undefined && nbOfChoices > maxAnswerChoices) {
     errors.choicesError = `No more than ${maxAnswerChoices} choices should be defined.`;
   }
 

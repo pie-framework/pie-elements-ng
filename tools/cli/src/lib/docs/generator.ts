@@ -1,68 +1,16 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { generateElementSchemas, type SchemaKind } from '../schemas/generate.js';
+import { schemaDocs } from './schema-properties.js';
 import { loadPointerValue } from './source-extractor.js';
 import type {
   PieDocsContract,
   PieDocsElementOutput,
-  PieDocsPropertyMetadata,
   PieDocsProperty,
-  PieDocsProperty as PieDocsPropertyContract,
+  PieDocsSchemaDocs,
+  PieDocsSourcePointer,
 } from './types.js';
-import type { PieDocsSourcePointer } from './types.js';
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  !!value && typeof value === 'object' && !Array.isArray(value);
-
-const inferType = (value: unknown): string => {
-  if (value === null) return 'null';
-  if (Array.isArray(value)) return 'array';
-  switch (typeof value) {
-    case 'string':
-    case 'number':
-    case 'boolean':
-      return typeof value;
-    case 'object':
-      return 'object';
-    default:
-      return 'unknown';
-  }
-};
-
-const flattenProperties = (value: unknown, basePath = ''): PieDocsProperty[] => {
-  if (isRecord(value)) {
-    const keys = Object.keys(value).sort();
-    if (keys.length === 0 && basePath) {
-      return [{ path: basePath, type: 'object', required: false, defaultValue: {} }];
-    }
-    const flattened: PieDocsProperty[] = [];
-    for (const key of keys) {
-      const childPath = basePath ? `${basePath}.${key}` : key;
-      flattened.push(...flattenProperties(value[key], childPath));
-    }
-    return flattened;
-  }
-
-  if (Array.isArray(value)) {
-    return [
-      {
-        path: basePath,
-        type: 'array',
-        required: false,
-        defaultValue: value,
-      },
-    ];
-  }
-
-  return [
-    {
-      path: basePath,
-      type: inferType(value),
-      required: false,
-      defaultValue: value,
-    },
-  ];
-};
 
 const escapeHtml = (value: string): string =>
   value
@@ -81,7 +29,7 @@ const formatInline = (value: unknown): string => {
 
 const formatValue = (value: unknown): string => {
   if (typeof value === 'string') {
-    return `<code>${escapeHtml(value)}</code>`;
+    return `<code>${value === '' ? '""' : escapeHtml(value)}</code>`;
   }
   if (typeof value === 'number' || typeof value === 'boolean') {
     return `<code>${String(value)}</code>`;
@@ -160,8 +108,8 @@ const loadValueWithFallback = async (
           pointer,
           { file: 'src/author/defaultConfiguration.ts', path: 'configuration' },
           { file: 'src/author/defaults.ts', path: 'configuration' },
+          { file: 'src/author/defaults.tsx', path: 'configuration' },
           { file: 'src/controller/defaults.ts', path: 'configuration' },
-          { file: 'src/controller/defaults.ts' },
         ];
 
   let lastError: Error | undefined;
@@ -189,53 +137,13 @@ const loadValueWithFallback = async (
 
 interface ResolvedViewDocs {
   view: string;
-  pieProperties: PieDocsPropertyContract[];
-  configProperties: PieDocsPropertyContract[];
+  pieDocs: PieDocsSchemaDocs;
+  configDocs: PieDocsSchemaDocs;
   pieSource: string;
   configSource: string;
 }
 
-const applyMetadata = (
-  properties: PieDocsPropertyContract[],
-  metadata?: Record<string, PieDocsPropertyMetadata>
-): PieDocsPropertyContract[] => {
-  if (!metadata || Object.keys(metadata).length === 0) {
-    return properties;
-  }
-
-  const byPath = new Map<string, PieDocsPropertyContract>(
-    properties.map((p) => [p.path, { ...p }])
-  );
-
-  for (const [path, meta] of Object.entries(metadata)) {
-    const current = byPath.get(path) || {
-      path,
-      type: meta.type || 'unknown',
-      required: meta.required ?? false,
-    };
-    const merged: PieDocsPropertyContract = {
-      ...current,
-      ...(meta.type ? { type: meta.type } : {}),
-      ...(meta.required !== undefined ? { required: meta.required } : {}),
-      ...(meta.title ? { title: meta.title } : {}),
-      ...(meta.description ? { description: meta.description } : {}),
-      ...(meta.notes ? { notes: meta.notes } : {}),
-      ...(meta.enum ? { enum: [...meta.enum] } : {}),
-      ...(meta.minimum !== undefined ? { minimum: meta.minimum } : {}),
-      ...(meta.maximum !== undefined ? { maximum: meta.maximum } : {}),
-      ...(meta.minLength !== undefined ? { minLength: meta.minLength } : {}),
-      ...(meta.maxLength !== undefined ? { maxLength: meta.maxLength } : {}),
-      ...(meta.pattern ? { pattern: meta.pattern } : {}),
-      ...(meta.itemType ? { itemType: meta.itemType } : {}),
-      ...(meta.examples ? { examples: [...meta.examples] } : {}),
-    };
-    byPath.set(path, merged);
-  }
-
-  return Array.from(byPath.values()).sort((a, b) => a.path.localeCompare(b.path));
-};
-
-const propertyFingerprint = (properties: PieDocsPropertyContract[]): string =>
+const propertyFingerprint = (properties: PieDocsProperty[]): string =>
   JSON.stringify(
     properties.map((p) => ({
       path: p.path,
@@ -245,12 +153,27 @@ const propertyFingerprint = (properties: PieDocsPropertyContract[]): string =>
     }))
   );
 
-const renderPropertyHtml = (prop: PieDocsPropertyContract): string => {
+// A type label names a documented type by its definition name; link those names to it.
+const renderType = (type: string, anchor: (name: string) => string | undefined): string =>
+  type
+    .split(' | ')
+    .map((member) => {
+      const id = anchor(member);
+      const code = `<code>${escapeHtml(member)}</code>`;
+      return id ? `<a href="#${id}">${code}</a>` : code;
+    })
+    .join(' | ');
+
+const renderPropertyHtml = (
+  prop: PieDocsProperty,
+  heading: 'h3' | 'h4',
+  anchor: (name: string) => string | undefined
+): string => {
   const rows: string[] = [];
-  rows.push(`<li><strong>Type:</strong> <code>${escapeHtml(prop.type)}</code></li>`);
+  rows.push(`<li><strong>Type:</strong> ${renderType(prop.type, anchor)}</li>`);
   rows.push(`<li><strong>Required:</strong> <code>${String(prop.required)}</code></li>`);
   if (prop.itemType) {
-    rows.push(`<li><strong>Item Type:</strong> <code>${escapeHtml(prop.itemType)}</code></li>`);
+    rows.push(`<li><strong>Item Type:</strong> ${renderType(prop.itemType, anchor)}</li>`);
   }
   if (prop.description) {
     rows.push(`<li><strong>Description:</strong> ${escapeHtml(prop.description)}</li>`);
@@ -276,45 +199,52 @@ const renderPropertyHtml = (prop: PieDocsPropertyContract): string => {
       prop.defaultValue !== undefined ? formatValue(prop.defaultValue) : '<em>none</em>'
     }</li>`
   );
-  if (prop.examples && prop.examples.length > 0) {
-    rows.push(
-      `<li><strong>Examples:</strong> ${prop.examples
-        .map((v) => `<code>${escapeHtml(formatInline(v))}</code>`)
-        .join(', ')}</li>`
-    );
-  }
-  if (prop.notes) {
-    rows.push(`<li><strong>Notes:</strong> ${escapeHtml(prop.notes)}</li>`);
-  }
 
   return `
   <section class="doc-property">
-    <h3><code>${escapeHtml(prop.path)}</code></h3>
+    <${heading}><code>${escapeHtml(prop.path)}</code></${heading}>
     <ul>
       ${rows.join('\n      ')}
     </ul>
   </section>`;
 };
 
-const renderPropertiesSectionHtml = (
-  title: string,
-  source: string,
-  properties: PieDocsPropertyContract[]
-): string => {
-  if (properties.length === 0) {
-    return `
-    <section class="doc-section">
-      <h2>${escapeHtml(title)}</h2>
-      <p><strong>Source:</strong> <code>${escapeHtml(source)}</code></p>
-      <p>No properties found.</p>
-    </section>`;
-  }
+const renderPropertiesSectionHtml = (opts: {
+  title: string;
+  schema?: string;
+  defaults?: string;
+  docs: PieDocsSchemaDocs;
+}): string => {
+  const sources = [
+    opts.schema && `<strong>Schema:</strong> <code>${escapeHtml(opts.schema)}</code>`,
+    opts.defaults && `<strong>Defaults:</strong> <code>${escapeHtml(opts.defaults)}</code>`,
+  ].filter(Boolean);
+  // Each schema carries its own definitions, so anchors are scoped to the section.
+  const prefix = opts.title.toLowerCase();
+  const names = new Set(opts.docs.definitions.map((definition) => definition.name));
+  const anchor = (name: string) =>
+    names.has(name) ? `${prefix}-${encodeURIComponent(name)}` : undefined;
+  const body =
+    opts.docs.properties.length > 0
+      ? opts.docs.properties.map((prop) => renderPropertyHtml(prop, 'h3', anchor)).join('\n')
+      : '<p>No properties found.</p>';
+  const definitions = opts.docs.definitions
+    .map(
+      (definition) => `
+    <section class="doc-definition" id="${anchor(definition.name)}">
+      <h3>Type <code>${escapeHtml(definition.name)}</code></h3>
+      ${definition.description ? `<p>${escapeHtml(definition.description)}</p>` : ''}
+      ${definition.properties.map((prop) => renderPropertyHtml(prop, 'h4', anchor)).join('\n')}
+    </section>`
+    )
+    .join('\n');
 
   return `
   <section class="doc-section">
-    <h2>${escapeHtml(title)}</h2>
-    <p><strong>Source:</strong> <code>${escapeHtml(source)}</code></p>
-    ${properties.map((prop) => renderPropertyHtml(prop)).join('\n')}
+    <h2>${escapeHtml(opts.title)}</h2>
+    ${sources.length > 0 ? `<p>${sources.join(' · ')}</p>` : ''}
+    ${body}
+    ${definitions}
   </section>`;
 };
 
@@ -333,6 +263,7 @@ const wrapHtmlPage = (title: string, body: string): string => `
       code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
       .doc-section { margin-bottom: 2rem; }
       .doc-property { margin: 0 0 1.25rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(128,128,128,.25); }
+      .doc-definition { margin: 1.5rem 0 0 0; padding-left: 1rem; border-left: 3px solid rgba(128,128,128,.35); }
       ul { padding-left: 1.25rem; }
       .meta-list li { margin-bottom: .25rem; }
     </style>
@@ -386,24 +317,40 @@ const renderElementIndexHtml = (opts: {
   `
   );
 
+const schemaSpecifier = (contract: PieDocsContract, kind: SchemaKind) =>
+  `${contract.packageName}/schemas/${kind}.schema.json`;
+
 const renderViewHtml = (opts: {
   contract: PieDocsContract;
-  view: string;
-  pieSource: string;
-  configSource: string;
-  pieProperties: PieDocsPropertyContract[];
-  configProperties: PieDocsPropertyContract[];
+  view: ResolvedViewDocs;
+  kinds: SchemaKind[];
+  sessionDocs: PieDocsSchemaDocs;
 }): string =>
   wrapHtmlPage(
-    `${opts.contract.elementName} ${opts.view} docs`,
+    `${opts.contract.elementName} ${opts.view.view} docs`,
     `
-    <h1>${escapeHtml(opts.contract.elementName)} / ${escapeHtml(opts.view)}</h1>
-    ${renderPropertiesSectionHtml('Model Defaults', opts.pieSource, opts.pieProperties)}
-    ${renderPropertiesSectionHtml(
-      'Authoring/Configuration Defaults',
-      opts.configSource,
-      opts.configProperties
-    )}
+    <h1>${escapeHtml(opts.contract.elementName)} / ${escapeHtml(opts.view.view)}</h1>
+    ${renderPropertiesSectionHtml({
+      title: 'Model',
+      schema: schemaSpecifier(opts.contract, 'model'),
+      defaults: opts.view.pieSource,
+      docs: opts.view.pieDocs,
+    })}
+    ${
+      opts.kinds.includes('configuration')
+        ? renderPropertiesSectionHtml({
+            title: 'Configuration',
+            schema: schemaSpecifier(opts.contract, 'configuration'),
+            defaults: opts.view.configSource,
+            docs: opts.view.configDocs,
+          })
+        : ''
+    }
+    ${renderPropertiesSectionHtml({
+      title: 'Session',
+      schema: schemaSpecifier(opts.contract, 'session'),
+      docs: opts.sessionDocs,
+    })}
   `
   );
 
@@ -424,9 +371,9 @@ const chooseViewDocs = (resolvedViews: ResolvedViewDocs[]): ResolvedViewDocs[] =
 
   if (print) {
     const deliveryFingerprint = delivery
-      ? `${propertyFingerprint(delivery.pieProperties)}|${propertyFingerprint(delivery.configProperties)}`
+      ? `${propertyFingerprint(delivery.pieDocs.properties)}|${propertyFingerprint(delivery.configDocs.properties)}`
       : '';
-    const printFingerprint = `${propertyFingerprint(print.pieProperties)}|${propertyFingerprint(print.configProperties)}`;
+    const printFingerprint = `${propertyFingerprint(print.pieDocs.properties)}|${propertyFingerprint(print.configDocs.properties)}`;
     const sourceDiffFromDelivery = delivery
       ? print.pieSource !== delivery.pieSource || print.configSource !== delivery.configSource
       : true;
@@ -469,23 +416,23 @@ export const generateDocsForContract = async (
     sourcesUsed: [],
   };
 
+  // Property rows come from the schemas the package publishes, generated here from source so the
+  // docs do not depend on the element having been built.
+  const schemas = generateElementSchemas(packageDir);
+  if (!schemas.model || !schemas.session) {
+    throw new Error(`${contract.packageName} publishes no model or session schema to document`);
+  }
+  const kinds = Object.keys(schemas) as SchemaKind[];
+  const sessionDocs = schemaDocs(schemas.session);
+
   const resolvedViews: ResolvedViewDocs[] = [];
   for (const view of contract.views) {
     const pieResolved = await loadValueWithFallback(packageDir, view.pie, 'pie');
     const configResolved = await loadValueWithFallback(packageDir, view.config, 'config');
-    const pieProperties = applyMetadata(
-      flattenProperties(pieResolved.value).sort((a, b) => a.path.localeCompare(b.path)),
-      view.metadata?.pie
-    );
-    const configProperties = applyMetadata(
-      flattenProperties(configResolved.value).sort((a, b) => a.path.localeCompare(b.path)),
-      view.metadata?.config
-    );
-
     resolvedViews.push({
       view: view.view,
-      pieProperties,
-      configProperties,
+      pieDocs: schemaDocs(schemas.model, pieResolved.value),
+      configDocs: schemaDocs(schemas.configuration, configResolved.value),
       pieSource: pieResolved.sourceLabel,
       configSource: configResolved.sourceLabel,
     });
@@ -513,8 +460,8 @@ export const generateDocsForContract = async (
       file: `${view.view}.html`,
       pieSource: view.pieSource,
       configSource: view.configSource,
-      hasModelDefaults: view.pieProperties.length > 0,
-      hasConfigDefaults: view.configProperties.length > 0,
+      hasModelDefaults: view.pieDocs.properties.length > 0,
+      hasConfigDefaults: view.configDocs.properties.length > 0,
     })),
   };
 
@@ -526,14 +473,7 @@ export const generateDocsForContract = async (
     },
     ...emittedViews.map((view) => ({
       path: join(elementOutputDir, `${view.view}.html`),
-      content: renderViewHtml({
-        contract,
-        view: view.view,
-        pieSource: view.pieSource,
-        configSource: view.configSource,
-        pieProperties: view.pieProperties,
-        configProperties: view.configProperties,
-      }),
+      content: renderViewHtml({ contract, view, kinds, sessionDocs }),
     })),
   ];
 
@@ -563,8 +503,8 @@ export const generateDocsForContract = async (
     sourcesUsed.add(view.configSource);
     outputs.views.push({
       view: view.view,
-      pieProperties: view.pieProperties,
-      configProperties: view.configProperties,
+      pieProperties: view.pieDocs.properties,
+      configProperties: view.configDocs.properties,
     });
   }
 

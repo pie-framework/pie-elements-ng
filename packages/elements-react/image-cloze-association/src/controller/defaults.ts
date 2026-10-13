@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { ImageClozeAssociationModel } from '../types.js';
 
 export default {
   rationale: '',
@@ -6,4 +6,4 @@ export default {
   studentInstructionsEnabled: true,
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
-};
+} satisfies Omit<ImageClozeAssociationModel, 'id' | 'element'>;

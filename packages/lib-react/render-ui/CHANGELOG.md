@@ -1,5 +1,13 @@
 # @pie-lib/render-ui
 
+## 8.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`f600063`](https://github.com/pie-framework/pie-elements-ng/commit/f6000632b8ca95914198b3a0ebdf773b8892090b)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.5
+  - @pie-element/shared-utils@0.1.4
+
 ## 8.0.3
 
 ### Patch Changes

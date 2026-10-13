@@ -126,8 +126,8 @@ export class TokenSelect extends React.Component {
       return;
     }
 
-    // don't toggle if in print mode, correctness is defined, or is missing
-    if (t && t.correct === undefined && !animationsDisabled && !t.isMissing) {
+    // don't toggle if in print mode, correctness is defined, is missing, or was eliminated
+    if (t && t.correct === undefined && !animationsDisabled && !t.isMissing && !t.eliminated) {
       const { onChange, maxNoOfSelections } = this.props;
       const selected = !t.selected;
 
@@ -290,7 +290,8 @@ export class TokenSelect extends React.Component {
     };
 
     const reducer = (accumulator, t, index) => {
-      const selectable = t.selected || (t.selectable && this.canSelectMore(selectedCount));
+      // An eliminated token stays in the keyboard sequence, unavailable like one past the limit.
+      const selectable = !t.eliminated && (t.selected || (t.selectable && this.canSelectMore(selectedCount)));
       const showCorrectAnswer = t.correct !== undefined && (t.selectable || t.selected);
 
       if (t.text === '\n\n') return `${accumulator}</p><p>`;
@@ -322,8 +323,11 @@ export class TokenSelect extends React.Component {
           }
         }
 
+        // The wrapper names the token's span for whatever acts on it, and gives a control placed
+        // beside the token a parent that is not the token's own button.
         return (
           accumulator +
+          `<span data-token-start="${t.start}" data-token-end="${t.end}">` +
           renderToString(
             <Token
               key={index}
@@ -337,7 +341,8 @@ export class TokenSelect extends React.Component {
               operable={sequenced}
               describedBy={describedBy}
             />,
-          )
+          ) +
+          '</span>'
         );
       }
 

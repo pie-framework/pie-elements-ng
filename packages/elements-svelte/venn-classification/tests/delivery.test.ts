@@ -31,14 +31,14 @@ import {
   TEXT_TILE_CELL,
 } from '../src/delivery/layout.js';
 import { model as controllerModel } from '../src/controller/index.js';
-import type { VennModel, VennSession } from '../src/types.js';
+import type { VennClassificationModel, VennClassificationSession } from '../src/types.js';
 
 const TAG = 'venn-classification--version-0-0-0-delivery-test';
 if (!customElements.get(TAG)) {
   customElements.define(TAG, VennClassificationElement as unknown as CustomElementConstructor);
 }
 
-const QUESTION: VennModel = {
+const QUESTION: VennClassificationModel = {
   id: '1',
   element: TAG,
   prompt: '<p>Sort each animal.</p>',
@@ -72,7 +72,7 @@ const POINT = {
   tray: { x: GEOMETRY.width / 2, y: TRAY_TOP + 50 },
 } as const;
 
-type PlayerSession = VennSession & Record<string, unknown>;
+type PlayerSession = VennClassificationSession & Record<string, unknown>;
 type Env = { mode: string; role: string };
 
 type Harness = {
@@ -131,7 +131,7 @@ async function settle() {
 async function mount(
   playerSession: PlayerSession = { id: '1', element: TAG },
   env: Env = GATHER,
-  question: VennModel = QUESTION
+  question: VennClassificationModel = QUESTION
 ): Promise<Harness> {
   const events: CustomEvent[] = [];
   const listener = (event: Event) => events.push(event as CustomEvent);
@@ -570,7 +570,7 @@ describe('venn-classification rendering', () => {
   });
 
   it('shows an error instead of throwing for a circle count it cannot lay out', async () => {
-    const threeSet: VennModel = {
+    const threeSet: VennClassificationModel = {
       ...QUESTION,
       circles: [{ label: 'A' }, { label: 'B' }, { label: 'C' }],
     };

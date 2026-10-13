@@ -1,19 +1,86 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { isEmpty, isEqual, pick } from '@pie-element/shared-lodash';
+import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 
 import { partialScoring } from '@pie-element/shared-controller-utils';
+import type {
+  ChartingCategory,
+  ChartingCategoryCorrectness,
+  ChartingConfiguration,
+  ChartingCorrectAnswer,
+  ChartingModel,
+  ChartingSession,
+} from '../types.js';
+
+/** The environment, plus the extra properties a host may ask the outcome for */
+export type ChartingEnvironment = PieEnvironment & { extraProps?: { correctResponseEnabled?: boolean } };
+
+/** A category marked correct or incorrect */
+export type ScoredCategory = ChartingCategory & { correctness: ChartingCategoryCorrectness };
+
+/** A category whose value and label both match the correct answer */
+export type ChartingCorrectResponse = { label: string; index?: number };
+
+export type ChartingScore = {
+  score: number;
+  answers: ScoredCategory[];
+  correctResponses?: ChartingCorrectResponse[];
+};
+
+export type ChartingValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  /** Category errors of the correct answer, keyed by category position */
+  categoryErrors?: Record<number, string>;
+  correctAnswerErrors?: {
+    categoriesError?: string;
+    identicalError?: string;
+  };
+};
+
+/** What `model()` returns for the delivery view */
+export type ChartingViewModel = {
+  addCategoryEnabled?: boolean;
+  chartType?: ChartingModel['chartType'];
+  data: Omit<ChartingCategory, 'deletable'>[];
+  domain?: ChartingModel['domain'];
+  graph?: ChartingModel['graph'];
+  prompt?: string | null;
+  range?: ChartingModel['range'];
+  rationale?: string | null;
+  title?: string;
+  size?: ChartingModel['graph'];
+  showToggle: boolean;
+  correctness: { correctness: string; score: string };
+  disabled: boolean;
+  scoringType?: ChartingModel['scoringType'];
+  studentNewCategoryDefaultLabel?: string;
+  language?: string;
+  env: ChartingEnvironment;
+  extraCSSRules?: ExtraCSSRules;
+  correctedAnswer?: Omit<ChartingCategory, 'deletable'>[];
+  correctAnswer?: ChartingCorrectAnswer;
+  showKeyLegend?: boolean;
+  teacherInstructions?: string | null;
+};
+
+type ChartingOutcome = {
+  score: number;
+  empty: boolean;
+  traceLog: string[];
+  extraProps?: { correctResponse?: ChartingCorrectResponse[] };
+};
 
 const log = debug('@pie-element:graphing:controller');
 
-const lowerCase = (string) => (string || '').toLowerCase();
+const lowerCase = (string?: string) => (string || '').toLowerCase();
 
-export const checkLabelsEquality = (givenAnswerLabel, correctAnswerLabel) =>
+export const checkLabelsEquality = (givenAnswerLabel?: string, correctAnswerLabel?: string) =>
   lowerCase(givenAnswerLabel) === lowerCase(correctAnswerLabel);
 
-export const setCorrectness = (answers, partialScoring) =>
+export const setCorrectness = (answers: ChartingCategory[] | undefined, partialScoring: boolean): ScoredCategory[] =>
   answers
     ? answers.map((answer) => ({
         ...answer,
@@ -24,11 +91,15 @@ export const setCorrectness = (answers, partialScoring) =>
       }))
     : [];
 
-export const normalize = (question) => ({ ...defaults, ...question });
+export const normalize = (question: ChartingModel) => ({ ...defaults, ...question });
 
-export const getScore = (question, session, env = {}) => {
+export const getScore = (
+  question: ChartingModel,
+  session: ChartingSession | null | undefined,
+  env: Partial<ChartingEnvironment> = {},
+): ChartingScore => {
   const { correctAnswer, data: initialData = [], scoringType } = question;
-  let correctResponses = [];
+  const correctResponses: ChartingCorrectResponse[] = [];
 
   const isPartialScoring = partialScoring.enabled(
     { partialScoring: scoringType !== undefined ? scoringType === 'partial scoring' : scoringType },
@@ -49,7 +120,7 @@ export const getScore = (question, session, env = {}) => {
     let maxScore = 0;
     let score = 0;
 
-    const scoreForLabelAndValueEditable = (answer, corrAnswer) => {
+    const scoreForLabelAndValueEditable = (answer: ScoredCategory, corrAnswer: ChartingCategory) => {
       const { value, label, index } = answer;
       const valueIsCorrect = value === corrAnswer.value;
       const labelIsCorrect = checkLabelsEquality(label, corrAnswer.label);
@@ -117,7 +188,7 @@ export const getScore = (question, session, env = {}) => {
     result = correctAnswers.length === answers.length ? 1 : 0;
 
     // regardless of overall result, mark each answer individually for user feedback
-    answers = answers.map((answer, index) => {
+    answers = answers.map((answer, index): ScoredCategory => {
       const correctAnswer = correctAnswers[index];
       const valueIsCorrect = correctAnswer ? answer.value === correctAnswer.value : false;
       const labelIsCorrect = correctAnswer ? lowerCase(answer.label) === lowerCase(correctAnswer.label) : false;
@@ -140,7 +211,7 @@ export const getScore = (question, session, env = {}) => {
     });
   }
 
-  const score = {
+  const score: ChartingScore = {
     score: parseFloat(result.toFixed(2)),
     answers,
   };
@@ -159,8 +230,12 @@ export const getScore = (question, session, env = {}) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: ChartingModel,
+  session: ChartingSession | null | undefined,
+  env: ChartingEnvironment,
+): string[] => {
+  const traceLog: string[] = [];
 
   const { correctAnswer, data: initialData = [], scoringType } = model || {};
   const { data: correctAnswers = [] } = correctAnswer || {};
@@ -208,7 +283,7 @@ export const getLogTrace = (model, session, env) => {
         return;
       }
 
-      const parts = [];
+      const parts: string[] = [];
       if (valueChanged) {
         parts.push(`value ${valueCorrect ? 'correct' : 'incorrect'}`);
       }
@@ -250,9 +325,14 @@ export const getLogTrace = (model, session, env) => {
 
 
 // eslint-disable-next-line no-unused-vars
-export const filterCategories = (categories) => (categories ? categories.map(({ deletable, ...rest }) => rest) : []);
+export const filterCategories = <T extends ChartingCategory>(categories?: T[]): Omit<T, 'deletable'>[] =>
+  categories ? categories.map(({ deletable, ...rest }) => rest) : [];
 
-export function model(question, session, env) {
+export function model(
+  question: ChartingModel,
+  session: ChartingSession | null | undefined,
+  env: ChartingEnvironment,
+): Promise<ChartingViewModel> {
   return new Promise((resolve) => {
     const normalizedQuestion = normalize(question);
     const {
@@ -278,7 +358,7 @@ export function model(question, session, env) {
 
     const correctInfo = { correctness: 'incorrect', score: '0%' };
 
-    const base = {
+    const base: ChartingViewModel = {
       addCategoryEnabled,
       chartType,
       data: filterCategories(data),
@@ -332,12 +412,16 @@ export function model(question, session, env) {
   });
 }
 
-export function outcome(model, session, env) {
+export function outcome(
+  model: ChartingModel,
+  session: ChartingSession | null | undefined,
+  env: ChartingEnvironment,
+): Promise<ChartingOutcome> {
   return new Promise((resolve) => {
     const traceLog = getLogTrace(model, session, env);
     const scoreObject = getScore(model, session, env);
     
-    const result = {
+    const result: ChartingOutcome = {
       score: scoreObject.score,
       empty: !session || isEmpty(session),
       traceLog
@@ -351,7 +435,10 @@ export function outcome(model, session, env) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
+export const createCorrectResponseSession = (
+  question: ChartingModel,
+  env: ChartingEnvironment,
+): Promise<ChartingSession | null> => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       const { correctAnswer } = question;
@@ -363,8 +450,9 @@ export const createCorrectResponseSession = (question, env) => {
         const { data } = question;
 
         answers = ((correctAnswer && correctAnswer.data) || []).map((answer, index) => {
+          // Throws when the model has no `data`, as it did untyped.
           return {
-            ...data[index],
+            ...(data as ChartingCategory[])[index],
             ...answer,
           };
         });
@@ -381,21 +469,24 @@ export const createCorrectResponseSession = (question, env) => {
 };
 
 // remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
+const getInnerText = (html?: string) => (html || '').replaceAll(/<[^>]*>/g, '');
 
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html?: string) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<ChartingModel> = {},
+  config: ChartingConfiguration = {},
+): ChartingValidationErrors => {
   const { correctAnswer, data } = model || {};
   const { data: correctData } = correctAnswer || {};
   const categories = correctData || [];
 
-  const errors = {};
-  const correctAnswerErrors = {};
-  const categoryErrors = {};
+  const errors: ChartingValidationErrors = {};
+  const correctAnswerErrors: NonNullable<ChartingValidationErrors['correctAnswerErrors']> = {};
+  const categoryErrors: Record<number, string> = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -419,8 +510,9 @@ export const validate = (model = {}, config = {}) => {
     correctAnswerErrors.categoriesError = 'The correct answer should include between 1 and 20 categories.';
   } else if (
     isEqual(
-      data.map((category) => pick(category, 'value', 'label')),
-      correctData.map((category) => pick(category, 'value', 'label')),
+      // `data.map` throws when the model has no `data`, as it did untyped.
+      (data as ChartingCategory[]).map((category) => pick(category, 'value', 'label')),
+      (correctData as ChartingCategory[]).map((category) => pick(category, 'value', 'label')),
     )
   ) {
     correctAnswerErrors.identicalError = 'Correct answer should not be identical to the chart’s initial state';

@@ -1,8 +1,6 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Configure from './configure.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Configure, { type AuthorModel } from './configure.js';
 import { isEmpty } from '@pie-element/shared-lodash';
 import {
   ModelUpdatedEvent,
@@ -10,18 +8,26 @@ import {
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 
 import defaults from './defaults.js';
+import type { MathInlineConfiguration, MathInlineModel, MathInlineResponse } from '../types.js';
 
 const log = debug('pie-elements:math-inline:configure');
 
 export default class MathInlineConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: MathInlineConfiguration;
+
+  static createDefaultModel = (model: Partial<MathInlineModel> = {}): AuthorModel => {
     // making sure that defaults are set
     if (!isEmpty(model.responses)) {
-      model.responses = model.responses.map((correctResponse) => ({
+      model.responses = (model.responses as MathInlineResponse[]).map((correctResponse) => ({
         ...correctResponse,
         validation: correctResponse.validation || defaults.model.validationDefault,
         allowTrailingZeros: correctResponse.allowTrailingZeros || defaults.model.allowTrailingZerosDefault,
@@ -39,12 +45,12 @@ export default class MathInlineConfigure extends HTMLElement {
     this._configuration = defaults.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<MathInlineModel>) {
     this._model = MathInlineConfigure.createDefaultModel(m);
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: MathInlineConfiguration) {
     const newConfiguration = {
       ...defaults.configuration,
       ...c,
@@ -60,19 +66,29 @@ export default class MathInlineConfigure extends HTMLElement {
       if (newConfiguration?.languageChoices?.options?.length) {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
-    } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+    } else if (
+      (newConfiguration.language as NonNullable<MathInlineConfiguration['language']>).settings &&
+      this._model.language
+    ) {
+      // `language` and `languageChoices` come from the defaults when the host leaves them out.
+      const language = this._configuration.language as NonNullable<MathInlineConfiguration['language']>;
+      const languageChoices = this._configuration.languageChoices as NonNullable<
+        MathInlineConfiguration['languageChoices']
+      >;
+      const modelLanguage = this._model.language;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      language.enabled = true;
+
+      if (!languageChoices.options || !languageChoices.options.length) {
+        languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
-          value: this._model.language,
-          label: this._model.language,
+      if (!languageChoices.options.find(option => option.value === modelLanguage)) {
+        languageChoices.options.push({
+          value: modelLanguage,
+          label: modelLanguage,
         });
       }
     } else {
@@ -82,7 +98,7 @@ export default class MathInlineConfigure extends HTMLElement {
     this._render();
   }
 
-  onModelChanged(model) {
+  onModelChanged(model: AuthorModel) {
     this._model = model;
     log('[onModelChanged]: ', this._model);
     this._render();
@@ -90,7 +106,7 @@ export default class MathInlineConfigure extends HTMLElement {
     this.dispatchEvent(new ModelUpdatedEvent(this._model));
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: MathInlineConfiguration) {
     this._configuration = c;
 
     if (this._model) {
@@ -104,19 +120,19 @@ export default class MathInlineConfigure extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

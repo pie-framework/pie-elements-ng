@@ -29,10 +29,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
-const Purpose = unwrapReactInteropSymbol(PurposeImport, 'Purpose') || unwrapReactInteropSymbol(renderUi.Purpose, 'Purpose');
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
-const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 const renderUiNamespaceAny = RenderUiNamespace as any;
@@ -41,6 +37,10 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const Purpose = unwrapReactInteropSymbol(PurposeImport, 'Purpose') || unwrapReactInteropSymbol(renderUi.Purpose, 'Purpose');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 // Must match the breakpoint Quiz Engine passes to the PIE section player for
 // switching from the side-by-side passage/question layout to the tabbed layout.
 // Below (and at) this width the passage tabs scroll with the passage content

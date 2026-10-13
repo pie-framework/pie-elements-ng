@@ -18,6 +18,10 @@ _Avoid_: Item creator, content editor
 The author view, a separate custom element registered under `<tag>-config`, through which an **Author** edits an **Element**'s **Model**.
 _Avoid_: Admin UI, config UI, configure mode, author mode, edit mode
 
+**Authoring configuration**:
+The object a host passes to an **Authoring surface** to choose which settings the **Author** sees and how its editors behave, typed per element as `<Name>Configuration`. It shapes the authoring surface; the **Model** is what the Author produces with it.
+_Avoid_: Config, settings, configure object
+
 **PRD**:
 A lightweight, intent-capturing spec at `docs/prds/<slug>/PRD.md`; PRDs own what to build, while tests own behavior.
 _Avoid_: Spec, requirements doc, ticket

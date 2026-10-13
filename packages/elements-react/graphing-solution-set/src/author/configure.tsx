@@ -1,18 +1,36 @@
-// @ts-nocheck
-
 import React from 'react';
 import { styled } from '@mui/material/styles';
 
 import { settings, layout, InputContainer } from '@pie-lib/config-ui';
-import PropTypes from 'prop-types';
-import debug from 'debug';
 import Typography from '@mui/material/Typography';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import GraphingConfig from './graphing-config.js';
 import CorrectResponse from './correct-response.js';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
+import type { GraphingSolutionSetValidationErrors } from '../controller/index.js';
+import type { GraphingSolutionSetConfiguration, GraphingSolutionSetModel } from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<GraphingSolutionSetModel> & {
+  errors?: GraphingSolutionSetValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type ConfigureProps = {
+  model: AuthorModel;
+  configuration: GraphingSolutionSetConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: GraphingSolutionSetConfiguration) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
 
 const { Panel, toggle, radio, checkboxes, textField, dropdown } = settings;
-const log = debug('@pie-element:graphing-solution-set:configure');
 
 const StyledInputContainer: any = styled(InputContainer)(({ theme }) => ({
   width: '100%',
@@ -25,16 +43,7 @@ const Description: any = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
 }));
 
-export class Configure extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-    imageSupport: PropTypes.object,
-    uploadSoundSupport: PropTypes.object,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-  };
-
+export class Configure extends React.Component<ConfigureProps> {
   /*
    * Triggered when configure component is mounted
    * */
@@ -51,9 +60,9 @@ export class Configure extends React.Component {
         arrows = { left: false, right: false, up: false, down: false };
       }
     }
-    const titleEnabled = showTitle === undefined || showTitle === null ? title.enabled : showTitle;
+    const titleEnabled = showTitle === undefined || showTitle === null ? title!.enabled : showTitle;
     const dimensionsEnabled =
-      showDimensions === undefined || showDimensions === null ? graphDimensions.enabled : showDimensions;
+      showDimensions === undefined || showDimensions === null ? graphDimensions!.enabled : showDimensions;
     onModelChanged && onModelChanged({ ...model, arrows, titleEnabled, dimensionsEnabled });
   }
 
@@ -61,7 +70,7 @@ export class Configure extends React.Component {
    * Triggered when the rationale is changed
    * @param {string} rationale - The new rationale
    * */
-  onRationaleChange: any = (rationale) => {
+  onRationaleChange = (rationale: string) => {
     const { onModelChanged, model } = this.props;
     onModelChanged({ ...model, rationale });
   };
@@ -70,7 +79,7 @@ export class Configure extends React.Component {
    * Triggered when the prompt is changed
    * @param {string} prompt - The new prompt
    * */
-  onPromptChange: any = (prompt) => {
+  onPromptChange = (prompt: string) => {
     const { onModelChanged, model } = this.props;
     onModelChanged({ ...model, prompt });
   };
@@ -79,7 +88,7 @@ export class Configure extends React.Component {
    * Triggered when the teacher instructions are changed
    * @param {string} teacherInstructions - The new teacher instructions
    * */
-  onTeacherInstructionsChange: any = (teacherInstructions) => {
+  onTeacherInstructionsChange = (teacherInstructions: string) => {
     const { onModelChanged, model } = this.props;
     onModelChanged({ ...model, teacherInstructions });
   };
@@ -112,7 +121,7 @@ export class Configure extends React.Component {
       maxImageHeight = {},
       withRubric = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       mathMlOptions = {},
     } = configuration || {};
     const {

@@ -33,7 +33,6 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
@@ -41,6 +40,7 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 import { exceedsMaxSelections } from './utils.js';
 import Translator from '@pie-lib/translator';
@@ -128,10 +128,19 @@ function resolveHeadingProps(element) {
 }
 
 export default class MultipleChoice extends HTMLElement {
+  /**
+   * The AfA PNP 3.0 supports this element takes. A PIE toolkit offers the answer
+   * eliminator to an element declaring `answer-masking` and reads its choices
+   * from `pieSupportTargets`.
+   */
+  static pieSupports = Object.freeze(['answer-masking']);
+
   constructor() {
     super();
     this._model = null;
     this._session = null;
+    // Choice values the answer eliminator struck out; none can be selected.
+    this._eliminatedChoices = new Set();
     this._options = null; // added for ebsr print mode detection
     this.audioComplete = false;
     this._boundHandleKeyDown = this.handleKeyDown.bind(this);
@@ -150,6 +159,7 @@ export default class MultipleChoice extends HTMLElement {
             options: this._options,
             onChoiceChanged: this._onChange.bind(this),
             onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
+            eliminatedChoices: [...this._eliminatedChoices],
             ...resolveHeadingProps(this),
           });
 
@@ -290,8 +300,60 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   _onChange(data) {
+    if (data.selected && this._eliminatedChoices.has(String(data.value))) {
+      return;
+    }
     updateSessionValue(this._session, this._model.choiceMode, data);
     this._dispatchResponseChanged();
+    this._rerender();
+  }
+
+  /**
+   * The rendered choices, for the `answer-masking` support this element
+   * declares. Each id is the choice's value.
+   */
+  pieSupportTargets(term) {
+    if (term !== 'answer-masking') {
+      return [];
+    }
+
+    return Array.from(this.querySelectorAll('.choice-input')).flatMap((container) => {
+      const input = container.querySelector('input[type="radio"], input[type="checkbox"]');
+      const content = container.querySelector('label');
+      if (!input?.value || !content) {
+        return [];
+      }
+
+      const { value } = input;
+      return [
+        {
+          id: value,
+          label: (content.querySelector('.prompt-label') ?? content).textContent.trim(),
+          container,
+          content,
+          isSelected: () => this._isChoiceSelected(value),
+          isEliminable: () =>
+            this._model?.mode === 'gather' && !this._model.disabled && !this._isChoiceSelected(value),
+          setEliminated: (eliminated) => this._setChoiceEliminated(value, eliminated),
+        },
+      ];
+    });
+  }
+
+  _isChoiceSelected(value) {
+    return (this._session?.value ?? []).some((selected) => String(selected) === value);
+  }
+
+  _setChoiceEliminated(value, eliminated) {
+    if (eliminated === this._eliminatedChoices.has(value)) {
+      return;
+    }
+
+    if (eliminated) {
+      this._eliminatedChoices.add(value);
+    } else {
+      this._eliminatedChoices.delete(value);
+    }
     this._rerender();
   }
 

@@ -1,9 +1,9 @@
 import McPopulatedBlankComponent from './McPopulatedBlank.svelte';
 import { defineDeliveryElement } from '@pie-lib/delivery-events-svelte';
-import type { McpbQuestion, McpbSession } from '../shared/types.js';
+import type { McPopulatedBlankModel, McPopulatedBlankSession } from '../types.js';
 import { selectedChoiceId } from '../shared/session.js';
 
-const DeliveryElement = defineDeliveryElement<McpbQuestion, McpbSession>(
+const DeliveryElement = defineDeliveryElement<McPopulatedBlankModel, McPopulatedBlankSession>(
   McPopulatedBlankComponent,
   { isComplete: (_model, session) => !!selectedChoiceId(session) }
 );
@@ -12,7 +12,7 @@ const DeliveryElement = defineDeliveryElement<McpbQuestion, McpbSession>(
  * Audio the learner must hear to the end before a pick counts as complete,
  * whether autoplay or the learner started it.
  */
-function requiresAudioCompletion(model: McpbQuestion | undefined): boolean {
+function requiresAudioCompletion(model: McPopulatedBlankModel | undefined): boolean {
   return !!model?.completeAudioEnabled && !!model?.hasAudio;
 }
 
@@ -33,14 +33,14 @@ class McPopulatedBlankElement extends DeliveryElement {
     };
   }
 
-  set model(m: McpbQuestion | undefined) {
+  set model(m: McPopulatedBlankModel | undefined) {
     // Autoplay re-fires only for a new `audioUrl`, so a re-set of the same
     // model must keep a finished playback counted.
     if (m?.audioUrl !== this.model?.audioUrl) this.audioComplete = false;
     super.model = m;
   }
 
-  get model(): McpbQuestion | undefined {
+  get model(): McPopulatedBlankModel | undefined {
     return super.model;
   }
 
@@ -55,10 +55,10 @@ class McPopulatedBlankElement extends DeliveryElement {
    * next pick from the session it renders.
    */
   #writeAudioTiming(timing: { audioStartTime?: number; audioEndTime?: number }) {
-    const session: McpbSession = this.session || {};
+    const session: McPopulatedBlankSession = this.session || {};
     const audioStartTime = session.audioStartTime || timing.audioStartTime;
     const audioEndTime = session.audioEndTime || timing.audioEndTime;
-    const next: McpbSession = {
+    const next: McPopulatedBlankSession = {
       ...session,
       ...(audioStartTime ? { audioStartTime } : {}),
       ...(audioEndTime ? { audioEndTime } : {}),

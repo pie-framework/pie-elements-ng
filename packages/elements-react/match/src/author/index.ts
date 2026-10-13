@@ -1,24 +1,32 @@
-// @ts-nocheck
-
 import { isEmpty, set } from '@pie-element/shared-lodash';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import Configure from './configure.js';
+import { createRoot, type Root } from 'react-dom/client';
+import Configure, { type AuthorModel } from './configure.js';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 import defaultValues from './defaults.js';
 import { cloneDeep } from '@pie-element/shared-lodash';
+import type { MatchConfiguration, MatchModel } from '../types.js';
 
 const log = debug('pie-elements:match:configure');
 
 export default class MatchConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _modelCopy?: AuthorModel;
+  private _configuration: MatchConfiguration;
+  hasPlayerAsParent?: boolean;
+
+  static createDefaultModel = (model: Partial<MatchModel> = {}): AuthorModel => ({
     ...defaultValues.model,
     ...model,
   });
@@ -30,14 +38,14 @@ export default class MatchConfigure extends HTMLElement {
     this._configuration = defaultValues.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<MatchModel>) {
     this._model = MatchConfigure.createDefaultModel(m);
     this._modelCopy = cloneDeep(this._model);
 
     this._render();
   }
 
-  resetModelAfterConfigurationIsSet: any = () => {
+  resetModelAfterConfigurationIsSet = () => {
     // In environments that use pie-player-components, model is set before configuration.
     // This is the reason why sometimes the model gets altered non-reversible
     // (altered using default configuration instead of client configuration, because at that point client configuration was not set yet)
@@ -55,7 +63,7 @@ export default class MatchConfigure extends HTMLElement {
     }
   };
 
-  set configuration(c) {
+  set configuration(c: MatchConfiguration) {
     const newConfiguration = {
       ...defaultValues.configuration,
       ...c,
@@ -74,18 +82,21 @@ export default class MatchConfigure extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      // `this._configuration` is `newConfiguration`
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
+
+      const language = this._model.language;
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
-          value: this._model.language,
-          label: this._model.language,
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === language)) {
+        newConfiguration.languageChoices.options.push({
+          value: language,
+          label: language,
         });
       }
     } else {
@@ -99,22 +110,23 @@ export default class MatchConfigure extends HTMLElement {
      */
 
     if (isEmpty(c?.rows?.inputConfiguration)) {
-      set(this._configuration.rows, 'inputConfiguration.image.disabled', !this._model?.enableImages);
-      set(this._configuration.rows, 'inputConfiguration.video.disabled', true);
-      set(this._configuration.rows, 'inputConfiguration.audio.disabled', true);
+      // `this._configuration` is still `newConfiguration`
+      set(newConfiguration.rows, 'inputConfiguration.image.disabled', !this._model?.enableImages);
+      set(newConfiguration.rows, 'inputConfiguration.video.disabled', true);
+      set(newConfiguration.rows, 'inputConfiguration.audio.disabled', true);
     }
 
     this._render();
   }
 
-  onModelChanged(model) {
+  onModelChanged(model: AuthorModel) {
     this._model = model;
     log('[onModelChanged]: ', this._model);
     this._render();
     this.dispatchEvent(new ModelUpdatedEvent(this._model));
   }
 
-  onConfigurationChanged(config) {
+  onConfigurationChanged(config: MatchConfiguration) {
     this._configuration = config;
     this._render();
   }
@@ -123,19 +135,19 @@ export default class MatchConfigure extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
-export const markupToText = (s) => {
+export const markupToText = (s: string | undefined) => {
     return (s || '').replace(/(<([^>]+)>)/ig, '');
 };

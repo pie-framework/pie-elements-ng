@@ -1,11 +1,27 @@
-// @ts-nocheck
-
 import { isEmpty } from '@pie-element/shared-lodash';
+import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import { getAllCorrectResponses, choiceIsEmpty } from './utils.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import defaults from './defaults.js';
+import type {
+  Choice,
+  CorrectResponse,
+  DragInTheBlankConfiguration,
+  DragInTheBlankModel,
+  DragInTheBlankSession,
+} from '../types.js';
 
-export const normalize = (question) => ({
+/** Errors `validate()` reports, keyed by field. */
+export type DragInTheBlankValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  correctResponseError?: string;
+  responseAreasError?: string;
+  choicesError?: string;
+};
+
+export const normalize = (question: DragInTheBlankModel) => ({
   ...defaults,
   ...question,
 });
@@ -17,19 +33,27 @@ export const normalize = (question) => ({
  * @param {*} env
  * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
  */
-export async function model(question, session, env, updateSession) {
+export async function model(
+  question: DragInTheBlankModel,
+  session: DragInTheBlankSession | undefined,
+  env: PieEnvironment,
+  updateSession?: PieUpdateSession,
+) {
   const normalizedQuestion = normalize(question);
-  let feedback = {};
+  let feedback: Record<string, boolean> = {};
 
   if (env.mode === 'evaluate') {
-    const responses = getAllCorrectResponses(normalizedQuestion) || {};
+    const responses = getAllCorrectResponses(normalizedQuestion);
     const allCorrectResponses = responses.possibleResponses;
     const numberOfPossibleResponses = responses.numberOfPossibleResponses || 0;
-    let correctResponses = undefined;
+    let correctResponses: number | undefined = undefined;
     const { value } = session || {};
 
     for (let i = 0; i < numberOfPossibleResponses; i++) {
-      const result = Object.keys(allCorrectResponses).reduce(
+      const result = Object.keys(allCorrectResponses).reduce<{
+        correctResponses: number;
+        feedback: Record<string, boolean>;
+      }>(
         (obj, key) => {
           const choices = allCorrectResponses[key];
           const answer = (value && value[key]) || '';
@@ -52,7 +76,8 @@ export async function model(question, session, env, updateSession) {
     }
   }
 
-  let choices = normalizedQuestion.choices && normalizedQuestion.choices.filter((choice) => !choiceIsEmpty(choice));
+  let choices: Choice[] | undefined =
+    normalizedQuestion.choices && normalizedQuestion.choices.filter((choice) => !choiceIsEmpty(choice));
 
   const lockChoiceOrder = lockChoices(normalizedQuestion, session, env);
 
@@ -67,6 +92,7 @@ export async function model(question, session, env, updateSession) {
   ).length;
 
   const shouldIncludeCorrectResponse = env.mode === 'evaluate';
+  const showInstructorContent = env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate');
 
   const out = {
     ...normalizedQuestion,
@@ -78,22 +104,17 @@ export async function model(question, session, env, updateSession) {
     responseCorrect: shouldIncludeCorrectResponse ? getScore(normalizedQuestion, session) === 1 : undefined,
     correctResponse: shouldIncludeCorrectResponse ? normalizedQuestion.correctResponse : undefined,
     responseAreasToBeFilled,
+    rationale: showInstructorContent && normalizedQuestion.rationaleEnabled ? normalizedQuestion.rationale : null,
+    teacherInstructions:
+      showInstructorContent && normalizedQuestion.teacherInstructionsEnabled
+        ? normalizedQuestion.teacherInstructions
+        : null,
   };
-
-  if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
-    out.rationale = normalizedQuestion.rationaleEnabled ? normalizedQuestion.rationale : null;
-    out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
-      ? normalizedQuestion.teacherInstructions
-      : null;
-  } else {
-    out.rationale = null;
-    out.teacherInstructions = null;
-  }
 
   return out;
 }
 
-export const getScore = (config, session) => {
+export const getScore = (config: DragInTheBlankModel, session: DragInTheBlankSession | undefined) => {
   const responses = getAllCorrectResponses(config);
   const allCorrectResponses = responses.possibleResponses;
   const maxScore = Object.keys(config.correctResponse).length;
@@ -122,7 +143,7 @@ export const getScore = (config, session) => {
     }
   }
 
-  const str = maxScore ? (correctCount / maxScore).toFixed(2) : 0;
+  const str = maxScore ? (correctCount / maxScore).toFixed(2) : '0';
 
   return parseFloat(str);
 };
@@ -134,8 +155,12 @@ export const getScore = (config, session) => {
  * @param {Object} env - the environment
  * @returns {Array} traceLog - array of trace messages
  */
-export const getLogTrace = (model, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  model: DragInTheBlankModel,
+  session: DragInTheBlankSession | undefined,
+  env: Partial<PieEnvironment>,
+) => {
+  const traceLog: string[] = [];
   const { value } = session || {};
   
   const responseAreas = Object.keys(model.correctResponse || {});
@@ -143,7 +168,7 @@ export const getLogTrace = (model, session, env) => {
   traceLog.push(`${totalAreas} response area(s) defined in this question.`);
   
   if (value && Object.keys(value).length > 0) {
-    const filledAreas = Object.entries(value).filter(([key, val]) => val && val.trim()).length;
+    const filledAreas = Object.entries(value).filter(([, val]) => val && val.trim()).length;
     traceLog.push(`Student added choices to ${filledAreas} out of ${totalAreas} response area(s).`);
     
     responseAreas.forEach((areaKey) => {
@@ -161,7 +186,6 @@ export const getLogTrace = (model, session, env) => {
   }
 
   const responses = getAllCorrectResponses(model);
-  const allCorrectResponses = responses.possibleResponses;
   const numberOfPossibleResponses = responses.numberOfPossibleResponses || 0;
   
   if (numberOfPossibleResponses > 1) {
@@ -190,8 +214,12 @@ export const getLogTrace = (model, session, env) => {
  * @param {boolean} env.partialScoring - is partial scoring enabled (if undefined default to true) This overrides
  *   `model.partialScoring`.
  */
-export function outcome(model, session, env = {}) {
-  return new Promise((resolve) => {
+export function outcome(
+  model: DragInTheBlankModel,
+  session: DragInTheBlankSession | undefined,
+  env: Partial<PieEnvironment> = {},
+) {
+  return new Promise<{ score: number; empty: boolean; traceLog: string[] }>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ 
         score: 0, 
@@ -212,8 +240,8 @@ export function outcome(model, session, env = {}) {
   });
 }
 
-export const createCorrectResponseSession = (question, env) => {
-  return new Promise((resolve) => {
+export const createCorrectResponseSession = (question: DragInTheBlankModel, env: PieEnvironment) => {
+  return new Promise<DragInTheBlankSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       resolve({
         value: question.correctResponse,
@@ -225,18 +253,15 @@ export const createCorrectResponseSession = (question, env) => {
   });
 };
 
-// remove all html tags
-const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
-
 // remove all html tags except img, iframe and source tag for audio
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (model: Partial<DragInTheBlankModel> = {}, config: DragInTheBlankConfiguration = {}) => {
   const { choices, correctResponse, markup } = model;
   const { minChoices = 2, maxChoices, maxResponseAreas } = config;
-  const errors = {};
+  const errors: DragInTheBlankValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
@@ -244,13 +269,13 @@ export const validate = (model = {}, config = {}) => {
 
   const nbOfResponseAreas = ((markup || '').match(/\{\{(\d+)\}\}/g) || []).length;
   const nbOfChoices = (choices || []).length;
-  const emptyResponseAreas = Object.values(correctResponse)?.filter((response) => !response);
+  const emptyResponseAreas = Object.values(correctResponse as CorrectResponse)?.filter((response) => !response);
 
   if (emptyResponseAreas.length) {
     errors.correctResponseError = 'There should be a choice defined for each response area.';
   }
 
-  if (nbOfResponseAreas > maxResponseAreas) {
+  if (maxResponseAreas !== undefined && nbOfResponseAreas > maxResponseAreas) {
     errors.responseAreasError = `No more than ${maxResponseAreas} response areas should be defined.`;
   } else if (nbOfResponseAreas < 1) {
     errors.responseAreasError = 'There should be at least 1 response area defined.';
@@ -258,7 +283,7 @@ export const validate = (model = {}, config = {}) => {
 
   if (nbOfChoices < minChoices) {
     errors.choicesError = `There should be at least ${minChoices} tokens defined.`;
-  } else if (nbOfChoices > maxChoices) {
+  } else if (maxChoices !== undefined && nbOfChoices > maxChoices) {
     errors.choicesError = `No more than ${maxChoices} tokens should be defined.`;
   }
 

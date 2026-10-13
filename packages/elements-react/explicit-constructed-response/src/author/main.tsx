@@ -1,7 +1,4 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import { cloneDeep, isEmpty, pick, throttle } from '@pie-element/shared-lodash';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { InputContainer, layout, settings } from '@pie-lib/config-ui';
@@ -9,11 +6,52 @@ import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions, EditableHtmlConfigureProp } from '@pie-element/shared-types';
 
 import ECRToolbar from './ecr-toolbar.js';
 import AlternateResponses from './alternateResponses.js';
 import { decodeHTML, getAdjustedLength } from './markupUtils.js';
 import { generateValidationMessage } from './utils.js';
+import type { ExplicitConstructedResponseValidationErrors } from '../controller/index.js';
+import type {
+  Choices,
+  ExplicitConstructedResponseConfiguration,
+  ExplicitConstructedResponseModel,
+} from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<ExplicitConstructedResponseModel> & {
+  choices: Choices;
+  markup: string;
+  slateMarkup: string;
+  errors?: ExplicitConstructedResponseValidationErrors;
+};
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type MainProps = {
+  model: AuthorModel;
+  configuration: ExplicitConstructedResponseConfiguration;
+  disableSidePanel?: boolean;
+  onModelChanged: (model: Partial<AuthorModel>, reset?: boolean) => void;
+  onConfigurationChanged: (configuration: ExplicitConstructedResponseConfiguration, reset?: boolean) => void;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type State = {
+  /** The editor markup when the author mounted */
+  markup?: string;
+  /** Choices of response areas removed from the markup, kept so an undo restores them */
+  cachedChoices?: Choices;
+};
+
+/** A response area node in the template editor */
+type ResponseAreaNode = { attrs: { index: string } };
 
 const { toggle, Panel, dropdown } = settings;
 
@@ -62,28 +100,15 @@ const ResponseHeader: any = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(1),
 }));
 
-const createElementFromHTML = (htmlString) => {
+const createElementFromHTML = (htmlString: string) => {
   const div = document.createElement('div');
   div.innerHTML = htmlString.trim();
 
   return div;
 };
 
-export class Main extends React.Component {
-  static propTypes = {
-    configuration: PropTypes.object.isRequired,
-    model: PropTypes.object.isRequired,
-    disableSidePanel: PropTypes.bool,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-    uploadSoundSupport: PropTypes.object,
-  };
-
-  state = {};
+export class Main extends React.Component<MainProps, State> {
+  state: State = {};
 
   componentDidMount() {
     const {
@@ -112,80 +137,83 @@ export class Main extends React.Component {
     onModelChanged({ maxLengthPerChoice });
   }
 
-  onModelChange: any = (newVal) => {
+  onModelChange = (newVal: Partial<AuthorModel>) => {
     this.props.onModelChanged({ ...newVal });
   };
 
-  onPromptChanged: any = (prompt) => {
+  onPromptChanged = (prompt: string) => {
     this.props.onModelChanged({ prompt });
   };
 
-  onRationaleChanged: any = (rationale) => {
+  onRationaleChanged = (rationale: string) => {
     this.props.onModelChanged({ rationale });
   };
 
-  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+  onTeacherInstructionsChanged = (teacherInstructions: string) => {
     const { onModelChanged } = this.props;
 
     onModelChanged({ teacherInstructions });
   };
 
-  onMarkupChanged: any = (slateMarkup) => {
+  onMarkupChanged = (slateMarkup: string) => {
     this.props.onModelChanged({ slateMarkup });
   };
 
-  onResponsesChanged: any = (choices) => {
+  onResponsesChanged = (choices: Choices) => {
     this.props.onModelChanged({ choices });
   };
 
-  onLengthChanged: any = (maxLengthPerChoice) => {
+  onLengthChanged = (maxLengthPerChoice: number[]) => {
     const { onModelChanged } = this.props;
 
     onModelChanged({ maxLengthPerChoice });
   };
 
-  onChangeResponse: any = (index, newVal) => {
+  onChangeResponse = (index: string, newVal: string) => {
     const { model, onModelChanged } = this.props;
     const { choices } = model;
-    let { maxLengthPerChoice } = model;
+    // componentDidMount sets `maxLengthPerChoice`, so it is present here.
+    let maxLengthPerChoice = model.maxLengthPerChoice as number[];
     const newValLength = decodeHTML(newVal || '').length;
 
     if (!choices[index] || !choices[index].length) {
       choices[index] = [{ label: newVal || '', value: '0' }];
 
       // add default values for missing choices up to the new index position
-      const nbOfMissingChoices = index > maxLengthPerChoice.length ? index - maxLengthPerChoice.length : 0;
+      const nbOfMissingChoices =
+        Number(index) > maxLengthPerChoice.length ? Number(index) - maxLengthPerChoice.length : 0;
 
       maxLengthPerChoice = [...maxLengthPerChoice, ...Array(nbOfMissingChoices).fill(1)];
 
-      maxLengthPerChoice.splice(index, 0, getAdjustedLength(newValLength));
+      maxLengthPerChoice.splice(Number(index), 0, getAdjustedLength(newValLength));
     } else {
       choices[index][0].label = newVal || '';
 
       if (
         maxLengthPerChoice &&
-        (maxLengthPerChoice[index] < newValLength || maxLengthPerChoice[index] > newValLength + 10)
+        (maxLengthPerChoice[Number(index)] < newValLength || maxLengthPerChoice[Number(index)] > newValLength + 10)
       ) {
-        maxLengthPerChoice[index] = getAdjustedLength(newValLength);
+        maxLengthPerChoice[Number(index)] = getAdjustedLength(newValLength);
       }
     }
 
     onModelChanged({ choices, maxLengthPerChoice });
   };
 
-  onChange: any = (markup) => {
+  onChange = (markup: string) => {
     const {
       model: { choices, maxLengthPerChoice },
       onModelChanged,
     } = this.props;
     const domMarkup = createElementFromHTML(markup);
-    const allRespAreas = domMarkup.querySelectorAll('[data-type="explicit_constructed_response"]');
+    const allRespAreas = domMarkup.querySelectorAll<HTMLElement>('[data-type="explicit_constructed_response"]');
 
-    const allChoices = {};
-    const updatedMaxLengthPerChoice = [];
+    const allChoices: Choices = {};
+    const updatedMaxLengthPerChoice: number[] = [];
 
     allRespAreas.forEach((el, index) => {
-      const newChoices = cloneDeep(choices[el.dataset.index]);
+      const areaIndex = el.dataset.index as string;
+      const newChoices = cloneDeep(choices[areaIndex]);
 
       if (newChoices) {
         newChoices[0] = {
@@ -193,11 +221,11 @@ export class Main extends React.Component {
           value: '0',
         };
 
-        updatedMaxLengthPerChoice[index] = maxLengthPerChoice[el.dataset.index];
+        updatedMaxLengthPerChoice[index] = (maxLengthPerChoice as number[])[Number(areaIndex)];
       }
 
       allChoices[index] = newChoices;
-      el.dataset.index = index;
+      el.dataset.index = `${index}`;
     });
 
     const callback = () =>
@@ -211,7 +239,7 @@ export class Main extends React.Component {
   };
 
   onHandleAreaChange = throttle(
-    (nodes) => {
+    (nodes: { index: string }[] | undefined) => {
       const {
         model: { choices },
         onModelChanged,
@@ -222,8 +250,8 @@ export class Main extends React.Component {
         return;
       }
 
-      const newChoices = choices ? cloneDeep(choices) : {};
-      const newCachedChoices = cachedChoices ? cloneDeep(cachedChoices) : {};
+      const newChoices: Choices = choices ? cloneDeep(choices) : {};
+      const newCachedChoices: Choices = cachedChoices ? cloneDeep(cachedChoices) : {};
 
       nodes.forEach((node) => {
         const keyForNode = node.index;
@@ -273,7 +301,7 @@ export class Main extends React.Component {
       withRubric = {},
       mathMlOptions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       spanishButton = {},
       responseAreaInputConfiguration = {},
     } = configuration || {};
@@ -322,7 +350,7 @@ export class Main extends React.Component {
       'editSource.enabled': editSource?.settings && toggle(editSource.label, true),
     };
 
-    const getPluginProps = (props = {}) => ({
+    const getPluginProps = (props: EditableHtmlConfigureProp = {}) => ({
       ...baseInputConfiguration,
       ...props,
     });
@@ -409,13 +437,13 @@ export class Main extends React.Component {
               duplicates: true,
             },
             maxResponseAreas: maxResponseAreas,
-            respAreaToolbar: (nodeInfo, editor, onToolbarDone) => {
+            respAreaToolbar: (nodeInfo: [ResponseAreaNode, number], editor: object, onToolbarDone: () => void) => {
               const [node, pos] = nodeInfo;
               const { model } = this.props;
               const correctChoice = (model.choices[node.attrs.index] || [])[0];
               return () => (
                 <ECRToolbar
-                  onChangeResponse={(newVal) => this.onChangeResponse(node.attrs.index, newVal)}
+                  onChangeResponse={(newVal: string) => this.onChangeResponse(node.attrs.index, newVal)}
                   node={node}
                   pos={pos}
                   editor={editor}
@@ -433,6 +461,7 @@ export class Main extends React.Component {
           onChange={this.onChange}
           imageSupport={imageSupport}
           disableImageAlignmentButtons={true}
+          // @ts-expect-error Main has no `onBlur`, so this passes undefined.
           onBlur={this.onBlur}
           disabled={false}
           highlightShape={false}
@@ -453,7 +482,7 @@ export class Main extends React.Component {
           model={model}
           onChange={this.onResponsesChanged}
           onLengthChange={this.onLengthChanged}
-          maxLengthPerChoiceEnabled={maxLengthPerChoiceEnabled}
+          maxLengthPerChoiceEnabled={maxLengthPerChoiceEnabled as boolean}
           spellCheck={spellCheckEnabled}
           choicesErrors={choicesErrors}
           pluginProps={getPluginProps(responseAreaInputConfiguration?.inputConfiguration)}

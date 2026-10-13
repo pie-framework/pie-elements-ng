@@ -1,6 +1,6 @@
-// @ts-nocheck
+import type { MathTemplatedConfiguration } from '../types.js';
 
-export const generateValidationMessage = (config) => {
+export const generateValidationMessage = (config: MathTemplatedConfiguration) => {
   const { maxResponseAreas } = config;
 
   const responseAreasMessage =

@@ -20,8 +20,12 @@ import {
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
 import { createDefaultModel } from '../controller/index';
 import defaults from '../controller/defaults';
+import type { SimpleClozeConfiguration, SimpleClozeModel } from '../types.js';
 
-let { model, configuration }: { model?: any; configuration?: Record<string, unknown> } = $props();
+let {
+  model,
+  configuration,
+}: { model?: SimpleClozeModel; configuration?: SimpleClozeConfiguration } = $props();
 
 const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
 

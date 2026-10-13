@@ -1,5 +1,11 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.5
+
+### Patch Changes
+
+- [#414](https://github.com/pie-framework/pie-elements-ng/pull/414) [`f600063`](https://github.com/pie-framework/pie-elements-ng/commit/f6000632b8ca95914198b3a0ebdf773b8892090b) Thanks [@chillenious](https://github.com/chillenious)! - The page option `window['@pie-lib/math-rendering@2'].opts.inTabOrder`, when `true`, puts typeset math in the keyboard tab order, for MathJax's menu setting and its explorer. Any other value keeps math out of it, as before.
+
 ## 0.1.4
 
 ### Patch Changes

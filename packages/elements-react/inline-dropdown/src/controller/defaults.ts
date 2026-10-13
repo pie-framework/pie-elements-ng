@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { InlineDropdownModel } from '../types.js';
 
 export default {
   alternateResponse: {},
@@ -17,4 +17,4 @@ export default {
   teacherInstructions: '',
   teacherInstructionsEnabled: true,
   toolbarEditorPosition: 'bottom',
-};
+} satisfies Omit<InlineDropdownModel, 'id' | 'element'>;

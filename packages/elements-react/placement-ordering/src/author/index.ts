@@ -1,33 +1,37 @@
-// @ts-nocheck
-
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
-import Main from './design.js';
+import Main, { type AuthorModel } from './design.js';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import defaultValues from './defaults.js';
 import { defaults } from '@pie-element/shared-lodash';
+import type { Choice, CorrectResponse, PlacementOrderingConfiguration, PlacementOrderingModel } from '../types.js';
 
-const prepareCustomizationObject = (config, model) => {
+const prepareCustomizationObject = (config: PlacementOrderingConfiguration, model: AuthorModel) => {
   const configuration = defaults(config, defaultValues.configuration);
 
   return { configuration, model };
 };
 
-export const addWeightToCorrectResponse = (correctResponse) =>
+export const addWeightToCorrectResponse = (
+  correctResponse?: Array<CorrectResponse | string>,
+): CorrectResponse[] | undefined =>
   correctResponse &&
   correctResponse.map((correct) => {
     // if weight is set
-    if (correct.weight !== undefined) {
+    if (typeof correct !== 'string' && correct.weight !== undefined) {
       return { id: correct.id, weight: correct.weight };
     } else {
-      return { id: correct.id || correct, weight: 0 };
+      return { id: (typeof correct !== 'string' && correct.id) || (correct as string), weight: 0 };
     }
   });
 /**
@@ -35,13 +39,22 @@ export const addWeightToCorrectResponse = (correctResponse) =>
  * correctResponse (if not set) will be initialized with choices default order
  */
 export default class PlacementOrdering extends HTMLElement {
-  static createDefaultModel = (model = {}) => {
-    const mapChoicesToReturnCorrectResponse = (choices) => choices && choices.map((ch) => ({ id: ch.id, weight: 0 }));
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: PlacementOrderingConfiguration;
+  onModelChanged: (model: AuthorModel, resetSession?: boolean) => void;
+  onConfigurationChanged: (configuration: PlacementOrderingConfiguration) => void;
+  insertImage: (handler: ImageHandler) => void;
+  deleteImage: (src: string, done: DeleteDone) => void;
+
+  static createDefaultModel = (model: Partial<PlacementOrderingModel> = {}): AuthorModel => {
+    const mapChoicesToReturnCorrectResponse = (choices?: Choice[]) =>
+      choices && choices.map((ch) => ({ id: ch.id, weight: 0 }));
 
     let correctResponse =
       addWeightToCorrectResponse(model.correctResponse) || mapChoicesToReturnCorrectResponse(model.choices);
 
-    const defaultModel = {
+    const defaultModel: AuthorModel = {
       ...defaultValues.model,
       ...model,
     };
@@ -67,7 +80,7 @@ export default class PlacementOrdering extends HTMLElement {
     };
 
     this.onConfigurationChanged = (configuration) => {
-      this._configuration = prepareCustomizationObject(configuration).configuration;
+      this._configuration = prepareCustomizationObject(configuration, this._model).configuration;
 
       this.onModelChanged(this._model);
       this._rerender();
@@ -82,16 +95,16 @@ export default class PlacementOrdering extends HTMLElement {
     };
   }
 
-  dispatchUpdate(reset) {
+  dispatchUpdate(reset?: boolean) {
     this.dispatchEvent(new ModelUpdatedEvent(this._model, reset));
   }
 
-  set model(s) {
+  set model(s: Partial<PlacementOrderingModel>) {
     this._model = PlacementOrdering.createDefaultModel(s);
     this._rerender();
   }
 
-  set configuration(c) {
+  set configuration(c: PlacementOrderingConfiguration) {
     const info = prepareCustomizationObject(c, this._model);
 
     this.onModelChanged(info.model);
@@ -112,16 +125,16 @@ export default class PlacementOrdering extends HTMLElement {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
     } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+      newConfiguration.language.enabled = true;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      if (!newConfiguration.languageChoices.options || !newConfiguration.languageChoices.options.length) {
+        newConfiguration.languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
+      if (!newConfiguration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        newConfiguration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
         });
@@ -133,11 +146,11 @@ export default class PlacementOrdering extends HTMLElement {
     this._rerender();
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 
