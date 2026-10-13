@@ -28,7 +28,7 @@
     "glob": "^13.0.0",
     "open": "^10.0.3",
     "ts-json-schema-generator": "^2.9.0",
-    "webpack": "^5.104.1"
+    "webpack": "^5.111.1"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
