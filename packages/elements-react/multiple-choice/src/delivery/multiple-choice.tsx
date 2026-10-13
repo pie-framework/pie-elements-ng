@@ -114,6 +114,8 @@ export class MultipleChoice extends React.Component {
     teacherInstructions: PropTypes.string,
     session: PropTypes.object,
     disabled: PropTypes.bool,
+    // Choice values struck out by the answer eliminator, which cannot be selected.
+    eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
     onChoiceChanged: PropTypes.func,
     responseCorrect: PropTypes.bool,
     correctResponse: PropTypes.array,
@@ -316,6 +318,7 @@ export class MultipleChoice extends React.Component {
       customAudioButton,
       options,
       baseHeadingLevel,
+      eliminatedChoices = [],
     } = this.props;
     const { showCorrect, maxSelectionsErrorState } = this.state;
     const isEvaluateMode = mode === 'evaluate';
@@ -429,7 +432,7 @@ export class MultipleChoice extends React.Component {
                 showCorrect={showCorrect}
                 isEvaluateMode={isEvaluateMode}
                 choiceMode={choiceMode}
-                disabled={disabled}
+                disabled={disabled || eliminatedChoices.includes(String(choice.value))}
                 tagName={this.groupName}
                 onChoiceChanged={this.handleChange}
                 hideTick={choice.hideTick}

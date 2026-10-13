@@ -24,6 +24,12 @@ export default class TextSelect extends React.Component {
     animationsDisabled: PropTypes.bool,
     maxNoOfSelections: PropTypes.number,
     language: PropTypes.string,
+    // Tokens the learner struck out with an answer eliminator; none can be selected.
+    eliminatedTokens: PropTypes.arrayOf(PropTypes.shape({ start: PropTypes.number, end: PropTypes.number })),
+  };
+
+  static defaultProps = {
+    eliminatedTokens: [],
   };
 
   change: any = (tokens) => {
@@ -48,6 +54,7 @@ export default class TextSelect extends React.Component {
       maxNoOfSelections,
       animationsDisabled,
       language,
+      eliminatedTokens,
     } = this.props;
 
     const normalized = normalize(text, tokens);
@@ -59,12 +66,14 @@ export default class TextSelect extends React.Component {
       const selected = selectedIndex !== -1;
       const correct = selected ? t.correct : undefined;
       const isMissing = t.isMissing;
+      const eliminated = !!t.predefined && (eliminatedTokens || []).some((e) => e.start === t.start && e.end === t.end);
       return {
         ...t,
         selectable: !disabled && t.predefined,
         selected,
         correct,
         isMissing,
+        eliminated,
       };
     });
 

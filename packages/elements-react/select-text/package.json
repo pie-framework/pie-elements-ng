@@ -106,7 +106,10 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/debug": "^4.1.12"
+    "@types/debug": "^4.1.12",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/dom": "^10.4.2",
+    "vitest": "^4.1.11"
   },
   "scripts": {
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
