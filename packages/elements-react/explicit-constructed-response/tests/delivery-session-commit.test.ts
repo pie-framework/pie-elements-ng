@@ -2,8 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../src/delivery/main.js', () => ({ default: () => null }));
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
+// A root's unmount runs onUnmount, standing in for an editor that saves as it unmounts.
+const roots = vi.hoisted(() => ({ created: 0, rendered: 0, last: null as any, onUnmount: null as null | (() => void) }));
 vi.mock('react-dom/client', () => ({
-  createRoot: () => ({ render: () => {}, unmount: () => {} }),
+  createRoot: () => {
+    roots.created += 1;
+    return {
+      render: (element: unknown) => {
+        roots.rendered += 1;
+        roots.last = element;
+      },
+      unmount: () => roots.onUnmount?.(),
+    };
+  },
 }));
 
 const { default: ExplicitConstructedResponse } = await import('../src/delivery/index.js');
@@ -33,6 +44,7 @@ describe('explicit-constructed-response session commit', () => {
   afterEach(() => {
     vi.useRealTimers();
     document.body.innerHTML = '';
+    roots.onUnmount = null;
   });
 
   it('writes the value to the session synchronously, before the notification', () => {
@@ -101,5 +113,37 @@ describe('explicit-constructed-response session commit', () => {
     expect(atDocument).toHaveLength(1);
     expect(element.isConnected).toBe(true);
     expect(element.session.value).toEqual({ 0: 'cat' });
+  });
+
+  it('commits a value the editor writes as it unmounts, without rendering again', () => {
+    const { element, events } = mount();
+    roots.onUnmount = () => element.changeSession({ 0: 'typed last' });
+    const { created, rendered } = roots;
+
+    element.remove();
+
+    expect(events).toHaveLength(1);
+    expect(element.session.value).toEqual({ 0: 'typed last' });
+    expect(roots.created).toBe(created);
+    expect(roots.rendered).toBe(rendered);
+
+    vi.advanceTimersByTime(2000);
+    expect(events).toHaveLength(1);
+  });
+
+  it('passes the idle-save delay to the delivery', () => {
+    mount({ idleSaveDelay: 1000 });
+
+    expect(roots.last.props.idleSaveDelay).toBe(1000);
+  });
+
+  it("keeps another blank's commit when a blank changes on a value from an older render", () => {
+    const { element } = mount();
+
+    element.changeSession({ 0: 'a' }, '0');
+    // Blank 1 still holds the value from before blank 0's commit was rendered.
+    element.changeSession({ 0: '', 1: 'b' }, '1');
+
+    expect(element.session.value).toEqual({ 0: 'a', 1: 'b' });
   });
 });

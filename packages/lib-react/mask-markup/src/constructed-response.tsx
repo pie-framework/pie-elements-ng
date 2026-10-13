@@ -43,12 +43,14 @@ const MaskedInput = (props) => (node, data) => {
     const isCorrect = showCorrectAnswer || feedbackStatus === 'correct';
     const isIncorrect = !showCorrectAnswer && feedbackStatus === 'incorrect';
 
+    // `data` is the value from the last render, which can be behind what the caller holds. The
+    // blank's id goes along so a caller can apply just this blank's change.
     const handleInputChange = (newValue) => {
       const updatedValue = {
         ...data,
         [dataset.id]: newValue,
       };
-      onChange(updatedValue);
+      onChange(updatedValue, dataset.id);
     };
 
     const handleKeyDown = (event) => {

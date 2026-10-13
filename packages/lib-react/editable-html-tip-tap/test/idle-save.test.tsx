@@ -9,17 +9,23 @@ const { EditableHtml } = await import('../src/components/EditableHtml');
 
 const mountEditor = async (props: Record<string, unknown> = {}) => {
   let instance: any;
-  const view = render(
+  const element = (extra: Record<string, unknown> = {}) => (
     <EditableHtml
       markup=""
       onChange={vi.fn()}
       activePlugins={[]}
       editorRef={(e: any) => (instance = e || instance)}
       {...props}
+      {...extra}
     />
   );
+  const view = render(element());
   await vi.waitFor(() => expect(instance).toBeTruthy());
-  return { editor: instance, unmount: view.unmount };
+  return {
+    editor: instance,
+    rerender: (extra: Record<string, unknown>) => view.rerender(element(extra)),
+    unmount: view.unmount,
+  };
 };
 
 const type = (editor: any, text: string) =>
@@ -110,5 +116,49 @@ describe('EditableHtml idle save', () => {
     composing = false;
     vi.advanceTimersByTime(500);
     expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps typing that follows a save when the caller passes the save back', async () => {
+    const onChange = vi.fn();
+    const { editor, rerender } = await mountEditor({ onChange, idleSaveDelay: 500 });
+    vi.useFakeTimers();
+
+    type(editor, 'abc');
+    vi.advanceTimersByTime(500);
+    const saved = onChange.mock.calls[0][0];
+    type(editor, 'd');
+    const cursor = editor.state.selection.from;
+
+    rerender({ markup: saved });
+
+    expect(editor.getText()).toBe('abcd');
+    expect(editor.state.selection.from).toBe(cursor);
+  });
+
+  it('keeps the blocks of a multi-line save when the caller passes it back', async () => {
+    const onChange = vi.fn();
+    const { editor, rerender } = await mountEditor({ onChange, idleSaveDelay: 500 });
+    vi.useFakeTimers();
+    act(() => {
+      editor.commands.setContent('<div>A</div><div>B</div>');
+    });
+
+    type(editor, '!');
+    vi.advanceTimersByTime(500);
+    const saved = onChange.mock.calls[0][0];
+    const cursor = editor.state.selection.from;
+
+    rerender({ markup: saved });
+
+    expect(editor.getHTML()).toBe(saved);
+    expect(editor.state.selection.from).toBe(cursor);
+  });
+
+  it('still takes markup that the editor did not send', async () => {
+    const { editor, rerender } = await mountEditor({ idleSaveDelay: 500 });
+
+    rerender({ markup: '<div>from the host</div>' });
+
+    expect(editor.getText()).toBe('from the host');
   });
 });

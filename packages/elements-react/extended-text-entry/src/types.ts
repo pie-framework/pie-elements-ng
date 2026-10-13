@@ -135,7 +135,7 @@ export interface ExtendedTextEntryModel extends PieModel {
   /**
    * How long, in milliseconds, the student has to stop typing before the response is saved without
    * the editor losing focus; 0 saves on blur only
-   * @default 1000
+   * @default 1500
    */
   playerIdleSaveDelay?: number;
   /**

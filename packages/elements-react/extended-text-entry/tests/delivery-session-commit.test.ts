@@ -2,8 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../src/delivery/main.js', () => ({ default: () => null }));
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
+// A root's unmount runs onUnmount, standing in for an editor that saves as it unmounts.
+const roots = vi.hoisted(() => ({ created: 0, rendered: 0, onUnmount: null as null | (() => void) }));
 vi.mock('react-dom/client', () => ({
-  createRoot: () => ({ render: () => {}, unmount: () => {} }),
+  createRoot: () => {
+    roots.created += 1;
+    return { render: () => (roots.rendered += 1), unmount: () => roots.onUnmount?.() };
+  },
 }));
 
 const { default: RootExtendedTextEntry } = await import('../src/delivery/index.js');
@@ -33,6 +38,7 @@ describe('extended-text-entry session commit', () => {
   afterEach(() => {
     vi.useRealTimers();
     document.body.innerHTML = '';
+    roots.onUnmount = null;
   });
 
   it('writes the value to the session synchronously, before the notification', () => {
@@ -95,5 +101,21 @@ describe('extended-text-entry session commit', () => {
 
     expect(events).toHaveLength(1);
     expect(element.isConnected).toBe(true);
+  });
+
+  it('commits a value the editor writes as it unmounts, without rendering again', () => {
+    const { element, events } = mount();
+    roots.onUnmount = () => element.valueChange('<div>typed last</div>');
+    const { created, rendered } = roots;
+
+    element.remove();
+
+    expect(events).toHaveLength(1);
+    expect(element.session.value).toBe('<div>typed last</div>');
+    expect(roots.created).toBe(created);
+    expect(roots.rendered).toBe(rendered);
+
+    vi.advanceTimersByTime(2000);
+    expect(events).toHaveLength(1);
   });
 });

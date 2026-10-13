@@ -144,6 +144,9 @@ const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy) => ({
 // after the caller drops them.
 const OPTIONAL_EDITOR_ATTRIBUTES = ['aria-label', 'aria-labelledby'];
 
+// How many of its own recent saves the editor recognises when the caller passes them back.
+const SENT_MARKUPS_KEPT = 5;
+
 // An image upload, a toolbar or a response area the user is still working in. Neither a blur nor an
 // idle save commits the content while one is open.
 const isEditingElsewhere = (editor) =>
@@ -176,12 +179,27 @@ export const EditableHtml = (props) => {
     ...toolbarOpts,
   };
 
+  // The markups this editor sent through onChange most recently. A markup prop equal to one of
+  // them is the caller passing a save back, possibly after the user typed on, so it must not
+  // replace the content. A few are kept because a caller can re-render an older save late.
+  const sentMarkupsRef = useRef([]);
+
+  const emitChange = (html) => {
+    sentMarkupsRef.current = [...sentMarkupsRef.current.slice(1 - SENT_MARKUPS_KEPT), html];
+    props.onChange?.(html);
+  };
+
+  // useEditor's callbacks and the idle save read the latest one through this.
+  const emitChangeRef = useRef(emitChange);
+
+  emitChangeRef.current = emitChange;
+
   const commitEditorContent = useCallback(
     (editor) => {
       const html = editor.getHTML();
 
       if (props.markup !== html) {
-        props.onChange?.(html);
+        emitChangeRef.current(html);
       }
 
       if (toolbarOptsToUse.doneOn === 'blur') {
@@ -368,7 +386,7 @@ export const EditableHtml = (props) => {
 
               if (scheduled && result) {
               // finish editing only on success
-                cb = props.onChange;
+                cb = emitChangeRef.current;
               }
 
               removePendingImage(pos);
@@ -444,7 +462,7 @@ export const EditableHtml = (props) => {
       content: normalizeInitialMarkup(props.markup),
       onUpdate: ({ editor, transaction }) => {
         if (transaction.isDone) {
-          props.onChange?.(editor.getHTML());
+          emitChangeRef.current(editor.getHTML());
         }
 
         if (transaction.docChanged) {
@@ -512,6 +530,15 @@ export const EditableHtml = (props) => {
     if (!editor) {
       return;
     }
+    // The editor's own save coming back. The user may have typed on since, and normalizing it would
+    // also restructure the blocks under the cursor.
+    if (sentMarkupsRef.current.includes(props.markup)) {
+      return;
+    }
+
+    // Markup from elsewhere: the saves sent before it no longer describe what the caller holds.
+    sentMarkupsRef.current = [];
+
     const nextMarkup = normalizeInitialMarkup(props.markup);
 
     if (nextMarkup !== editor.getHTML()) {

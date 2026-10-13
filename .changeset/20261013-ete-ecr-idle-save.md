@@ -4,4 +4,4 @@
 "@pie-element/explicit-constructed-response": minor
 ---
 
-Extended text entry and explicit constructed response save the student's response once the student stops typing for `playerIdleSaveDelay` milliseconds, not only when the editor loses focus. The new model property defaults to 1000, and 0 saves on blur only. `ConstructedResponse` in `@pie-lib/mask-markup` passes a new `idleSaveDelay` prop on to each blank's editor.
+Extended text entry and explicit constructed response save the student's response once the student stops typing for `playerIdleSaveDelay` milliseconds, not only when the editor loses focus. The new model property defaults to 1500, and 0 saves on blur only. `ConstructedResponse` in `@pie-lib/mask-markup` passes a new `idleSaveDelay` prop on to each blank's editor. Its `onChange` also gets the changed blank's id as a second argument, which explicit constructed response uses so a blank's save no longer overwrites another blank's answer.

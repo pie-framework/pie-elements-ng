@@ -18,8 +18,8 @@ const { translator } = Translator;
 
 const log = debug('@pie-elements:extended-text-entry');
 
-// Coalesce a burst of editor commits. The editor only calls back on blur and on
-// a `done` transaction, so this window is short-lived in practice.
+// Coalesce a burst of editor commits. The editor calls back on blur, on a `done`
+// transaction and after the student pauses typing for the model's idle-save delay.
 const SESSION_NOTIFY_DELAY_MS = 1500;
 
 const domParser = typeof window !== undefined ? new DOMParser() : { parseFromString: (v) => v };
@@ -53,6 +53,7 @@ export default class RootExtendedTextEntry extends HTMLElement {
     this._model = null;
     this._session = null;
     this._root = null;
+    this._disconnecting = false;
 
     // The session is written synchronously on commit; only the notification is
     // deferred, so a player reading `.session` always sees the committed
@@ -137,6 +138,10 @@ export default class RootExtendedTextEntry extends HTMLElement {
   }
 
   render() {
+    if (this._disconnecting) {
+      return;
+    }
+
     if (this._model && this._session) {
       let elem = React.createElement(Main, {
         model: this._model,
@@ -160,11 +165,19 @@ export default class RootExtendedTextEntry extends HTMLElement {
   }
 
   disconnectedCallback() {
-    flushSessionNotifiers(this);
+    // Unmount first: the response editor sends its pending idle save as it unmounts, and that
+    // write has to be in the session before the notifiers flush. Nothing re-renders meanwhile.
+    this._disconnecting = true;
 
-    if (this._root) {
-      this._root.unmount();
-      this._root = null;
+    try {
+      if (this._root) {
+        this._root.unmount();
+        this._root = null;
+      }
+
+      flushSessionNotifiers(this);
+    } finally {
+      this._disconnecting = false;
     }
   }
 }

@@ -32,6 +32,7 @@ export default class InlineDropdown extends HTMLElement {
     this._model = null;
     this._session = null;
     this._root = null;
+    this._disconnecting = false;
 
     // The session is written synchronously on commit; the dispatch and the
     // re-render are what get coalesced, which keeps the render cadence the
@@ -79,6 +80,10 @@ export default class InlineDropdown extends HTMLElement {
   }
 
   _render: any = () => {
+    if (this._disconnecting) {
+      return;
+    }
+
     if (this._model && this._session) {
       let elem = React.createElement(Main, {
         choices: this._model.choices,
@@ -93,6 +98,7 @@ export default class InlineDropdown extends HTMLElement {
         note: this._model.note,
         onChange: this.changeSession,
         playerSpellCheckEnabled: this._model.playerSpellCheckEnabled,
+        idleSaveDelay: this._model.idleSaveDelay,
         prompt: this._model.prompt,
         rationale: this._model.rationale,
         role: this._model.role,
@@ -116,8 +122,11 @@ export default class InlineDropdown extends HTMLElement {
     this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.session && !!this.session.value));
   };
 
-  changeSession: any = (value) => {
-    this.session.value = value;
+  // A blank builds `value` on the session from the last render, and the re-render after a commit
+  // waits for the notifier, so another blank's commit since then would be overwritten. With the
+  // blank's id, only that blank's answer is written.
+  changeSession: any = (value, id) => {
+    this.session.value = id === undefined ? value : { ...this.session.value, [id]: value[id] };
     this._sessionNotifier.notify();
   };
 
@@ -129,11 +138,19 @@ export default class InlineDropdown extends HTMLElement {
   }
 
   disconnectedCallback() {
-    flushSessionNotifiers(this);
+    // Unmount first: the response editor sends its pending idle save as it unmounts, and that
+    // write has to be in the session before the notifiers flush. Nothing re-renders meanwhile.
+    this._disconnecting = true;
 
-    if (this._root) {
-      this._root.unmount();
-      this._root = null;
+    try {
+      if (this._root) {
+        this._root.unmount();
+        this._root = null;
+      }
+
+      flushSessionNotifiers(this);
+    } finally {
+      this._disconnecting = false;
     }
   }
 }

@@ -135,8 +135,8 @@ export class Main extends React.Component {
   // Coalescing lives on the custom element's `session-changed` dispatch, which
   // also owns the per-model delay `maxLengthPerChoice` selects. Holding the
   // value here instead left `.session` stale until the timer fired.
-  onChange: any = (value) => {
-    this.props.onChange(value);
+  onChange: any = (value, id) => {
+    this.props.onChange(value, id);
   };
 
   render() {
