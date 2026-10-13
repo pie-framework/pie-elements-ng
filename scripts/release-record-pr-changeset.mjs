@@ -21,6 +21,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   collectPublishablePackages,
+  dropUnshippedManifestChanges,
   git,
   parseChangesetReleases,
   planSynthesizedChangeset,
@@ -79,7 +80,14 @@ function main() {
     return;
   }
 
-  const changedFiles = toLines(git(rootDir, ['diff', '--name-only', args.base, args.head]));
+  const packages = collectPublishablePackages(rootDir);
+  const changedFiles = dropUnshippedManifestChanges({
+    rootDir,
+    base: args.base,
+    head: args.head,
+    files: toLines(git(rootDir, ['diff', '--name-only', args.base, args.head])),
+    packages,
+  });
   const authoredChangesets = toLines(
     git(rootDir, [
       'diff',
@@ -100,7 +108,7 @@ function main() {
     rootDir,
     changedFiles,
     authoredChangesets,
-    packages: collectPublishablePackages(rootDir),
+    packages,
   });
 
   if (selected.length === 0) {

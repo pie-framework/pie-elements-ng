@@ -35,6 +35,25 @@ const NON_SHIPPING_PATTERNS = [
 const isShippingPath = (packageRelativePath) =>
   !NON_SHIPPING_PATTERNS.some((pattern) => pattern.test(packageRelativePath));
 
+// A manifest edit confined to `@types/*` devDependencies changes nothing a package publishes:
+// they hold only declarations, which no build bundles. Every other devDependency ships, because a
+// package can bundle it into `dist` (`shared-lodash` vendors `lodash-es`) or build with it (`vite`),
+// and so does every other field. The comparison keeps key order, because `exports` resolves its
+// conditions in order. A manifest absent or unparseable on either side ships.
+export function manifestChangeShips(before, after) {
+  if (!before || !after) return true;
+  const shipped = (manifest) => {
+    const dev = Object.entries(manifest.devDependencies ?? {}).filter(
+      ([name]) => !name.startsWith('@types/')
+    );
+    return JSON.stringify({
+      ...manifest,
+      devDependencies: dev.length > 0 ? Object.fromEntries(dev) : undefined,
+    });
+  };
+  return shipped(before) !== shipped(after);
+}
+
 function readJson(path) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
@@ -213,14 +232,28 @@ export const toLines = (stdout) =>
     .map((line) => line.trim())
     .filter(Boolean);
 
-function versionAt(rootDir, rev, manifestPath) {
+function manifestAt(rootDir, rev, manifestPath) {
   const content = gitOrNull(rootDir, ['show', `${rev}:${manifestPath}`]);
-  if (content === null) return undefined;
+  if (content === null) return null;
   try {
-    return JSON.parse(content).version;
+    return JSON.parse(content);
   } catch {
-    return undefined;
+    return null;
   }
+}
+
+const versionAt = (rootDir, rev, manifestPath) => manifestAt(rootDir, rev, manifestPath)?.version;
+
+// `files` without the package manifests among them whose change from `base` to `head` does not
+// ship (`manifestChangeShips`). Without a `base` every file is new, and all of them stay.
+export function dropUnshippedManifestChanges({ rootDir, base, head, files, packages }) {
+  if (!base) return files;
+  const manifests = new Set(packages.map((pkg) => `${pkg.dir}/package.json`));
+  return files.filter(
+    (file) =>
+      !manifests.has(file) ||
+      manifestChangeShips(manifestAt(rootDir, base, file), manifestAt(rootDir, head, file))
+  );
 }
 
 // The newest commit reachable from `head` where this package's `version` actually changed. That
@@ -296,7 +329,15 @@ export function collectUnreleasedFiles({ rootDir, head, packages, publishedGitHe
       manifestPath: `${pkg.dir}/package.json`,
       publishedGitHead: publishedGitHeads?.get(pkg.name),
     });
-    files.push(...changedFilesSince(rootDir, base, head, pkg.dir));
+    files.push(
+      ...dropUnshippedManifestChanges({
+        rootDir,
+        base,
+        head,
+        files: changedFilesSince(rootDir, base, head, pkg.dir),
+        packages,
+      })
+    );
   }
   return files;
 }

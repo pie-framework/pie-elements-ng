@@ -8,6 +8,7 @@ import {
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
   isOwnSnapshotVersion,
+  manifestChangeShips,
   planDependencyPins,
   planSynthesizedChangeset,
   raiseToPendingBumps,
@@ -127,6 +128,64 @@ describe('changeset synthesis', () => {
     expect(renderChangeset(['@pie-element/a', '@pie-element/b'], 'A summary', bumps)).toBe(
       '---\n  "@pie-element/a": major\n  "@pie-element/b": patch\n---\n\nA summary\n'
     );
+  });
+});
+
+describe('manifest changes', () => {
+  const MANIFEST = {
+    name: '@pie-element/shared-lodash',
+    version: '0.1.2',
+    exports: { '.': { types: './dist/index.d.ts', default: './dist/index.js' } },
+    dependencies: { '@pie-lib/render-ui': '^6.0.1' },
+    devDependencies: { '@types/bun': '1.3.0', 'lodash-es': '4.17.21' },
+  };
+  const withDev = (devDependencies?: Record<string, string>) => ({ ...MANIFEST, devDependencies });
+
+  it('does not ship an edit confined to @types devDependencies', () => {
+    expect(
+      manifestChangeShips(
+        MANIFEST,
+        withDev({ '@types/bun': '1.3.1', 'lodash-es': '4.17.21', '@types/node': '^24' })
+      )
+    ).toBe(false);
+    expect(manifestChangeShips(withDev({ 'lodash-es': '4.17.21' }), MANIFEST)).toBe(false);
+    expect(manifestChangeShips(withDev(undefined), withDev({ '@types/bun': '1.3.0' }))).toBe(false);
+  });
+
+  // `shared-lodash` vendors `lodash-es`, and `vite` builds every package.
+  it('ships an edit to any other devDependency, which a build can bundle or run', () => {
+    expect(
+      manifestChangeShips(MANIFEST, withDev({ '@types/bun': '1.3.0', 'lodash-es': '4.17.23' }))
+    ).toBe(true);
+    expect(
+      manifestChangeShips(MANIFEST, withDev({ ...MANIFEST.devDependencies, vite: '^8.1.5' }))
+    ).toBe(true);
+  });
+
+  it('ships an edit to any other field', () => {
+    expect(
+      manifestChangeShips(MANIFEST, {
+        ...MANIFEST,
+        dependencies: { '@pie-lib/render-ui': '^6.0.2' },
+      })
+    ).toBe(true);
+    expect(manifestChangeShips(MANIFEST, { ...MANIFEST, peerDependencies: { react: '^18' } })).toBe(
+      true
+    );
+  });
+
+  it('ships reordered export conditions, which resolve in order', () => {
+    expect(
+      manifestChangeShips(MANIFEST, {
+        ...MANIFEST,
+        exports: { '.': { default: './dist/index.js', types: './dist/index.d.ts' } },
+      })
+    ).toBe(true);
+  });
+
+  it('ships when either side has no readable manifest', () => {
+    expect(manifestChangeShips(null, MANIFEST)).toBe(true);
+    expect(manifestChangeShips(MANIFEST, null)).toBe(true);
   });
 });
 
@@ -552,6 +611,34 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
     commit(rootDir, 'test: add coverage');
 
     expect(unreleased(rootDir)).toEqual([]);
+  });
+
+  // An `@types/bun` pin across the shared packages (#436) recorded every one of them.
+  it('ignores an unreleased manifest edit confined to @types devDependencies', async () => {
+    const rootDir = await makeGitFixture();
+    commit(rootDir, 'initial');
+
+    await write(
+      rootDir,
+      `${MC}/package.json`,
+      JSON.stringify({
+        version: '1.0.0',
+        name: '@pie-element/mc-populated-blank',
+        devDependencies: { '@types/bun': '1.3.0' },
+      })
+    );
+    await write(
+      rootDir,
+      `${CHOICE}/package.json`,
+      JSON.stringify({
+        version: '1.0.0',
+        name: '@pie-element/multiple-choice',
+        devDependencies: { 'lodash-es': '4.17.21' },
+      })
+    );
+    commit(rootDir, 'build(deps): pin @types/bun, vendor lodash-es');
+
+    expect(unreleased(rootDir)).toEqual(['@pie-element/multiple-choice']);
   });
 
   // Snapshots commit no version, so the last bump in git is the last stable release. Measured
