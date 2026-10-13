@@ -30,7 +30,8 @@ const StyledEditableHtml: any = styled(EditableHtml)(() => ({
   }));
 
 const MaskedInput = (props) => (node, data) => {
-  const { adjustedLimit, disabled, feedback, showCorrectAnswer, maxLength, spellCheck, pluginProps, onChange } = props;
+  const { adjustedLimit, disabled, feedback, showCorrectAnswer, maxLength, spellCheck, pluginProps, onChange, idleSaveDelay } =
+    props;
   const dataset = node.data?.dataset || {};
 
   if (dataset.component === 'input') {
@@ -64,6 +65,7 @@ const MaskedInput = (props) => (node, data) => {
         disabled={showCorrectAnswer || disabled}
         disableUnderline
         onChange={handleInputChange}
+        idleSaveDelay={idleSaveDelay}
         markup={finalValue || ''}
         charactersLimit={adjustedLimit ? width : 25}
         activePlugins={['languageCharacters']}

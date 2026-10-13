@@ -5,6 +5,7 @@ export default {
   displayType: 'block',
   markup: '',
   maxLengthPerChoiceEnabled: true,
+  playerIdleSaveDelay: 1000,
   // Student-facing spellcheck is off unless the model opts in. See PIE-979.
   playerSpellCheckEnabled: false,
   prompt: '',

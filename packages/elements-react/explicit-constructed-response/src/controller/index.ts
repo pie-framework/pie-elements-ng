@@ -198,6 +198,11 @@ export async function model(
     // normalize's defaults cover a missing key, but a key present as undefined/null overwrites
     // them and would reach the editor as undefined, which enables spellcheck. See PIE-979.
     playerSpellCheckEnabled: normalizedQuestion.playerSpellCheckEnabled === true,
+    // A key present as undefined/null overwrites normalize's defaults, so fall back to them here.
+    idleSaveDelay:
+      typeof normalizedQuestion.playerIdleSaveDelay === 'number'
+        ? normalizedQuestion.playerIdleSaveDelay
+        : defaults.playerIdleSaveDelay,
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : defaults.prompt,
     rationale: defaults.rationale,
     responseCorrect: env.mode === 'evaluate' ? getScore(normalizedQuestion, session) === 1 : undefined,

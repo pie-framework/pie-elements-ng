@@ -144,6 +144,14 @@ const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy) => ({
 // after the caller drops them.
 const OPTIONAL_EDITOR_ATTRIBUTES = ['aria-label', 'aria-labelledby'];
 
+// An image upload, a toolbar or a response area the user is still working in. Neither a blur nor an
+// idle save commits the content while one is open.
+const isEditingElsewhere = (editor) =>
+  editor._insertingImage ||
+  editor._toolbarOpened ||
+  editor.isActive('inline_dropdown') ||
+  editor.isActive('explicit_constructed_response');
+
 export const EditableHtml = (props) => {
   const { showParagraphs, separateParagraphs } = props.pluginProps || {};
   const [pendingImages, setPendingImages] = useState([]);
@@ -191,11 +199,20 @@ export const EditableHtml = (props) => {
   // When the caller passes idleSaveDelay, commits the content once the user stops typing for that
   // many ms, so it isn't saved only on blur. Without it the editor saves on blur only.
   const { idleSaveDelay } = props;
+  // Set while a pending idle save is flushed because the editor or the component is going away.
+  const tearingDownRef = useRef(false);
   const idleSave = useMemo(
     () =>
       idleSaveDelay > 0
         ? debounce((editor) => {
-            if (editor.isDestroyed || editor._insertingImage) {
+            if (editor.isDestroyed) {
+              return;
+            }
+
+            // Mid-composition (IME, dictation) the text isn't final, and an open toolbar commits on
+            // its own close, so try again after another delay. A teardown can't wait. See PIE-473.
+            if (!tearingDownRef.current && (editor.view.composing || isEditingElsewhere(editor))) {
+              idleSaveRef.current?.(editor);
               return;
             }
 
@@ -209,7 +226,19 @@ export const EditableHtml = (props) => {
 
   idleSaveRef.current = idleSave;
 
-  useEffect(() => () => idleSave?.cancel(), [idleSave]);
+  // Sends a pending idle save now rather than dropping it, so text typed inside the delay survives
+  // a teardown that comes before a blur. See PIE-1058.
+  const flushIdleSave = useCallback((save) => {
+    tearingDownRef.current = true;
+
+    try {
+      save?.flush();
+    } finally {
+      tearingDownRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => () => flushIdleSave(idleSave), [idleSave, flushIdleSave]);
 
   const responseAreaPropsToUse = useMemo(
     () => ({
@@ -423,13 +452,7 @@ export const EditableHtml = (props) => {
         }
       },
       onBlur: ({ editor }) => {
-        const otherToolbarOpened =
-          editor._insertingImage ||
-          editor._toolbarOpened ||
-          editor.isActive('inline_dropdown') ||
-          editor.isActive('explicit_constructed_response');
-
-        if (otherToolbarOpened || !editor.schema) {
+        if (isEditingElsewhere(editor) || !editor.schema) {
           return;
         }
 
@@ -450,6 +473,13 @@ export const EditableHtml = (props) => {
   useEffect(() => {
     editor?.setEditable(!props.disabled);
   }, [props.disabled, editor]);
+
+  // useEditor replaces the editor when charactersLimit changes. Tiptap emits destroy before it
+  // unmounts the view, so the old editor's content can still be read here. The listener isn't
+  // removed: an editor drops its listeners when it is destroyed.
+  useEffect(() => {
+    editor?.on('destroy', () => flushIdleSave(idleSaveRef.current));
+  }, [editor, flushIdleSave]);
 
   // useEditor only re-applies options on its own when it is called with an empty dependency
   // array, and this call site depends on charactersLimit, so a spellCheck or name change on a

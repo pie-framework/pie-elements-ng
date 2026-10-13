@@ -84,6 +84,7 @@ export class Main extends React.Component {
     note: PropTypes.string,
     onChange: PropTypes.func,
     playerSpellCheckEnabled: PropTypes.bool,
+    idleSaveDelay: PropTypes.number,
     prompt: PropTypes.string,
     rationale: PropTypes.string,
     role: PropTypes.string,
@@ -151,6 +152,7 @@ export class Main extends React.Component {
       maxLengthPerChoiceEnabled,
       note,
       playerSpellCheckEnabled,
+      idleSaveDelay,
       prompt,
       rationale,
       showNote,
@@ -209,6 +211,7 @@ export class Main extends React.Component {
         <ConstructedResponse
           {...this.props}
           onChange={this.onChange}
+          idleSaveDelay={idleSaveDelay}
           showCorrectAnswer={showCorrectAnswer}
           value={value}
           maxLength={maxLengthPerChoice}

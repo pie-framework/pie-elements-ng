@@ -133,6 +133,12 @@ export interface ExtendedTextEntryModel extends PieModel {
    */
   playerPasteFormattingDisabled?: boolean;
   /**
+   * How long, in milliseconds, the student has to stop typing before the response is saved without
+   * the editor losing focus; 0 saves on blur only
+   * @default 1000
+   */
+  playerIdleSaveDelay?: number;
+  /**
    * Indicates if Student Instructions are enabled; the author shows the toggle, and nothing renders them
    * @default true
    */

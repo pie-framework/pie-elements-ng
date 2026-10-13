@@ -65,6 +65,12 @@ export interface ExplicitConstructedResponseModel extends PieModel {
    * @default false
    */
   playerSpellCheckEnabled?: boolean;
+  /**
+   * How long, in milliseconds, the student has to stop typing before the response is saved without
+   * the editor losing focus; 0 saves on blur only
+   * @default 1000
+   */
+  playerIdleSaveDelay?: number;
   /** Indicates correct answer rationale */
   rationale?: string;
   /** Not read by this element: `partialScoring` selects the scoring */

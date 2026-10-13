@@ -119,6 +119,7 @@ export class Main extends React.Component {
       spanishInput,
       specialInput,
       spellCheckEnabled,
+      idleSaveDelay,
       teacherInstructions,
     } = model;
     const { annotations, comment, value } = session;
@@ -192,6 +193,7 @@ export class Main extends React.Component {
           <Editor
             className="response-area-editor"
             onChange={onValueChange}
+            idleSaveDelay={idleSaveDelay}
             markup={value || ''}
             maxWidth={width && width.toString()}
             minWidth={'100px'}
