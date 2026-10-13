@@ -55,7 +55,9 @@ That's it! All packages are in the repository, so you can get started immediatel
 
 `bun run build` - Build all packages in the monorepo; each package's build type-checks it with `tsc`
 
-`bun run dev` - Start the demo application in development mode
+`bun run dev:element-demo` - Start the demo application in development mode
+
+`bun run dev` - Watch mode for all packages (does not start the demo application)
 
 `bun run test` - Run all tests
 
