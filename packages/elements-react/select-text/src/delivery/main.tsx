@@ -72,6 +72,7 @@ const Types = {
   model: PropTypes.object,
   session: PropTypes.object,
   onSelectionChange: PropTypes.func.isRequired,
+  eliminatedTokens: PropTypes.arrayOf(PropTypes.shape({ start: PropTypes.number, end: PropTypes.number })),
 };
 
 export class Main extends React.Component {
@@ -120,7 +121,7 @@ export class Main extends React.Component {
   };
 
   render() {
-    const { session, onSelectionChange } = this.props;
+    const { session, onSelectionChange, eliminatedTokens } = this.props;
     const { showCorrectAnswer, model } = this.state;
     const { env, extraCSSRules } = model;
     const { mode } = env || {};
@@ -183,6 +184,7 @@ export class Main extends React.Component {
           maxNoOfSelections={model.maxSelections}
           animationsDisabled={model.animationsDisabled}
           language={model.language}
+          eliminatedTokens={eliminatedTokens}
         />
         {mode === 'evaluate' && <Legend language={model.language} showOnlyCorrect={showCorrectAnswer} />}
 
@@ -231,6 +233,13 @@ export default class Stateful extends React.Component {
 
   render() {
     const { model, session } = this.state;
-    return <Main model={model} session={session} onSelectionChange={this.change} />;
+    return (
+      <Main
+        model={model}
+        session={session}
+        onSelectionChange={this.change}
+        eliminatedTokens={this.props.eliminatedTokens}
+      />
+    );
   }
 }
