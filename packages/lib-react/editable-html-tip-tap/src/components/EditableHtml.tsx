@@ -183,6 +183,34 @@ export const EditableHtml = (props) => {
     [props.markup, props.onChange, props.onDone, toolbarOptsToUse.doneOn],
   );
 
+  // useEditor keeps the callbacks it was created with, so the idle save reads the latest commit.
+  const commitEditorContentRef = useRef(commitEditorContent);
+
+  commitEditorContentRef.current = commitEditorContent;
+
+  // When the caller passes idleSaveDelay, commits the content once the user stops typing for that
+  // many ms, so it isn't saved only on blur. Without it the editor saves on blur only.
+  const { idleSaveDelay } = props;
+  const idleSave = useMemo(
+    () =>
+      idleSaveDelay > 0
+        ? debounce((editor) => {
+            if (editor.isDestroyed || editor._insertingImage) {
+              return;
+            }
+
+            commitEditorContentRef.current(editor);
+          }, idleSaveDelay)
+        : null,
+    [idleSaveDelay],
+  );
+
+  const idleSaveRef = useRef(idleSave);
+
+  idleSaveRef.current = idleSave;
+
+  useEffect(() => () => idleSave?.cancel(), [idleSave]);
+
   const responseAreaPropsToUse = useMemo(
     () => ({
       ...defaultResponseAreaProps,
@@ -389,6 +417,10 @@ export const EditableHtml = (props) => {
         if (transaction.isDone) {
           props.onChange?.(editor.getHTML());
         }
+
+        if (transaction.docChanged) {
+          idleSaveRef.current?.(editor);
+        }
       },
       onBlur: ({ editor }) => {
         const otherToolbarOpened =
@@ -401,6 +433,8 @@ export const EditableHtml = (props) => {
           return;
         }
 
+        // The blur commits everything, so a pending idle save would only repeat it.
+        idleSaveRef.current?.cancel();
         commitEditorContent(editor);
       },
     },
