@@ -5,8 +5,10 @@
  * `new URL('./npm/…', import.meta.url)` by npm path. A host's bundler emits the files it names.
  *
  * Runs as the last step of the package's `build` script: `bun build-assets.ts`. The packages and
- * their versions are the manifest's `pie.assetPackages`; the build fails on one `LOADED` does not
- * map, one installed at another version, and a file the package does not ship.
+ * their versions are the manifest's `pie.assetPackages`, and the files of each its
+ * `pie.browserAssetPaths`, which `pie-players`' preloaded-player build ships from too. The build
+ * fails on a package with no paths, one installed at another version, and a file the package does
+ * not ship.
  */
 import {
   copyFileSync,
@@ -20,15 +22,8 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { dirname, join, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
-
-/** What the browser build loads of each asset package: a file, or every file of a `dir/`. */
-const LOADED: Record<string, string[]> = {
-  mathjax: ['sre/speech-worker.js', 'sre/mathmaps/'],
-  '@mathjax/mathjax-newcm-font': ['chtml/woff2/'],
-  '@mathjax/mathjax-mhchem-font-extension': ['chtml/woff2/'],
-};
 
 export interface AssetFile {
   /** `<package>@<version>/<path>`. */
@@ -53,12 +48,18 @@ export function assetFiles(packageDir: string): { files: AssetFile[]; licenses: 
   if (Object.keys(packages).length === 0) {
     throw new Error(`${manifest.name} lists no pie.assetPackages`);
   }
+  // Each package's files: a path, or every file under a `dir/`.
+  const paths: Record<string, string[]> = manifest.pie?.browserAssetPaths ?? {};
+  const unlisted = Object.keys(paths).filter((name) => !(name in packages));
+  if (unlisted.length) {
+    throw new Error(`pie.browserAssetPaths names ${unlisted.join(', ')}, not in pie.assetPackages`);
+  }
   const require = createRequire(join(packageDir, 'package.json'));
   const files: AssetFile[] = [];
   const licenses: AssetFile[] = [];
   for (const [name, version] of Object.entries(packages)) {
-    const loaded = LOADED[name];
-    if (!loaded) throw new Error(`build-assets.ts does not map ${name}, a pie.assetPackages entry`);
+    const loaded = paths[name];
+    if (!loaded?.length) throw new Error(`pie.browserAssetPaths lists no paths of ${name}`);
     const dir = realpathSync(dirname(require.resolve(`${name}/package.json`)));
     const installed = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).version;
     if (installed !== version) {
@@ -74,9 +75,9 @@ export function assetFiles(packageDir: string): { files: AssetFile[]; licenses: 
         files.push(file(path));
         continue;
       }
-      const entries = readdirSync(join(dir, path)).filter((entry) =>
-        statSync(join(dir, path, entry)).isFile()
-      );
+      const entries = readdirSync(join(dir, path), { recursive: true })
+        .map((entry) => String(entry).split(sep).join('/'))
+        .filter((entry) => statSync(join(dir, path, entry)).isFile());
       if (entries.length === 0) throw new Error(`${name}@${version} has no files in ${path}`);
       files.push(...entries.map((entry) => file(`${path}${entry}`)));
     }
