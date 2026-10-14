@@ -11,6 +11,7 @@ import {
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import Main from './main.js';
+import { flushPendingEditorSaves } from '@pie-lib/editable-html-tip-tap';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
@@ -135,6 +136,13 @@ export default class InlineDropdown extends HTMLElement {
     this.setAttribute('role', 'region');
 
     this._render();
+  }
+
+  // A prototype method, so the session notifier's `commitPendingSession` wraps it and runs it first:
+  // an idle save still waiting in a response editor reaches the session before the notifiers flush.
+  // A class field would be an own property, which the notifier leaves alone. See PIE-916.
+  commitPendingSession() {
+    flushPendingEditorSaves(this);
   }
 
   disconnectedCallback() {

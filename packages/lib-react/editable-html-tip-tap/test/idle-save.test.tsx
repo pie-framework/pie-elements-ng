@@ -6,6 +6,7 @@ import { act, render } from '@testing-library/react';
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
 const { EditableHtml } = await import('../src/components/EditableHtml');
+const { flushPendingEditorSaves } = await import('../src/pending-save');
 
 const mountEditor = async (props: Record<string, unknown> = {}) => {
   let instance: any;
@@ -160,5 +161,31 @@ describe('EditableHtml idle save', () => {
     rerender({ markup: '<div>from the host</div>' });
 
     expect(editor.getText()).toBe('from the host');
+  });
+
+  it('sends a pending save to a host that flushes it, and leaves the editor mounted', async () => {
+    const onChange = vi.fn();
+    const { editor } = await mountEditor({ onChange, idleSaveDelay: 500 });
+    vi.useFakeTimers();
+
+    type(editor, 'Hello');
+    flushPendingEditorSaves(document.body);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0]).toContain('Hello');
+    expect(editor.isDestroyed).toBe(false);
+
+    vi.advanceTimersByTime(1000);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('has nothing for a host to flush without idleSaveDelay', async () => {
+    const onChange = vi.fn();
+    const { editor } = await mountEditor({ onChange });
+
+    type(editor, 'Hello');
+    flushPendingEditorSaves(document.body);
+
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,7 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { ExternalPaste } from '../external-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
+import { setPendingSaveFlush } from '../pending-save.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
 import { ExtendedTableCell, ExtendedTableHeader } from '../extensions/extended-table-cell.js';
@@ -258,6 +259,10 @@ export const EditableHtml = (props) => {
 
   useEffect(() => () => flushIdleSave(idleSave), [idleSave, flushIdleSave]);
 
+  // What a host's flushPendingEditorSaves calls on this editor's node: the save goes out now, while
+  // the editor stays mounted, so a player committing the session doesn't miss the last few words.
+  const flushPendingSave = useCallback(() => flushIdleSave(idleSaveRef.current), [flushIdleSave]);
+
   const responseAreaPropsToUse = useMemo(
     () => ({
       ...defaultResponseAreaProps,
@@ -465,8 +470,10 @@ export const EditableHtml = (props) => {
           emitChangeRef.current(editor.getHTML());
         }
 
-        if (transaction.docChanged) {
-          idleSaveRef.current?.(editor);
+        if (transaction.docChanged && idleSaveRef.current) {
+          idleSaveRef.current(editor);
+          // Only an edit leaves a save pending, and by now the view is mounted.
+          setPendingSaveFlush(editor.view.dom, flushPendingSave);
         }
       },
       onBlur: ({ editor }) => {

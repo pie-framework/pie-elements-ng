@@ -4,6 +4,14 @@ vi.mock('../src/delivery/main.js', () => ({ default: () => null }));
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 // A root's unmount runs onUnmount, standing in for an editor that saves as it unmounts.
 const roots = vi.hoisted(() => ({ created: 0, rendered: 0, onUnmount: null as null | (() => void) }));
+// Stands in for a response editor holding an idle save that flushPendingEditorSaves sends.
+const editors = vi.hoisted(() => ({ onFlush: null as null | (() => void), flushed: 0 }));
+vi.mock('@pie-lib/editable-html-tip-tap', () => ({
+  flushPendingEditorSaves: () => {
+    editors.flushed += 1;
+    editors.onFlush?.();
+  },
+}));
 vi.mock('react-dom/client', () => ({
   createRoot: () => {
     roots.created += 1;
@@ -39,6 +47,7 @@ describe('extended-text-entry session commit', () => {
     vi.useRealTimers();
     document.body.innerHTML = '';
     roots.onUnmount = null;
+    editors.onFlush = null;
   });
 
   it('writes the value to the session synchronously, before the notification', () => {
@@ -114,6 +123,21 @@ describe('extended-text-entry session commit', () => {
     expect(element.session.value).toBe('<div>typed last</div>');
     expect(roots.created).toBe(created);
     expect(roots.rendered).toBe(rendered);
+
+    vi.advanceTimersByTime(2000);
+    expect(events).toHaveLength(1);
+  });
+
+  it("sends a response editor's pending idle save when a player commits", () => {
+    const { element, events } = mount();
+    editors.onFlush = () => element.valueChange('<div>typed last</div>');
+
+    element.commitPendingSession();
+
+    expect(editors.flushed).toBeGreaterThan(0);
+    expect(element.session.value).toBe('<div>typed last</div>');
+    expect(events).toHaveLength(1);
+    expect(element.isConnected).toBe(true);
 
     vi.advanceTimersByTime(2000);
     expect(events).toHaveLength(1);

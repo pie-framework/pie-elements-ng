@@ -12,6 +12,7 @@ import {
   createSessionNotifier,
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
+import { flushPendingEditorSaves } from '@pie-lib/editable-html-tip-tap';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
@@ -162,6 +163,13 @@ export default class RootExtendedTextEntry extends HTMLElement {
         renderMath(this);
       });
     }
+  }
+
+  // A prototype method, so the session notifier's `commitPendingSession` wraps it and runs it first:
+  // an idle save still waiting in a response editor reaches the session before the notifiers flush.
+  // A class field would be an own property, which the notifier leaves alone. See PIE-916.
+  commitPendingSession() {
+    flushPendingEditorSaves(this);
   }
 
   disconnectedCallback() {
