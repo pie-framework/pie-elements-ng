@@ -11,13 +11,17 @@
       "pie-browser-esm": "./dist/browser/index.js",
       "default": "./dist/index.js"
     },
+    "./assets": {
+      "types": "./dist/assets/index.d.ts",
+      "default": "./dist/assets/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && vite build --config vite.browser.config.ts && tsc --emitDeclarationOnly && tsc -p tsconfig.browser.json",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && vite build --config vite.browser.config.ts && tsc --emitDeclarationOnly && tsc -p tsconfig.browser.json && bun build-assets.ts",
     "dev": "vite build --watch",
     "test": "vitest",
     "test:e2e": "playwright test",
