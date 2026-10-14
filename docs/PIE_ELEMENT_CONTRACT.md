@@ -223,6 +223,10 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
   [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-stylesheets). A stylesheet
   in `dist/browser` that no reachable module loads fails the publish check.
 - Browser ESM modules do not use top-level await, which default Vite 6 builds reject.
+- Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` of the package
+  it was built from, so a host that bundles it can register it without restating either. The
+  shared browser build adds it to each entry, and the publish check fails a module whose
+  `piePackage` does not match the manifest.
 - Browser ESM output must not leak runtime `require` calls. The shared browser
   build may rewrite known Rolldown CJS helper calls only for the allow-listed
   interop targets documented in
@@ -365,6 +369,8 @@ Element package runtime entry points must not require raw source files to be pre
 Preloaded mode is not a separate package format. It means the expected custom element tag has already been registered by the host before the player renders.
 
 Package modules must therefore export classes without self-registering tags. This lets ESM, IIFE, and host-preloaded flows share the same class exports while leaving tag ownership to the runtime.
+
+A host registers the `./browser/delivery` module, with `./browser/controller` for a player that is not hosted, through `registerPreloadedElements` from `@pie-players/pie-item-player/preloaded`, which reads the package and version from the module's `piePackage`.
 
 ## Verification
 

@@ -32,6 +32,8 @@ const EDITOR_ENGINE_SOURCE =
   /(?:^|[\\/])node_modules[\\/](?:@tiptap[\\/](?!react[\\/])[^\\/]+|prosemirror-[^\\/]+)[\\/]/;
 const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const RUNTIME_VIEW_NAME = /^[a-z0-9][a-z0-9-]*$/;
+// The export tools/vite/browser-package-identity.ts adds to every ./browser/* module.
+const PACKAGE_IDENTITY_EXPORT = 'piePackage';
 
 const policy = existsSync(POLICY_PATH) ? readJson(POLICY_PATH) : {};
 const browserEsmPolicy = readJson(BROWSER_ESM_POLICY_PATH);
@@ -517,6 +519,15 @@ const collectBrowserEsmViolations = (dir, pkg, context) => {
       continue;
     }
     browserExportTargets.push(target);
+
+    const identity = readPackageIdentityExport(readFileSync(targetPath, 'utf8'));
+    if (identity?.name !== pkg.name || identity?.version !== pkg.version) {
+      const expected = JSON.stringify({ name: pkg.name, version: pkg.version });
+      const found = identity ? JSON.stringify(identity) : 'none';
+      violations.push(
+        `${key} must export ${PACKAGE_IDENTITY_EXPORT} as ${expected}; found ${found}`
+      );
+    }
   }
 
   const browserDir = path.join(dir, 'dist/browser');
@@ -697,6 +708,41 @@ const collectModuleExportNames = (filePath, seen = new Set()) => {
     }
   }
   return names;
+};
+
+/**
+ * The object a module's `source` exports as `piePackage`, read from its top-level declaration, as
+ * `Object.freeze({ ... })` or a bare object of string literals. Undefined when it exports none.
+ */
+export const readPackageIdentityExport = (source) => {
+  const declarators = [];
+  let local;
+  for (const node of parseAst(source).body) {
+    const declaration = node.type === 'ExportNamedDeclaration' ? node.declaration : node;
+    if (declaration?.type === 'VariableDeclaration') declarators.push(...declaration.declarations);
+    if (node.type !== 'ExportNamedDeclaration' || node.source) continue;
+    for (const specifier of node.specifiers) {
+      if (nameOf(specifier.exported) === PACKAGE_IDENTITY_EXPORT) local = nameOf(specifier.local);
+    }
+    for (const declarator of node.declaration?.declarations ?? []) {
+      if (declarator.id.name === PACKAGE_IDENTITY_EXPORT) local = PACKAGE_IDENTITY_EXPORT;
+    }
+  }
+  if (!local) return undefined;
+  const init = declarators.find(({ id }) => id.type === 'Identifier' && id.name === local)?.init;
+  const frozen =
+    init?.type === 'CallExpression' &&
+    init.callee.type === 'MemberExpression' &&
+    init.callee.object.name === 'Object' &&
+    init.callee.property.name === 'freeze';
+  const object = frozen ? init.arguments[0] : init;
+  if (object?.type !== 'ObjectExpression') return {};
+  const fields = {};
+  for (const property of object.properties) {
+    if (property.type !== 'Property' || typeof property.value.value !== 'string') return {};
+    fields[nameOf(property.key)] = property.value.value;
+  }
+  return fields;
 };
 
 const sumFileBytes = (files) =>
