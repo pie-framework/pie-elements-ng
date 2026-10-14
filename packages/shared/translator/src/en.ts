@@ -227,6 +227,7 @@ export default {
       multipleChoiceQuestion: 'Multiple Choice Question',
       multipleCorrectAnswerQuestion: 'Multiple Correct Answer Question',
       multipleSelectQuestion: 'Multiple Select Question',
+      partAnswerChoices: '{{partLabel}}, answer choices',
       pickTheAnswerBelow: 'Pick the answer below',
     },
     rubric: {

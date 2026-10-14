@@ -63,6 +63,14 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(screen.getByRole('radiogroup', { name: 'Opciones de respuesta' })).toBeInTheDocument();
   });
 
+  it.each([
+    ['en_US', 'Part A', 'Part A, answer choices'],
+    ['es_ES', 'Parte A', 'Parte A, opciones de respuesta'],
+  ])('names an EBSR part group by its part label in %s', (language, partLabel, name) => {
+    render(item({ language, partLabel }));
+    expect(screen.getByRole('radiogroup', { name })).toBeInTheDocument();
+  });
+
   it('names a math choice by its key and a note, and a text choice by its text', () => {
     render(item());
     const [math, text] = screen.getAllByRole('radio');

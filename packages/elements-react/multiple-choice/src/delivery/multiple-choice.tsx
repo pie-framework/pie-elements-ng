@@ -97,7 +97,8 @@ const srOnly = {
 const SrOnly: any = styled('h3')(srOnly);
 
 // The group's name. The prompt renders before the fieldset instead of as its legend, because a
-// name built from the prompt leaves its MathML out (PIE-1244). `pie-sr-only` keeps read-aloud off it.
+// name built from the prompt leaves its MathML out (PIE-1244). An EBSR part names its group with its
+// part label, so its parts' groups stay apart. `pie-sr-only` keeps read-aloud off it.
 const AnswerChoicesLegend: any = styled('legend')(srOnly);
 
 // --pie-missing holds 4.5:1 on the page in every pie-players scheme; the layout theme's error red
@@ -415,7 +416,9 @@ export class MultipleChoice extends React.Component {
 
         <StyledFieldset role={choiceMode === 'radio' ? 'radiogroup' : 'group'}>
           <AnswerChoicesLegend className="pie-sr-only">
-            {translator.t('multipleChoice.answerChoices', { lng: language })}
+            {partLabel
+              ? translator.t('multipleChoice.partAnswerChoices', { lng: language, partLabel })
+              : translator.t('multipleChoice.answerChoices', { lng: language })}
           </AnswerChoicesLegend>
 
           {!(options && alwaysShowCorrect) && (

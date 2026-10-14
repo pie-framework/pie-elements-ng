@@ -230,6 +230,7 @@ export default {
       multipleChoiceQuestion: 'Pregunta de opción múltiple',
       multipleCorrectAnswerQuestion: 'Pregunta con varias respuestas correctas',
       multipleSelectQuestion: 'Pregunta de selección múltiple',
+      partAnswerChoices: '{{partLabel}}, opciones de respuesta',
       pickTheAnswerBelow: 'Seleccione la respuesta de abajo',
     },
     rubric: {
