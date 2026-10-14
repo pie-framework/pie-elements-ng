@@ -146,6 +146,47 @@ describe('number line text alternative', () => {
     expect(container.querySelectorAll('[data-correctness]')[0].closest('[aria-hidden="true"]')).not.toBeNull();
   });
 
+  it('marks a segment over its midpoint, and a point or ray over its endpoint', () => {
+    const { container } = render(
+      <NumberLineGraph
+        {...graphProps}
+        disabled
+        elements={[
+          { type: 'point', pointType: 'full', position: 2, correct: true },
+          { type: 'line', leftPoint: 'full', rightPoint: 'empty', position: { left: 4, right: 6 }, correct: false },
+          { type: 'ray', direction: 'positive', pointType: 'empty', position: 8, correct: true },
+        ]}
+      />,
+    );
+
+    const markX = (element: Element) => Number(/translate\(([^,]+),/.exec(element.getAttribute('transform') ?? '')?.[1]);
+    const marks = [...container.querySelectorAll('[data-correctness]')].map(markX);
+    const point = Number(container.querySelector('circle')?.getAttribute('cx'));
+    const [segment, ray] = [...container.querySelectorAll('line.line-handle')].map((line) => ({
+      left: Number(line.getAttribute('x1')),
+      right: Number(line.getAttribute('x2')),
+    }));
+
+    expect(marks).toEqual([point, (segment.left + segment.right) / 2, ray.left]);
+  });
+
+  it('draws segments and rays at full width when they are judged', () => {
+    const { container } = render(
+      <NumberLineGraph
+        {...graphProps}
+        disabled
+        elements={[
+          { type: 'line', leftPoint: 'full', rightPoint: 'empty', position: { left: 4, right: 6 }, correct: false },
+          { type: 'ray', direction: 'positive', pointType: 'empty', position: 8, correct: true },
+        ]}
+      />,
+    );
+
+    expect(
+      [...container.querySelectorAll('line.line-handle')].map((line) => getComputedStyle(line).strokeWidth),
+    ).toEqual(['5px', '5px']);
+  });
+
   it('states correctness in the item language', () => {
     expect(
       describePlottedElements([{ type: 'point', pointType: 'full', position: 1, correct: false }], {
