@@ -154,7 +154,7 @@ export class Ray extends React.Component {
           onClick={this.props.onToggleSelect}
         />
         <StyledArrow x={arrowX} $correct={correct} $selected={selected} direction={arrowDirection} />
-        <CorrectnessMark x={xScale(finalPosition) + (positive ? -16 : 16)} correct={correct} />
+        <CorrectnessMark x={xScale(finalPosition)} correct={correct} />
       </StyledRayGroup>
     );
   }
