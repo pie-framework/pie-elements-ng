@@ -39,7 +39,22 @@ const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapR
 import Radio from '@mui/material/Radio';
 import classNames from 'clsx';
 
+import Translator from '@pie-lib/translator';
+
 import FeedbackTick from './feedback-tick.js';
+
+const { translator } = Translator;
+
+/**
+ * Whether a choice's label holds content its accessible name cannot carry: browsers leave MathML
+ * out of a name, and a table read as a name is a run of cells. Images need nothing, as their alt
+ * text is in the name.
+ */
+export const labelHoldsMathOrTable = (label) =>
+  typeof label === 'string' &&
+  ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container', '<table'].some((marker) =>
+    label.includes(marker),
+  );
 
 const CLASS_NAME = 'multiple-choice-component';
 
@@ -160,14 +175,14 @@ const StyledCheckboxBase: any = styled(Checkbox, {
 });
 
 export const StyledCheckbox = (props) => {
-  const { correctness, checked, onChange, disabled, value, id, onKeyDown, inputRef } = props;
+  const { correctness, checked, onChange, disabled, value, id, onKeyDown, inputRef, ariaLabelledBy } = props;
 
   const miniProps = { checked, onChange, disabled, value };
 
   return (
     <StyledCheckboxBase
       id={id}
-      slotProps={{ input: { ref: inputRef } }}
+      slotProps={{ input: { ref: inputRef, 'aria-labelledby': ariaLabelledBy } }}
       onKeyDown={onKeyDown}
       disableRipple
       {...miniProps}
@@ -203,14 +218,14 @@ const StyledRadioBase: any = styled(Radio, {
 });
 
 export const StyledRadio = (props) => {
-  const { correctness, checked, onChange, disabled, value, id, tagName, inputRef } = props;
+  const { correctness, checked, onChange, disabled, value, id, tagName, inputRef, ariaLabelledBy } = props;
 
   const miniProps = { checked, onChange, disabled, value };
 
   return (
     <StyledRadioBase
       id={id}
-      slotProps={{ input: { ref: inputRef } }}
+      slotProps={{ input: { ref: inputRef, 'aria-labelledby': ariaLabelledBy } }}
       disableRipple
       {...miniProps}
       correctness={correctness}
@@ -238,6 +253,8 @@ export class ChoiceInput extends React.Component {
     isEvaluateMode: PropTypes.bool,
     choicesLayout: PropTypes.oneOf(['vertical', 'grid', 'horizontal']),
     isSelectionButtonBelow: PropTypes.bool,
+    language: PropTypes.string,
+    spokenMathNames: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -251,6 +268,7 @@ export class ChoiceInput extends React.Component {
     this.onToggleChoice = this.onToggleChoice.bind(this);
     this.choiceId = createUniqueId('choice');
     this.descId = `${this.choiceId}-desc`;
+    this.noteId = `${this.choiceId}-note`;
   }
 
   onToggleChoice(event) {
@@ -305,6 +323,8 @@ export class ChoiceInput extends React.Component {
       checked,
       tagName,
       isSelectionButtonBelow,
+      language,
+      spokenMathNames,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -330,19 +350,21 @@ export class ChoiceInput extends React.Component {
       }),
     };
 
-    const hasMathOrImage =
-      typeof label === 'string' &&
-      (label.includes('<math') ||
-        label.includes('\\(') ||
-        label.includes('\\[') ||
-        label.includes('<img') ||
-        label.includes('data-latex') ||
-        label.includes('data-raw') ||
-        label.includes('<mjx-container'));
+    // By default a lettered choice holding math is named from its key and a note that the answer
+    // follows, "A. Pick the answer below", so the screen reader reads its MathML in the content
+    // rather than a name that drops it. Spoken math names, which the Player opts into, name it from
+    // its label, math labelled with its speech; so does a choice with no key to name it by (PIE-1244).
+    const namedByNote = Boolean(displayKey) && !spokenMathNames && labelHoldsMathOrTable(label);
 
     const screenReaderLabel = displayKey ? (
-      <SrOnly id={this.descId}>
-        {hasMathOrImage ? `Pick the answer below, ${displayKey}` : displayKey}
+      <SrOnly id={this.descId} className="pie-sr-only">
+        {namedByNote ? `${displayKey}.` : displayKey}
+      </SrOnly>
+    ) : null;
+
+    const note = namedByNote ? (
+      <SrOnly id={this.noteId} className="pie-sr-only">
+        {translator.t('multipleChoice.pickTheAnswerBelow', { lng: language })}
       </SrOnly>
     ) : null;
 
@@ -368,18 +390,20 @@ export class ChoiceInput extends React.Component {
       id: this.choiceId,
       onChange: this.onToggleChoice,
       onKeyDown: this.handleKeyDown,
-      ...(screenReaderLabel ? { 'aria-describedby': this.descId } : {}),
+      ariaLabelledBy: namedByNote ? `${this.descId} ${this.noteId}` : undefined,
     };
 
     const control = isSelectionButtonBelow ? (
       <BelowSelectionComponent>
         {screenReaderLabel}
+        {note}
         <Tag {...tagProps} style={{ padding: 0 }} />
         <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
       </BelowSelectionComponent>
     ) : (
       <>
         {screenReaderLabel}
+        {note}
         <Tag {...tagProps} />
       </>
     );

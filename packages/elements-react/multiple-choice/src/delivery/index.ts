@@ -12,6 +12,7 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { SPOKEN_MATH_NAMES, subscribeAccessibilitySupports } from './accessibility-context.js';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -149,6 +150,9 @@ export default class MultipleChoice extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // Whether the Player opted the student into spoken math in choice names (PIE-1244).
+    this._spokenMathNames = false;
+    this._unsubscribeAccessibility = null;
 
     this._rerender = debounce(
       () => {
@@ -160,6 +164,7 @@ export default class MultipleChoice extends HTMLElement {
             onChoiceChanged: this._onChange.bind(this),
             onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
             eliminatedChoices: [...this._eliminatedChoices],
+            spokenMathNames: this._spokenMathNames,
             ...resolveHeadingProps(this),
           });
 
@@ -239,6 +244,16 @@ export default class MultipleChoice extends HTMLElement {
       }, 50);
     });
   };
+
+  _subscribeAccessibility() {
+    this._unsubscribeAccessibility?.();
+    this._unsubscribeAccessibility = subscribeAccessibilitySupports(this, (supports) => {
+      const spokenMathNames = supports.includes(SPOKEN_MATH_NAMES);
+      if (spokenMathNames === this._spokenMathNames) return;
+      this._spokenMathNames = spokenMathNames;
+      this._rerender();
+    });
+  }
 
   _initMathObserver() {
     if (this._mathObserver) return;
@@ -387,6 +402,7 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   connectedCallback() {
+    this._subscribeAccessibility();
     this._initMathObserver();
     this._initPlayerObserver();
     this._rerender();
@@ -504,6 +520,9 @@ export default class MultipleChoice extends HTMLElement {
 
   disconnectedCallback() {
     flushSessionNotifiers(this);
+
+    this._unsubscribeAccessibility?.();
+    this._unsubscribeAccessibility = null;
 
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();

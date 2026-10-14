@@ -218,6 +218,7 @@ export default {
       printTranscript: 'Transcript:',
     },
     multipleChoice: {
+      answerChoices: 'Answer choices',
       minSelections: 'Select at least {{minSelections}}.',
       maxSelections_one: 'Only {{maxSelections}} answer is allowed.',
       maxSelections_other: 'Only {{maxSelections}} answers are allowed.',
@@ -226,6 +227,7 @@ export default {
       multipleChoiceQuestion: 'Multiple Choice Question',
       multipleCorrectAnswerQuestion: 'Multiple Correct Answer Question',
       multipleSelectQuestion: 'Multiple Select Question',
+      pickTheAnswerBelow: 'Pick the answer below',
     },
     rubric: {
       rubric: 'Rubric',

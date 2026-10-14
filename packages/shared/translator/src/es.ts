@@ -221,6 +221,7 @@ export default {
       printTranscript: 'Transcripción:',
     },
     multipleChoice: {
+      answerChoices: 'Opciones de respuesta',
       minSelections: 'Seleccione al menos {{minSelections}}.',
       maxSelections_one: 'Sólo se permite {{maxSelections}} respuesta.',
       maxSelections_other: 'Sólo se permiten {{maxSelections}} respuestas.',
@@ -229,6 +230,7 @@ export default {
       multipleChoiceQuestion: 'Pregunta de opción múltiple',
       multipleCorrectAnswerQuestion: 'Pregunta con varias respuestas correctas',
       multipleSelectQuestion: 'Pregunta de selección múltiple',
+      pickTheAnswerBelow: 'Seleccione la respuesta de abajo',
     },
     rubric: {
       rubric: 'Rúbrica',
