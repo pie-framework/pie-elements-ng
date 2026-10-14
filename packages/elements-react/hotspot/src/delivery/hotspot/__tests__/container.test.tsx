@@ -60,13 +60,29 @@ const renderContainer = (extras?: any) =>
   );
 
 describe('Container hotspot focusables', () => {
-  it('keep an authored name and fall back to the position in tab order', () => {
+  it('append an authored name to the position in tab order', () => {
     renderContainer();
 
     expect(screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
-      'Left wing',
+      'Hotspot 1 of 3 Left wing',
       'Hotspot 2 of 3',
       'Hotspot 3 of 3',
+    ]);
+  });
+
+  it('read the authored name from aria_label and aria-label too', () => {
+    renderContainer({
+      shapes: {
+        rectangles: [
+          { id: '1', x: 0, y: 0, width: 10, height: 10, aria_label: 'Snake case' },
+          { id: '2', x: 20, y: 0, width: 10, height: 10, 'aria-label': 'Kebab case' },
+        ],
+      },
+    });
+
+    expect(screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Hotspot 1 of 2 Snake case',
+      'Hotspot 2 of 2 Kebab case',
     ]);
   });
 
