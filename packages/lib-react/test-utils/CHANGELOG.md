@@ -1,5 +1,17 @@
 # @pie-lib/test-utils
 
+## 3.0.2
+
+### Patch Changes
+
+- [#447](https://github.com/pie-framework/pie-elements-ng/pull/447) [`95da505`](https://github.com/pie-framework/pie-elements-ng/commit/95da5055ec34098973fb868bb7860b3013c313b6) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - add touch-input helpers for component tests
+  
+  `touchStart`, `touchMove`, `touchEnd`, `touchTap`, `touchDrag` and
+  `dispatchTouchEvent` dispatch real DOM touch events with browser-accurate touch
+  lists, so tests reach the native non-passive listeners drag libraries register
+  for touch. `fireEvent.touchStart` does not, which is how a drag handle can pass
+  every desktop test and still be inert on an iPad (PIE-1074).
+
 ## 3.0.1
 
 ### Patch Changes

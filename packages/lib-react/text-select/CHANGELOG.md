@@ -1,5 +1,13 @@
 # @pie-lib/text-select
 
+## 4.0.5
+
+### Patch Changes
+
+- [#441](https://github.com/pie-framework/pie-elements-ng/pull/441) [`ccda521`](https://github.com/pie-framework/pie-elements-ng/commit/ccda52113fbe2ecdeac33dbd731ecbd0de5e82eb) Thanks [@chillenious](https://github.com/chillenious)! - Multiple choice, EBSR and select-text declare the AfA PNP 3.0 `answer-masking` support on their class (`static pieSupports`) and supply their choices through `pieSupportTargets('answer-masking')`, so a PIE toolkit offers the answer eliminator from the declaration. An eliminated choice cannot be selected until it is restored. EBSR choice ids carry their part, `a-` or `b-`; select-text supplies its selectable tokens, by their text offsets. `TokenSelect` takes an `eliminated` flag per token, which leaves the token unavailable, and wraps each token in a span carrying its offsets.
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6)]:
+  - @pie-lib/render-ui@8.0.5
+
 ## 4.0.4
 
 ### Patch Changes

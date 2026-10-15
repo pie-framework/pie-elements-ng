@@ -1,5 +1,13 @@
 # @pie-lib/render-ui
 
+## 8.0.5
+
+### Patch Changes
+
+- [#436](https://github.com/pie-framework/pie-elements-ng/pull/436) [`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6) Thanks [@chillenious](https://github.com/chillenious)! - A link in a prompt that plays the prompt's `<audio>` by id plays it. The prompt replaces the audio's authored id with its own, and the link now names that id instead of the authored one.
+- Updated dependencies [[`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+
 ## 8.0.4
 
 ### Patch Changes

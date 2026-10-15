@@ -1,5 +1,12 @@
 # @pie-lib/math-input
 
+## 9.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6)]:
+  - @pie-lib/render-ui@8.0.5
+
 ## 9.0.4
 
 ### Patch Changes
