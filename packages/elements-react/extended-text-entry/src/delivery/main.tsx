@@ -84,6 +84,7 @@ export class Main extends React.Component {
     onAnnotationsChange: PropTypes.func.isRequired,
     onCommentChange: PropTypes.func.isRequired,
     model: PropTypes.object,
+    idleSaveDelay: PropTypes.number,
     session: PropTypes.shape({
       value: PropTypes.string,
       annotations: PropTypes.array,
@@ -94,13 +95,13 @@ export class Main extends React.Component {
   // Random rather than a counter: two versions of this element on one page would each count from 1.
   promptId = `ete-prompt-${Math.random().toString(36).slice(2, 10)}`;
 
-  // The editor calls back on commit points (blur, `done` transactions), and the
+  // The editor calls back on commit points (blur, `done` transactions, an idle pause), and the
   // custom element writes the session synchronously and defers only its
   // `session-changed` dispatch. Coalescing belongs on that dispatch, where a
   // teardown can flush it; holding the value here instead left `.session` stale
   // and unreadable by any other layer, so the callbacks pass straight through.
   render() {
-    const { model, session, onAnnotationsChange, onCommentChange, onValueChange } = this.props;
+    const { model, session, idleSaveDelay, onAnnotationsChange, onCommentChange, onValueChange } = this.props;
     const {
       animationsDisabled,
       annotatorMode,
@@ -119,7 +120,6 @@ export class Main extends React.Component {
       spanishInput,
       specialInput,
       spellCheckEnabled,
-      idleSaveDelay,
       teacherInstructions,
     } = model;
     const { annotations, comment, value } = session;

@@ -12,13 +12,4 @@ describe('extended-text-entry controller', () => {
   ])('%s', async (_name, question, disabled) => {
     expect((await model(question, {}, env)).pasteFormattingDisabled).toBe(disabled);
   });
-
-  it.each([
-    ['saves after 1.5 seconds without the setting', {}, 1500],
-    ['saves after 1.5 seconds with the setting null', { playerIdleSaveDelay: null }, 1500],
-    ['takes the delay the model sets', { playerIdleSaveDelay: 2500 }, 2500],
-    ['saves on blur only with the setting 0', { playerIdleSaveDelay: 0 }, 0],
-  ])('%s', async (_name, question, delay) => {
-    expect((await model(question, {}, env)).idleSaveDelay).toBe(delay);
-  });
 });

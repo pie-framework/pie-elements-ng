@@ -9,8 +9,10 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import {
   ModelSetEvent,
   SessionChangedEvent,
+  DEFAULT_IDLE_SAVE_DELAY_MS,
   createSessionNotifier,
   flushSessionNotifiers,
+  subscribeIdleSaveDelay,
 } from '@pie-element/shared-player-events';
 import { flushPendingEditorSaves } from '@pie-lib/editable-html-tip-tap';
 import Translator from '@pie-lib/translator';
@@ -20,7 +22,7 @@ const { translator } = Translator;
 const log = debug('@pie-elements:extended-text-entry');
 
 // Coalesce a burst of editor commits. The editor calls back on blur, on a `done`
-// transaction and after the student pauses typing for the model's idle-save delay.
+// transaction and after the student pauses typing for the player's idle-save delay.
 const SESSION_NOTIFY_DELAY_MS = 1500;
 
 const domParser = typeof window !== undefined ? new DOMParser() : { parseFromString: (v) => v };
@@ -55,6 +57,9 @@ export default class RootExtendedTextEntry extends HTMLElement {
     this._session = null;
     this._root = null;
     this._disconnecting = false;
+    // The player sets it through `sessionCommitContext`; the model carries none. See PIE-916.
+    this._idleSaveDelay = DEFAULT_IDLE_SAVE_DELAY_MS;
+    this._unsubscribeIdleSaveDelay = null;
 
     // The session is written synchronously on commit; only the notification is
     // deferred, so a player reading `.session` always sees the committed
@@ -135,6 +140,16 @@ export default class RootExtendedTextEntry extends HTMLElement {
     this.setRegionLabel();
     this.setAttribute('role', 'region');
 
+    this._unsubscribeIdleSaveDelay?.();
+    this._unsubscribeIdleSaveDelay = subscribeIdleSaveDelay(this, (delay) => {
+      if (delay === this._idleSaveDelay) {
+        return;
+      }
+
+      this._idleSaveDelay = delay;
+      this.render();
+    });
+
     this.render();
   }
 
@@ -147,6 +162,7 @@ export default class RootExtendedTextEntry extends HTMLElement {
       let elem = React.createElement(Main, {
         model: this._model,
         session: this._session,
+        idleSaveDelay: this._idleSaveDelay,
         onValueChange: this.valueChange.bind(this),
         onAnnotationsChange: this.annotationsChange.bind(this),
         onCommentChange: this.commentChange.bind(this),
@@ -173,6 +189,9 @@ export default class RootExtendedTextEntry extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._unsubscribeIdleSaveDelay?.();
+    this._unsubscribeIdleSaveDelay = null;
+
     // Unmount first: the response editor sends its pending idle save as it unmounts, and that
     // write has to be in the session before the notifiers flush. Nothing re-renders meanwhile.
     this._disconnecting = true;

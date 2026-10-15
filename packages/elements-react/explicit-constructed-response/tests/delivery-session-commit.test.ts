@@ -32,9 +32,9 @@ if (!customElements.get(TAG)) {
   customElements.define(TAG, ExplicitConstructedResponse as CustomElementConstructor);
 }
 
-function mount(model: Record<string, unknown> = {}) {
+function mount(model: Record<string, unknown> = {}, parent: Element = document.body) {
   const element = document.createElement(TAG) as any;
-  document.body.appendChild(element);
+  parent.appendChild(element);
   const events: CustomEvent[] = [];
   element.addEventListener('session-changed', (event: Event) => {
     events.push(event as CustomEvent);
@@ -42,6 +42,34 @@ function mount(model: Record<string, unknown> = {}) {
   element.model = { markup: '<div></div>', language: 'en-US', ...model };
   element.session = {};
   return { element, events };
+}
+
+// Stands in for a player answering `sessionCommitContext` (pie-players ADR 0005).
+function inPlayer(value: { idleSaveDelayMs?: number }) {
+  const player = document.createElement('div');
+  const subscribers = new Map<(value: unknown, unsubscribe: () => void) => void, () => void>();
+  player.addEventListener('context-request', (event: any) => {
+    if (event.context !== Symbol.for('pie.sessionCommit')) {
+      return;
+    }
+    event.stopPropagation();
+    const unsubscribe = () => subscribers.delete(event.callback);
+    if (event.subscribe) {
+      subscribers.set(event.callback, unsubscribe);
+    }
+    event.callback(value, unsubscribe);
+  });
+  document.body.appendChild(player);
+  return {
+    player,
+    subscribers,
+    setValue(next: { idleSaveDelayMs?: number }) {
+      value = next;
+      for (const [callback, unsubscribe] of subscribers) {
+        callback(value, unsubscribe);
+      }
+    },
+  };
 }
 
 describe('explicit-constructed-response session commit', () => {
@@ -140,10 +168,23 @@ describe('explicit-constructed-response session commit', () => {
     expect(events).toHaveLength(1);
   });
 
-  it('passes the idle-save delay to the delivery', () => {
-    mount({ idleSaveDelay: 1000 });
+  it('passes the default idle-save delay when no player provides one', () => {
+    mount();
+
+    expect(roots.last.props.idleSaveDelay).toBe(1500);
+  });
+
+  it("passes the player's idle-save delay, and follows a change", () => {
+    const player = inPlayer({ idleSaveDelayMs: 1000 });
+    const { element } = mount({}, player.player);
 
     expect(roots.last.props.idleSaveDelay).toBe(1000);
+
+    player.setValue({ idleSaveDelayMs: 0 });
+    expect(roots.last.props.idleSaveDelay).toBe(0);
+
+    element.remove();
+    expect(player.subscribers.size).toBe(0);
   });
 
   it("keeps another blank's commit when a blank changes on a value from an older render", () => {

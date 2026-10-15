@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../src/delivery/main.js', () => ({ default: () => null }));
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 // A root's unmount runs onUnmount, standing in for an editor that saves as it unmounts.
-const roots = vi.hoisted(() => ({ created: 0, rendered: 0, onUnmount: null as null | (() => void) }));
+const roots = vi.hoisted(() => ({ created: 0, rendered: 0, last: null as any, onUnmount: null as null | (() => void) }));
 // Stands in for a response editor holding an idle save that flushPendingEditorSaves sends.
 const editors = vi.hoisted(() => ({ onFlush: null as null | (() => void), flushed: 0 }));
 vi.mock('@pie-lib/editable-html-tip-tap', () => ({
@@ -15,7 +15,13 @@ vi.mock('@pie-lib/editable-html-tip-tap', () => ({
 vi.mock('react-dom/client', () => ({
   createRoot: () => {
     roots.created += 1;
-    return { render: () => (roots.rendered += 1), unmount: () => roots.onUnmount?.() };
+    return {
+      render: (element: unknown) => {
+        roots.rendered += 1;
+        roots.last = element;
+      },
+      unmount: () => roots.onUnmount?.(),
+    };
   },
 }));
 
@@ -26,9 +32,9 @@ if (!customElements.get(TAG)) {
   customElements.define(TAG, RootExtendedTextEntry as CustomElementConstructor);
 }
 
-function mount() {
+function mount(parent: Element = document.body) {
   const element = document.createElement(TAG) as any;
-  document.body.appendChild(element);
+  parent.appendChild(element);
   const events: CustomEvent[] = [];
   element.addEventListener('session-changed', (event: Event) => {
     events.push(event as CustomEvent);
@@ -36,6 +42,34 @@ function mount() {
   element.model = { prompt: 'p', language: 'en-US' };
   element.session = {};
   return { element, events };
+}
+
+// Stands in for a player answering `sessionCommitContext` (pie-players ADR 0005).
+function inPlayer(value: { idleSaveDelayMs?: number }) {
+  const player = document.createElement('div');
+  const subscribers = new Map<(value: unknown, unsubscribe: () => void) => void, () => void>();
+  player.addEventListener('context-request', (event: any) => {
+    if (event.context !== Symbol.for('pie.sessionCommit')) {
+      return;
+    }
+    event.stopPropagation();
+    const unsubscribe = () => subscribers.delete(event.callback);
+    if (event.subscribe) {
+      subscribers.set(event.callback, unsubscribe);
+    }
+    event.callback(value, unsubscribe);
+  });
+  document.body.appendChild(player);
+  return {
+    player,
+    subscribers,
+    setValue(next: { idleSaveDelayMs?: number }) {
+      value = next;
+      for (const [callback, unsubscribe] of subscribers) {
+        callback(value, unsubscribe);
+      }
+    },
+  };
 }
 
 describe('extended-text-entry session commit', () => {
@@ -141,5 +175,24 @@ describe('extended-text-entry session commit', () => {
 
     vi.advanceTimersByTime(2000);
     expect(events).toHaveLength(1);
+  });
+
+  it('passes the default idle-save delay when no player provides one', () => {
+    mount();
+
+    expect(roots.last.props.idleSaveDelay).toBe(1500);
+  });
+
+  it("passes the player's idle-save delay, and follows a change", () => {
+    const player = inPlayer({ idleSaveDelayMs: 1000 });
+    const { element } = mount(player.player);
+
+    expect(roots.last.props.idleSaveDelay).toBe(1000);
+
+    player.setValue({ idleSaveDelayMs: 0 });
+    expect(roots.last.props.idleSaveDelay).toBe(0);
+
+    element.remove();
+    expect(player.subscribers.size).toBe(0);
   });
 });

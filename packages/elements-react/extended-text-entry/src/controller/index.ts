@@ -28,7 +28,6 @@ type ModelView = {
   equationEditor: string | number;
   spellCheckEnabled: boolean;
   pasteFormattingDisabled: boolean;
-  idleSaveDelay: number;
   playersToolbarPosition: 'bottom' | 'top';
   annotatorMode: boolean | undefined;
   disabledAnnotator: boolean;
@@ -107,11 +106,6 @@ export async function model(
     // missing key, but a key present as undefined/null overwrites them. See PIE-978.
     spellCheckEnabled: normalizedQuestion.playerSpellCheckDisabled === false,
     pasteFormattingDisabled: normalizedQuestion.playerPasteFormattingDisabled === true,
-    // A key present as undefined/null overwrites normalize's defaults, so fall back to them here.
-    idleSaveDelay:
-      typeof normalizedQuestion.playerIdleSaveDelay === 'number'
-        ? normalizedQuestion.playerIdleSaveDelay
-        : defaults.playerIdleSaveDelay,
     playersToolbarPosition: normalizedQuestion.playersToolbarPosition || 'bottom',
     annotatorMode,
     disabledAnnotator: normalizedQuestion.annotationsEnabled ? env.role !== 'instructor' : true,

@@ -259,6 +259,15 @@ of 2026-10-05 kept `mathml` for every student, and the provider ships with its f
   support ids they do not recognize, and an unanswered request means defaults, never a wait for a
   provider.
 
+### Player Session-Commit Settings
+
+Response editors take their idle-save delay from the player, per pie-players
+[ADR 0005](https://github.com/pie-framework/pie-players/blob/develop/docs/adr/0005-the-player-sets-the-idle-save-delay-through-a-host-neutral-context.md):
+`subscribeIdleSaveDelay` from `@pie-element/shared-player-events` reads the
+`Symbol.for("pie.sessionCommit")` context. The item model carries no delay, because how often a
+response is saved is delivery policy. An unanswered request means the 1500 ms default; `0` saves on
+blur only.
+
 ### Accessibility Scenario Suite
 
 When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-demo/test/a11y/**`, `apps/element-a11y-demo/src/lib/samples/**`, or `docs/a11y/**`:

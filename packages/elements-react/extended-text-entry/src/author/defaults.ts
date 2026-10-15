@@ -7,7 +7,6 @@ export default {
     equationEditor: 'Grade 8 - HS',
     feedbackEnabled: false,
     mathInput: false,
-    playerIdleSaveDelay: 1500,
     playerPasteFormattingDisabled: false,
     playerSpellCheckDisabled: true,
     predefinedAnnotations: [
