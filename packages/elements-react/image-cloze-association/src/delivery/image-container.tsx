@@ -76,11 +76,14 @@ class ImageContainer extends Component {
               draggingElement={draggingElement}
               getChoiceLabel={getChoiceLabel}
               index={r.index}
-              label={translator.t('imageClozeAssociation.responseArea', {
-                lng: language,
-                index: i + 1,
-                total: responseContainers.length,
-              })}
+              label={
+                r.ariaLabel?.trim() ||
+                translator.t('imageClozeAssociation.responseArea', {
+                  lng: language,
+                  index: i + 1,
+                  total: responseContainers.length,
+                })
+              }
               onDrop={(item) => onAnswerSelect(item, r.index)}
               onDragAnswerBegin={onDragAnswerBegin}
               onDragAnswerEnd={onDragAnswerEnd}
