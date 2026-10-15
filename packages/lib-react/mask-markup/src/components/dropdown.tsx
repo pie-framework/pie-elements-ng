@@ -99,6 +99,9 @@ const StyledMenu: any = styled(Menu)(() => ({
     // color.background() falls back to rgba(255,255,255,0), which makes the open
     // menu transparent and unreadable over the item content (PIE-1008)
     backgroundColor: pieVar('background', color.defaults.WHITE),
+    // the menu surface matches the page background in dark themes, so the
+    // border (same as the trigger button) is what separates it from the item
+    border: `1px solid ${color.borderGray()}`,
   },
   // remove default padding on the inner list
   '& .MuiList-root': {
