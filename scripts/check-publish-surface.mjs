@@ -520,7 +520,7 @@ const collectBrowserEsmViolations = (dir, pkg, context) => {
     }
     browserExportTargets.push(target);
 
-    const identity = readPackageIdentityExport(readFileSync(targetPath, 'utf8'));
+    const identity = readPackageIdentityExport(targetPath);
     if (identity?.name !== pkg.name || identity?.version !== pkg.version) {
       const expected = JSON.stringify({ name: pkg.name, version: pkg.version });
       const found = identity ? JSON.stringify(identity) : 'none';
@@ -711,22 +711,52 @@ const collectModuleExportNames = (filePath, seen = new Set()) => {
 };
 
 /**
- * The object a module's `source` exports as `piePackage`, read from its top-level declaration, as
- * `Object.freeze({ ... })` or a bare object of string literals. Undefined when it exports none.
+ * The object the module at `filePath` exports as `piePackage`, read from its top-level
+ * declaration, as `Object.freeze({ ... })` or a bare object of string literals. An entry another
+ * entry imports is built as a facade over a shared chunk, so a binding the module imports or
+ * re-exports from a relative path is read from that module. Undefined when it exports none.
  */
-export const readPackageIdentityExport = (source) => {
+export const readPackageIdentityExport = (
+  filePath,
+  exportName = PACKAGE_IDENTITY_EXPORT,
+  seen = new Set()
+) => {
+  if (seen.has(filePath) || !existsSync(filePath)) return {};
+  seen.add(filePath);
   const declarators = [];
+  const imported = new Map();
   let local;
-  for (const node of parseAst(source).body) {
+  let reexported;
+  for (const node of parseAst(readFileSync(filePath, 'utf8')).body) {
     const declaration = node.type === 'ExportNamedDeclaration' ? node.declaration : node;
     if (declaration?.type === 'VariableDeclaration') declarators.push(...declaration.declarations);
-    if (node.type !== 'ExportNamedDeclaration' || node.source) continue;
+    if (node.type === 'ImportDeclaration' && node.source.value.startsWith('.')) {
+      for (const specifier of node.specifiers) {
+        if (specifier.type !== 'ImportSpecifier') continue;
+        imported.set(specifier.local.name, {
+          specifier: node.source.value,
+          name: nameOf(specifier.imported),
+        });
+      }
+    }
+    if (node.type !== 'ExportNamedDeclaration') continue;
     for (const specifier of node.specifiers) {
-      if (nameOf(specifier.exported) === PACKAGE_IDENTITY_EXPORT) local = nameOf(specifier.local);
+      if (nameOf(specifier.exported) !== exportName) continue;
+      if (node.source) {
+        reexported = { specifier: node.source.value, name: nameOf(specifier.local) };
+      } else {
+        local = nameOf(specifier.local);
+      }
     }
     for (const declarator of node.declaration?.declarations ?? []) {
-      if (declarator.id.name === PACKAGE_IDENTITY_EXPORT) local = PACKAGE_IDENTITY_EXPORT;
+      if (declarator.id.name === exportName) local = exportName;
     }
+  }
+  const from = reexported ?? (local && imported.get(local));
+  if (from) {
+    if (!from.specifier.startsWith('.')) return {};
+    const target = path.resolve(path.dirname(filePath), from.specifier);
+    return readPackageIdentityExport(target, from.name, seen);
   }
   if (!local) return undefined;
   const init = declarators.find(({ id }) => id.type === 'Identifier' && id.name === local)?.init;
