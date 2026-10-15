@@ -27,6 +27,24 @@
         "element": "extended-text-entry",
         "value": ""
       }
+    },
+    {
+      "id": "annotations",
+      "title": "Annotations",
+      "description": "A written response a scorer marks up with annotations, in evaluate mode or as instructor",
+      "tags": ["extended-text-entry", "annotations"],
+      "model": {
+        "id": "1",
+        "element": "extended-text-entry",
+        "prompt": "Describe what a plant needs to grow.",
+        "promptEnabled": true,
+        "annotationsEnabled": true
+      },
+      "session": {
+        "id": "1",
+        "element": "extended-text-entry",
+        "value": "<p>Plants need water and sunlight to grow. They also need soil with nutrients.</p>"
+      }
     }
   ]
 }
