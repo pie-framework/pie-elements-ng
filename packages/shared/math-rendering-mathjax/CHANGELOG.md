@@ -1,5 +1,15 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.6
+
+### Patch Changes
+
+- [#463](https://github.com/pie-framework/pie-elements-ng/pull/463) [`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a) Thanks [@chillenious](https://github.com/chillenious)! - The `./assets` export gives a host that bundles elements the URL of every file the browser build loads, MathJax's web fonts and the speech worker with its rule files, keyed by npm path. Passed as `math: { assetUrls }` to `registerPreloadedElements`, it replaces a hosted `assetRoot`. The keys carry the MathJax version, so install the version of this package that the elements depend on.
+
+- [#449](https://github.com/pie-framework/pie-elements-ng/pull/449) [`0dd3dd4`](https://github.com/pie-framework/pie-elements-ng/commit/0dd3dd4180d65344403a416ec9c472f21d251cd7) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @playwright/test from 1.63.0 to 1.64.0 in the test-dependencies group across 1 directory
+
+- [#460](https://github.com/pie-framework/pie-elements-ng/pull/460) [`ae0a403`](https://github.com/pie-framework/pie-elements-ng/commit/ae0a4031fc2cd971c04cd07979bc89e97dcc0511) Thanks [@arimieandreea](https://github.com/arimieandreea)! - fix: feat(math-rendering): add perpendicular and divide macros PIE-1088
+
 ## 0.1.5
 
 ### Patch Changes

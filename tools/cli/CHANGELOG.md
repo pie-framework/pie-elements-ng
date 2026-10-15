@@ -1,5 +1,17 @@
 # @pie-element/cli
 
+## 0.1.5
+
+### Patch Changes
+
+- [#452](https://github.com/pie-framework/pie-elements-ng/pull/452) [`4ef7868`](https://github.com/pie-framework/pie-elements-ng/commit/4ef7868944a43e6bf600ea7da984761a36e70e2e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump es-module-lexer from 1.7.0 to 3.0.3
+
+- [#454](https://github.com/pie-framework/pie-elements-ng/pull/454) [`b711dc8`](https://github.com/pie-framework/pie-elements-ng/commit/b711dc8b525cd41616fb939bb56b1d3384312b70) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @oclif/plugin-help from 6.2.50 to 7.0.4
+
+- [#456](https://github.com/pie-framework/pie-elements-ng/pull/456) [`4344a7f`](https://github.com/pie-framework/pie-elements-ng/commit/4344a7fe6ad9a2415001ebe47cc619ad0d3aa3d4) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump webpack from 5.107.2 to 5.111.1
+- Updated dependencies [[`f18e19a`](https://github.com/pie-framework/pie-elements-ng/commit/f18e19a7f04745b11527cb95adffadd50eabca34)]:
+  - @pie-element/element-bundler@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

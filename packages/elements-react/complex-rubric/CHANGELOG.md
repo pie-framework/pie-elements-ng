@@ -1,5 +1,18 @@
 # @pie-element/complex-rubric
 
+## 8.0.5
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`026d10e`](https://github.com/pie-framework/pie-elements-ng/commit/026d10ed3f16b1e016f8ad2d25facce600080857), [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-element/shared-player-events@0.2.0
+  - @pie-element/multi-trait-rubric@9.0.5
+  - @pie-element/rubric@9.0.5
+  - @pie-lib/config-ui@14.0.5
+  - @pie-lib/rubric@3.0.5
+
 ## 8.0.4
 
 ### Patch Changes
