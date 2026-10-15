@@ -39,12 +39,26 @@ const StyledInput: any = styled('input')(({ theme }) => ({
   '&.error': { border: `2px solid ${theme.palette.error.main}` },
 }));
 
+// how tall the label is as an input: a label in math form is at least as tall, with its math centered in it,
+// so the labels along an axis line up whichever form they are in
+const LABEL_HEIGHT = 24;
+
 const StyledMathInput: any = styled('div')(({ theme }) => ({
   pointerEvents: 'auto',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: LABEL_HEIGHT,
   textAlign: 'center',
+  // MathJax's container takes the label's line height at its own larger font, which leaves room above the
+  // math and sets it lower than the text of an input; without it the container is as tall as the math
+  '& mjx-container': {
+    lineHeight: 0,
+  },
   fontSize: theme.typography.fontSize + 2,
   fontFamily: theme.typography.fontFamily,
-  color: color.defaults.PRIMARY_DARK,
+  // the same color as a label shown as the input, so math and plain labels on one axis match
+  color: color.defaults.TEXT,
   '&.disabledMarkLabel': {
     ...disabled('color'),
     color: disabledLabelColor,
@@ -65,31 +79,25 @@ const StyledMathInput: any = styled('div')(({ theme }) => ({
   },
 }));
 
-function isFractionFormat(label) {
-  const trimmedLabel = label?.trim() || '';
-  const fracRegex = new RegExp(/^[1-9]*[0-9]*\s?[1-9][0-9]*\/[1-9][0-9]*$/);
-  return fracRegex.test(trimmedLabel);
-}
+// a plain-text number, optionally negative: integer, decimal, fraction ("1/2") or mixed number ("1 1/2")
+const FRACTION_REGEX = /^(-?)(?:(\d+)\s+)?(\d+)\/(\d+)$/;
+const NUMBER_REGEX = /^-?(?:\d+\.?\d*|\.\d+)$/;
 
+// numeric labels are all typeset as math so integers, decimals, fractions and mixed numbers
+// look alike when mixed on one axis; anything else stays plain text
 function getLabelMathFormat(label) {
   const trimmedLabel = label?.trim() || '';
-  let fraction;
-  let mixedNr = '';
-  let improperFraction = trimmedLabel.split(' ');
-  if (improperFraction[1] && improperFraction[1].includes('/')) {
-    fraction = improperFraction[1].split('/') || '';
-  } else {
-    fraction = trimmedLabel?.split('/') || '';
+  const fraction = FRACTION_REGEX.exec(trimmedLabel);
+
+  if (fraction) {
+    const [, sign, whole = '', numerator, denominator] = fraction;
+    return `\\(${sign}${whole}\\frac{${numerator}}{${denominator}}\\)`;
   }
 
-  let formattedLLabel;
-  if (isFractionFormat(label)) {
-    if (improperFraction[0] && improperFraction[1]) {
-      mixedNr = improperFraction[0];
-    }
-    formattedLLabel = `\\(${mixedNr}\\frac{${fraction[0]}}{${fraction[1]}}\\)`;
-    return formattedLLabel;
+  if (NUMBER_REGEX.test(trimmedLabel)) {
+    return `\\(${trimmedLabel}\\)`;
   }
+
   return undefined;
 }
 
