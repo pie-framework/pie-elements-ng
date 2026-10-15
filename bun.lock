@@ -2144,6 +2144,7 @@
       "name": "@pie-element/shared-player-events",
       "version": "0.1.1",
       "devDependencies": {
+        "@pie-players/pie-context": "1.0.0-beta.3",
         "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
@@ -2721,6 +2722,8 @@
     "@pie-lib/tools": ["@pie-lib/tools@workspace:packages/lib-react/tools"],
 
     "@pie-lib/translator": ["@pie-lib/translator@workspace:packages/shared/translator"],
+
+    "@pie-players/pie-context": ["@pie-players/pie-context@1.0.0-beta.3", "", {}, "sha512-VRDbdmghIIrJkUlP9XJi00Y6UdbofIpjQnZhNU27/SKdPGbmnRi0Dt6kD7kot0WL5Ksm68V0nDpvgX77XlzfXA=="],
 
     "@playwright/test": ["@playwright/test@1.64.0", "", { "dependencies": { "playwright": "1.64.0" }, "bin": { "playwright": "cli.js" } }, "sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g=="],
 
