@@ -12,9 +12,10 @@ const StyledSpanContainer: any = styled('span')(() => ({
   /*
    * `--pie-blue-grey-300` is the select-text hover fill, picked for the ink on it: it
    * measures 1.35:1 against purple-on-light-green's own background. The box outline is what
-   * marks the response slot in running text, so it takes the stroke token instead.
+   * marks the response slot in running text, so it takes the dark stroke token, which holds
+   * 3:1 against white.
    */
-  border: `1px solid ${color.border()}`,
+  border: `1px solid ${color.borderDark()}`,
   margin: '1px 5px',
   cursor: 'pointer',
   alignItems: 'center',
@@ -29,7 +30,7 @@ const StyledResponseBox: any = styled('div')(() => ({
   background: color.backgroundDark(),
   color: color.text(),
   display: 'inline-flex',
-  borderRight: `2px solid ${color.border()}`,
+  borderRight: `2px solid ${color.borderDark()}`,
   boxSizing: 'border-box',
   overflow: 'hidden',
   fontSize: '12px',

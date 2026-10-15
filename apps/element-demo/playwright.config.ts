@@ -101,7 +101,31 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      // `*.touch.spec.ts` belongs to the touch project below; without touch
+      // emulation those gestures are no-ops and the specs would fail here.
+      testIgnore: ['**/*.touch.spec.ts'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
+    },
+    {
+      // Touch-device coverage. The rest of the suite drives every draggable
+      // element with `page.mouse`, which never reaches the separate listeners
+      // drag libraries register for touch - the blind spot that let charting
+      // ship unusable on iPads (PIE-1074).
+      //
+      // Chromium with touch emulation, not WebKit: Playwright has no trusted
+      // touch-drag for WebKit, so drags there would need synthetic in-page
+      // events that bypass `touch-action` and miss the dnd-kit class of bug.
+      // The trade-off is that this project covers "does a finger drive this
+      // element at all", not iOS Safari rendering or native gesture quirks -
+      // those still need a real device.
+      name: 'touch',
+      testMatch: ['**/*.touch.spec.ts'],
+      use: {
+        ...devices['Desktop Chrome'],
+        // iPad Air landscape, in CSS pixels.
+        viewport: { width: 1180, height: 820 },
+        hasTouch: true,
+      },
     },
   ],
   webServer: useExternalServer

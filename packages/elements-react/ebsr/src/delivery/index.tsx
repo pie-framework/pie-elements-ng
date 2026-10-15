@@ -66,6 +66,12 @@ function getPlayerAttributes(element) {
 }
 
 export default class Ebsr extends HTMLElement {
+  /**
+   * The AfA PNP 3.0 supports this element takes. Its parts declare the same, and
+   * this element answers for them.
+   */
+  static pieSupports = Object.freeze(['answer-masking']);
+
   constructor() {
     super();
     this._model = {};
@@ -158,6 +164,18 @@ export default class Ebsr extends HTMLElement {
     log('[onSessionChanged] session: ', this._session);
     const complete = isSessionComplete(this._session);
     this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), complete));
+  }
+
+  /** Both parts' choices, with ids prefixed by the part since the parts share choice values. */
+  pieSupportTargets(term) {
+    return [
+      ['a', this.partA],
+      ['b', this.partB],
+    ].flatMap(([part, element]) =>
+      typeof element?.pieSupportTargets === 'function'
+        ? element.pieSupportTargets(term).map((target) => ({ ...target, id: `${part}-${target.id}` }))
+        : [],
+    );
   }
 
   get partA() {

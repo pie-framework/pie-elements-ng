@@ -259,6 +259,15 @@ of 2026-10-05 kept `mathml` for every student, and the provider ships with its f
   support ids they do not recognize, and an unanswered request means defaults, never a wait for a
   provider.
 
+### Player Session-Commit Settings
+
+Response editors take their idle-save delay from the player, per pie-players
+[ADR 0005](https://github.com/pie-framework/pie-players/blob/develop/docs/adr/0005-the-player-sets-the-idle-save-delay-through-a-host-neutral-context.md):
+`subscribeIdleSaveDelay` from `@pie-element/shared-player-events` reads the
+`Symbol.for("pie.sessionCommit")` context. The item model carries no delay, because how often a
+response is saved is delivery policy. An unanswered request means the 1500 ms default; `0` saves on
+blur only.
+
 ### Accessibility Scenario Suite
 
 When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-demo/test/a11y/**`, `apps/element-a11y-demo/src/lib/samples/**`, or `docs/a11y/**`:
@@ -304,9 +313,10 @@ for every merged PR, and `latest` from `master` through a "Version Packages" PR 
 - **Default bump policy**: `patch`. Use `minor` or `major` only when the user explicitly requests
   it. A changeset added in the PR keeps its bump type and summary over the recorded one; write
   one whenever the change deserves more than its PR title or a `minor`/`major` bump.
-- **Non-shipping paths do not release**: changes confined to tests, specs, snapshots and
-  package-local vitest/playwright config select nothing and record no changeset. Private
-  packages and `.changeset/config.json`'s `ignore` list are never selected.
+- **Non-shipping paths do not release**: changes confined to tests, specs, snapshots,
+  package-local vitest/playwright config and a manifest's `@types/*` devDependencies select
+  nothing and record no changeset. Other devDependencies ship: a package can bundle them.
+  Private packages and `.changeset/config.json`'s `ignore` list are never selected.
 - **Selective publish only**: publish only selected packages and changeset-propagated
   dependents, never all unpublished packages.
 - **Manual npm publish command**: always `sh scripts/publish-with-env-token.sh --packages <pkg1,pkg2>`

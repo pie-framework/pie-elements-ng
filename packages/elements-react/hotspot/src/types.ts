@@ -28,6 +28,10 @@ export interface HotspotShapeBase {
   correct?: boolean;
   /** Position of the shape in drawing order, which the author's undo uses */
   index?: number;
+  /** Text appended to the shape's "Hotspot x of y" name for screen readers; `aria_label` and `aria-label` are read as well */
+  ariaLabel?: string;
+  aria_label?: string;
+  'aria-label'?: string;
 }
 
 export interface Rectangle extends HotspotShapeBase {

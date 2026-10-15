@@ -116,6 +116,44 @@ describe('recording a merged PR', { timeout: 30_000 }, () => {
     expect(existsSync(join(rootDir, '.changeset', 'pr-240.md'))).toBe(false);
   });
 
+  it('leaves out packages whose manifest changed only in @types devDependencies', async () => {
+    const rootDir = await makeRepo();
+    const base = commit(rootDir, 'initial');
+    await write(
+      rootDir,
+      `${MC}/package.json`,
+      JSON.stringify({
+        name: '@pie-element/mc-populated-blank',
+        version: '1.0.0',
+        devDependencies: { '@types/bun': '1.3.0' },
+      })
+    );
+    const devOnly = commit(rootDir, 'build(deps): pin @types/bun');
+
+    expect(record(rootDir, base, devOnly, '243', 'build(deps): pin @types/bun')).toContain(
+      'recorded=false'
+    );
+    expect(existsSync(join(rootDir, '.changeset', 'pr-243.md'))).toBe(false);
+
+    await write(
+      rootDir,
+      `${CHOICE}/package.json`,
+      JSON.stringify({
+        name: '@pie-element/multiple-choice',
+        version: '13.4.0',
+        devDependencies: { 'lodash-es': '4.17.21' },
+      })
+    );
+    const head = commit(rootDir, 'build(deps): vendor lodash-es');
+
+    expect(record(rootDir, base, head, '244', 'build(deps): vendor lodash-es')).toContain(
+      'recorded=true'
+    );
+    expect(readFileSync(join(rootDir, '.changeset', 'pr-244.md'), 'utf8')).toBe(
+      '---\n  "@pie-element/multiple-choice": patch\n---\n\nbuild(deps): vendor lodash-es\n\npr: 244\n'
+    );
+  });
+
   it('writes nothing when the PR brought its own changeset for everything it changed', async () => {
     const rootDir = await makeRepo();
     const base = commit(rootDir, 'initial');

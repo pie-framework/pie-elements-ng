@@ -1,6 +1,6 @@
 # Math Rendering in pie-elements-ng
 
-**Last Updated:** 2026-10-06
+**Last Updated:** 2026-10-14
 
 ## Overview
 
@@ -91,6 +91,8 @@ The renderer options of the same names take precedence over the page's.
 
 A self-hosted root holds those paths, and only the mathmaps of the listed locales. A bundle that carries the browser build's files lists them in `assetUrls` instead, each as a `new URL('./…', import.meta.url)`: a host bundler emits each file so referenced into its own output under a hashed name, and copies nothing a directory URL names. A bundle listing the fonts needs no root. The adapter's manifest lists the three packages and their version under `pie.assetPackages`, which `pie-players`' preloaded-player build reads to ship them. A locale SRE does not ship needs a speech worker built with it and its `mathmaps/<locale>.json` at `speechPath`, and a `speechLocales` entry giving its label.
 
+The `./assets` export is that list for the browser build: `import { assetUrls } from '@pie-element/shared-math-rendering-mathjax/assets'`. It names the woff2 files of both fonts, the speech worker and every mathmap, 124 files and 6.3 MB that the package ships under `dist/assets/npm/` with `mathjax`'s LICENSE (the font packages publish none). The build derives it from `pie.assetPackages`, the list the preloaded-player build ships from, and fails when an installed package is at another version. A host that bundles elements from npm passes it as `math: { assetUrls }` to `registerPreloadedElements`, or as the page's `opts.assetUrls`, and sets no `assetRoot`; its bundler emits every file, and a page fetches the ones it uses. Vite's production build does so with no configuration. Its dev server pre-bundles the export into `node_modules/.vite/deps/`, where the URLs find nothing, so a Vite host sets `optimizeDeps: { exclude: ['@pie-element/shared-math-rendering-mathjax'] }`. Angular's webpack builder sets `module.parser.javascript.url: false`, which leaves the build machine's file URLs in place of the emitted files; a rule giving this package `parser: { url: true }` re-enables them, as `pie-players` documents for its [preloaded-player build](https://github.com/pie-framework/pie-players/blob/develop/docs/preloaded-player/readme.md#usage). The keys carry the MathJax version, so the host installs the version of this package that its elements depend on: an adapter copy built on another MathJax finds none of its files in the map and renders without web fonts and speech.
+
 `srcUrl` replaces the npm build's MathJax script only; its fonts and speech still load from the root.
 
 **Without a root**, each build reports it once per page: the npm build with `console.error`, the browser build with `console.warn`, each beginning `[math-rendering] No asset root for MathJax`. Each report also dispatches `pie-mathjax-no-asset-root` (`NO_ASSET_ROOT_EVENT`) on `window`, whose `detail` carries the `effect` (`untypeset`, `no-web-fonts` or `no-web-fonts-or-speech`), the `message` and the `docsUrl`; `@pie-players` forward it to their instrumentation.
@@ -115,7 +117,7 @@ A self-hosted root holds those paths, and only the mathmaps of the listed locale
 
 **Math spans:** the adapter rewrites the LaTeX in each `[data-latex]` element as inline math and marks it handled, as the legacy renderer does, so math saved by the editors typesets whatever delimiters it was saved with. `\embed{newLine}[]` becomes `\newline`.
 
-**Macros:** `\parallelogram`, `\overarc`, `\napprox`, `\longdiv`, and `\abs{x}` for an absolute value.
+**Macros:** `\parallelogram`, `\overarc`, `\napprox`, `\longdiv`, `\perpendicular` (as `\perp`), `\divide` (as `\div`), and `\abs{x}` for an absolute value.
 
 **MathML:** `<math>` elements typeset as MathML input, at display size (`displaystyle="true"`) as the legacy renderer sets it. A prefixed root such as `<mml:math>` typesets too. Elementary math, `mstack` and `mlongdiv`, is rewritten as the `mtable` it describes before MathJax reads it: MathJax 4 reads it only through its `mml3` extension, which depends on XSLT.
 
@@ -228,6 +230,7 @@ bun run dev
 
 - Adapter: `packages/shared/math-rendering-mathjax/`
 - Asset resolution: `packages/shared/math-rendering-mathjax/src/assets.ts`
+- `./assets` export: `packages/shared/math-rendering-mathjax/build-assets.ts`, run by the package's `build`
 - npm build engine: `packages/shared/math-rendering-mathjax/src/engine/page.ts`
 - Browser build engine: `packages/shared/math-rendering-mathjax/src/engine/bundled.ts` and `src/engine/bundled/`, built by `vite.browser.config.ts`
 - Wrapper package: `packages/lib-react/math-rendering/`
