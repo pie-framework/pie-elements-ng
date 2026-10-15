@@ -1,5 +1,16 @@
 # @pie-element/rubric
 
+## 9.0.5
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+  - @pie-lib/config-ui@14.0.5
+  - @pie-lib/rubric@3.0.5
+
 ## 9.0.4
 
 ### Patch Changes

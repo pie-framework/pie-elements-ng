@@ -1,5 +1,21 @@
 # @pie-element/extended-text-entry
 
+## 16.1.0
+
+### Minor Changes
+
+- [#442](https://github.com/pie-framework/pie-elements-ng/pull/442) [`026d10e`](https://github.com/pie-framework/pie-elements-ng/commit/026d10ed3f16b1e016f8ad2d25facce600080857) Thanks [@lakatosandrei](https://github.com/lakatosandrei)! - Extended text entry and explicit constructed response save the student's response once the student stops typing for the player's idle-save delay, not only when the editor loses focus. The player sets the delay through `sessionCommitContext` from `@pie-players/pie-context` (`idleSaveDelayMs`); without a provider, or with the field left out, the delay is 1500 ms, and `0` saves on blur only. `@pie-element/shared-player-events` exports `subscribeIdleSaveDelay`, `resolveIdleSaveDelay` and `DEFAULT_IDLE_SAVE_DELAY_MS` for this. `ConstructedResponse` in `@pie-lib/mask-markup` passes a new `idleSaveDelay` prop on to each blank's editor. Its `onChange` also gets the changed blank's id as a second argument, which explicit constructed response uses so a blank's save no longer overwrites another blank's answer. A player's `commitPendingSession()` now also sends a save still waiting in the response editor, so the session it commits holds what the student typed in the last delay.
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`fba9a4a`](https://github.com/pie-framework/pie-elements-ng/commit/fba9a4a54cc58a44691931b2df78f3bc7041f716), [`026d10e`](https://github.com/pie-framework/pie-elements-ng/commit/026d10ed3f16b1e016f8ad2d25facce600080857), [`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`cf587a2`](https://github.com/pie-framework/pie-elements-ng/commit/cf587a2502b8707a71708c58e0b6c610306ed198), [`e9fef46`](https://github.com/pie-framework/pie-elements-ng/commit/e9fef46f9bc652603fac3732f2ae92a680b3d86b), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`6db1c21`](https://github.com/pie-framework/pie-elements-ng/commit/6db1c2148d603b26b2ad57b4a471b0184ac1c422), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-lib/editable-html-tip-tap@3.1.0
+  - @pie-element/shared-player-events@0.2.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+  - @pie-lib/config-ui@14.0.5
+
 ## 16.0.4
 
 ### Patch Changes
