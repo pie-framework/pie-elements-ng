@@ -147,9 +147,11 @@ const StyledCheckboxBase: any = styled(Checkbox, {
       ...styles[key('root')],
       '&.Mui-checked': styles[key('checked')],
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
-      '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
-        borderRadius: '4px',
+      '@media (hover: hover)': {
+        '&:hover:not(.Mui-disabled) svg': {
+          boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
+          borderRadius: '4px',
+        },
       },
     },
     '&.Mui-focusVisible': {
@@ -190,9 +192,11 @@ const StyledRadioBase: any = styled(Radio, {
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
       '&.Mui-focusVisible:not(.Mui-checked)': styles.focusVisibleUnchecked,
       '&.Mui-focusVisible.Mui-checked': styles.focusVisibleChecked,
-      '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
-        borderRadius: '50%',
+      '@media (hover: hover)': {
+        '&:hover:not(.Mui-disabled) svg': {
+          boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
+          borderRadius: '50%',
+        },
       },
     },
     '&.Mui-focusVisible': {

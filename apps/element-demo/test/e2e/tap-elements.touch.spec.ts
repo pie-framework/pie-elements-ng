@@ -36,20 +36,8 @@ type TapCase = {
 
 const visibleFirst = (root: Locator, selector: string) =>
   root.locator(selector).filter({ visible: true }).first();
+
 const labelOf = (input: Locator) => input.locator('xpath=ancestor::label[1]');
-
-/**
- * multiple-choice puts a 2px focus-outline box-shadow on the checkbox or radio
- * icon on `:hover` (`choice-input.tsx`, `&:hover:not(.Mui-disabled) svg`), with
- * no `@media (hover: hover)` guard. A touchscreen keeps `:hover` on the last
- * tapped element, so a choice the learner has just deselected keeps that ring
- * and looks focused. Moving the hover away clears it; blurring the input does
- * not, so it is the hover rule, not focus. EBSR renders multiple-choice, so it
- * inherits the same ring. Tracked as PIE-1278; un-fixme once it lands.
- */
-const MC_STICKY_HOVER =
-  "multiple-choice's icon :hover ring has no (hover: hover) guard, so it stays after a tap";
-
 const CASES: TapCase[] = [
   {
     element: 'multiple-choice',
@@ -65,7 +53,6 @@ const CASES: TapCase[] = [
     selections: (session) => session?.value?.length ?? 0,
     toggles: true,
     look: labelOf,
-    lookDefect: MC_STICKY_HOVER,
   },
   {
     element: 'select-text',
@@ -82,7 +69,6 @@ const CASES: TapCase[] = [
     selections: (session) => session?.value?.partA?.value?.length ?? 0,
     toggles: true,
     look: labelOf,
-    lookDefect: MC_STICKY_HOVER,
   },
   {
     element: 'inline-dropdown',
