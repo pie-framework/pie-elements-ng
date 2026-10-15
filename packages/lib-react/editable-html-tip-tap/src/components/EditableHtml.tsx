@@ -14,6 +14,7 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { ExternalPaste } from '../external-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
+import { setPendingSaveFlush } from '../pending-save.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
 import { ExtendedTableCell, ExtendedTableHeader } from '../extensions/extended-table-cell.js';
@@ -144,6 +145,17 @@ const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy) => ({
 // after the caller drops them.
 const OPTIONAL_EDITOR_ATTRIBUTES = ['aria-label', 'aria-labelledby'];
 
+// How many of its own recent saves the editor recognises when the caller passes them back.
+const SENT_MARKUPS_KEPT = 5;
+
+// An image upload, a toolbar or a response area the user is still working in. Neither a blur nor an
+// idle save commits the content while one is open.
+const isEditingElsewhere = (editor) =>
+  editor._insertingImage ||
+  editor._toolbarOpened ||
+  editor.isActive('inline_dropdown') ||
+  editor.isActive('explicit_constructed_response');
+
 export const EditableHtml = (props) => {
   const { showParagraphs, separateParagraphs } = props.pluginProps || {};
   const [pendingImages, setPendingImages] = useState([]);
@@ -168,12 +180,27 @@ export const EditableHtml = (props) => {
     ...toolbarOpts,
   };
 
+  // The markups this editor sent through onChange most recently. A markup prop equal to one of
+  // them is the caller passing a save back, possibly after the user typed on, so it must not
+  // replace the content. A few are kept because a caller can re-render an older save late.
+  const sentMarkupsRef = useRef([]);
+
+  const emitChange = (html) => {
+    sentMarkupsRef.current = [...sentMarkupsRef.current.slice(1 - SENT_MARKUPS_KEPT), html];
+    props.onChange?.(html);
+  };
+
+  // useEditor's callbacks and the idle save read the latest one through this.
+  const emitChangeRef = useRef(emitChange);
+
+  emitChangeRef.current = emitChange;
+
   const commitEditorContent = useCallback(
     (editor) => {
       const html = editor.getHTML();
 
       if (props.markup !== html) {
-        props.onChange?.(html);
+        emitChangeRef.current(html);
       }
 
       if (toolbarOptsToUse.doneOn === 'blur') {
@@ -182,6 +209,59 @@ export const EditableHtml = (props) => {
     },
     [props.markup, props.onChange, props.onDone, toolbarOptsToUse.doneOn],
   );
+
+  // useEditor keeps the callbacks it was created with, so the idle save reads the latest commit.
+  const commitEditorContentRef = useRef(commitEditorContent);
+
+  commitEditorContentRef.current = commitEditorContent;
+
+  // When the caller passes idleSaveDelay, commits the content once the user stops typing for that
+  // many ms, so it isn't saved only on blur. Without it the editor saves on blur only.
+  const { idleSaveDelay } = props;
+  // Set while a pending idle save is flushed because the editor or the component is going away.
+  const tearingDownRef = useRef(false);
+  const idleSave = useMemo(
+    () =>
+      idleSaveDelay > 0
+        ? debounce((editor) => {
+            if (editor.isDestroyed) {
+              return;
+            }
+
+            // Mid-composition (IME, dictation) the text isn't final, and an open toolbar commits on
+            // its own close, so try again after another delay. A teardown can't wait. See PIE-473.
+            if (!tearingDownRef.current && (editor.view.composing || isEditingElsewhere(editor))) {
+              idleSaveRef.current?.(editor);
+              return;
+            }
+
+            commitEditorContentRef.current(editor);
+          }, idleSaveDelay)
+        : null,
+    [idleSaveDelay],
+  );
+
+  const idleSaveRef = useRef(idleSave);
+
+  idleSaveRef.current = idleSave;
+
+  // Sends a pending idle save now rather than dropping it, so text typed inside the delay survives
+  // a teardown that comes before a blur. See PIE-1058.
+  const flushIdleSave = useCallback((save) => {
+    tearingDownRef.current = true;
+
+    try {
+      save?.flush();
+    } finally {
+      tearingDownRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => () => flushIdleSave(idleSave), [idleSave, flushIdleSave]);
+
+  // What a host's flushPendingEditorSaves calls on this editor's node: the save goes out now, while
+  // the editor stays mounted, so a player committing the session doesn't miss the last few words.
+  const flushPendingSave = useCallback(() => flushIdleSave(idleSaveRef.current), [flushIdleSave]);
 
   const responseAreaPropsToUse = useMemo(
     () => ({
@@ -311,7 +391,7 @@ export const EditableHtml = (props) => {
 
               if (scheduled && result) {
               // finish editing only on success
-                cb = props.onChange;
+                cb = emitChangeRef.current;
               }
 
               removePendingImage(pos);
@@ -387,20 +467,22 @@ export const EditableHtml = (props) => {
       content: normalizeInitialMarkup(props.markup),
       onUpdate: ({ editor, transaction }) => {
         if (transaction.isDone) {
-          props.onChange?.(editor.getHTML());
+          emitChangeRef.current(editor.getHTML());
+        }
+
+        if (transaction.docChanged && idleSaveRef.current) {
+          idleSaveRef.current(editor);
+          // Only an edit leaves a save pending, and by now the view is mounted.
+          setPendingSaveFlush(editor.view.dom, flushPendingSave);
         }
       },
       onBlur: ({ editor }) => {
-        const otherToolbarOpened =
-          editor._insertingImage ||
-          editor._toolbarOpened ||
-          editor.isActive('inline_dropdown') ||
-          editor.isActive('explicit_constructed_response');
-
-        if (otherToolbarOpened || !editor.schema) {
+        if (isEditingElsewhere(editor) || !editor.schema) {
           return;
         }
 
+        // The blur commits everything, so a pending idle save would only repeat it.
+        idleSaveRef.current?.cancel();
         commitEditorContent(editor);
       },
     },
@@ -416,6 +498,13 @@ export const EditableHtml = (props) => {
   useEffect(() => {
     editor?.setEditable(!props.disabled);
   }, [props.disabled, editor]);
+
+  // useEditor replaces the editor when charactersLimit changes. Tiptap emits destroy before it
+  // unmounts the view, so the old editor's content can still be read here. The listener isn't
+  // removed: an editor drops its listeners when it is destroyed.
+  useEffect(() => {
+    editor?.on('destroy', () => flushIdleSave(idleSaveRef.current));
+  }, [editor, flushIdleSave]);
 
   // useEditor only re-applies options on its own when it is called with an empty dependency
   // array, and this call site depends on charactersLimit, so a spellCheck or name change on a
@@ -448,6 +537,15 @@ export const EditableHtml = (props) => {
     if (!editor) {
       return;
     }
+    // The editor's own save coming back. The user may have typed on since, and normalizing it would
+    // also restructure the blocks under the cursor.
+    if (sentMarkupsRef.current.includes(props.markup)) {
+      return;
+    }
+
+    // Markup from elsewhere: the saves sent before it no longer describe what the caller holds.
+    sentMarkupsRef.current = [];
+
     const nextMarkup = normalizeInitialMarkup(props.markup);
 
     if (nextMarkup !== editor.getHTML()) {
