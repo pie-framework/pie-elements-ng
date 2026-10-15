@@ -90,6 +90,8 @@ const LEGACY_MACROS: Record<string, MathJaxMacro> = {
   napprox: '\\not\\approx',
   longdiv: '\\enclose{longdiv}',
   abs: ['\\left|#1\\right|', 1],
+  perpendicular: '\\perp',
+  divide: '\\div',
 };
 
 const SINGLE_DOLLAR_WARNING =
