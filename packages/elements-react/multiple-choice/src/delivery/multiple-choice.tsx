@@ -123,7 +123,7 @@ export class MultipleChoice extends React.Component {
     disabled: PropTypes.bool,
     // Choice values struck out by the answer eliminator, which cannot be selected.
     eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
-    spokenMathNames: PropTypes.bool,
+    mathOutsideNames: PropTypes.bool,
     onChoiceChanged: PropTypes.func,
     responseCorrect: PropTypes.bool,
     correctResponse: PropTypes.array,
@@ -327,7 +327,7 @@ export class MultipleChoice extends React.Component {
       options,
       baseHeadingLevel,
       eliminatedChoices = [],
-      spokenMathNames,
+      mathOutsideNames,
     } = this.props;
     const { showCorrect, maxSelectionsErrorState } = this.state;
     const isEvaluateMode = mode === 'evaluate';
@@ -457,7 +457,7 @@ export class MultipleChoice extends React.Component {
                 displayKey={this.indexToSymbol(index)}
                 isSelectionButtonBelow={isSelectionButtonBelow}
                 language={language}
-                spokenMathNames={spokenMathNames}
+                mathOutsideNames={mathOutsideNames}
               />
             ))}
           </LayoutComponent>

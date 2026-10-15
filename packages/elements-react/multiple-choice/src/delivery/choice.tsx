@@ -80,7 +80,7 @@ export class Choice extends React.Component {
       hoverAnswerStrokeWidth,
       tagName,
       language,
-      spokenMathNames,
+      mathOutsideNames,
     } = this.props;
     
     const { isHovered } = this.state;
@@ -106,7 +106,7 @@ export class Choice extends React.Component {
       selectedAnswerStrokeWidth,
       tagName,
       language,
-      spokenMathNames,
+      mathOutsideNames,
     };
 
     const normalizeStrokeWidth = (width) => {
@@ -200,7 +200,7 @@ Choice.propTypes = {
   tagName: PropTypes.string,
   isSelectionButtonBelow: PropTypes.bool,
   language: PropTypes.string,
-  spokenMathNames: PropTypes.bool,
+  mathOutsideNames: PropTypes.bool,
 };
 
 export default Choice;

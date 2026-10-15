@@ -45,16 +45,19 @@ import FeedbackTick from './feedback-tick.js';
 
 const { translator } = Translator;
 
+const holdsAny = (label, markers) => typeof label === 'string' && markers.some((marker) => label.includes(marker));
+
+const MATH_MARKERS = ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container'];
+
 /**
  * Whether a choice's label holds content its accessible name cannot carry: browsers leave MathML
  * out of a name, and a table read as a name is a run of cells. Images need nothing, as their alt
  * text is in the name.
  */
-export const labelHoldsMathOrTable = (label) =>
-  typeof label === 'string' &&
-  ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container', '<table'].some((marker) =>
-    label.includes(marker),
-  );
+export const labelHoldsMathOrTable = (label) => holdsAny(label, [...MATH_MARKERS, '<table']);
+
+// The labels the key's screen-reader text prefixes with "Pick the answer below" by default.
+const labelHoldsMathOrImage = (label) => holdsAny(label, [...MATH_MARKERS, '<img']);
 
 const CLASS_NAME = 'multiple-choice-component';
 
@@ -254,7 +257,7 @@ export class ChoiceInput extends React.Component {
     choicesLayout: PropTypes.oneOf(['vertical', 'grid', 'horizontal']),
     isSelectionButtonBelow: PropTypes.bool,
     language: PropTypes.string,
-    spokenMathNames: PropTypes.bool,
+    mathOutsideNames: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -324,7 +327,7 @@ export class ChoiceInput extends React.Component {
       tagName,
       isSelectionButtonBelow,
       language,
-      spokenMathNames,
+      mathOutsideNames,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -350,15 +353,20 @@ export class ChoiceInput extends React.Component {
       }),
     };
 
-    // By default a lettered choice holding math is named from its key and a note that the answer
-    // follows, "A. Pick the answer below", so the screen reader reads its MathML in the content
-    // rather than a name that drops it. Spoken math names, which the Player opts into, name it from
-    // its label, math labelled with its speech; so does a choice with no key to name it by (PIE-1244).
-    const namedByNote = Boolean(displayKey) && !spokenMathNames && labelHoldsMathOrTable(label);
+    // By default a choice is named from its label, the renderer labelling its math with speech.
+    // With math kept out of names, which the Player switches on to compare the two patterns, a
+    // lettered choice holding math is named from its key and a note that the answer follows,
+    // "A. Pick the answer below", and the screen reader reads its MathML in the content. A choice
+    // with no key keeps its label as its name (PIE-1244).
+    const namedByNote = Boolean(displayKey) && mathOutsideNames && labelHoldsMathOrTable(label);
+
+    let keyText = displayKey;
+    if (namedByNote) keyText = `${displayKey}.`;
+    else if (labelHoldsMathOrImage(label)) keyText = `Pick the answer below, ${displayKey}`;
 
     const screenReaderLabel = displayKey ? (
       <SrOnly id={this.descId} className="pie-sr-only">
-        {namedByNote ? `${displayKey}.` : displayKey}
+        {keyText}
       </SrOnly>
     ) : null;
 

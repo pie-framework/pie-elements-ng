@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react';
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
 const { MultipleChoice } = await import('../multiple-choice');
-const { ACCESSIBILITY_CONTEXT, SPOKEN_MATH_NAMES } = await import('../accessibility-context');
+const { ACCESSIBILITY_CONTEXT, MATH_OUTSIDE_NAMES } = await import('../accessibility-context');
 const { default: MultipleChoiceElement } = await import('../index');
 
 // multiple-choice.tsx is untyped, so its class declares no props.
@@ -71,8 +71,19 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(screen.getByRole('radiogroup', { name })).toBeInTheDocument();
   });
 
-  it('names a math choice by its key and a note, and a text choice by its text', () => {
+  it('names choices from their labels by default, as #404 does', () => {
     render(item());
+    const [math, text] = screen.getAllByRole('radio');
+
+    expect(math.hasAttribute('aria-labelledby')).toBe(false);
+    expect(text.hasAttribute('aria-labelledby')).toBe(false);
+    // The key text a math or image choice has carried since before #404, unchanged.
+    expect(document.getElementById(`${math.id}-desc`)?.textContent).toBe('Pick the answer below, A');
+    expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
+  });
+
+  it('names a math choice by its key and a note with math kept out of names', () => {
+    render(item({ mathOutsideNames: true }));
     const [math, text] = screen.getAllByRole('radio');
 
     expect(labelledByName(math)).toBe('A. Pick the answer below');
@@ -81,7 +92,7 @@ describe('multiple-choice math in names (PIE-1244)', () => {
   });
 
   it('keeps the note in the item language and out of read-aloud', () => {
-    render(item({ language: 'es_ES' }));
+    render(item({ language: 'es_ES', mathOutsideNames: true }));
     const [math] = screen.getAllByRole('radio');
     const note = document.getElementById((math.getAttribute('aria-labelledby') || '').split(' ')[1]);
 
@@ -89,23 +100,15 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(note?.classList.contains('pie-sr-only')).toBe(true);
   });
 
-  it('names a math choice from its label under spoken math names', () => {
-    render(item({ spokenMathNames: true }));
-    const [math] = screen.getAllByRole('radio');
-
-    expect(math.hasAttribute('aria-labelledby')).toBe(false);
-    expect(document.body.textContent).not.toContain('Pick the answer below');
-  });
-
   it('names a math choice from its label when it has no key', () => {
-    render(item({ keyMode: 'none' }));
+    render(item({ keyMode: 'none', mathOutsideNames: true }));
     const [math] = screen.getAllByRole('radio');
 
     expect(math.hasAttribute('aria-labelledby')).toBe(false);
   });
 
   it('names checkbox choices the same way', () => {
-    render(item({ choiceMode: 'checkbox' }));
+    render(item({ choiceMode: 'checkbox', mathOutsideNames: true }));
     const [math] = screen.getAllByRole('checkbox');
 
     expect(screen.getByRole('group', { name: 'Answer choices' })).toBeInTheDocument();
@@ -113,7 +116,7 @@ describe('multiple-choice math in names (PIE-1244)', () => {
   });
 });
 
-describe('multiple-choice spoken math names opt-in', () => {
+describe('multiple-choice math kept out of names on request', () => {
   type Host = HTMLElement & { model: object; session: object };
   customElements.define('test-mc-math-names', MultipleChoiceElement as unknown as CustomElementConstructor);
 
@@ -146,19 +149,20 @@ describe('multiple-choice spoken math names opt-in', () => {
     return el;
   };
 
-  it('names math choices by key and note when no Player answers', async () => {
+  it('names math choices from their labels when no Player answers', async () => {
     const el = await mount(document.body);
-    await vi.waitFor(() => expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(true));
+    await vi.waitFor(() => expect(el.textContent).toContain('Pick the answer below, A'));
+    expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(false);
   });
 
-  it('follows the Player opting the student in and out', async () => {
-    const player = provide([SPOKEN_MATH_NAMES]);
+  it('follows the Player switching math out of names and back', async () => {
+    const player = provide([MATH_OUTSIDE_NAMES]);
     const el = await mount(player.provider);
     const input = () => el.querySelector('input') as HTMLInputElement;
 
-    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
+    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(true));
 
     player.answer(['answerMasking']);
-    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(true));
+    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
   });
 });

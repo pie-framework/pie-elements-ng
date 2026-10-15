@@ -12,7 +12,7 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { SPOKEN_MATH_NAMES, subscribeAccessibilitySupports } from './accessibility-context.js';
+import { MATH_OUTSIDE_NAMES, subscribeAccessibilitySupports } from './accessibility-context.js';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -150,8 +150,8 @@ export default class MultipleChoice extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
-    // Whether the Player opted the student into spoken math in choice names (PIE-1244).
-    this._spokenMathNames = false;
+    // Whether the Player keeps math out of choice names (PIE-1244).
+    this._mathOutsideNames = false;
     this._unsubscribeAccessibility = null;
 
     this._rerender = debounce(
@@ -164,7 +164,7 @@ export default class MultipleChoice extends HTMLElement {
             onChoiceChanged: this._onChange.bind(this),
             onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
             eliminatedChoices: [...this._eliminatedChoices],
-            spokenMathNames: this._spokenMathNames,
+            mathOutsideNames: this._mathOutsideNames,
             ...resolveHeadingProps(this),
           });
 
@@ -248,9 +248,9 @@ export default class MultipleChoice extends HTMLElement {
   _subscribeAccessibility() {
     this._unsubscribeAccessibility?.();
     this._unsubscribeAccessibility = subscribeAccessibilitySupports(this, (supports) => {
-      const spokenMathNames = supports.includes(SPOKEN_MATH_NAMES);
-      if (spokenMathNames === this._spokenMathNames) return;
-      this._spokenMathNames = spokenMathNames;
+      const mathOutsideNames = supports.includes(MATH_OUTSIDE_NAMES);
+      if (mathOutsideNames === this._mathOutsideNames) return;
+      this._mathOutsideNames = mathOutsideNames;
       this._rerender();
     });
   }

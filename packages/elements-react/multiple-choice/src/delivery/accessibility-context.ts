@@ -10,8 +10,12 @@
 
 export const ACCESSIBILITY_CONTEXT = Symbol.for('pie.accessibility');
 
-/** The support id that opts a student into spoken math in control names (PIE-1244). */
-export const SPOKEN_MATH_NAMES = 'spokenMathNames';
+/**
+ * The support id that keeps math out of choice names, naming a choice from its key and a note so
+ * the screen reader reads the math in the content (PIE-1244). A prototype id for comparing that
+ * pattern with spoken names: keep it out of profiles until the comparison decides the default.
+ */
+export const MATH_OUTSIDE_NAMES = 'mathOutsideNames';
 
 type Unsubscribe = () => void;
 type ContextCallback = (value: unknown, unsubscribe?: Unsubscribe) => void;
