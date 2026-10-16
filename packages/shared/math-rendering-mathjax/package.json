@@ -15,13 +15,17 @@
       "types": "./dist/assets/index.d.ts",
       "default": "./dist/assets/index.js"
     },
+    "./mathml": {
+      "types": "./dist/tex-to-mathml/index.d.ts",
+      "default": "./dist/tex-to-mathml/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && vite build --config vite.browser.config.ts && tsc --emitDeclarationOnly && tsc -p tsconfig.browser.json && bun build-assets.ts",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && vite build --config vite.browser.config.ts && vite build --config vite.mathml.config.ts && tsc --emitDeclarationOnly && tsc -p tsconfig.browser.json && bun build-assets.ts",
     "dev": "vite build --watch",
     "test": "vitest",
     "test:e2e": "playwright test",
