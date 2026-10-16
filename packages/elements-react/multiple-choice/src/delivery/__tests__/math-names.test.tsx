@@ -77,8 +77,10 @@ describe('multiple-choice math in names (PIE-1244)', () => {
 
     expect(math.hasAttribute('aria-labelledby')).toBe(false);
     expect(text.hasAttribute('aria-labelledby')).toBe(false);
-    // The key text a math or image choice has carried since before #404, unchanged.
-    expect(document.getElementById(`${math.id}-desc`)?.textContent).toBe('Pick the answer below, A');
+    // The key text a math or image choice has carried since before #404, unchanged, class included.
+    const keyText = document.getElementById(`${math.id}-desc`);
+    expect(keyText?.textContent).toBe('Pick the answer below, A');
+    expect(keyText?.classList.contains('pie-sr-only')).toBe(false);
     expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
   });
 
@@ -163,6 +165,16 @@ describe('multiple-choice math kept out of names on request', () => {
     await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(true));
 
     player.answer(['answerMasking']);
+    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
+  });
+
+  it('falls back to the default after moving away from the Player that switched it', async () => {
+    const player = provide([MATH_OUTSIDE_NAMES]);
+    const el = await mount(player.provider);
+    const input = () => el.querySelector('input') as HTMLInputElement;
+    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(true));
+
+    document.body.appendChild(el);
     await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
   });
 });

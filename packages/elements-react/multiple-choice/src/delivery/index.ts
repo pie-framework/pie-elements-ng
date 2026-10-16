@@ -523,6 +523,8 @@ export default class MultipleChoice extends HTMLElement {
 
     this._unsubscribeAccessibility?.();
     this._unsubscribeAccessibility = null;
+    // An unanswered request on the next connect means the default pattern.
+    this._mathOutsideNames = false;
 
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();

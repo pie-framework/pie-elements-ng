@@ -10,7 +10,9 @@ const ACCESSIBILITY_CONTEXT = Symbol.for('pie.accessibility');
 type AccessibilityValue = { supports: readonly string[] };
 type ContextCallback = (value: AccessibilityValue, unsubscribe: () => void) => void;
 
-const subscribers = new Set<ContextCallback>();
+// Each subscriber keeps one unsubscribe function: a consumer that receives a different one with a
+// later answer calls the one it had, as Lit's ContextConsumer does, which would drop it.
+const subscribers = new Map<ContextCallback, () => void>();
 let supports: readonly string[] = [];
 let installed = false;
 
@@ -20,7 +22,8 @@ export function supportsFromUrl(url: URL): readonly string[] {
 }
 
 function answer(callback: ContextCallback): void {
-  callback({ supports }, () => subscribers.delete(callback));
+  const unsubscribe = subscribers.get(callback) ?? (() => {});
+  callback({ supports }, unsubscribe);
 }
 
 /** Answers every accessibility request on the page with `next`, and tells subscribers when it changes. */
@@ -41,11 +44,14 @@ export function provideAccessibilitySupports(next: readonly string[]): void {
         if (request.context !== ACCESSIBILITY_CONTEXT || typeof request.callback !== 'function')
           return;
         event.stopPropagation();
-        if (request.subscribe) subscribers.add(request.callback);
-        answer(request.callback);
+        const callback = request.callback;
+        if (request.subscribe && !subscribers.has(callback)) {
+          subscribers.set(callback, () => subscribers.delete(callback));
+        }
+        answer(callback);
       },
       true
     );
   }
-  if (changed) for (const callback of subscribers) answer(callback);
+  if (changed) for (const callback of subscribers.keys()) answer(callback);
 }

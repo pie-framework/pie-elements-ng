@@ -42,17 +42,29 @@ function namedElement(control: Element): Element | null {
   );
 }
 
+/** The element `id` names in `container`'s tree, a detached one included. */
+function byId(container: Element, id: string): Element | null {
+  const root = container.getRootNode() as Document | ShadowRoot | Element;
+  if ('getElementById' in root && typeof root.getElementById === 'function') {
+    return root.getElementById(id);
+  }
+  return root instanceof Element
+    ? ((root.id === id ? root : null) ?? root.querySelector(`[id="${CSS.escape(id)}"]`))
+    : null;
+}
+
 /**
  * Whether the control's name leaves `container` out: the control is named by `aria-labelledby`
  * from elements that do not hold the math. An element that names a control that way has chosen
  * what the name says, such as a choice's key and a note that the answer follows, and leaves the
- * math to the screen reader in the content (PIE-1244).
+ * math to the screen reader in the content (PIE-1244). Ids that resolve to nothing say nothing
+ * about the name, so they leave the math labelled.
  */
 function isNamedFromElsewhere(control: Element, container: Element): boolean {
   const ids = namedElement(control)?.getAttribute('aria-labelledby')?.split(/\s+/).filter(Boolean);
   if (!ids?.length) return false;
-  const root = container.getRootNode() as Document | ShadowRoot;
-  return !ids.some((id) => root.getElementById?.(id)?.contains(container));
+  const named = ids.map((id) => byId(container, id)).filter((el): el is Element => el !== null);
+  return named.length > 0 && !named.some((el) => el.contains(container));
 }
 
 /** Removes a label this module set, and only while it is still the label it set. */

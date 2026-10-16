@@ -45,19 +45,20 @@ import FeedbackTick from './feedback-tick.js';
 
 const { translator } = Translator;
 
-const holdsAny = (label, markers) => typeof label === 'string' && markers.some((marker) => label.includes(marker));
-
 const MATH_MARKERS = ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container'];
 
 /**
- * Whether a choice's label holds content its accessible name cannot carry: browsers leave MathML
- * out of a name, and a table read as a name is a run of cells. Images need nothing, as their alt
- * text is in the name.
+ * What a choice's label holds that its accessible name cannot carry as text: browsers leave MathML
+ * out of a name, a table read as a name is a run of cells, and an image is named by its alt text.
  */
-export const labelHoldsMathOrTable = (label) => holdsAny(label, [...MATH_MARKERS, '<table']);
-
-// The labels the key's screen-reader text prefixes with "Pick the answer below" by default.
-const labelHoldsMathOrImage = (label) => holdsAny(label, [...MATH_MARKERS, '<img']);
+const labelContent = (label) => {
+  const html = typeof label === 'string' ? label : '';
+  return {
+    math: MATH_MARKERS.some((marker) => html.includes(marker)),
+    table: html.includes('<table'),
+    image: html.includes('<img'),
+  };
+};
 
 const CLASS_NAME = 'multiple-choice-component';
 
@@ -358,14 +359,16 @@ export class ChoiceInput extends React.Component {
     // lettered choice holding math is named from its key and a note that the answer follows,
     // "A. Pick the answer below", and the screen reader reads its MathML in the content. A choice
     // with no key keeps its label as its name (PIE-1244).
-    const namedByNote = Boolean(displayKey) && mathOutsideNames && labelHoldsMathOrTable(label);
+    const content = labelContent(label);
+    const namedByNote = Boolean(displayKey) && mathOutsideNames && (content.math || content.table);
 
+    // The default key text is the one choices carried before this change, read-aloud included.
     let keyText = displayKey;
     if (namedByNote) keyText = `${displayKey}.`;
-    else if (labelHoldsMathOrImage(label)) keyText = `Pick the answer below, ${displayKey}`;
+    else if (content.math || content.image) keyText = `Pick the answer below, ${displayKey}`;
 
     const screenReaderLabel = displayKey ? (
-      <SrOnly id={this.descId} className="pie-sr-only">
+      <SrOnly id={this.descId} className={namedByNote ? 'pie-sr-only' : undefined}>
         {keyText}
       </SrOnly>
     ) : null;

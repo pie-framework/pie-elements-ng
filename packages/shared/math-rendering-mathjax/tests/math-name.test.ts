@@ -89,6 +89,21 @@ describe('nameMathInControls', () => {
     expect(labels(root)).toEqual(['four twelfths']);
   });
 
+  it('labels math in a detached tree that aria-labelledby names the control from', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `<label><input type="radio" aria-labelledby="key content"><span id="key">A.</span><span id="content">${typeset()}</span></label>`;
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12']);
+  });
+
+  it('keeps labelling math when the aria-labelledby ids resolve to nothing', () => {
+    const root = render(
+      `<label><input type="radio" aria-labelledby="missing">${typeset()}</label>`
+    );
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12']);
+  });
+
   it('leaves a container without hidden MathML unlabelled', () => {
     const root = render(
       '<button><mjx-container><mjx-math>glyphs</mjx-math></mjx-container></button>'
