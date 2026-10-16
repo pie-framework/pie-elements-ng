@@ -24,6 +24,7 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "clsx": "^2.1.1",
     "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

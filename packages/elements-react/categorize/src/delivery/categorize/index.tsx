@@ -250,6 +250,7 @@ export class Categorize extends React.Component {
       language,
       maxChoicesPerCategory,
       autoplayAudioEnabled,
+      autoplayAudioHeld,
       customAudioButton,
     } = model;
     const { mode, role } = env || {};
@@ -310,6 +311,7 @@ export class Categorize extends React.Component {
           <PreviewPrompt
             prompt={model.prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
+            autoplayAudioHeld={autoplayAudioHeld}
             customAudioButton={customAudioButton}
             language={language}
           />

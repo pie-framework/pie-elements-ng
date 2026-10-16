@@ -133,6 +133,7 @@ export class MultipleChoice extends React.Component {
     minSelections: PropTypes.number,
     maxSelections: PropTypes.number,
     autoplayAudioEnabled: PropTypes.bool,
+    autoplayAudioHeld: PropTypes.bool,
     customAudioButton: {
       playImage: PropTypes.string,
       pauseImage: PropTypes.string,
@@ -314,6 +315,7 @@ export class MultipleChoice extends React.Component {
       minSelections,
       maxSelections,
       autoplayAudioEnabled,
+      autoplayAudioHeld,
       session,
       customAudioButton,
       options,
@@ -399,6 +401,7 @@ export class MultipleChoice extends React.Component {
             prompt={transformPrompt(prompt)}
             tagName={'legend'}
             autoplayAudioEnabled={autoplayAudioEnabled}
+            autoplayAudioHeld={autoplayAudioHeld}
             customAudioButton={customAudioButton}
             language={language}
           />

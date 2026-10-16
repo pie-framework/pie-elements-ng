@@ -18,7 +18,7 @@ if (!customElements.get(TAG)) {
   customElements.define(TAG, Hotspot as CustomElementConstructor);
 }
 
-const PROMPT_AUDIO = '<div class="main-container"><div class="preview-prompt"><audio></audio></div></div>';
+const PROMPT_AUDIO = '<div class="main-container"><div class="preview-prompt"><audio src="prompt.mp3"></audio></div></div>';
 
 // A model/session pair whose response alone counts as complete.
 const answeredModel = {};
@@ -129,5 +129,72 @@ describe('hotspot prompt audio tracking', () => {
     audio.dispatchEvent(new Event('ended'));
 
     expect(element.audioComplete).toBeFalsy();
+  });
+});
+
+describe('hotspot autoplay policy', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.innerHTML = '';
+  });
+
+  async function mount(modelFlags: Record<string, boolean>, html = PROMPT_AUDIO) {
+    const element = create(modelFlags);
+    element.innerHTML = html;
+    await Promise.resolve();
+    const events: CustomEvent[] = [];
+    element.addEventListener('session-changed', (event: Event) => {
+      events.push(event as CustomEvent);
+    });
+    return { element, events, audio: element.querySelector('audio') as HTMLAudioElement };
+  }
+
+  it('offers to enable blocked autoplay when autoplay is on', async () => {
+    const { element } = await mount({ autoplayAudioEnabled: true });
+
+    vi.advanceTimersByTime(600);
+
+    expect(element.querySelector('.play-audio-info')).not.toBeNull();
+  });
+
+  it('treats a hold as autoplay off', async () => {
+    const { element } = await mount({ autoplayAudioEnabled: true, autoplayAudioHeld: true });
+
+    vi.advanceTimersByTime(600);
+
+    expect(element.querySelector('.play-audio-info')).toBeNull();
+  });
+
+  it('stops waiting on audio that fails to load', async () => {
+    const { element, events, audio } = await mount({ completeAudioEnabled: true });
+
+    expect(element.isComplete()).toBe(false);
+
+    audio.dispatchEvent(new Event('error'));
+    vi.advanceTimersByTime(100);
+
+    expect(element.isComplete()).toBe(true);
+    expect(events.at(-1)?.detail.complete).toBe(true);
+  });
+
+  it('does not wait on audio the item declares but does not supply', async () => {
+    const { element } = await mount(
+      { completeAudioEnabled: true },
+      '<div class="main-container"><div class="preview-prompt"><audio><source src=""></audio></div></div>',
+    );
+
+    expect(element.isComplete()).toBe(true);
+  });
+
+  it('does not wait on audio a resumed session already played', async () => {
+    const { element } = await mount({ completeAudioEnabled: true });
+    element.session = { ...answeredSession(), audioEndTime: 1 };
+    element.innerHTML = PROMPT_AUDIO;
+
+    expect(element.isComplete()).toBe(true);
   });
 });

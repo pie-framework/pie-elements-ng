@@ -135,6 +135,8 @@ export default class Ebsr extends HTMLElement {
         ...this._model[key],
         mode,
         keyMode: this._model[key].choicePrefix,
+        // A hold on the item holds both parts.
+        ...(this._model.autoplayAudioHeld && { autoplayAudioHeld: true }),
       };
 
       // Parts of an EBSR item should not render their own SR headings —
