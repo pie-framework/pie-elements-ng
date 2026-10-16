@@ -97,3 +97,42 @@ describe('a category label that is a fraction', () => {
     expect(input()).toHaveValue('Half');
   });
 });
+
+// Integers and decimals are typeset like fractions, so a mix of them on one axis looks alike.
+describe('a category label that is another kind of number', () => {
+  it.each([
+    ['3', '3'],
+    ['2.5', '2.5'],
+    ['-2', '-2'],
+    ['-0.5', '-0.5'],
+    ['-1/2', '-\\frac{1}{2}'],
+    ['-1 1/2', '-1\\frac{1}{2}'],
+    ['1 1/2', '1\\frac{1}{2}'],
+  ])('shows %s as math', (value, math) => {
+    render(<Category initialLabel="Apples" />);
+
+    typeAndLeave(value);
+
+    expect(fraction()).toHaveTextContent(math, { normalizeWhitespace: false });
+  });
+
+  it.each(['Apples', '1st', '1/', '1.2.3', '- 1'])('leaves %s as plain text', (value) => {
+    render(<Category initialLabel="Apples" />);
+
+    typeAndLeave(value);
+
+    expect(screen.queryByRole('button', { name: 'Category 1 label, a fraction' })).toBeNull();
+  });
+});
+
+// a label shown as math must not stand out from the plain-text labels beside it (PIE-1249)
+describe('the color of a category label shown as math', () => {
+  it('is the color of a label shown as the input', () => {
+    render(<Category initialLabel="Apples" />);
+    const inputColor = getComputedStyle(input()).color;
+
+    typeAndLeave('1/2');
+
+    expect(getComputedStyle(fraction()).color).toBe(inputColor);
+  });
+});
