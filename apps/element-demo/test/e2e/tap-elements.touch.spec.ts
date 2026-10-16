@@ -285,13 +285,10 @@ test.describe('extended-text-entry annotations under touch', () => {
     await expect(annotationMenu(page)).toBeVisible();
   });
 
-  // A confirmed touch defect, not a flaky test: the annotation editor reads the
-  // selection only on `onMouseUp` (`annotation-editor.tsx`). Selecting text by
-  // touch - long-press, then the selection handles - is a moved touch, which
-  // gets no compatibility mouse events, so no `mouseup` arrives, the handler
-  // never runs, and the menu never opens. The selection itself is there.
-  // Tracked as PIE-1279; un-fixme once the editor also reacts to a touch selection.
-  test.fixme('a touch selection opens the annotation menu', async ({ page }) => {
+  // Selecting text by touch - long-press, then the selection handles - is a moved
+  // touch, which gets no compatibility mouse events, so no `mouseup` arrives. The
+  // annotation editor therefore also reads the selection once it settles.
+  test('a touch selection opens the annotation menu', async ({ page }) => {
     const response = await openAnnotations(page);
     const start = await centerOf(response);
     const box = await response.boundingBox();
