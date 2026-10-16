@@ -13,6 +13,13 @@ export interface AutoplayAudioFields {
 export const autoplayAudioOn = (fields?: AutoplayAudioFields | null): boolean =>
   !!fields?.autoplayAudioEnabled && !fields?.autoplayAudioHeld;
 
+/**
+ * The markup switches `autoplayAudioEnabled` replaces. `sanitizeModelHtml` removes them from
+ * model HTML, so the model setting is the only start for prompt audio and a hold can stop it.
+ * pie-players' item player removes the same from item markup through its autoplay applier.
+ */
+export const AUTOPLAY_AUDIO_MARKUP_ATTRS: readonly string[] = ['autoplay'];
+
 const FAILED_ATTR = 'data-pie-audio-failed';
 
 const hasSource = (audio: HTMLAudioElement) =>
