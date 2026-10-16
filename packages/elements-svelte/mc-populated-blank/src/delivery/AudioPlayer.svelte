@@ -24,6 +24,7 @@ let {
   language,
   onaudiostarted,
   onaudioended,
+  onaudiofailed,
 }: {
   hasAudio?: boolean;
   audioUrl?: string;
@@ -33,14 +34,19 @@ let {
   language?: string;
   onaudiostarted?: () => void;
   onaudioended?: () => void;
+  /** The audio could not load; the player shows it as unavailable. */
+  onaudiofailed?: () => void;
 } = $props();
 
 let audioEl = $state<HTMLAudioElement | null>(null);
 let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
 let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
 let audioPlaybackState = $state<AudioPlaybackState>(AUDIO_PLAYBACK.IDLE);
+let loadFailed = $state(false);
 
-const audioMode = $derived(computeAudioMode({ hasAudio, audioUrl, useFeatureButtonAudio }));
+const audioMode = $derived(
+  loadFailed ? 'error' : computeAudioMode({ hasAudio, audioUrl, useFeatureButtonAudio })
+);
 const isMediaPlaying = $derived(audioPlaybackState === AUDIO_PLAYBACK.PLAYING);
 const autoPlayPromptOpen = $derived(audioPlaybackState === AUDIO_PLAYBACK.BLOCKED);
 const audioErrorMessage = $derived(
@@ -51,6 +57,7 @@ const audioErrorMessage = $derived(
 $effect(() => {
   audioUrl;
   audioPlaybackState = AUDIO_PLAYBACK.IDLE;
+  loadFailed = false;
 });
 
 function playFeatureAudio() {
@@ -95,6 +102,15 @@ useListener(
   () => {
     audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
     onaudioended?.();
+  }
+);
+
+useListener(
+  () => audioEl,
+  'error',
+  () => {
+    loadFailed = true;
+    onaudiofailed?.();
   }
 );
 

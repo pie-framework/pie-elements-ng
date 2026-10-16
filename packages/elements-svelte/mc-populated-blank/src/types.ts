@@ -86,6 +86,8 @@ export interface McPopulatedBlankModel extends PieModel {
   hasAudio?: boolean;
   /** Indicates if the audio plays when the item loads */
   autoplayAudioEnabled?: boolean;
+  /** Set by the player when the host holds autoplay; it outranks `autoplayAudioEnabled` */
+  autoplayAudioHeld?: boolean;
   /** Keeps the item incomplete until the audio has played to the end */
   completeAudioEnabled?: boolean;
   /** The audio prompt's URL; required when `hasAudio` is set */

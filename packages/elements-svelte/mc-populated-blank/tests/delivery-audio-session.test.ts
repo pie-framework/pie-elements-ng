@@ -178,6 +178,63 @@ describe('mc-populated-blank audio session', () => {
   });
 });
 
+describe('mc-populated-blank audio it cannot wait on', () => {
+  it('does not wait when the item declares audio without a URL', () => {
+    const { element, atDocument } = mount(undefined, { ...AUDIO_MODEL, audioUrl: '' });
+
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
+
+    expect(atDocument.at(-1)?.detail.complete).toBe(true);
+  });
+
+  it('stops waiting when the audio fails to load', () => {
+    const { element, atDocument } = mount(undefined, AUDIO_MODEL);
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
+
+    element.onAudioFailed();
+
+    expect(atDocument.at(-1)?.detail.complete).toBe(true);
+  });
+
+  it('does not wait on audio a resumed session already played', () => {
+    const { element, atDocument } = mount(
+      { id: '1', element: TAG, audioStartTime: 1000, audioEndTime: 4000 },
+      AUDIO_MODEL
+    );
+
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'], audioEndTime: 4000 });
+
+    expect(atDocument.at(-1)?.detail.complete).toBe(true);
+  });
+});
+
+describe('mc-populated-blank autoplay hold', () => {
+  it('does not start the audio when the player holds autoplay', async () => {
+    const play = vi.mocked(HTMLMediaElement.prototype.play);
+    const element = document.createElement(TAG) as any;
+    document.body.appendChild(element);
+    element.model = { ...AUDIO_MODEL, autoplayAudioHeld: true };
+    element.session = { id: '1', element: TAG };
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    flushSync();
+
+    expect(element.querySelector('audio')).not.toBeNull();
+    expect(play).not.toHaveBeenCalled();
+  });
+
+  it('starts the audio when autoplay is on and not held', async () => {
+    const play = vi.mocked(HTMLMediaElement.prototype.play);
+    const element = document.createElement(TAG) as any;
+    document.body.appendChild(element);
+    element.model = { ...AUDIO_MODEL };
+    element.session = { id: '1', element: TAG };
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    flushSync();
+
+    expect(play).toHaveBeenCalled();
+  });
+});
+
 describe('mc-populated-blank audio session, through the rendered component', () => {
   it("keeps audio timing through the learner's next pick", async () => {
     // A pick is built from the session the component renders; timing written

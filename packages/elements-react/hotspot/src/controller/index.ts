@@ -49,6 +49,7 @@ export function model(question: HotspotModel, session: HotspotSession | null | u
     language,
     fontSizeFactor,
     autoplayAudioEnabled,
+    autoplayAudioHeld,
     completeAudioEnabled,
     customAudioButton,
   } = normalizedQuestion;
@@ -73,6 +74,7 @@ export function model(question: HotspotModel, session: HotspotSession | null | u
       language,
       fontSizeFactor,
       autoplayAudioEnabled,
+      autoplayAudioHeld,
       completeAudioEnabled,
       customAudioButton,
       shapes: {

@@ -182,6 +182,7 @@ export const model = async (
     minRowHeight,
     fontSizeFactor,
     autoplayAudioEnabled,
+    autoplayAudioHeld,
     completeAudioEnabled,
     customAudioButton,
   } = normalizedQuestion;
@@ -260,6 +261,7 @@ export const model = async (
     fontSizeFactor,
     minRowHeight: minRowHeight,
     autoplayAudioEnabled,
+    autoplayAudioHeld,
     completeAudioEnabled,
     customAudioButton,
     possibleResponses,

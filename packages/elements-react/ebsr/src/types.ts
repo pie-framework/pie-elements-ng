@@ -44,6 +44,8 @@ export interface EbsrModel extends PieModel {
    * Supported options: en, es, en_US, en-US, es_ES, es-ES, es_MX, es-MX
    */
   language?: string;
+  /** Set by the player when the host holds autoplay; it holds both parts */
+  autoplayAudioHeld?: boolean;
   /** Host-supplied CSS scoped to the element */
   extraCSSRules?: ExtraCSSRules;
 }

@@ -47,6 +47,8 @@ export const MODEL_HTML_FORBIDDEN_ATTRS = [
   'onbeforeunload',
   'formaction',
   'xlink:href',
+  // The model's autoplay setting is the only start for prompt audio, so a hold can stop it.
+  'autoplay',
 ];
 
 // Tags authored content uses beyond DOMPurify's defaults. The rest are MathML that DOMPurify

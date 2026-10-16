@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@pie-element/multiple-choice', () => ({
   default: class extends HTMLElement {
     _session: any;
-    set model(_model: unknown) {}
+    _model: any;
+    set model(model: unknown) {
+      this._model = model;
+    }
     set session(session: any) {
       this._session = session;
     }
@@ -45,7 +48,7 @@ if (!customElements.get(TAG)) {
   customElements.define(TAG, Ebsr as CustomElementConstructor);
 }
 
-async function mount() {
+async function mount(modelFlags: Record<string, unknown> = {}) {
   const element = document.createElement(TAG) as any;
   const forwarded: unknown[] = [];
   // A host that listens on the element before connecting it runs ahead of the element's own
@@ -58,6 +61,7 @@ async function mount() {
     mode: 'gather',
     partA: { choiceMode: 'radio', choices: [{ value: 'a', label: 'A' }] },
     partB: { choiceMode: 'radio', choices: [{ value: 'b', label: 'B' }] },
+    ...modelFlags,
   };
   element.session = { id: '1', element: 'ebsr' };
   await customElements.whenDefined(EBSR_MULTIPLE_CHOICE_TAG);
@@ -87,5 +91,29 @@ describe('ebsr part sessions', () => {
     vi.advanceTimersByTime(10);
 
     expect(forwarded[0]).toMatchObject({ value: { partA: { value: ['a'] } } });
+  });
+});
+
+describe('ebsr autoplay hold', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('holds both parts when the item is held', async () => {
+    const { element } = await mount({ autoplayAudioHeld: true });
+
+    for (const key of ['a', 'b']) {
+      expect(element.querySelector(`${EBSR_MULTIPLE_CHOICE_TAG}[data-part="${key}"]`)._model).toMatchObject({
+        autoplayAudioHeld: true,
+      });
+    }
+  });
+
+  it('leaves the parts unheld otherwise', async () => {
+    const { element } = await mount();
+
+    expect(
+      element.querySelector(`${EBSR_MULTIPLE_CHOICE_TAG}[data-part="a"]`)._model.autoplayAudioHeld,
+    ).toBeUndefined();
   });
 });

@@ -10,16 +10,20 @@ const DeliveryElement = defineDeliveryElement<McPopulatedBlankModel, McPopulated
 
 /**
  * Audio the learner must hear to the end before a pick counts as complete,
- * whether autoplay or the learner started it.
+ * whether autoplay or the learner started it. An item declaring audio without
+ * an `audioUrl` has none to hear.
  */
 function requiresAudioCompletion(model: McPopulatedBlankModel | undefined): boolean {
-  return !!model?.completeAudioEnabled && !!model?.hasAudio;
+  return !!model?.completeAudioEnabled && !!model?.hasAudio && !!model?.audioUrl;
 }
 
 class McPopulatedBlankElement extends DeliveryElement {
   audioComplete = false;
+  /** The audio could not load, so completion no longer waits on it. */
+  audioFailed = false;
   declare onAudioStarted: () => void;
   declare onAudioEnded: () => void;
+  declare onAudioFailed: () => void;
 
   constructor() {
     super();
@@ -31,12 +35,19 @@ class McPopulatedBlankElement extends DeliveryElement {
       this.#writeAudioTiming({ audioEndTime: Date.now() });
       this.dispatchSessionChanged();
     };
+    this.onAudioFailed = () => {
+      this.audioFailed = true;
+      this.dispatchSessionChanged();
+    };
   }
 
   set model(m: McPopulatedBlankModel | undefined) {
     // Autoplay re-fires only for a new `audioUrl`, so a re-set of the same
     // model must keep a finished playback counted.
-    if (m?.audioUrl !== this.model?.audioUrl) this.audioComplete = false;
+    if (m?.audioUrl !== this.model?.audioUrl) {
+      this.audioComplete = false;
+      this.audioFailed = false;
+    }
     super.model = m;
   }
 
@@ -45,7 +56,9 @@ class McPopulatedBlankElement extends DeliveryElement {
   }
 
   isComplete(): boolean {
-    return super.isComplete() && (this.audioComplete || !requiresAudioCompletion(this.model));
+    // A resumed session keeps `audioEndTime` from the playback that finished.
+    const audioSettled = this.audioComplete || this.audioFailed || !!this.session?.audioEndTime;
+    return super.isComplete() && (audioSettled || !requiresAudioCompletion(this.model));
   }
 
   /**
