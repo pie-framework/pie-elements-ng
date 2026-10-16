@@ -3,13 +3,11 @@
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import Translator from '@pie-lib/translator';
 import * as color from './color.js';
+import { catalogs } from './i18n/index.js';
 import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { PLAY_AUDIO_ATTR, sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
 
 // Class hooks for the prompt's audio and its custom play button. Their ids are generated
 // per instance, and every lookup is scoped to this prompt's root, so each prompt on a
@@ -128,7 +126,7 @@ export class PreviewPrompt extends Component {
   playButtonId = createUniqueId(PLAY_BUTTON_CLASS);
 
   parsedText: any = (text) => {
-    const { autoplayAudioEnabled, customAudioButton, language } = this.props;
+    const { autoplayAudioEnabled, customAudioButton } = this.props;
     const div = document.createElement('div');
     // A detached div still loads its images and fires their handlers, so the prompt is
     // sanitized before it is parsed here.
@@ -160,7 +158,6 @@ export class PreviewPrompt extends Component {
         // A native button gives the control its role, a tab stop and Enter/Space activation.
         const playButton = document.createElement('button');
         playButton.setAttribute('type', 'button');
-        playButton.setAttribute('aria-label', translator.t('common:playAudio', { lng: language }));
         playButton.id = this.playButtonId;
         playButton.className = PLAY_BUTTON_CLASS;
 
@@ -188,6 +185,19 @@ export class PreviewPrompt extends Component {
     }
 
     return div.innerHTML;
+  };
+
+  /**
+   * Names the custom audio button on the live node. The name stays out of `parsedText`: a
+   * catalog landing after the first render would change the prompt's HTML, and React would
+   * replace the prompt, audio included, mid-playback.
+   */
+  labelPlayButton = () => {
+    const playButton = this.promptRef.current?.querySelector(`.${PLAY_BUTTON_CLASS}`);
+    playButton?.setAttribute(
+      'aria-label',
+      catalogs.forLocale(this.props.language, this.labelPlayButton).t('playAudio')
+    );
   };
 
   addCustomAudioButtonControls() {
@@ -271,12 +281,14 @@ export class PreviewPrompt extends Component {
 
   componentDidMount() {
     this.alignImages();
+    this.labelPlayButton();
     this.addCustomAudioButtonControls();
     this.setupMathRendering();
   }
 
   componentDidUpdate(prevProps) {
     this.alignImages();
+    this.labelPlayButton();
 
     if (prevProps.prompt !== this.props.prompt) {
       this.renderMathContent();

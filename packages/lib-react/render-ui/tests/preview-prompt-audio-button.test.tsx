@@ -4,6 +4,7 @@
  * has to start in the state the audio is actually in, or the click handler's
  * "already playing" guard swallows the first click.
  */
+import { loadLocale } from '@pie-element/shared-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
@@ -128,10 +129,13 @@ describe('preview prompt custom audio button', () => {
   it.each([
     ['en_US', 'Play audio'],
     ['es_ES', 'Reproducir audio'],
-  ])('names the button in the %s item language', (language, name) => {
+  ])('names the button in the %s item language', async (language, name) => {
     const button = render(false, language);
+    // Nothing preloads here: the component loads its own catalog and relabels the live button.
+    await act(() => loadLocale(language));
 
     expect(getByRole(document.body, 'button', { name })).toBe(button);
+    expect(button.isConnected).toBe(true);
   });
 
   it.each([

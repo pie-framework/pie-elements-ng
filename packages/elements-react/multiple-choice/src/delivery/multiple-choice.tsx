@@ -36,12 +36,10 @@ const renderUi =
     : renderUiNamespaceAny;
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../i18n/index.js';
 
 import Choice from './choice.js';
 import { reachedMaxSelections } from './utils.js';
-
-const { translator } = Translator;
 
 const MainContainer: any = styled(Box)({
   color: color.text(),
@@ -162,6 +160,9 @@ export class MultipleChoice extends React.Component {
     // The delivery element finds the container by its class, which authored CSS may also target.
     this.mainContainerId = createUniqueId('main-container');
   }
+
+  /** Re-renders once the item language's catalog lands, where no element preloaded it. */
+  relabel = () => this.forceUpdate();
 
   isSelected(value) {
     const sessionValue = this.props.session && this.props.session.value;
@@ -287,10 +288,9 @@ export class MultipleChoice extends React.Component {
 
     const clampedLevel = baseHeadingLevel ? Math.min(6, baseHeadingLevel) : 2;
     const HeadingTag = SrOnly.withComponent(`h${clampedLevel}`);
-    const label = translator.t(
-      choiceMode === 'radio' ? 'multipleChoice.multipleChoiceQuestion' : 'multipleChoice.multipleSelectQuestion',
-      { lng: language },
-    );
+    const label = catalogs
+      .forLocale(language, this.relabel)
+      .t(choiceMode === 'radio' ? 'multipleChoiceQuestion' : 'multipleSelectQuestion');
 
     return <HeadingTag>{label}</HeadingTag>;
   }
@@ -347,19 +347,17 @@ export class MultipleChoice extends React.Component {
       />
     );
 
+    const i18n = catalogs.forLocale(language, this.relabel);
+
     const getMultipleChoiceMinSelectionErrorMessage = () => {
       if (minSelections && maxSelections) {
         return minSelections === maxSelections
-          ? translator.t('translation:multipleChoice:minmaxSelections_equal', { lng: language, minSelections })
-          : translator.t('translation:multipleChoice:minmaxSelections_range', {
-              lng: language,
-              minSelections,
-              maxSelections,
-            });
+          ? i18n.t('minmaxSelectionsEqual', { minSelections })
+          : i18n.t('minmaxSelectionsRange', { minSelections, maxSelections });
       }
 
       if (minSelections) {
-        return translator.t('translation:multipleChoice:minSelections', { lng: language, minSelections });
+        return i18n.t('minSelections', { minSelections });
       }
 
       return '';
@@ -382,8 +380,8 @@ export class MultipleChoice extends React.Component {
             {!animationsDisabled ? (
               <Collapsible
                 labels={{
-                  hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-                  visible: translator.t('common:hideTeacherInstructions', { lng: language }),
+                  hidden: i18n.t('showTeacherInstructions'),
+                  visible: i18n.t('hideTeacherInstructions'),
                 }}
               >
                 {teacherInstructionsDiv}
@@ -450,10 +448,7 @@ export class MultipleChoice extends React.Component {
         )}
         {choiceMode === 'checkbox' && maxSelectionsErrorState && (
           <ErrorText>
-            {translator.t(`translation:multipleChoice:maxSelections_${maxSelections === 1 ? 'one' : 'other'}`, {
-              lng: language,
-              maxSelections,
-            })}
+            {i18n.plural('maxSelections', { count: maxSelections })}
           </ErrorText>
         )}
       </MainContainer>

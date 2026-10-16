@@ -2,6 +2,7 @@
  * The Collapsible header is a disclosure button: it is a native button, so it takes a tab
  * stop and Enter and Space, and it exposes its state and the panel it controls.
  */
+import { loadLocale } from '@pie-element/shared-i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
@@ -73,13 +74,16 @@ describe('Collapsible', () => {
     ['en_US', 'Show', 'Hide'],
     ['es_ES', 'Mostrar', 'Ocultar'],
     [undefined, 'Show', 'Hide'],
-  ])('defaults the labels to the %s item language', (language, show, hide) => {
+  ])('defaults the labels to the %s item language', async (language, show, hide) => {
     const container = render(
       <Collapsible language={language}>
         <p>Because.</p>
       </Collapsible>
     );
     const toggle = container.querySelector('button') as HTMLButtonElement;
+    // Nothing preloads here, as in an element that never calls loadLocale: the component
+    // loads its own catalog and re-renders.
+    await act(() => loadLocale(language));
 
     expect(toggle.textContent).toBe(show);
     act(() => toggle.click());

@@ -4,12 +4,10 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../i18n/index.js';
 import PropTypes from 'prop-types';
 import * as color from '../color.js';
 import { createUniqueId } from '../unique-id.js';
-
-const { translator } = Translator;
 
 // --pie-tertiary is the theming contract's link-text token, held to 4.5:1 against
 // --pie-background in every scheme; --pie-primary carries no text-contrast guarantee.
@@ -59,6 +57,9 @@ export class Collapsible extends React.Component {
     this.setState((state) => ({ expanded: !state.expanded }));
   };
 
+  /** Re-renders once the item language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   componentDidMount() {
     renderMath(this.root);
   }
@@ -70,9 +71,8 @@ export class Collapsible extends React.Component {
   render() {
     const { labels, children, className, language } = this.props;
     const { expanded } = this.state;
-    const title = expanded
-      ? labels.visible || translator.t('common:hide', { lng: language })
-      : labels.hidden || translator.t('common:show', { lng: language });
+    const i18n = catalogs.forLocale(language, this.relabel);
+    const title = expanded ? labels.visible || i18n.t('hide') : labels.hidden || i18n.t('show');
 
     return (
       <div className={className} ref={(r) => (this.root = r)}>
