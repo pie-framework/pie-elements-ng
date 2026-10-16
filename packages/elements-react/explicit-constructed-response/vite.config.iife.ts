@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { englishOnlyCatalogs } from '../../../tools/vite/iife-english-only-catalogs';
 
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
   name?: string;
@@ -58,6 +59,7 @@ export default defineConfig({
       },
     },
     react(),
+    englishOnlyCatalogs(),
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),

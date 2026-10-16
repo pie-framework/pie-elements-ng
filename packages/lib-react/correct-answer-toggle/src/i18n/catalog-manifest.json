@@ -1,0 +1,13 @@
+{
+  "locales": {
+    "es": {
+      "status": "reviewed",
+      "from": "@pie-lib/translator es catalog, carried unchanged",
+      "english": {
+        "showCorrectAnswer": "Show correct answer",
+        "hideCorrectAnswer": "Hide correct answer"
+      },
+      "reviewedAt": "2026-10-16"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "locales": {
+    "es": {
+      "status": "reviewed",
+      "from": "@pie-lib/translator es catalog, carried unchanged",
+      "english": {
+        "playAudio": "Play audio",
+        "show": "Show",
+        "hide": "Hide"
+      },
+      "reviewedAt": "2026-10-16"
+    }
+  }
+}
