@@ -1,5 +1,11 @@
 # @pie-element/element-bundler
 
+## 0.1.4
+
+### Patch Changes
+
+- [#456](https://github.com/pie-framework/pie-elements-ng/pull/456) [`4344a7f`](https://github.com/pie-framework/pie-elements-ng/commit/4344a7fe6ad9a2415001ebe47cc619ad0d3aa3d4) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump webpack from 5.107.2 to 5.111.1
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @pie-lib/charting
 
+## 8.0.5
+
+### Patch Changes
+
+- [#445](https://github.com/pie-framework/pie-elements-ng/pull/445) [`438be4d`](https://github.com/pie-framework/pie-elements-ng/commit/438be4df1dcdc8a9ae26a47b5133310412c6d499) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - fix(charting): keep editable category label colors off the theme (PIE…
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`32c61e7`](https://github.com/pie-framework/pie-elements-ng/commit/32c61e7af6d4ddb154b9590bbcfebb16a25ce60d), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+  - @pie-lib/plot@5.0.5
+  - @pie-lib/config-ui@14.0.5
+
 ## 8.0.4
 
 ### Patch Changes
