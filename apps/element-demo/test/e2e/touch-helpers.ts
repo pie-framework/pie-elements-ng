@@ -125,6 +125,42 @@ export async function touchDrag(
   await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 }
 
+/**
+ * Select text with a finger: press and hold at `at`, let `select` place the
+ * selection, then drag a little and lift.
+ *
+ * The browser's own long-press selection and its selection handles cannot be
+ * driven through CDP, so `select` stands in for them. What the gesture keeps
+ * real is the event sequence around the selection: a held, moving touch that
+ * ends without any `mousedown`/`mouseup`, because a moved touch is not a tap
+ * and so gets no compatibility mouse events - which is what a learner or
+ * scorer produces on a tablet.
+ */
+export async function touchSelect(
+  page: Page,
+  at: Point,
+  select: () => Promise<void>,
+  { holdMs = 700, steps = 4 }: { holdMs?: number; steps?: number } = {}
+): Promise<void> {
+  const session = await cdp(page);
+
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: at.x, y: at.y }],
+  });
+  await page.waitForTimeout(holdMs);
+  await select();
+
+  for (let step = 1; step <= steps; step++) {
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: at.x + step * 10, y: at.y }],
+    });
+  }
+
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
 /** Drag a locator by a pixel delta from its centre. */
 export async function touchDragBy(
   page: Page,
