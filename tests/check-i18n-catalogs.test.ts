@@ -45,7 +45,8 @@ function runGate(fixture: Fixture = {}) {
       }
     )
   );
-  const result = spawnSync(process.execPath, [gate], { cwd: root, encoding: 'utf8' });
+  // Under bun, as `bun run lint` runs it: Node 22.17 (.nvmrc) cannot import the `.ts` catalogs.
+  const result = spawnSync('bun', [gate], { cwd: root, encoding: 'utf8' });
   return { status: result.status, output: result.stdout + result.stderr };
 }
 
