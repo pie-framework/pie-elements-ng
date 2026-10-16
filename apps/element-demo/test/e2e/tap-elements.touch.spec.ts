@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { deliveryContainer, getSessionState, openDeliverRoute } from './test-helpers';
-import { assertTouchEnabled, centerOf, touchSelect, touchTap } from './touch-helpers';
+import { assertTouchEnabled, touchSelect, touchTap } from './touch-helpers';
 
 /**
  * Can a finger operate the elements a learner taps rather than drags?
@@ -48,7 +48,7 @@ const labelOf = (input: Locator) => input.locator('xpath=ancestor::label[1]');
  * inherits the same ring. Tracked as PIE-1278; un-fixme once it lands.
  */
 const MC_STICKY_HOVER =
-  "multiple-choice's icon :hover ring has no (hover: hover) guard, so it stays after a tap";
+  "PIE-1278: multiple-choice's icon :hover ring has no (hover: hover) guard, so it stays after a tap";
 
 const CASES: TapCase[] = [
   {
@@ -206,6 +206,9 @@ test.describe('tap-operated elements under touch', () => {
         expect(await sessionChanges(page)).toBe(2);
       });
     } else if (!item.select) {
+      // Only for a control a single tap selects. A custom `select`, as in
+      // inline-dropdown, opens a menu first, so a second tap there reopens the
+      // menu rather than tapping the selected value again.
       test(`${title}: a second tap keeps the selection`, async ({ page }) => {
         const { root, target } = await openForTouch(page, item);
 
@@ -222,8 +225,12 @@ test.describe('tap-operated elements under touch', () => {
     const look = item.look;
     if (item.toggles && look) {
       const lookTest = item.lookDefect ? test.fixme : test;
+      // Puts the defect in the report next to the skipped test, not only here.
+      const details = item.lookDefect
+        ? { annotation: { type: 'fixme', description: item.lookDefect } }
+        : {};
 
-      lookTest(`${title}: a deselected choice looks untouched`, async ({ page }) => {
+      lookTest(`${title}: a deselected choice looks untouched`, details, async ({ page }) => {
         const { root, target } = await openForTouch(page, item);
         const area = look(target);
         const untouched = await settledShot(page, area);
@@ -305,13 +312,19 @@ test.describe('extended-text-entry annotations under touch', () => {
   // gets no compatibility mouse events, so no `mouseup` arrives, the handler
   // never runs, and the menu never opens. The selection itself is there.
   // Tracked as PIE-1279; un-fixme once the editor also reacts to a touch selection.
-  test.fixme('a touch selection opens the annotation menu', async ({ page }) => {
+  test.fixme('a touch selection opens the annotation menu', {
+    annotation: {
+      type: 'fixme',
+      description: 'PIE-1279: the annotation editor reads the selection only on mouseup',
+    },
+  }, async ({ page }) => {
     const response = await openAnnotations(page);
-    const start = await centerOf(response);
     const box = await response.boundingBox();
-    const at = { x: (box?.x ?? start.x) + 20, y: (box?.y ?? start.y) + 8 };
+    if (!box) {
+      throw new Error('The response has no bounding box');
+    }
 
-    await touchSelect(page, at, () => selectFirstWord(response));
+    await touchSelect(page, { x: box.x + 20, y: box.y + 8 }, () => selectFirstWord(response));
 
     expect(await page.evaluate(() => String(getSelection()))).toBe('Plants');
     await expect(annotationMenu(page)).toBeVisible();

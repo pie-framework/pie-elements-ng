@@ -115,6 +115,15 @@ Each element test asserts:
 
 Drags released outside the element, by mouse and by touch. In `categorize`, a placed choice released above, below or beside the element goes back to the pool, and a release just outside a category with the choice overlapping it still lands there. In `placement-ordering`, with a placement area, a placed tile released above, below or beside the element goes back to the pool though the element holds the drawn tile over its own slot, and a release just outside a slot with the tile overlapping it still lands there. Keyboard drags move a placed choice or tile with Space, Tab, Space and leave it with Space, Space.
 
+### Touch specs (`*.touch.spec.ts`)
+
+These run only under the `touch` project in [playwright.config.ts](../../playwright.config.ts): Chromium with touch emulation at an iPad Air landscape viewport. The `chromium` project ignores them, because without touch emulation their gestures do nothing. Gestures go through [touch-helpers.ts](./touch-helpers.ts), which sends trusted touch input over CDP, since `page.touchscreen` can only tap. Real iOS Safari is not covered and still needs a device.
+
+- [graph-elements.touch.spec.ts](./graph-elements.touch.spec.ts): a finger can place a mark and drag a handle in `charting`, `graphing`, `graphing-solution-set` and `number-line`, each checked as a session change.
+- [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts): in `multiple-choice` (radio and checkbox), `select-text`, `ebsr`, `inline-dropdown`, `matrix`, `likert` and `hotspot`, a tap selects with exactly one session change, a second tap deselects (or keeps a radio selected), and a deselected choice looks as it did before it was touched. It also covers `extended-text-entry` annotations, using the `annotations` demo in evaluate mode as instructor.
+
+A test for a confirmed touch defect is marked `test.fixme`, names the mechanism in a comment and links the ticket in its report annotation. Un-fixme it in the change that fixes the defect.
+
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 
 Dedicated interaction coverage for structured response and matching elements:
@@ -244,12 +253,19 @@ bunx playwright test math-algebra-quadratic.spec.ts
 bunx playwright test -g "Demo selection works correctly"
 ```
 
+### Run the Touch Specs
+
+```bash
+bunx playwright test --project=touch
+```
+
 ## Configuration
 
 Test configuration is in [playwright.config.ts](../../playwright.config.ts):
 
 - **Base URL**: `http://localhost:5222`, or `PLAYWRIGHT_BASE_URL`
-- **Browsers**: Chromium (headless)
+- **Browsers**: Chromium (headless), as two projects: `chromium` at a desktop viewport, and
+  `touch`, with touch emulation at 1180x820, for `*.touch.spec.ts` only
 - **Timeout**: 30 seconds per test
 - **Workers**: 1 (serial execution for state management tests)
 - **Web Server**: Starts `bun run dev` unless a server already answers at the base URL, which is
