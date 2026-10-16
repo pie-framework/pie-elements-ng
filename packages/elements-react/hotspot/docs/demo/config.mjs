@@ -31,6 +31,7 @@ export default {
           "rectangles": [
             {
               "id": "3",
+              "aria-label": "North Dakota",
               "height": 64,
               "width": 79,
               "x": 261,

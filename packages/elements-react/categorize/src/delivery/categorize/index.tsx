@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import { DragOverlay } from '@dnd-kit/core';
-import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import {restrictToParentElement, restrictToWindowEdges} from '@dnd-kit/modifiers';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
 import { createDragCollision, DragProvider, uid } from '@pie-lib/drag';
@@ -407,11 +407,12 @@ class CategorizeProvider extends React.Component {
     };
     this.lastDragEndAt = 0;
     this.isInternalDragCancel = false;
-    // The modifier holds the dragged choice inside the region, which scrolls. A pointer drag collides
-    // where the pointer put the choice, so a choice released outside the region finds no category.
+    // The modifier holds the dragged choice inside the window, so it can be carried past the edges of the
+    // region, which scrolls. Only the parts of the categories inside the region take a drop, so a choice
+    // released outside the region finds no category.
     this.dragCollision = createDragCollision({
       detect: categoriesFirst,
-      modifiers: [restrictToFirstScrollableAncestor],
+      modifiers: [restrictToWindowEdges],
     });
   }
 

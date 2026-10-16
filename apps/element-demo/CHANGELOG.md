@@ -1,5 +1,13 @@
 # @pie-element/element-demo
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`f18e19a`](https://github.com/pie-framework/pie-elements-ng/commit/f18e19a7f04745b11527cb95adffadd50eabca34)]:
+  - @pie-element/element-bundler@0.1.4
+  - @pie-element/element-player@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes

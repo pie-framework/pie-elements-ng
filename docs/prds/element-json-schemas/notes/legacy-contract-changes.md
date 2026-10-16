@@ -162,6 +162,7 @@ These apply to every element that has the key, and are not repeated below.
 - `dimensions` is an object `{ width, height }`; legacy declares an array of them.
 - Model `required` is `id`, `element` and `shapes`; legacy also requires `dimensions`, `multipleCorrect`, `partialScoring` and `strokeWidth`.
 - `shapes.circles` is new, and `shapes.rectangles` and `shapes.polygons` are optional. Every shape requires `id` and gains `index`.
+- New shape keys `ariaLabel`, `aria_label` and `aria-label` (the first non-blank one is read): plain text that screen readers announce after the shape's "Hotspot {index} of {total}" name. An absent or blank label keeps the name alone.
 - New model keys `teacherInstructions` and `extraCSSRules`. `rationale` and `teacherInstructions` accept `null`.
 - `hoverOutlineColor` defaults to `black`, and `strokeWidth` to 5.
 - Model `studentInstructionsEnabled`, `disabled` and `mode` are declared and not read; the controller sets `disabled` and `mode` from the environment.

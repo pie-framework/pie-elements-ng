@@ -293,9 +293,15 @@ export class Container extends React.Component {
 
         {sortedShapes.map((shape, index) => {
           const selected = this.isSelected(shape);
-          const name =
-            shape.ariaLabel?.trim() ||
-            translator.t('hotspot.shape', { lng: language, index: index + 1, total: sortedShapes.length });
+          const position = translator.t('hotspot.shape', {
+            lng: language,
+            index: index + 1,
+            total: sortedShapes.length,
+          });
+          const authored = [shape.ariaLabel, shape.aria_label, shape['aria-label']]
+            .find((label) => typeof label === 'string' && label.trim())
+            ?.trim();
+          const name = authored ? `${position} ${authored}` : position;
           const evaluateText = isEvaluateMode ? this.getEvaluateText(shape.correct, selected) : null;
           const descriptionId = `${this.descriptionId}-${index}`;
 

@@ -166,6 +166,21 @@ describe('Likert radio group', () => {
     expect(changes).toHaveBeenCalledTimes(4);
   });
 
+  it.each([
+    ['Disagree', -1],
+    ['Neutral', 0],
+    ['Agree', 1],
+  ])('reports the session complete once %s is selected', async (name, value) => {
+    const user = userEvent.setup();
+    const { el, changes, group } = await mountElement();
+
+    await user.click(within(group).getByRole('radio', { name }));
+
+    expect(el.session.value).toBe(value);
+    expect(changes).toHaveBeenCalledTimes(1);
+    expect(changes.mock.calls[0][0].detail.complete).toBe(true);
+  });
+
   it('leaves a second item unchanged', async () => {
     const user = userEvent.setup();
     const first = await mountElement({ value: -1 });

@@ -61,3 +61,9 @@ export {
   flushSessionNotifiers,
 } from './session-notifier.js';
 export type { SessionNotifier, SessionNotifierOptions } from './session-notifier.js';
+
+export {
+  DEFAULT_IDLE_SAVE_DELAY_MS,
+  resolveIdleSaveDelay,
+  subscribeIdleSaveDelay,
+} from './idle-save-delay.js';

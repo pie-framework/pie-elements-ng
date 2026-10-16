@@ -30,7 +30,8 @@ const StyledEditableHtml: any = styled(EditableHtml)(() => ({
   }));
 
 const MaskedInput = (props) => (node, data) => {
-  const { adjustedLimit, disabled, feedback, showCorrectAnswer, maxLength, spellCheck, pluginProps, onChange } = props;
+  const { adjustedLimit, disabled, feedback, showCorrectAnswer, maxLength, spellCheck, pluginProps, onChange, idleSaveDelay } =
+    props;
   const dataset = node.data?.dataset || {};
 
   if (dataset.component === 'input') {
@@ -42,12 +43,14 @@ const MaskedInput = (props) => (node, data) => {
     const isCorrect = showCorrectAnswer || feedbackStatus === 'correct';
     const isIncorrect = !showCorrectAnswer && feedbackStatus === 'incorrect';
 
+    // `data` is the value from the last render, which can be behind what the caller holds. The
+    // blank's id goes along so a caller can apply just this blank's change.
     const handleInputChange = (newValue) => {
       const updatedValue = {
         ...data,
         [dataset.id]: newValue,
       };
-      onChange(updatedValue);
+      onChange(updatedValue, dataset.id);
     };
 
     const handleKeyDown = (event) => {
@@ -64,6 +67,7 @@ const MaskedInput = (props) => (node, data) => {
         disabled={showCorrectAnswer || disabled}
         disableUnderline
         onChange={handleInputChange}
+        idleSaveDelay={idleSaveDelay}
         markup={finalValue || ''}
         charactersLimit={adjustedLimit ? width : 25}
         activePlugins={['languageCharacters']}

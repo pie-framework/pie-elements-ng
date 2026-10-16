@@ -71,7 +71,15 @@ async function makeElement(
       ...(declared === undefined ? {} : { browserEditorRuntime: declared }),
     },
   };
-  const written = await writeFiles(dir, { 'package.json': pkg, ...files });
+  // Each ./browser/* entry carries the identity export the shared build appends.
+  const identity = `export const piePackage = Object.freeze(${JSON.stringify({ name: pkg.name, version: pkg.version })});\n`;
+  const entries = Object.fromEntries(
+    views
+      .map((view) => `dist/browser/${view}/index.js`)
+      .filter((entry) => typeof files[entry] === 'string')
+      .map((entry) => [entry, `${files[entry]}${identity}`])
+  );
+  const written = await writeFiles(dir, { 'package.json': pkg, ...files, ...entries });
   return { dir, pkg, packedFiles: new Set(written) };
 }
 

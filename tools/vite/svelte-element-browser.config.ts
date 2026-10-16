@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
+import { browserPackageIdentity, readPackageIdentity } from './browser-package-identity.ts';
 
 const packageDir = process.cwd();
 const configDir = dirname(fileURLToPath(import.meta.url));
@@ -54,6 +55,7 @@ export default defineConfig({
       emitCss: false,
     }),
     browserCssLoaderPlugin(),
+    browserPackageIdentity(readPackageIdentity(packageDir), Object.values(entries)),
   ],
   resolve: {
     // A shared package exports its build for element browser bundles under this condition.

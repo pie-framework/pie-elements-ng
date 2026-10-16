@@ -36,20 +36,8 @@ type TapCase = {
 
 const visibleFirst = (root: Locator, selector: string) =>
   root.locator(selector).filter({ visible: true }).first();
+
 const labelOf = (input: Locator) => input.locator('xpath=ancestor::label[1]');
-
-/**
- * multiple-choice puts a 2px focus-outline box-shadow on the checkbox or radio
- * icon on `:hover` (`choice-input.tsx`, `&:hover:not(.Mui-disabled) svg`), with
- * no `@media (hover: hover)` guard. A touchscreen keeps `:hover` on the last
- * tapped element, so a choice the learner has just deselected keeps that ring
- * and looks focused. Moving the hover away clears it; blurring the input does
- * not, so it is the hover rule, not focus. EBSR renders multiple-choice, so it
- * inherits the same ring. Tracked as PIE-1278; un-fixme once it lands.
- */
-const MC_STICKY_HOVER =
-  "PIE-1278: multiple-choice's icon :hover ring has no (hover: hover) guard, so it stays after a tap";
-
 const CASES: TapCase[] = [
   {
     element: 'multiple-choice',
@@ -65,7 +53,6 @@ const CASES: TapCase[] = [
     selections: (session) => session?.value?.length ?? 0,
     toggles: true,
     look: labelOf,
-    lookDefect: MC_STICKY_HOVER,
   },
   {
     element: 'select-text',
@@ -82,7 +69,6 @@ const CASES: TapCase[] = [
     selections: (session) => session?.value?.partA?.value?.length ?? 0,
     toggles: true,
     look: labelOf,
-    lookDefect: MC_STICKY_HOVER,
   },
   {
     element: 'inline-dropdown',
@@ -306,18 +292,10 @@ test.describe('extended-text-entry annotations under touch', () => {
     await expect(annotationMenu(page)).toBeVisible();
   });
 
-  // A confirmed touch defect, not a flaky test: the annotation editor reads the
-  // selection only on `onMouseUp` (`annotation-editor.tsx`). Selecting text by
-  // touch - long-press, then the selection handles - is a moved touch, which
-  // gets no compatibility mouse events, so no `mouseup` arrives, the handler
-  // never runs, and the menu never opens. The selection itself is there.
-  // Tracked as PIE-1279; un-fixme once the editor also reacts to a touch selection.
-  test.fixme('a touch selection opens the annotation menu', {
-    annotation: {
-      type: 'fixme',
-      description: 'PIE-1279: the annotation editor reads the selection only on mouseup',
-    },
-  }, async ({ page }) => {
+  // Selecting text by touch - long-press, then the selection handles - is a moved
+  // touch, which gets no compatibility mouse events, so no `mouseup` arrives. The
+  // annotation editor therefore also reads the selection once it settles.
+  test('a touch selection opens the annotation menu', async ({ page }) => {
     const response = await openAnnotations(page);
     const box = await response.boundingBox();
     if (!box) {

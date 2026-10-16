@@ -5,12 +5,10 @@ import react from '@vitejs/plugin-react';
 import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
+import { browserPackageIdentity, readPackageIdentity } from './browser-package-identity.ts';
 
 const packageDir = process.cwd();
-const packageJson = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf-8')) as {
-  name?: string;
-  version?: string;
-};
+const identity = readPackageIdentity(packageDir);
 const configDir = dirname(fileURLToPath(import.meta.url));
 const policyPath = resolve(configDir, 'browser-esm-policy.json');
 const browserEsmPolicy = JSON.parse(readFileSync(policyPath, 'utf-8')) as {
@@ -49,14 +47,15 @@ export default defineConfig({
     }),
     react(),
     browserCssLoaderPlugin(),
+    browserPackageIdentity(identity, Object.values(entries)),
   ],
   resolve: {
     // A shared package exports its build for element browser bundles under this condition.
     conditions: ['pie-browser-esm', ...defaultClientConditions],
   },
   define: {
-    __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
-    __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
+    __PIE_PACKAGE_NAME__: JSON.stringify(identity.name),
+    __PIE_PACKAGE_VERSION__: JSON.stringify(identity.version),
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
