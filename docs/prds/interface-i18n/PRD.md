@@ -35,7 +35,7 @@ pie-players settled the same question for its own chrome: the interface locale i
 
 - RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`.
 - Per-key lookup: host messages for the locale, shipped catalog for the locale, host `en-US`, shipped `en-US`, the key itself.
-- `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the active locale, so digits follow CLDR locale defaults (`ar` renders Arabic-Indic digits; pie-players' engine is the reference).
+- `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the resolved locale, so digits and grouping follow CLDR locale defaults (`ar-SA` renders Arabic-Indic digits; current CLDR resolves bare `ar` to Western digits).
 - `catalogs.forLocale(tag)` returns a per-locale view over shared catalogs and host messages, pie-players' `withLocale`, so two players on one page can differ. A locale change re-renders; nothing reloads.
 
 Catalog leaves carry `{name}` placeholders and structured plural groups, not Unicode MessageFormat 2.0 strings. Assessment chrome needs only arguments and plurals — none of the 500+ keys uses `select` or rich formatting — so the engine stays dependency-free, and the gate validates the structured shape mechanically. If MF2 semantics are ever needed, the leaf syntax moves behind the same gate; the keys, loaders, registry and fallback chain are format-agnostic.
