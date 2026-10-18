@@ -6,4 +6,5 @@
 
 export * from './authoring.js';
 export * from './docs-contract.js';
+export * from './summary.js';
 export * from './types.js';
