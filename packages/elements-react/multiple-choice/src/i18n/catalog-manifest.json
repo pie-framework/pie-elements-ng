@@ -18,6 +18,83 @@
         "hideTeacherInstructions": "Hide Teacher Instructions"
       },
       "reviewedAt": "2026-10-16"
+    },
+    "th-TH": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "en-GB": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "en-AU": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "fr": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ar": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "pt": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ko": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ja": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "zh": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "cy": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "sv": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     }
   }
 }
