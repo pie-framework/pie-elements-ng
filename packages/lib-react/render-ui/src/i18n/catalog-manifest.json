@@ -9,6 +9,83 @@
         "hide": "Hide"
       },
       "reviewedAt": "2026-10-16"
+    },
+    "th-TH": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "en-GB": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "en-AU": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "fr": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ar": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "pt": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ko": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ja": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "zh": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "cy": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "sv": {
+      "status": "generated",
+      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
+      "generatedAt": "2026-10-18",
+      "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     }
   }
 }
