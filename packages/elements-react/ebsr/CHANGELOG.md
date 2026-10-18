@@ -1,5 +1,19 @@
 # @pie-element/ebsr
 
+## 15.0.6
+
+### Patch Changes
+
+- [#476](https://github.com/pie-framework/pie-elements-ng/pull/476) [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293) Thanks [@chillenious](https://github.com/chillenious)! - Prompt audio honours `autoplayAudioHeld`, which pie-players' item player writes when the host holds autoplay: the audio does not start on its own and the learner gets native controls to start it. EBSR holds both parts. The model sanitizer drops authored `autoplay`, so the model setting is the only start. Completion no longer waits on prompt audio that failed to load, has no source, or that a resumed session (`audioEndTime`) already played.
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - The IIFE ships English only for the libraries that render from their own catalogs, `@pie-lib/render-ui` and `@pie-lib/correct-answer-toggle` so far; a host serves another locale through `registerMessages`.
+- Updated dependencies [[`e089540`](https://github.com/pie-framework/pie-elements-ng/commit/e089540fc1cd629fb18160bdaf236799a6008612), [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640)]:
+  - @pie-element/multiple-choice@14.0.6
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-types@0.2.2
+  - @pie-lib/config-ui@14.0.6
+  - @pie-element/shared-controller-utils@0.1.3
+
 ## 15.0.5
 
 ### Patch Changes
