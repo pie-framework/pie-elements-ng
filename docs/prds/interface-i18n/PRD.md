@@ -1,6 +1,6 @@
 # Interface i18n
 
-Status: **Proposal** · Impl. path: Cross-cutting
+Status: **Accepted** · Impl. path: Cross-cutting
 
 ## Context
 
@@ -143,3 +143,7 @@ In Phase 1, with no publisher, the toggle follows `es_ES` and reads "Mostrar res
 - [ ] When the `model.language` fallback goes: with the translator's last dependent, or once the installation whose models declare Spanish publishes each assessment's locale, which its assessments already carry.
 - [ ] Whether `@pie-lib/translator` honours the published locale during the transition, so a host's `en-US` pin also covers unmigrated elements. Its calls carry no host element, so it would need a page-wide value, which a composition context deliberately is not.
 - [ ] Whether elements read content language from `Env.locale`, pie-players' planned slice 2, which decides whether an undeclared item ever gets a content `lang` from its element.
+
+## Status log
+
+- Proposal → Accepted. Phase 1 shipped in #475.
