@@ -3,13 +3,11 @@
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import Translator from '@pie-lib/translator';
 import * as color from './color.js';
+import { catalogs } from './i18n/index.js';
 import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { PLAY_AUDIO_ATTR, sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { PLAY_AUDIO_ATTR, autoplayAudioOn, sanitizeModelHtml } from '@pie-element/shared-utils';
 
 // Class hooks for the prompt's audio and its custom play button. Their ids are generated
 // per instance, and every lookup is scoped to this prompt's root, so each prompt on a
@@ -109,6 +107,8 @@ export class PreviewPrompt extends Component {
     onClick: PropTypes.func,
     defaultClassName: PropTypes.string,
     autoplayAudioEnabled: PropTypes.bool,
+    /** Set by the item player when the toolkit holds autoplay; it outranks `autoplayAudioEnabled`. */
+    autoplayAudioHeld: PropTypes.bool,
     customAudioButton: PropTypes.shape({
       playImage: PropTypes.string,
       pauseImage: PropTypes.string,
@@ -128,7 +128,8 @@ export class PreviewPrompt extends Component {
   playButtonId = createUniqueId(PLAY_BUTTON_CLASS);
 
   parsedText: any = (text) => {
-    const { autoplayAudioEnabled, customAudioButton, language } = this.props;
+    const { customAudioButton } = this.props;
+    const autoplay = autoplayAudioOn(this.props);
     const div = document.createElement('div');
     // A detached div still loads its images and fires their handlers, so the prompt is
     // sanitized before it is parsed here.
@@ -136,23 +137,33 @@ export class PreviewPrompt extends Component {
 
     const audio = div.querySelector('audio');
     if (audio) {
-      const source = document.createElement('source');
+      // Audio the model declares without a source keeps none, so completion does not wait on it.
+      const src = audio.getAttribute('src');
+      if (src) {
+        const source = document.createElement('source');
 
-      source.setAttribute('type', 'audio/mp3');
-      source.setAttribute('src', audio.getAttribute('src'));
+        source.setAttribute('type', 'audio/mp3');
+        source.setAttribute('src', src);
 
-      audio.removeAttribute('src');
+        audio.removeAttribute('src');
+        audio.appendChild(source);
+      }
+      let playedByLink = false;
       // A link in the prompt that plays this audio names it by its authored id, which the
       // generated one replaces, so the link follows it.
       if (audio.id) {
         for (const link of div.querySelectorAll(`[${PLAY_AUDIO_ATTR}]`)) {
-          if (link.getAttribute(PLAY_AUDIO_ATTR) === audio.id) link.setAttribute(PLAY_AUDIO_ATTR, this.audioId);
+          if (link.getAttribute(PLAY_AUDIO_ATTR) !== audio.id) continue;
+          link.setAttribute(PLAY_AUDIO_ATTR, this.audioId);
+          playedByLink = true;
         }
       }
       audio.id = this.audioId;
       audio.classList.add(AUDIO_CLASS);
 
-      audio.appendChild(source);
+      // With autoplay off or held, an audio with no play control of its own is started from its
+      // native controls.
+      if (!autoplay && !customAudioButton && !playedByLink) audio.setAttribute('controls', '');
 
       if (customAudioButton) {
         audio.style.display = 'none';
@@ -160,7 +171,6 @@ export class PreviewPrompt extends Component {
         // A native button gives the control its role, a tab stop and Enter/Space activation.
         const playButton = document.createElement('button');
         playButton.setAttribute('type', 'button');
-        playButton.setAttribute('aria-label', translator.t('common:playAudio', { lng: language }));
         playButton.id = this.playButtonId;
         playButton.className = PLAY_BUTTON_CLASS;
 
@@ -177,7 +187,7 @@ export class PreviewPrompt extends Component {
           // pauseImage is the playing state. Only autoplay starts in it - with
           // autoplay off the audio is paused, so the button has to show
           // playImage or it advertises a state the audio is not in.
-          backgroundImage: `url(${autoplayAudioEnabled ? customAudioButton.pauseImage : customAudioButton.playImage})`,
+          backgroundImage: `url(${autoplay ? customAudioButton.pauseImage : customAudioButton.playImage})`,
           backgroundSize: 'cover',
           borderRadius: '50%',
           border: '1px solid #326295',
@@ -190,13 +200,26 @@ export class PreviewPrompt extends Component {
     return div.innerHTML;
   };
 
+  /**
+   * Names the custom audio button on the live node. The name stays out of `parsedText`: a
+   * catalog landing after the first render would change the prompt's HTML, and React would
+   * replace the prompt, audio included, mid-playback.
+   */
+  labelPlayButton = () => {
+    const playButton = this.promptRef.current?.querySelector(`.${PLAY_BUTTON_CLASS}`);
+    playButton?.setAttribute(
+      'aria-label',
+      catalogs.forLocale(this.props.language, this.labelPlayButton).t('playAudio')
+    );
+  };
+
   addCustomAudioButtonControls() {
-    const { autoplayAudioEnabled, customAudioButton } = this.props;
+    const { customAudioButton } = this.props;
     const root = this.promptRef.current;
     const playButton = root?.querySelector(`.${PLAY_BUTTON_CLASS}`);
     const audio = root?.querySelector(`.${AUDIO_CLASS}`);
 
-    if (autoplayAudioEnabled && audio) {
+    if (autoplayAudioOn(this.props) && audio) {
       audio
         .play()
         .then(() => {
@@ -271,12 +294,14 @@ export class PreviewPrompt extends Component {
 
   componentDidMount() {
     this.alignImages();
+    this.labelPlayButton();
     this.addCustomAudioButtonControls();
     this.setupMathRendering();
   }
 
   componentDidUpdate(prevProps) {
     this.alignImages();
+    this.labelPlayButton();
 
     if (prevProps.prompt !== this.props.prompt) {
       this.renderMathContent();

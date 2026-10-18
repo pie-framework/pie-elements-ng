@@ -13,7 +13,7 @@
 // package's shipping files change after it was last released?" makes every run consider
 // everything outstanding, which is what lets a lost run heal on the next merge. The release point
 // is the commit the package's published snapshot was built from, or its last version bump in git
-// (see `resolveReleaseBase`).
+// when npm holds that version (see `resolveReleaseBase`).
 
 import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -80,7 +80,7 @@ export function collectPublishablePackages(rootDir) {
       if (!pkg?.name || !pkg?.version) continue;
       if (pkg.private === true || ignored.has(pkg.name)) continue;
       const dir = relative(rootDir, manifestPath.slice(0, -'/package.json'.length));
-      packages.push({ name: pkg.name, dir: dir.split(sep).join('/') });
+      packages.push({ name: pkg.name, version: pkg.version, dir: dir.split(sep).join('/') });
     }
   }
 
@@ -309,8 +309,19 @@ export const isAncestor = (rootDir, ancestor, descendant) =>
 // release would skip the package and any unreleased code beneath it. After a stable release the
 // snapshot does predate the back-merged bump, so the released packages are selected once more and
 // `next` moves above `latest` again (`14.0.1-next.*` beside 14.0.0), which is where it belongs.
-export function resolveReleaseBase({ rootDir, head, manifestPath, publishedGitHead }) {
+//
+// Without a snapshot, a version npm does not hold was never released, so the package has no
+// release point and all of it is unreleased. Its version bump would be the commit that added the
+// package, code included, and no snapshot would select it until its code changed again.
+export function resolveReleaseBase({
+  rootDir,
+  head,
+  manifestPath,
+  publishedGitHead,
+  versionOnNpm = true,
+}) {
   if (publishedGitHead && isAncestor(rootDir, publishedGitHead, head)) return publishedGitHead;
+  if (!versionOnNpm) return '';
   return lastVersionBumpCommit(rootDir, head, manifestPath);
 }
 
@@ -318,9 +329,16 @@ export function resolveReleaseBase({ rootDir, head, manifestPath, publishedGitHe
 // attributes a path to the deepest package that owns it, which is the package whose range
 // produced it, so one package's range can never select another.
 //
-// `publishedGitHeads` maps a package name to the `gitHead` of its published snapshot; see
+// `publishedGitHeads` maps a package name to the `gitHead` of its published snapshot, and
+// `unpublished` names the packages whose committed version npm does not hold; see
 // `resolveReleaseBase`.
-export function collectUnreleasedFiles({ rootDir, head, packages, publishedGitHeads }) {
+export function collectUnreleasedFiles({
+  rootDir,
+  head,
+  packages,
+  publishedGitHeads,
+  unpublished,
+}) {
   const files = [];
   for (const pkg of packages) {
     const base = resolveReleaseBase({
@@ -328,6 +346,7 @@ export function collectUnreleasedFiles({ rootDir, head, packages, publishedGitHe
       head,
       manifestPath: `${pkg.dir}/package.json`,
       publishedGitHead: publishedGitHeads?.get(pkg.name),
+      versionOnNpm: !unpublished?.has(pkg.name),
     });
     files.push(
       ...dropUnshippedManifestChanges({
@@ -438,6 +457,28 @@ export async function fetchPublishedReleases(
   };
   await Promise.all(Array.from({ length: 8 }, worker));
   return releases;
+}
+
+// The packages whose committed `version` npm does not hold, read as `<name>/<version>`. A registry
+// error leaves the package out, so it is measured from its last version bump.
+export async function fetchUnpublishedPackages(packages, { fetchImpl = fetch } = {}) {
+  const unpublished = new Set();
+  const queue = [...packages];
+  const worker = async () => {
+    for (let pkg = queue.shift(); pkg; pkg = queue.shift()) {
+      try {
+        if (!(await fetchJson(fetchImpl, registryUrl(pkg.name, pkg.version)))) {
+          unpublished.add(pkg.name);
+        }
+      } catch (error) {
+        console.error(
+          `[release] Could not read ${pkg.name}@${pkg.version} from npm (${error.message}); measuring it from its last version bump.`
+        );
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
+  return unpublished;
 }
 
 // The version each package outside the snapshot should be depended on at: its own latest `next`

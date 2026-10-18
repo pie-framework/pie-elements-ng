@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { createDragCollision } from '@pie-lib/drag';
 import { Categorize } from '../index';
 import CategorizeProvider from '../index';
@@ -495,12 +495,12 @@ describe('categorize', () => {
       expect(typeof capturedDragProviderProps.onDragCancel).toBe('function');
     });
 
-    it('collides categories first through the drag collision helper, which keeps the modifier holding the choice in the region', () => {
+    it('collides categories first through the drag collision helper, which keeps the modifier holding the choice in the window', () => {
       renderProvider();
 
       expect(createDragCollision).toHaveBeenCalledWith({
         detect: categoriesFirst,
-        modifiers: [restrictToFirstScrollableAncestor],
+        modifiers: [restrictToWindowEdges],
       });
       expect(capturedDragProviderProps.collisionDetection).toBe(dragCollision.collisionDetection);
       expect(capturedDragProviderProps.modifiers).toBe(dragCollision.modifiers);

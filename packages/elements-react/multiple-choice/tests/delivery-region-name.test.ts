@@ -48,18 +48,34 @@ describe('multiple-choice region name', () => {
     ['radio', 'es_ES', 'Pregunta de opción múltiple'],
     ['checkbox', 'es_ES', 'Pregunta con varias respuestas correctas'],
     ['radio', undefined, 'Multiple Choice Question'],
-  ])('names a %s item in the %s item language', (choiceMode, language, name) => {
+  ])('names a %s item in the %s item language', async (choiceMode, language, name) => {
     const element = mount({ choiceMode, language });
 
-    expect(element.getAttribute('aria-label')).toBe(name);
+    // A language not yet resident loads before the element renders.
+    await vi.waitFor(() => expect(element.getAttribute('aria-label')).toBe(name));
   });
 
-  it('follows a language change after the first render', () => {
+  it('follows a language change after the first render', async () => {
     const element = mount({ choiceMode: 'radio', language: 'en_US' });
 
     element.model = { prompt: 'p', choices, choiceMode: 'radio', language: 'es_ES' };
     vi.advanceTimersByTime(50);
 
-    expect(element.getAttribute('aria-label')).toBe('Pregunta de opción múltiple');
+    await vi.waitFor(() => expect(element.getAttribute('aria-label')).toBe('Pregunta de opción múltiple'));
+  });
+
+  it.each([
+    ['es_MX', 'es-MX', 'ltr'],
+    ['ar', 'ar', 'rtl'],
+    [undefined, null, null],
+    ['Spanish', null, null],
+  ])('stamps %j on its own host as lang %s, dir %s', async (language, lang, dir) => {
+    document.documentElement.setAttribute('lang', 'nl');
+    const element = mount({ choiceMode: 'radio', language });
+
+    await vi.waitFor(() => expect(element.hasAttribute('aria-label')).toBe(true));
+    expect(element.getAttribute('lang')).toBe(lang);
+    expect(element.getAttribute('dir')).toBe(dir);
+    expect(document.documentElement.getAttribute('lang')).toBe('nl');
   });
 });

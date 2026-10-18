@@ -91,7 +91,8 @@ export class Main extends React.Component {
   render() {
     const { showCorrectAnswer } = this.state;
     const { model, onChange, value } = this.props;
-    const { extraCSSRules, prompt, mode, language, fontSizeFactor, autoplayAudioEnabled, customAudioButton } = model;
+    const { extraCSSRules, prompt, mode, language, fontSizeFactor, autoplayAudioEnabled, autoplayAudioHeld, customAudioButton } =
+      model;
     const modelWithValue = { ...model, value };
     const showCorrectAnswerToggle = mode === 'evaluate';
 
@@ -119,6 +120,7 @@ export class Main extends React.Component {
             className="prompt"
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
+            autoplayAudioHeld={autoplayAudioHeld}
             customAudioButton={customAudioButton}
             language={language}
           />

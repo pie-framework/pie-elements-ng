@@ -8,12 +8,13 @@
       onSessionChange: {},
       onAudioStarted: {},
       onAudioEnded: {},
+      onAudioFailed: {},
     },
   }}
 />
 
 <script lang="ts">
-import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { autoplayAudioOn, sanitizeModelHtml } from '@pie-element/shared-utils';
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
@@ -38,13 +39,14 @@ import { selectedChoiceId } from '../shared/session';
 
 const BLANK_TOKEN = '{{blank}}';
 
-let { model, session, onSessionChange, onAudioStarted, onAudioEnded } = $props<{
+let { model, session, onSessionChange, onAudioStarted, onAudioEnded, onAudioFailed } = $props<{
   model?: any;
   session?: any;
   options?: any;
   onSessionChange?: (session: any) => void;
   onAudioStarted?: () => void;
   onAudioEnded?: () => void;
+  onAudioFailed?: () => void;
 }>();
 const t = (key: string) => translate(key, model?.language);
 let localChoiceId = $state('');
@@ -386,11 +388,12 @@ $effect(() => {
     hasAudio={!!model?.hasAudio}
     audioUrl={model?.audioUrl}
     {useFeatureButtonAudio}
-    autoplayEnabled={!!model?.autoplayAudioEnabled}
+    autoplayEnabled={autoplayAudioOn(model)}
     {featureAudioSkin}
     language={model?.language}
     onaudiostarted={onAudioStarted}
     onaudioended={onAudioEnded}
+    onaudiofailed={onAudioFailed}
   />
 
   {#if model?.sentenceHtml}

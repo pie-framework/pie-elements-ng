@@ -13,9 +13,16 @@ import { nameMathInControl, nameMathInControls } from './math-name.js';
 import { unprefixMathml } from './mathml.js';
 import { endSpeechOnWorkerFailure, type SpeechDocument } from './speech-worker.js';
 import type { MathjaxOptions } from './types.js';
+import {
+  dataLatexAsInlineMath,
+  IGNORE_CLASS,
+  LEGACY_MACROS,
+  type MathJaxMacro,
+  PROCESS_CLASS,
+  TEX_MARKERS,
+  TEX_MARKERS_WITH_SINGLE_DOLLAR,
+} from './tex-dialect.js';
 import { reportUnsupportedPage } from './unsupported-page.js';
-
-export type MathJaxMacro = string | [string, number];
 
 export interface MathItem {
   typesetRoot?: Element | null;
@@ -83,35 +90,8 @@ export interface MathJaxGlobal {
   };
 }
 
-/** The macros the legacy renderer defines, which authored content relies on. */
-const LEGACY_MACROS: Record<string, MathJaxMacro> = {
-  parallelogram: '\\lower.2em{\\Huge\\unicode{x25B1}}',
-  overarc: '\\overparen',
-  napprox: '\\not\\approx',
-  longdiv: '\\enclose{longdiv}',
-  abs: ['\\left|#1\\right|', 1],
-  perpendicular: '\\perp',
-  divide: '\\div',
-};
-
 const SINGLE_DOLLAR_WARNING =
   '[math-rendering] using $ is not advisable, please use $$..$$ or \\(...\\)';
-
-/**
- * Text MathJax's TeX input typesets with the delimiters configured here: \(…\), \[…\], $$…$$,
- * \$ escapes, environments and references, plus $…$ when single dollars are on.
- */
-const TEX_MARKERS = /\\\(|\\\[|\$\$|\\\$|\\begin\{|\\(?:eq)?ref\{/;
-const TEX_MARKERS_WITH_SINGLE_DOLLAR = /\\\(|\\\[|\$|\\begin\{|\\(?:eq)?ref\{/;
-
-const NEWLINE_BLOCK = /\\embed\{newLine\}\[\]/g;
-
-const LEGACY_DELIMITERS: [string, string][] = [
-  ['$$', '$$'],
-  ['$', '$'],
-  ['\\[', '\\]'],
-  ['\\(', '\\)'],
-];
 
 // Where the load in flight is kept is the engine's: on the page for the page's MathJax, in the
 // module for a bundled one.
@@ -182,27 +162,6 @@ function stripLatexAttributes(root: Element): void {
   }
 }
 
-/** `latex` without the pair of legacy delimiters around all of it, if it has one. */
-export function stripLegacyDelimiters(latex: string): string {
-  for (const [open, close] of LEGACY_DELIMITERS) {
-    if (latex.startsWith(open) && latex.endsWith(close)) {
-      return latex.substring(open.length, latex.length - close.length);
-    }
-  }
-  return latex;
-}
-
-function unwrapLegacyDelimiters(content: string): string {
-  const latex = content.includes('\\displaystyle')
-    ? content.replace('\\displaystyle', '').trim()
-    : content;
-  return stripLegacyDelimiters(latex);
-}
-
-/** MathJax's default `ignoreHtmlClass` and `processHtmlClass`, which this adapter keeps. */
-const IGNORE_CLASS = 'mathjax_ignore';
-const PROCESS_CLASS = 'mathjax_process';
-
 /**
  * Whether typesetting `root` skips `element`. As in MathJax's own traversal, the nearest of the
  * two classes on `element` or an ancestor up to `root` decides, and the process class wins.
@@ -224,10 +183,7 @@ function wrapLatexElements(root: Element): void {
     if (isIgnored(element, root)) continue;
     const latex = element.textContent;
     if (!latex) continue;
-    element.textContent = `\\(${unwrapLegacyDelimiters(latex)}\\)`.replace(
-      NEWLINE_BLOCK,
-      '\\newline '
-    );
+    element.textContent = dataLatexAsInlineMath(latex);
     element.dataset.mathHandled = 'true';
   }
 }

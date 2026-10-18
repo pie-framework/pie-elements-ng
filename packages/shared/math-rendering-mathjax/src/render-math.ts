@@ -5,8 +5,9 @@
  * MathJax handles LaTeX and MathML natively, so most functions are simple.
  */
 
-import { createMathjaxRenderer, stripLegacyDelimiters } from './adapter.js';
+import { createMathjaxRenderer } from './adapter.js';
 import { nameMathInControls } from './math-name.js';
+import { stripLegacyDelimiters } from './tex-dialect.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
 

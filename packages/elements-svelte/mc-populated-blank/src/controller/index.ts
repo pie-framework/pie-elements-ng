@@ -178,6 +178,7 @@ export const model = async (
     choiceGroupLabel: normalizedQuestion.choiceGroupLabel || '',
     hasAudio: normalizedQuestion.hasAudio,
     autoplayAudioEnabled: !!normalizedQuestion.autoplayAudioEnabled,
+    autoplayAudioHeld: !!normalizedQuestion.autoplayAudioHeld,
     completeAudioEnabled: !!normalizedQuestion.completeAudioEnabled,
     audioUrl: normalizedQuestion.hasAudio ? normalizedQuestion.audioUrl : null,
     audioTranscript: normalizedQuestion.hasAudio ? normalizedQuestion.audioTranscript : null,
