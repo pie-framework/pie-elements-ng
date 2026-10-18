@@ -138,7 +138,7 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
       this.config.onMissingKey?.(key, this.locale);
       return key;
     }
-    return interpolate(message, values);
+    return interpolate(message, values, this.locale);
   }
 
   /** A category the catalog does not carry resolves to `other`. */
@@ -149,7 +149,7 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
     }
     const category = this.selectPluralCategory(options.count);
     const form = group[category] ?? group.other;
-    return interpolate(form, options);
+    return interpolate(form, options, this.locale);
   }
 
   getDirection(): TextDirection {
@@ -336,11 +336,38 @@ function readPath(source: MessageCatalog | undefined, key: string): MessageNode 
   return current;
 }
 
-function interpolate(text: string, values?: InterpolationValues): string {
+/**
+ * Substitute `{name}` placeholders.
+ *
+ * A finite numeric value renders through `Intl.NumberFormat` for the active
+ * locale, so digits and grouping follow CLDR locale defaults: `ar` renders
+ * Arabic-Indic digits, `fr` groups with narrow no-break spaces, `en-US` with
+ * commas. Catalog text that spells digits out is untouched.
+ */
+const numberFormats = new Map<string, Intl.NumberFormat>();
+
+function formatNumber(value: number, locale: string): string {
+  let formatter = numberFormats.get(locale);
+  if (!formatter) {
+    try {
+      formatter = new Intl.NumberFormat(locale);
+    } catch {
+      formatter = new Intl.NumberFormat(DEFAULT_LOCALE);
+    }
+    numberFormats.set(locale, formatter);
+  }
+  return formatter.format(value);
+}
+
+function interpolate(text: string, values?: InterpolationValues, locale?: string): string {
   if (!values) return text;
   return text.replace(/\{(\w+)\}/g, (match, name: string) => {
     const value = values[name];
-    return value === undefined || value === null ? match : String(value);
+    if (value === undefined || value === null) return match;
+    if (locale !== undefined && typeof value === 'number' && Number.isFinite(value)) {
+      return formatNumber(value, locale);
+    }
+    return String(value);
   });
 }
 

@@ -31,6 +31,20 @@ describe('SimpleI18n', () => {
     expect(i18n.t('common.greeting')).toBe('Hello, {name}');
   });
 
+  it('renders numeric values through the CLDR numbering defaults of the locale', async () => {
+    const i18n = create();
+    expect(i18n.plural('selections', { count: 1000 })).toBe('Select 1,000 answers.');
+    // Formatting follows the resolved locale's CLDR defaults: `ar-SA` defaults
+    // to Arabic-Indic digits (current CLDR resolves bare `ar` to latn).
+    const arabic = new SimpleI18n({
+      source: { selections: { other: '{count} إجابات' } },
+      availableLocales: ['en-US', 'ar-SA'],
+      loadCatalog: async () => ({ selections: { other: '{count} إجابات' } }),
+    });
+    await arabic.setLocale('ar-SA');
+    expect(arabic.plural('selections', { count: 3 })).toBe('٣ إجابات');
+  });
+
   it.each(['es', 'es_ES', 'es-MX', 'ES'])('resolves %j to the es-ES catalog', async (tag) => {
     const i18n = create();
     await i18n.setLocale(tag);
