@@ -35,8 +35,10 @@ pie-players settled the same question for its own chrome: the interface locale i
 
 - RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`.
 - Per-key lookup: host messages for the locale, shipped catalog for the locale, host `en-US`, shipped `en-US`, the key itself.
-- `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`.
+- `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the active locale, so digits follow CLDR locale defaults (`ar` renders Arabic-Indic digits; pie-players' engine is the reference).
 - `catalogs.forLocale(tag)` returns a per-locale view over shared catalogs and host messages, pie-players' `withLocale`, so two players on one page can differ. A locale change re-renders; nothing reloads.
+
+Catalog leaves carry `{name}` placeholders and structured plural groups, not Unicode MessageFormat 2.0 strings. Assessment chrome needs only arguments and plurals — none of the 500+ keys uses `select` or rich formatting — so the engine stays dependency-free, and the gate validates the structured shape mechanically. If MF2 semantics are ever needed, the leaf syntax moves behind the same gate; the keys, loaders, registry and fallback chain are format-agnostic.
 
 It replaces i18next outright. `@pie-lib/translator` as a facade over the engine is the alternative; it keeps i18next and both full catalogs in every bundle until the last of 270 call sites in 37 packages moves, and those sites move a package at a time with their strings anyway. The translator stays untouched for unmigrated packages and is deprecated with its last dependent.
 
@@ -76,6 +78,8 @@ No current content needs another locale there. No live installation serves eleme
 - **Runtime injection** (chosen) works in every build shape and doubles as the host's custom-strings seam.
 - **Per-locale IIFE artifacts** multiply the publish matrix by the locale count.
 - **JSON over fetch** adds a serving contract IIFE hosts do not have.
+
+PIE's delivery model already tiers packaging: browser ESM is the supported path, and IIFE is legacy packaging for hosts that cannot consume modules. The i18n contract follows that tiering deliberately: **locale coverage is not tiered, only its acquisition mechanism is.** Every build shape can render every shipped locale — browser ESM fetches per-locale chunks on first use, and an IIFE takes locale data at runtime through `registerMessages`, because a single file has no chunk base URL and inlining every shipped locale would cost every English IIFE page its bytes for a need no current content has. A host that needs a locale no package ships uses the same seam in both shapes.
 
 `tests/interface-i18n-artifacts.test.ts` holds each migrated element's built output to the contract: English in the static import graph of the browser delivery and print entries and in the IIFE, every other locale outside that graph and absent from the IIFE, no i18next in either, and every loader in `dist/i18n/index.js` eager.
 

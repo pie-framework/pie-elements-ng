@@ -9,6 +9,7 @@ export default {
   minmaxSelectionsRange: 'Selecione entre {minSelections} e {maxSelections}.',
   maxSelections: {
     one: 'Somente {count} resposta é permitida.',
+    many: 'Somente {count} respostas são permitidas.',
     other: 'Somente {count} respostas são permitidas.',
   },
   showTeacherInstructions: 'Mostrar instruções do professor',
