@@ -21,7 +21,7 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.2",
+    "@types/bun": "^1.4.3",
     "lodash-es": "4.17.21",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
