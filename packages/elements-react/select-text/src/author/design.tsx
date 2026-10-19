@@ -117,6 +117,30 @@ export class Design extends React.Component<DesignProps, DesignState> {
     };
   }
 
+  componentDidMount() {
+    this.syncMaxSelections();
+  }
+
+  componentDidUpdate() {
+    this.syncMaxSelections();
+  }
+
+  // With the selection count control hidden, maxSelections follows the correct answer, including models saved
+  // before the control was hidden.
+  syncMaxSelections = () => {
+    const { model, onModelChanged } = this.props;
+
+    if (!model || !this.isSelectionCountHidden()) {
+      return;
+    }
+
+    const correctTokenCount = (model.tokens || []).filter((t) => t.correct).length;
+
+    if (model.maxSelections !== correctTokenCount) {
+      onModelChanged({ ...model, maxSelections: correctTokenCount });
+    }
+  };
+
   UNSAFE_componentWillReceiveProps(nProps: DesignProps) {
     const { model } = nProps;
 
@@ -131,6 +155,10 @@ export class Design extends React.Component<DesignProps, DesignState> {
     this.apply((u) => {
       u.text = val;
       u.tokens = [];
+
+      if (this.isSelectionCountHidden()) {
+        u.maxSelections = 0;
+      }
     });
   }, 200);
 
@@ -142,12 +170,22 @@ export class Design extends React.Component<DesignProps, DesignState> {
       u.mode = mode;
 
       const correctTokenCount = tokens.filter((t) => t.correct).length;
+
+      if (this.isSelectionCountHidden()) {
+        // the control is not available to the author, so keep it in sync with the correct answer
+        u.maxSelections = correctTokenCount;
+        return;
+      }
+
       const max = isFinite(u.maxSelections as number) ? (u.maxSelections as number) : 0;
 
       u.maxSelections = Math.max(max, correctTokenCount);
     });
   };
 
+  isSelectionCountHidden = () => !this.props.configuration?.selectionCount?.settings;
+
+  
   changeMaxSelections = (_event: unknown, max: number) => {
     this.apply((u) => (u.maxSelections = max));
   };
