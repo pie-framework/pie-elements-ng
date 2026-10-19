@@ -293,9 +293,6 @@ export class Design extends React.Component<DesignProps, DesignState> {
     };
 
     log('[render] maxSelections:', model.maxSelections);
-  console.log('isSelectionCountHidden',this.isSelectionCountHidden());
-
-    console.log('maxSelections', model.maxSelections);
 
     const panelSettings = {
       partialScoring: partialScoring.settings && toggle(partialScoring.label),
