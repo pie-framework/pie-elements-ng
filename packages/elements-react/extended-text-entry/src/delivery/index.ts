@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { stampElementLanguage } from '@pie-element/shared-i18n';
 import {
   ModelSetEvent,
   SessionChangedEvent,
@@ -86,9 +87,10 @@ export default class RootExtendedTextEntry extends HTMLElement {
   }
 
   setLangAttribute() {
-    const language = this._model && typeof this._model.language ? this._model.language : '';
-    const lang = language ? language.slice(0, 2) : 'en';
-    this.setAttribute('lang', lang);
+    // The element asserts the language the item declares, canonicalized, and
+    // nothing when it declares none: an `en` default claimed undeclared
+    // content — Spanish items included — for English.
+    stampElementLanguage(this, this._model?.language ?? null);
   }
 
   /** Names the region in the item language, which can change with any model set. */
