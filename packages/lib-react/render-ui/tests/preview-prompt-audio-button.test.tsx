@@ -6,8 +6,7 @@
  */
 import { loadLocale } from '@pie-element/shared-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import React from 'react';
-import { act } from 'react-dom/test-utils';
+import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { getByRole } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';

@@ -119,8 +119,8 @@ function BlankContent({
   isDragging,
   dragItem,
   correct,
-  emptyResponseAreaWidth,
-  emptyResponseAreaHeight,
+  emptyResponseAreaWidth = 0,
+  emptyResponseAreaHeight = 0,
 }) {
   const rootRef = useRef(null);
   const spanRef = useRef(null);
@@ -327,11 +327,6 @@ function BlankContent({
   );
 }
 
-BlankContent.defaultProps = {
-  emptyResponseAreaWidth: 0,
-  emptyResponseAreaHeight: 0,
-};
-
 BlankContent.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   disabled: PropTypes.bool,
@@ -354,8 +349,8 @@ function DragDropBlank({
   choice,
   correct,
   onChange,
-  emptyResponseAreaWidth,
-  emptyResponseAreaHeight,
+  emptyResponseAreaWidth = 0,
+  emptyResponseAreaHeight = 0,
   instanceId,
   language,
   selectedItem,
@@ -497,11 +492,6 @@ function DragDropBlank({
     </StyledContent>
   );
 }
-
-DragDropBlank.defaultProps = {
-  emptyResponseAreaWidth: 0,
-  emptyResponseAreaHeight: 0,
-};
 
 DragDropBlank.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

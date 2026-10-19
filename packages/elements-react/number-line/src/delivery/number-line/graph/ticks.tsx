@@ -2,6 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { GraphContext } from './graph-context.js';
 import { styled } from '@mui/material/styles';
 import { buildTickData } from './tick-utils.js';
 import { color } from '@pie-lib/render-ui';
@@ -143,9 +144,7 @@ export class Tick extends React.Component {
 }
 
 export class Ticks extends React.Component {
-  static contextTypes = {
-    xScale: PropTypes.func.isRequired,
-  };
+  static contextType = GraphContext;
 
   static propTypes = {
     domain: PropTypes.shape({

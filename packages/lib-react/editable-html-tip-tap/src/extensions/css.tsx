@@ -1,7 +1,8 @@
 // @ts-nocheck
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { flushSync } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Mark, mergeAttributes } from '@tiptap/core';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -21,6 +22,7 @@ const insertDialog = ({ editor, callback, opts, selectedText, parentNode }) => {
 
   newEl.className = 'insert-css-dialog';
 
+  const root = createRoot(newEl);
   let popoverEl;
 
   const closePopOver = () => {
@@ -49,6 +51,7 @@ const insertDialog = ({ editor, callback, opts, selectedText, parentNode }) => {
 
   const handleClose = () => {
     callback(undefined, true);
+    root.unmount();
     newEl.remove();
     closePopOver();
     document.body.removeEventListener('click', listener);
@@ -56,6 +59,7 @@ const insertDialog = ({ editor, callback, opts, selectedText, parentNode }) => {
 
   const handleChange = (name) => {
     callback(name, true);
+    root.unmount();
     newEl.remove();
     closePopOver();
     document.body.removeEventListener('click', listener);
@@ -106,7 +110,7 @@ const insertDialog = ({ editor, callback, opts, selectedText, parentNode }) => {
     </div>
   );
 
-  ReactDOM.render(el, newEl, () => {
+  const positionDialog = () => {
     const cursorItem = editor.view.nodeDOM(editor.state.selection.from);
     const cursorNode = cursorItem?.parentNode;
 
@@ -145,7 +149,12 @@ const insertDialog = ({ editor, callback, opts, selectedText, parentNode }) => {
 
       document.body.addEventListener('click', listener);
     }
-  });
+  };
+
+  // Rendered synchronously, as ReactDOM.render was: positionDialog measures the dialog, and its body
+  // click listener must be in place before the click that follows this mousedown.
+  flushSync(() => root.render(el));
+  positionDialog();
 };
 
 export const CSSMark = Mark.create({

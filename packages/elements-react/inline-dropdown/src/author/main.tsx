@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import EditableHtml, { ALL_PLUGINS, deleteInlineDropdownByIndex } from '@pie-lib/editable-html-tip-tap';
 import { AlertDialog, InputContainer, layout, settings } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
@@ -159,11 +158,13 @@ export class Main extends React.Component<MainProps, State> {
     }
   }
 
-  componentDidUpdate() {
-    //eslint-disable-next-line
-    const domNode = ReactDOM.findDOMNode(this);
+  containerRef = React.createRef<HTMLDivElement>();
 
-    renderMath(domNode as Element);
+  componentDidUpdate() {
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   onModelChange = (newVal: Partial<AuthorModel>) => {
@@ -466,6 +467,7 @@ export class Main extends React.Component<MainProps, State> {
 
     return (
       <layout.ConfigLayout
+        containerRef={this.containerRef}
         extraCSSRules={{
           names: ['red', 'blue'],
           rules: `

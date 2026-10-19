@@ -77,7 +77,7 @@ const Matrix = (props) => {
     columnLabels,
     matrixValues,
     rowLabels,
-    session,
+    session = { value: {} },
     teacherInstructions,
     language,
   } = props;
@@ -150,12 +150,6 @@ Matrix.propTypes = {
   columnLabels: PropTypes.arrayOf(PropTypes.string),
   disabled: PropTypes.bool.isRequired,
   onSessionChange: PropTypes.func.isRequired,
-};
-
-Matrix.defaultProps = {
-  session: {
-    value: {},
-  },
 };
 
 export default Matrix;

@@ -27,9 +27,4 @@ UploadControl.propTypes = {
   setRef: PropTypes.func.isRequired,
 };
 
-UploadControl.defaultProps = {
-  classNameButton: '',
-  classNameSection: '',
-};
-
 export default UploadControl;

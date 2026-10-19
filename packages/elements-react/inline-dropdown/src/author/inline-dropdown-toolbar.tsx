@@ -2,7 +2,6 @@
 
 import { getPluginProps } from './utils.js';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
@@ -196,6 +195,7 @@ class RespAreaToolbar extends React.Component {
   };
   clickedInside = false;
   preventDone = false;
+  containerRef = React.createRef<HTMLDivElement>();
 
   state = {
     respAreaMarkup: '',
@@ -226,10 +226,11 @@ class RespAreaToolbar extends React.Component {
   }
 
   componentDidUpdate() {
-    //eslint-disable-next-line
-    const domNode = ReactDOM.findDOMNode(this);
-
-    renderMath(domNode);
+    // renderMath with no element renders the whole document body, and render returns null until
+    // the toolbar is positioned.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   componentWillUnmount() {
@@ -368,6 +369,7 @@ class RespAreaToolbar extends React.Component {
 
     return (
       <ResponseContainer
+        ref={this.containerRef}
         data-inline-dropdown-toolbar=""
         style={{
           ...toolbarStyle,

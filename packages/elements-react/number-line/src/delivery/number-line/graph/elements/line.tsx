@@ -2,6 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { GraphContext } from '../graph-context.js';
 import { styled } from '@mui/material/styles';
 import { isEqual, isNumber } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
@@ -74,10 +75,7 @@ export class Line extends React.Component {
     correct: undefined,
   };
 
-  static contextTypes = {
-    xScale: PropTypes.func.isRequired,
-    snapValue: PropTypes.func.isRequired,
-  };
+  static contextType = GraphContext;
 
   constructor(props) {
     super(props);

@@ -4,6 +4,7 @@ import * as colors from '../../colors.js';
 import { color } from '@pie-lib/render-ui';
 import React from 'react';
 import PropTypes from 'prop-types';
+import { GraphContext } from '../graph-context.js';
 import { styled } from '@mui/material/styles';
 import Arrow from '../arrow.js';
 import Point from './point.js';
@@ -77,10 +78,7 @@ export class Ray extends React.Component {
     disabled: false,
   };
 
-  static contextTypes = {
-    xScale: PropTypes.func.isRequired,
-    snapValue: PropTypes.func.isRequired,
-  };
+  static contextType = GraphContext;
 
   constructor(props) {
     super(props);

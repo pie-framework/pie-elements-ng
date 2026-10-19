@@ -3,7 +3,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { styled } from '@mui/material/styles';
 
 import AltDialog from './AltDialog.js';
@@ -70,7 +70,7 @@ export class ImageToolbar extends React.Component {
 
     const el = <AltDialog alt={alt} onDone={this.onAltTextDone} />;
 
-    ReactDOM.render(el, popoverEl);
+    createRoot(popoverEl).render(el);
 
     document.body.appendChild(popoverEl);
   };

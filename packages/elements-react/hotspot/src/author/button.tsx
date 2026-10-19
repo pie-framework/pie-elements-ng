@@ -9,7 +9,7 @@ const StyledButton: any = styled(Button)(({ theme }) => ({
   marginLeft: theme.spacing(1),
 }));
 
-const RawButton = ({ className, label, onClick, disabled }) => (
+const RawButton = ({ className = '', label = 'Add', onClick = () => {}, disabled = false }) => (
   <StyledButton
     onClick={onClick}
     disabled={disabled}
@@ -25,13 +25,6 @@ RawButton.propTypes = {
   disabled: PropTypes.bool,
   label: PropTypes.string,
   onClick: PropTypes.func,
-};
-
-RawButton.defaultProps = {
-  className: '',
-  disabled: false,
-  label: 'Add',
-  onClick: () => {},
 };
 
 export default RawButton;

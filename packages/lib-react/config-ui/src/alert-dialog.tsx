@@ -19,11 +19,11 @@ const AlertDialog = ({
   onClose,
   onConfirm,
   open,
-  onCloseText,
-  onConfirmText,
-  disableAutoFocus,
-  disableEnforceFocus,
-  disableRestoreFocus,
+  onCloseText = 'CANCEL',
+  onConfirmText = 'OK',
+  disableAutoFocus = false,
+  disableEnforceFocus = false,
+  disableRestoreFocus = false,
 }) => (
   <Dialog
     open={open}
@@ -52,14 +52,6 @@ const AlertDialog = ({
     </DialogActions>
   </Dialog>
 );
-
-AlertDialog.defaultProps = {
-  onCloseText: 'CANCEL',
-  onConfirmText: 'OK',
-  disableAutoFocus: false,
-  disableEnforceFocus: false,
-  disableRestoreFocus: false,
-};
 
 AlertDialog.propTypes = {
   text: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),

@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import MediaDialog from '../components/media/MediaDialog.js';
@@ -114,8 +114,11 @@ export const insertDialog = (props) => {
   newEl.className = 'insert-media-dialog';
   document.body.style.overflow = 'hidden';
 
+  const root = createRoot(newEl);
+
   const handleClose = (val, data) => {
     callback(val, data);
+    root.unmount();
     newEl.remove();
     document.body.style.overflow = initialBodyOverflow;
   };
@@ -131,7 +134,7 @@ export const insertDialog = (props) => {
     />
   );
 
-  ReactDOM.render(el, newEl);
+  root.render(el);
 
   document.body.appendChild(newEl);
 };
