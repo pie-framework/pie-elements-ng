@@ -10,6 +10,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const log = debug('@pie-ui:categorize:choice');
 
@@ -68,6 +69,30 @@ export class Layout extends React.Component {
     isSelected: PropTypes.bool,
   };
   static defaultProps = {};
+
+  contentRef = React.createRef();
+
+  // Each choice typesets its own math. The pool and the categories key their choices by position, so
+  // when a choice leaves a category React gives its element to the choice after it and writes that
+  // choice's untypeset content into it. The element's own mutation observer would typeset it, but it is
+  // paused for the whole of a drag and blind for a moment after each render, so a choice redrawn then
+  // kept its raw TeX.
+  componentDidMount() {
+    this.typesetContent();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.content !== this.props.content) {
+      this.typesetContent();
+    }
+  }
+
+  typesetContent() {
+    if (this.contentRef.current) {
+      renderMath(this.contentRef.current);
+    }
+  }
+
   render() {
     const { content, isDragging, disabled, correct, isSelected, showsSelectionBorder } = this.props;
 
@@ -79,7 +104,7 @@ export class Layout extends React.Component {
         isSelected={isSelected}
       >
         <StyledCard isSelected={isSelected}>
-          <StyledCardContent dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(content) }} />
+          <StyledCardContent ref={this.contentRef} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(content) }} />
         </StyledCard>
       </ChoiceContainer>
     );
