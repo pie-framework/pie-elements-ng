@@ -173,6 +173,16 @@ describe('multiple-choice math kept out of names on request', () => {
     await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
   });
 
+  it('keeps math out of names when the page URL asks for it, with no Player', async () => {
+    window.history.pushState({}, '', '/item/E219966/playerpreview?role=instructor&mathNames=outside');
+    try {
+      const el = await mount(document.body);
+      await vi.waitFor(() => expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(true));
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   it('falls back to the default after moving away from the Player that switched it', async () => {
     const player = provide([MATH_OUTSIDE_NAMES]);
     const el = await mount(player.provider);

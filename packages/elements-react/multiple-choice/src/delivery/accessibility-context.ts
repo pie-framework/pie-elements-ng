@@ -28,6 +28,25 @@ export const accessibilityContext = createContext<AccessibilityContextValue>(
  */
 export const MATH_OUTSIDE_NAMES = 'mathOutsideNames';
 
+/**
+ * TEMPORARY (PIE-1244 comparison): whether the page's URL asks for math kept out of choice names
+ * with `mathNames=outside`, read from the page and, inside a same-origin iframe, from its parent.
+ * It lets testers compare the two patterns on a published version, in pieoneer, without a Player
+ * that answers the context. A setting that changes rendering belongs in the context (ADR 0003), so
+ * this goes when the comparison decides the default, with the `mathNames` URL it reads.
+ */
+export function pageUrlKeepsMathOutsideNames(): boolean {
+  if (typeof window === 'undefined') return false;
+  const asks = (location: Location) => new URLSearchParams(location.search).get('mathNames') === 'outside';
+  try {
+    if (asks(window.location)) return true;
+    // A cross-origin parent throws on reading its location, which leaves the default.
+    return window.top !== null && window.top !== window && asks(window.top.location);
+  } catch {
+    return false;
+  }
+}
+
 /** The `supports` of a context value, or none when the value has another shape. */
 function supportsOf(value: unknown): readonly string[] {
   const supports = (value as { supports?: unknown } | null | undefined)?.supports;

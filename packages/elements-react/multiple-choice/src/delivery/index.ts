@@ -12,7 +12,11 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { MATH_OUTSIDE_NAMES, subscribeAccessibilitySupports } from './accessibility-context.js';
+import {
+  MATH_OUTSIDE_NAMES,
+  pageUrlKeepsMathOutsideNames,
+  subscribeAccessibilitySupports,
+} from './accessibility-context.js';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 import { autoplayAudioOn, promptAudioPending, trackPromptAudioFailure } from '@pie-element/shared-utils';
 
@@ -257,8 +261,11 @@ export default class MultipleChoice extends HTMLElement {
 
   _subscribeAccessibility() {
     this._unsubscribeAccessibility?.();
+    // TEMPORARY (PIE-1244 comparison): `mathNames=outside` in the page URL switches it on too.
+    const fromUrl = pageUrlKeepsMathOutsideNames();
+    if (fromUrl) this._mathOutsideNames = true;
     this._unsubscribeAccessibility = subscribeAccessibilitySupports(this, (supports) => {
-      const mathOutsideNames = supports.includes(MATH_OUTSIDE_NAMES);
+      const mathOutsideNames = fromUrl || supports.includes(MATH_OUTSIDE_NAMES);
       if (mathOutsideNames === this._mathOutsideNames) return;
       this._mathOutsideNames = mathOutsideNames;
       this._rerender();
