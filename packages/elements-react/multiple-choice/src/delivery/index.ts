@@ -45,7 +45,12 @@ const renderUi =
 const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 import { exceedsMaxSelections } from './utils.js';
-import { isLocaleReady, loadLocale, stampElementLanguage } from '@pie-element/shared-i18n';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 
 const log = debug('pie-ui:multiple-choice');
@@ -145,14 +150,21 @@ export default class MultipleChoice extends HTMLElement {
     // Whether the Player keeps math out of choice names (PIE-1244).
     this._mathOutsideNames = false;
     this._unsubscribeAccessibility = null;
+    // The locale the player publishes, once it answers; null until then. While
+    // it is null the chrome follows the item's declared language, the
+    // transitional precedence (published, else `model.language`, else `en-US`).
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
 
     this._rerender = debounce(
       () => {
         if (this._model && this._session) {
-          // Render once every catalog on the render path holds the item language, so no
-          // English frame precedes it.
-          if (!isLocaleReady(this._model.language)) {
-            void loadLocale(this._model.language).then(() => this._rerender());
+          // The chrome speaks the locale the player publishes, else the item's
+          // declared language, else `en-US`. Rendered once every catalog on the
+          // render path holds it, so no English frame precedes it.
+          const chromeLanguage = this._interfaceLocale ?? this._model.language;
+          if (!isLocaleReady(chromeLanguage)) {
+            void loadLocale(chromeLanguage).then(() => this._rerender());
             return;
           }
           var element = React.createElement(Main, {
@@ -163,16 +175,20 @@ export default class MultipleChoice extends HTMLElement {
             onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
             eliminatedChoices: [...this._eliminatedChoices],
             mathOutsideNames: this._mathOutsideNames,
+            language: chromeLanguage,
             ...resolveHeadingProps(this),
           });
 
           //TODO: aria-label is set in the _rerender because we need to change it when the model.choiceMode is updated. Consider revisiting the placement of the aria-label setting in the _rerender
-          const i18n = catalogs.forLocale(this._model.language);
+          const i18n = catalogs.forLocale(chromeLanguage);
           this.setAttribute(
             'aria-label',
             i18n.t(this._model.choiceMode === 'radio' ? 'multipleChoiceQuestion' : 'multipleCorrectAnswerQuestion'),
           );
           this.setAttribute('role', 'region');
+          // The host names the content language; the chrome roots (the
+          // correct-answer toggle) carry the chrome language from the
+          // `language` prop below.
           stampElementLanguage(this, this._model.language);
 
           this._initMathObserver();
@@ -393,6 +409,17 @@ export default class MultipleChoice extends HTMLElement {
     this._subscribeAccessibility();
     this._initMathObserver();
     this._initPlayerObserver();
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(
+        this,
+        (value) => {
+          if (value?.locale && value.locale !== this._interfaceLocale) {
+            this._interfaceLocale = value.locale;
+            this._rerender();
+          }
+        },
+      );
+    }
     this._rerender();
 
     // Observation:  audio in Chrome will have the autoplay attribute,
@@ -518,6 +545,8 @@ export default class MultipleChoice extends HTMLElement {
     this._unsubscribeAccessibility = null;
     // An unanswered request on the next connect means the default pattern.
     this._mathOutsideNames = false;
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
 
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();

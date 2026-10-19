@@ -13,6 +13,11 @@ export {
   stampElementLanguage,
 } from './element-language.js';
 export {
+  type InterfaceLocaleContextValue,
+  interfaceLocaleContext,
+  subscribeInterfaceLocale,
+} from './interface-locale.js';
+export {
   findBestLanguageMatch,
   languageTagLookupSequence,
   languageTagsEqual,
