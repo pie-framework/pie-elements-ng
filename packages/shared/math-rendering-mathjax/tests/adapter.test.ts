@@ -8,7 +8,7 @@ import {
   npmRoot,
   resolveAssets,
 } from '../src/assets.js';
-import { mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
+import { latexToMml, mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
 import { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from '../src/unsupported-page.js';
 
 const MATHJAX_LOADING = Symbol.for('@pie-element/shared-math-rendering-mathjax/loading');
@@ -637,6 +637,21 @@ describe('createMathjaxRenderer', () => {
       '\\(w\\)',
     ]);
     expect(target.querySelectorAll('[data-math-handled="true"]')).toHaveLength(5);
+  });
+
+  it('leaves the data-latex nodes of authored MathML alone, where a text node is not allowed', async () => {
+    interceptScripts();
+    const target = elementWith(
+      '<math data-latex="\\frac{2}{9}"><mfrac data-latex="\\frac{2}{9}"><mn data-latex="2">2</mn><mn data-latex="9">9</mn></mfrac></math>'
+    );
+
+    const rendering = createMathjaxRenderer()(target);
+    runMathjaxScript().finishStartup();
+    await rendering;
+
+    expect(target.textContent).toBe('29');
+    expect(target.querySelector('mfrac')?.children).toHaveLength(2);
+    expect(target.querySelectorAll('[data-math-handled]')).toHaveLength(0);
   });
 
   it('typesets authored MathML in display style as the legacy renderer does', async () => {
@@ -1357,7 +1372,7 @@ describe('renderMath', () => {
 
     expect(typesetPromise.mock.calls).toEqual([[[target]]]);
     expect(wrapMath('x^2')).toBe('\\(x^2\\)');
-    expect(mmlToLatex('<math></math>')).toBe('<math></math>');
+    expect(mmlToLatex('<math><mfrac><mn>2</mn><mn>9</mn></mfrac></math>')).toBe('\\frac{2}{9}');
   });
 
   it("renders through another copy of the adapter installed as the page's renderer", async () => {
@@ -1434,5 +1449,213 @@ describe('wrapMath', () => {
 
   it('keeps \\displaystyle, which only rendering drops', () => {
     expect(wrapMath('\\displaystyle\\sum_{i=1}^n i')).toBe('\\(\\displaystyle\\sum_{i=1}^n i\\)');
+  });
+});
+
+describe('mmlToLatex', () => {
+  const MATHML_NS = 'xmlns="http://www.w3.org/1998/Math/MathML"';
+
+  it('converts MathML itself when the page installs no converter', () => {
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
+
+    expect(
+      mmlToLatex(
+        `<math ${MATHML_NS}> <mrow> <mfrac> <mn>2</mn> <mn>9</mn> </mfrac> </mrow> </math>`
+      )
+    ).toBe('\\frac{2}{9}');
+    expect(
+      mmlToLatex(
+        `<math ${MATHML_NS}> <mrow> <mn>4</mn><mfrac> <mn>1</mn> <mn>2</mn> </mfrac> </mrow> </math>`
+      )
+    ).toBe('4 \\frac{1}{2}');
+  });
+
+  it('converts as the legacy renderer does', () => {
+    const mml = `<math ${MATHML_NS}>  <mn>2</mn>  <mi>x</mi>  <mtext>&#xA0;</mtext>  <mo>&#x2264;</mo>  <mn>4</mn>  <mi>y</mi>  <mtext>&#xA0;</mtext>  <mo>+</mo>  <mtext>&#xA0;</mtext>  <mn>8</mn> <msqrt>    <mi>h</mi>  </msqrt></math>`;
+
+    expect(mmlToLatex(mml)).toBe('2 x \\textrm{ } \\leq 4 y \\textrm{ } + \\textrm{ } 8 \\sqrt{h}');
+  });
+
+  it('prefers the converter the page installed', () => {
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn(), mmlToLatex: () => 'from-page' };
+
+    expect(mmlToLatex('<math><mn>1</mn></math>')).toBe('from-page');
+  });
+
+  it('gives no LaTeX for MathML it cannot read', () => {
+    expect(mmlToLatex('<math></math>')).toBe('');
+    expect(mmlToLatex('not mathml')).toBe('');
+  });
+});
+
+describe('latexToMml', () => {
+  const startedMathJax = (tex2mml: (tex: string, options?: { display?: boolean }) => string) => {
+    page.MathJax = { tex2mml, startup: { document: {} } };
+  };
+
+  it("gives MathJax's MathML for the LaTeX", () => {
+    const tex2mml = vi.fn(() => '<math><mn>1</mn></math>');
+    startedMathJax(tex2mml);
+
+    expect(latexToMml('1')).toBe('<math><mn>1</mn></math>');
+    expect(tex2mml).toHaveBeenCalledWith('1', { display: false });
+  });
+
+  it('asks for display math when it is told to', () => {
+    const tex2mml = vi.fn(() => '<math display="block"></math>');
+    startedMathJax(tex2mml);
+
+    latexToMml('\\frac{a}{b}', { display: true });
+
+    expect(tex2mml).toHaveBeenCalledWith('\\frac{a}{b}', { display: true });
+  });
+
+  it('answers null until MathJax has started', () => {
+    expect(latexToMml('1')).toBeNull();
+
+    page.MathJax = { tex2mml: () => '<math></math>' };
+    expect(latexToMml('1')).toBeNull();
+
+    page.MathJax = { startup: { document: {} } };
+    expect(latexToMml('1')).toBeNull();
+  });
+
+  it('answers null for LaTeX MathJax cannot read', () => {
+    startedMathJax(() => '<math><merror><mtext>Undefined control sequence</mtext></merror></math>');
+    expect(latexToMml('\\bad')).toBeNull();
+
+    // The red text MathJax's noundefined package typesets an unknown macro as.
+    startedMathJax(() => '<math><mtext mathcolor="red" data-latex="\\bad">\\bad</mtext></math>');
+    expect(latexToMml('\\bad')).toBeNull();
+  });
+
+  it('answers null when MathJax throws', () => {
+    startedMathJax(() => {
+      throw new Error('boom');
+    });
+
+    expect(latexToMml('1')).toBeNull();
+  });
+
+  it('puts the MathML on one line, as the legacy renderer did', () => {
+    startedMathJax(() => '<math>\n  <mfrac>\n    <mn>2</mn>\n    <mn>9</mn>\n  </mfrac>\n</math>');
+
+    expect(latexToMml('\\frac{2}{9}')).toBe('<math><mfrac><mn>2</mn><mn>9</mn></mfrac></math>');
+  });
+
+  it('resets the TeX input before each conversion, so a label is not a duplicate of the last', () => {
+    const calls: string[] = [];
+    page.MathJax = {
+      texReset: () => calls.push('reset'),
+      tex2mml: () => {
+        calls.push('convert');
+        return '<math></math>';
+      },
+      startup: { document: {} },
+    };
+
+    latexToMml('x');
+    latexToMml('x');
+
+    expect(calls).toEqual(['reset', 'convert', 'reset', 'convert']);
+  });
+
+  it('converts without a reset when MathJax defines none', () => {
+    startedMathJax(() => '<math></math>');
+
+    expect(latexToMml('x')).toBe('<math></math>');
+  });
+
+  it("answers with the converter the page's renderer installed, for a copy whose own MathJax never started", () => {
+    const pageConverter = vi.fn(() => '<math><mi>x</mi></math>');
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn(), latexToMml: pageConverter };
+
+    expect(latexToMml('x', { display: true })).toBe('<math><mi>x</mi></math>');
+    expect(pageConverter).toHaveBeenCalledWith('x', { display: true });
+  });
+
+  it("answers null when the page's converter has no MathML to give, or throws", () => {
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn(), latexToMml: () => null };
+    expect(latexToMml('x')).toBeNull();
+
+    page['@pie-lib/math-rendering'] = {
+      renderMath: vi.fn(),
+      latexToMml: () => {
+        throw new Error('boom');
+      },
+    };
+    expect(latexToMml('x')).toBeNull();
+  });
+
+  it("converts with its own MathJax when this module's own converter is the page's", () => {
+    const tex2mml = vi.fn(() => '<math></math>');
+    startedMathJax(tex2mml);
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn(), latexToMml };
+
+    expect(latexToMml('x')).toBe('<math></math>');
+    expect(tex2mml).toHaveBeenCalledTimes(1);
+  });
+
+  it("converts through the legacy renderer's string path when nothing else can, as Slate does", () => {
+    const renderMath = vi.fn((markup: string) =>
+      markup.includes('\\[')
+        ? '<math display="block"><mi>x</mi></math>'
+        : '<math>\n<mi>x</mi>\n</math>'
+    );
+    page['@pie-lib/math-rendering'] = { renderMath };
+
+    expect(latexToMml('x')).toBe('<math><mi>x</mi></math>');
+    expect(renderMath).toHaveBeenLastCalledWith(
+      '<span data-latex="" data-raw="x">\\(x\\)</span>',
+      expect.anything()
+    );
+    expect(latexToMml('x', { display: true })).toBe('<math display="block"><mi>x</mi></math>');
+  });
+
+  it('keeps the LaTeX when the legacy renderer hands the markup back, or gives nothing', () => {
+    page['@pie-lib/math-rendering'] = { renderMath: (markup: string) => markup };
+    expect(latexToMml('x')).toBeNull();
+
+    page['@pie-lib/math-rendering'] = { renderMath: () => '' };
+    expect(latexToMml('x')).toBeNull();
+  });
+
+  it("uses its own MathJax when the page's renderer has no converter", () => {
+    const tex2mml = vi.fn(() => '<math></math>');
+    startedMathJax(tex2mml);
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
+
+    expect(latexToMml('x')).toBe('<math></math>');
+    expect(tex2mml).toHaveBeenCalledTimes(1);
+  });
+
+  it("strips MathJax's data-latex attributes, which the legacy renderer would take for LaTeX spans", () => {
+    startedMathJax(
+      () =>
+        '<math xmlns="http://www.w3.org/1998/Math/MathML" data-latex="\\frac{2}{9}"><mfrac data-latex="\\frac{2}{9}"><mn data-latex="2">2</mn><mn data-latex="9" data-latex-item="9">9</mn></mfrac></math>'
+    );
+
+    const mathMl = latexToMml('\\frac{2}{9}');
+
+    expect(mathMl).toBe(
+      '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac><mn>2</mn><mn>9</mn></mfrac></math>'
+    );
+  });
+
+  it('strips data-latex values that hold escaped quotes, brackets and ampersands', () => {
+    startedMathJax(
+      () =>
+        '<math data-latex="a&lt;b &amp; c&gt;d &quot;q&quot;"><mi data-latex="a&lt;b">a</mi></math>'
+    );
+
+    expect(latexToMml('a<b')).toBe('<math><mi>a</mi></math>');
+  });
+
+  it('keeps red-coloured math that is not an undefined macro', () => {
+    startedMathJax(() => '<math><mstyle mathcolor="red"><mi>x</mi></mstyle></math>');
+
+    expect(latexToMml('\\color{red}x')).toBe(
+      '<math><mstyle mathcolor="red"><mi>x</mi></mstyle></math>'
+    );
   });
 });

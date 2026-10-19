@@ -5,7 +5,9 @@
  * MathJax handles LaTeX and MathML natively, so most functions are simple.
  */
 
+import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { createMathjaxRenderer, stripLegacyDelimiters } from './adapter.js';
+import { engineMathJax } from './engine/page.js';
 import { nameMathInControls } from './math-name.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
@@ -27,6 +29,7 @@ type PlayerMathRenderingApi = {
   wrapMath?: (latex: string, wrapType?: string | null) => string;
   unWrapMath?: (latex: string) => unknown;
   mmlToLatex?: (mathml: string) => string;
+  latexToMml?: (latex: string, options?: { display?: boolean }) => string | null;
 };
 
 type PrintPlayer = HTMLElement & { mathRenderingModuleUrlImported?: boolean };
@@ -167,7 +170,108 @@ export const unWrapMath = (
 };
 
 /**
- * MathML to LaTeX - MathJax renders MathML natively, so just pass through
+ * MathML to LaTeX, for editors that let an author edit MathML as math (`mmlEditing`). A converter
+ * the page installed, such as the legacy renderer under the IIFE strategy, wins; otherwise the
+ * bundled one, the same converter legacy @pie-lib/math-rendering bundles, converts, so the ESM
+ * page, which installs only `renderMath`, converts too. The bundled converter gives an empty
+ * string for MathML it cannot read, and the input back if it throws, so callers treat both as
+ * "no LaTeX to give".
  */
-export const mmlToLatex = (mathml: string): string =>
-  getPlayerMathRenderer()?.mmlToLatex?.(mathml) ?? mathml;
+export const mmlToLatex = (mathml: string): string => {
+  const pageConverter = getPlayerMathRenderer()?.mmlToLatex;
+
+  if (pageConverter) {
+    return pageConverter(mathml);
+  }
+
+  try {
+    return MathMLToLaTeX.convert(mathml);
+  } catch {
+    return mathml;
+  }
+};
+
+/**
+ * The `data-latex` and `data-latex-item` attributes MathJax 4 writes on every node. `data-latex` is
+ * also what marks an authored LaTeX span, and the legacy renderer rewrites the text of every
+ * element that has it, MathML nodes included, so saved MathML must not carry it. A value holds no
+ * `"`: MathJax writes it as `&quot;`.
+ */
+const TEX_SOURCE_ATTRIBUTES = /\sdata-latex(?:-item)?="[^"]*"/g;
+
+/** MathJax's markup for TeX it could not read: an `merror`, or an undefined macro as red text. */
+const MATHML_ERROR = /<merror|<mtext[^>]*mathcolor="red"[^>]*>\\/;
+
+/**
+ * The legacy page renderer (`@pie-lib/math-rendering-module`, MathJax 3) converts a string of
+ * markup instead: given an authored LaTeX span it answers the MathML of the math in it, and the
+ * markup unchanged, or nothing, when it cannot. It is how the Slate editor saves MathML, and the
+ * only way to convert under the IIFE strategy, whose page renderer has no `latexToMml`.
+ */
+function legacyLatexToMml(latex: string, options: { display?: boolean }): string | null {
+  const renderMath = getPlayerMathRenderer()?.renderMath as
+    | ((markup: string, opts?: object) => unknown)
+    | undefined;
+
+  if (typeof renderMath !== 'function') {
+    return null;
+  }
+
+  const [open, close] = options.display ? ['\\[', '\\]'] : ['\\(', '\\)'];
+  const markup = `<span data-latex="" data-raw="${latex.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${open}${latex}${close}</span>`;
+
+  try {
+    const result = renderMath(markup, { skipWaitForMathRenderingLib: true });
+    const mathMl =
+      typeof result === 'string' && result !== markup
+        ? result.replace(/\n\s*/g, '').replace(TEX_SOURCE_ATTRIBUTES, '')
+        : '';
+
+    return mathMl.startsWith('<math') && !MATHML_ERROR.test(mathMl) ? mathMl : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * LaTeX (without delimiters) to serialized MathML, for editors that save MathML (`mmlOutput`).
+ * Synchronous, so it answers `null` until MathJax has started, and for LaTeX MathJax cannot read:
+ * an undefined macro, which MathJax typesets as red text, or a TeX error. A caller keeps the LaTeX
+ * then. The MathML is on one line, as the legacy renderer gave it, and has none of MathJax's
+ * `data-latex` attributes, which the legacy renderer would take for LaTeX spans.
+ *
+ * A converter the page's renderer installed answers first: it belongs to the copy of this module
+ * whose MathJax has started, and a copy that delegates its typesetting to the page's renderer, as
+ * an element's does, starts none of its own.
+ */
+export const latexToMml = (latex: string, options: { display?: boolean } = {}): string | null => {
+  const pageConverter = getPlayerMathRenderer()?.latexToMml;
+
+  // This module's own `latexToMml`, installed as the page's, would call itself.
+  if (pageConverter && pageConverter !== latexToMml) {
+    try {
+      return pageConverter(latex, options) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  const mathJax = engineMathJax();
+
+  if (!mathJax?.tex2mml || !mathJax.startup?.document) {
+    return legacyLatexToMml(latex, options);
+  }
+
+  try {
+    // Each conversion starts clean: a label or tag from an earlier one would be a duplicate in this.
+    mathJax.texReset?.();
+    const mathMl = mathJax
+      .tex2mml(latex, { display: !!options.display })
+      ?.replace(/\n\s*/g, '')
+      .replace(TEX_SOURCE_ATTRIBUTES, '');
+
+    return mathMl && !MATHML_ERROR.test(mathMl) ? mathMl : null;
+  } catch {
+    return null;
+  }
+};

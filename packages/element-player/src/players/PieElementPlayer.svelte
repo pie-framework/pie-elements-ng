@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import { onMount, untrack } from 'svelte';
-import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
+import { createMathjaxRenderer, latexToMml } from '@pie-element/shared-math-rendering-mathjax';
 import type { MathRenderer } from '../lib/math-rendering-types';
 import { loadUnifiedPlayer } from '../lib/unified-player-loader';
 import {
@@ -618,9 +618,11 @@ $effect(() => {
 onMount(() => {
   // A renderer the host installed first, such as a MathJax 3 one, is used and no MathJax 4 loads.
   // Otherwise the MathJax 4 renderer goes on the global, where elements and later players find it.
+  // Its `latexToMml` goes with it: the elements delegate their typesetting to this renderer, so
+  // theirs start no MathJax, and an editor that saves MathML needs the one that has started.
   if (typeof pageMathRendering()?.renderMath !== 'function') {
     const renderMath = createMathjaxRenderer();
-    (window as any)[MATH_RENDERING_KEY] = { renderMath };
+    (window as any)[MATH_RENDERING_KEY] = { renderMath, latexToMml };
     void renderMath(document.createElement('div'));
   }
   // Read on every render, so a renderer the host swaps in later is used, and called as a method.
