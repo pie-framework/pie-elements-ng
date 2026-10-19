@@ -29,7 +29,7 @@
     "debug": "^4.4.3",
     "he": "^1.2.0",
     "prop-types": "^15.8.1",
-    "react": "^18.2.0",
+    "react": "^19.3.1",
     "react-dom": "^18.2.0"
   },
   "exports": {
@@ -108,7 +108,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@types/debug": "^4.1.12",
     "@types/he": "^1.2.3",
-    "@types/react": "^18.2.0",
+    "@types/react": "^19.3.0",
     "@types/react-dom": "^18.2.0",
     "vitest": "^4.1.11",
     "happy-dom": "^20.14.5",
