@@ -95,6 +95,13 @@
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "nl-NL": {
+      "status": "generated",
+      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen)",
+      "generatedAt": "2026-10-19",
+      "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     }
   }
 }
