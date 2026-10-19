@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 export class AltDialog extends React.Component {
   static propTypes = {
     onDone: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
     alt: PropTypes.string,
   };
 
@@ -25,20 +26,12 @@ export class AltDialog extends React.Component {
     };
   }
 
-  closeDialog: any = () => {
-    const allDialogs = document.querySelectorAll('#text-dialog');
-
-    allDialogs.forEach(function (s) {
-      return s.remove();
-    });
-  };
-
   onDone: any = () => {
-    const { onDone } = this.props;
+    const { onDone, onClose } = this.props;
     const { value } = this.state;
 
     onDone(value);
-    this.closeDialog();
+    onClose();
   };
 
   handleOverflow: any = () => {
@@ -51,8 +44,7 @@ export class AltDialog extends React.Component {
     return (
       <Dialog
         open
-        disablePortal
-        onClose={this.closeDialog}
+        onClose={this.props.onClose}
         id="text-dialog"
         hideBackdrop
         disableScrollLock

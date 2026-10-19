@@ -128,7 +128,6 @@ export const insertDialog = (props) => {
       {...rest}
       uploadSoundSupport={options.uploadSoundSupport}
       type={type}
-      disablePortal={true}
       open={true}
       handleClose={handleClose}
     />

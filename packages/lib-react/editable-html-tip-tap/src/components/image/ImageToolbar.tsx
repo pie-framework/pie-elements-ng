@@ -67,10 +67,15 @@ export class ImageToolbar extends React.Component {
   renderDialog: any = () => {
     const { alt } = this.props;
     const popoverEl = document.createElement('div');
+    const root = createRoot(popoverEl);
 
-    const el = <AltDialog alt={alt} onDone={this.onAltTextDone} />;
+    // Unmounting runs MUI's modal cleanup, which lifts the aria-hidden it put on the rest of the page.
+    const close = () => {
+      root.unmount();
+      popoverEl.remove();
+    };
 
-    createRoot(popoverEl).render(el);
+    root.render(<AltDialog alt={alt} onDone={this.onAltTextDone} onClose={close} />);
 
     document.body.appendChild(popoverEl);
   };
