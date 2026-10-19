@@ -106,6 +106,13 @@
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
+    },
+    "nl-NL": {
+      "status": "generated",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen); answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "generatedAt": "2026-10-19",
+      "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     }
   }
 }

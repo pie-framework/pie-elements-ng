@@ -1,5 +1,6 @@
 // @ts-nocheck
 
+import { stampElementLanguage } from '@pie-element/shared-i18n';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
@@ -44,14 +45,17 @@ export default class MathInline extends HTMLElement {
   }
 
   setLangAttribute() {
-    const language = this._model && typeof this._model.language ? this._model.language : '';
-    const lang = language ? language.slice(0, 2) : 'en';
-    this.setAttribute('lang', lang);
+    // The element asserts the language the item declares, canonicalized, and
+    // nothing when it declares none: an `en` default claimed undeclared
+    // content — Spanish items included — for English.
+    const language = this._model?.language ?? null;
+    stampElementLanguage(this, language);
 
-    // set the lang attribute for the nearest parent div with class 'player-container' for MPI items as per PD-2483
+    // set the lang attribute for the nearest parent div with class 'player-container' for MPI items as per PD-2483,
+    // under the same declared-only rule: the container may hold several items.
     const playerContainer = this.closest('.player-container');
     if (playerContainer) {
-      playerContainer.setAttribute('lang', lang);
+      stampElementLanguage(playerContainer, language);
     }
   }
 
