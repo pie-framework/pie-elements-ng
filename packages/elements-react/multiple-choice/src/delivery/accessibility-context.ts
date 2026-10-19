@@ -1,14 +1,25 @@
 /**
  * The student's accessibility supports, read from the Player through the `pie.accessibility`
- * context (pie-players ADR 0003) with the Web Components `context-request` protocol.
+ * context (pie-players ADR 0003).
  *
- * The request bubbles from the element to whichever ancestor provides the context; a provider
- * that connects later answers a subscribing request when the page's context root replays it. An
- * unanswered request means the Player provides no context, so the element keeps its defaults and
- * never waits. Lives here until a second element reads the context.
+ * The key is the cross-repo contract. It is declared here with pie-context's own factory rather
+ * than imported, because no `@pie-players/pie-context` release exports it yet; the `Symbol.for`
+ * registration makes the two the same key on the page, so switching to the package import once it
+ * releases is a one-line change, as for `@pie-element/shared-i18n`'s interface locale. The
+ * subscription comes from the package: it re-requests when a provider announces itself after the
+ * element connected. An unanswered request means the Player provides no context, so the element
+ * keeps its defaults and never waits. Lives here until a second element reads the context.
  */
+import { connectContextWithRetry, createContext } from '@pie-players/pie-context';
 
-export const ACCESSIBILITY_CONTEXT = Symbol.for('pie.accessibility');
+/** The value a Player answers with: the support ids in effect after its policy. */
+export interface AccessibilityContextValue {
+  supports: readonly string[];
+}
+
+export const accessibilityContext = createContext<AccessibilityContextValue>(
+  Symbol.for('pie.accessibility')
+);
 
 /**
  * The support id that keeps math out of choice names, naming a choice from its key and a note so
@@ -17,24 +28,6 @@ export const ACCESSIBILITY_CONTEXT = Symbol.for('pie.accessibility');
  */
 export const MATH_OUTSIDE_NAMES = 'mathOutsideNames';
 
-type Unsubscribe = () => void;
-type ContextCallback = (value: unknown, unsubscribe?: Unsubscribe) => void;
-
-class ContextRequestEvent extends Event {
-  readonly context: symbol;
-  readonly contextTarget: Element;
-  readonly callback: ContextCallback;
-  readonly subscribe: boolean;
-
-  constructor(context: symbol, contextTarget: Element, callback: ContextCallback, subscribe: boolean) {
-    super('context-request', { bubbles: true, composed: true });
-    this.context = context;
-    this.contextTarget = contextTarget;
-    this.callback = callback;
-    this.subscribe = subscribe;
-  }
-}
-
 /** The `supports` of a context value, or none when the value has another shape. */
 function supportsOf(value: unknown): readonly string[] {
   const supports = (value as { supports?: unknown } | null | undefined)?.supports;
@@ -42,38 +35,13 @@ function supportsOf(value: unknown): readonly string[] {
 }
 
 /**
- * Calls `onChange` with the supports in effect for `element` each time its provider answers.
- * Returns the function that ends the subscription.
+ * Calls `onChange` with the supports in effect for `element` each time its Player answers,
+ * including a change the Player makes later. Call it from `connectedCallback`; returns the
+ * cleanup for `disconnectedCallback`.
  */
 export function subscribeAccessibilitySupports(
   element: Element,
-  onChange: (supports: readonly string[]) => void,
-): Unsubscribe {
-  let ended = false;
-  let unsubscribeProvider: Unsubscribe | undefined;
-
-  element.dispatchEvent(
-    new ContextRequestEvent(
-      ACCESSIBILITY_CONTEXT,
-      element,
-      (value, unsubscribe) => {
-        if (ended) {
-          unsubscribe?.();
-          return;
-        }
-        if (unsubscribe && unsubscribe !== unsubscribeProvider) {
-          unsubscribeProvider?.();
-          unsubscribeProvider = unsubscribe;
-        }
-        onChange(supportsOf(value));
-      },
-      true,
-    ),
-  );
-
-  return () => {
-    ended = true;
-    unsubscribeProvider?.();
-    unsubscribeProvider = undefined;
-  };
+  onChange: (supports: readonly string[]) => void
+): () => void {
+  return connectContextWithRetry(element, accessibilityContext, (value) => onChange(supportsOf(value)));
 }

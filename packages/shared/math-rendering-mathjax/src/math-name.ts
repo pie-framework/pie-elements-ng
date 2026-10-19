@@ -85,6 +85,8 @@ function unnameMath(container: Element): void {
  * page's renderer or a host's speech engine set it.
  */
 export function nameMathInControl(container: Element): void {
+  // A label someone else set is theirs to keep, so it needs none of the lookups below.
+  if (container.hasAttribute('aria-label') && !container.hasAttribute(NAMED_BY_RENDERER)) return;
   const control = container.closest(CONTROLS);
   if (!control) return;
   if (isNamedFromElsewhere(control, container)) {

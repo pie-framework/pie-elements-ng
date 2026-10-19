@@ -523,6 +523,9 @@ export function createMathjaxRenderer(
     if (!containsMath(element, useSingleDollar)) {
       // A failed load rejects the renders that hold math.
       loading.catch(() => {});
+      // Math typeset earlier still follows how its control is named now, which an element can
+      // change after typesetting, such as a choice switched to be named from its key (PIE-1244).
+      nameMathInControls(element);
       return;
     }
 

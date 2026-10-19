@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react';
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
 const { MultipleChoice } = await import('../multiple-choice');
-const { ACCESSIBILITY_CONTEXT, MATH_OUTSIDE_NAMES } = await import('../accessibility-context');
+const { accessibilityContext, MATH_OUTSIDE_NAMES } = await import('../accessibility-context');
 const { default: MultipleChoiceElement } = await import('../index');
 
 // multiple-choice.tsx is untyped, so its class declares no props.
@@ -129,8 +129,11 @@ describe('multiple-choice math kept out of names on request', () => {
     const subscribers: Array<(value: unknown, unsubscribe: () => void) => void> = [];
     const provider = document.createElement('div');
     provider.addEventListener('context-request', (event) => {
-      const request = event as Event & { context: symbol; callback: (value: unknown, unsubscribe: () => void) => void };
-      if (request.context !== ACCESSIBILITY_CONTEXT) return;
+      const request = event as unknown as {
+        context: unknown;
+        callback: (value: unknown, unsubscribe: () => void) => void;
+      };
+      if (request.context !== accessibilityContext) return;
       event.stopPropagation();
       subscribers.push(request.callback);
       request.callback({ supports }, () => {});

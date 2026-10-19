@@ -4,30 +4,42 @@
 // names. Used as a bookmarklet: `testing.md` beside this file has the one-line form.
 (() => {
   const KEY = Symbol.for('pie.accessibility');
-  window.__pieMathNamesSwitch ??= { on: false, subscribers: new Set() };
+  window.__pieMathNamesSwitch ??= { on: false, subscribers: new Map() };
   const state = window.__pieMathNamesSwitch;
   state.on = !state.on;
-  const supports = state.on ? ['mathOutsideNames'] : [];
+  state.supports = state.on ? ['mathOutsideNames'] : [];
+
+  // Each subscriber keeps one unsubscribe: a consumer handed a different one calls the old one.
+  const answer = (callback) =>
+    callback({ supports: state.supports }, state.subscribers.get(callback));
 
   if (!state.installed) {
     state.installed = true;
-    // Capturing on the document answers before any provider further down, inside shadow roots too.
+    // Capturing on the document answers every request first, from inside shadow roots too.
     document.addEventListener(
       'context-request',
       (event) => {
         if (event.context !== KEY || typeof event.callback !== 'function') return;
         event.stopImmediatePropagation();
-        if (event.subscribe) state.subscribers.add(event.callback);
-        event.callback({ supports: state.supports }, () =>
-          state.subscribers.delete(event.callback)
-        );
+        const callback = event.callback;
+        if (event.subscribe && !state.subscribers.has(callback)) {
+          state.subscribers.set(callback, () => state.subscribers.delete(callback));
+        }
+        answer(callback);
       },
       true
     );
+    // Announcing a provider makes the page's context root replay the requests nobody answered.
+    document.documentElement.dispatchEvent(
+      Object.assign(new Event('context-provider', { bubbles: true, composed: true }), {
+        context: KEY,
+        contextTarget: document.documentElement,
+      })
+    );
   }
-  state.supports = supports;
+  for (const callback of state.subscribers.keys()) answer(callback);
 
-  // Every element that reads the context asks again, so it hears the new answer now.
+  // Elements another provider already answered ask again, so they hear this one.
   const elements = [];
   const walk = (root) => {
     for (const el of root.querySelectorAll('*')) {
@@ -36,7 +48,7 @@
     }
   };
   walk(document);
-  for (const el of elements) el._subscribeAccessibility();
+  if (state.subscribers.size === 0) for (const el of elements) el._subscribeAccessibility();
 
   // A host's own math labels in a choice named from its key and note would sit in the content
   // the screen reader reads; the element's renderer removes its own, so take the rest off too.
@@ -53,7 +65,7 @@
   }, 1500);
 
   const count = elements.length;
-  const message = `${state.on ? 'Math kept out of choice names' : 'Spoken choice names (default)'}: ${count} multiple-choice element${count === 1 ? '' : 's'} switched.`;
+  const message = `${state.on ? 'Math kept out of choice names' : 'Spoken choice names (default)'}: ${count} multiple-choice element${count === 1 ? '' : 's'} on the page.`;
   console.info(`[PIE-1244] ${message}`);
   alert(message);
 })();
