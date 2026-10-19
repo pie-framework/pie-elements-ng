@@ -8,7 +8,7 @@
     "directory": "packages/shared/translator"
   },
   "dependencies": {
-    "i18next": "^25.7.0"
+    "i18next": "^26.4.7"
   },
   "type": "module",
   "main": "./dist/index.js",
