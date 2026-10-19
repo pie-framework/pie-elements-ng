@@ -1,5 +1,31 @@
 # @pie-element/complex-rubric
 
+## 8.0.6
+
+### Patch Changes
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - The IIFE ships English only for the libraries that render from their own catalogs, `@pie-lib/render-ui` and `@pie-lib/correct-answer-toggle` so far; a host serves another locale through `registerMessages`.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640)]:
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/multi-trait-rubric@9.0.6
+  - @pie-element/rubric@9.0.6
+  - @pie-element/shared-types@0.2.2
+  - @pie-lib/config-ui@14.0.6
+  - @pie-lib/rubric@3.0.6
+
+## 8.0.5
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`026d10e`](https://github.com/pie-framework/pie-elements-ng/commit/026d10ed3f16b1e016f8ad2d25facce600080857), [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-element/shared-player-events@0.2.0
+  - @pie-element/multi-trait-rubric@9.0.5
+  - @pie-element/rubric@9.0.5
+  - @pie-lib/config-ui@14.0.5
+  - @pie-lib/rubric@3.0.5
+
 ## 8.0.4
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multiple-choice",
-  "version": "14.0.4",
+  "version": "14.0.6",
   "description": "React implementation of multiple-choice element",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "react-transition-group": "^4.4.5",
@@ -24,6 +24,7 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "clsx": "^2.1.1",
     "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

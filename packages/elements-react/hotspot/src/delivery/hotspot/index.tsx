@@ -140,6 +140,7 @@ class HotspotComponent extends React.Component {
         language,
         fontSizeFactor,
         autoplayAudioEnabled,
+        autoplayAudioHeld,
         customAudioButton,
       },
       onSelectChoice,
@@ -165,6 +166,7 @@ class HotspotComponent extends React.Component {
             className="prompt"
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
+            autoplayAudioHeld={autoplayAudioHeld}
             customAudioButton={customAudioButton}
             language={language}
           />

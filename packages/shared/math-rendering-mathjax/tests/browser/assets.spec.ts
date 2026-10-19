@@ -5,6 +5,7 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
   ADAPTER_URL,
+  ASSETS_EXPORT_URL,
   type Build,
   copyUrl,
   emittedAssetUrls,
@@ -140,6 +141,52 @@ test('a bundle that lists each file the browser build loads needs no root', asyn
     ])
   );
   expect(served.filter((url) => !url.startsWith(`${ORIGIN}/emitted/`))).toEqual([]);
+  expect(warned).toEqual([]);
+  expect(await noAssetRootEffects(page)).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(unserved).toEqual([]);
+});
+
+test('the ./assets export gives a bundle every file the browser build loads', async ({ page }) => {
+  await storeSettings(page, { enrich: true });
+  const warned = warnings(page);
+  const { unserved, errors, served } = await openPage(page, BODY, 'browser');
+
+  await page.evaluate(
+    async ([key, url]) => {
+      const { assetUrls } = await import(url);
+      Object.assign(window, { [key]: { opts: { assetUrls } } });
+    },
+    [PAGE_OPTIONS, ASSETS_EXPORT_URL] as const
+  );
+  await renderWithAdapter(page, 'v4', UNROOTED_ADAPTER_URL);
+  await speechReady(page);
+  await page.evaluate(() => document.fonts.ready);
+
+  const faces = await page.evaluate(() =>
+    [...document.fonts].map((face) => `${face.family} ${face.status}`)
+  );
+  expect(faces).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(/^MJX-NCM-\S+ loaded$/),
+      expect.stringMatching(/^MJX-MHC-\S+ loaded$/),
+    ])
+  );
+  expect(faces.filter((face) => face.endsWith(' error'))).toEqual([]);
+  const exported = `${ORIGIN}/dist-assets/npm/`;
+  expect(served).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(
+        /\/npm\/@mathjax\/mathjax-newcm-font@4\.1\.3\/chtml\/woff2\/.+\.woff2$/
+      ),
+      expect.stringMatching(
+        /\/npm\/@mathjax\/mathjax-mhchem-font-extension@4\.1\.3\/chtml\/woff2\/.+\.woff2$/
+      ),
+      `${exported}mathjax@4.1.3/sre/speech-worker.js`,
+      `${exported}mathjax@4.1.3/sre/mathmaps/en.json`,
+    ])
+  );
+  expect(served.filter((url) => !url.startsWith(`${ORIGIN}/dist-assets/`))).toEqual([]);
   expect(warned).toEqual([]);
   expect(await noAssetRootEffects(page)).toEqual([]);
   expect(errors).toEqual([]);

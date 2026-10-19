@@ -6,9 +6,10 @@
  */
 
 import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
-import { createMathjaxRenderer, stripLegacyDelimiters } from './adapter.js';
+import { createMathjaxRenderer } from './adapter.js';
 import { engineMathJax } from './engine/page.js';
 import { nameMathInControls } from './math-name.js';
+import { stripLegacyDelimiters } from './tex-dialect.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
 

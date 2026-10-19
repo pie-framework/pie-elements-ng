@@ -162,6 +162,7 @@ These apply to every element that has the key, and are not repeated below.
 - `dimensions` is an object `{ width, height }`; legacy declares an array of them.
 - Model `required` is `id`, `element` and `shapes`; legacy also requires `dimensions`, `multipleCorrect`, `partialScoring` and `strokeWidth`.
 - `shapes.circles` is new, and `shapes.rectangles` and `shapes.polygons` are optional. Every shape requires `id` and gains `index`.
+- New shape keys `ariaLabel`, `aria_label` and `aria-label` (the first non-blank one is read): plain text that screen readers announce after the shape's "Hotspot {index} of {total}" name. An absent or blank label keeps the name alone.
 - New model keys `teacherInstructions` and `extraCSSRules`. `rationale` and `teacherInstructions` accept `null`.
 - `hoverOutlineColor` defaults to `black`, and `strokeWidth` to 5.
 - Model `studentInstructionsEnabled`, `disabled` and `mode` are declared and not read; the controller sets `disabled` and `mode` from the environment.
@@ -175,7 +176,8 @@ These apply to every element that has the key, and are not repeated below.
 - `uiStyle.fontsize` is optional and not read; legacy requires it.
 - `uiStyle.possibilityListPosition` defaults to `bottom` and accepts `below`, which imported content carries and which renders as `bottom`.
 - New model keys `teacherInstructions`, `rationale`, `lockChoiceOrder` and `extraCSSRules`. `rationaleEnabled` and `studentInstructionsEnabled` are declared and not read.
-- The model accepts the snake-case keys imported content carries, which the controller camelizes: `possible_responses`, `response_containers`, `ui_style` (`possibility_list_position`, `fontsize`), `duplicate_responses`, `max_response_per_zone` (default 1), `validation.valid_response` and `validation.alt_responses`.
+- New response container key `responseContainers[].ariaLabel`: plain text that names the container for screen readers in place of "Response area {index} of {total}". A blank label keeps that name.
+- The model accepts the snake-case keys imported content carries, which the controller camelizes: `possible_responses`, `response_containers` (`aria_label`), `ui_style` (`possibility_list_position`, `fontsize`), `duplicate_responses`, `max_response_per_zone` (default 1), `validation.valid_response` and `validation.alt_responses`.
 - Model `published`, `shuffle_options`, `response_container`, `metadata`, `is_math`, `response_id` and `metadatadistractor_rationale` are declared and not read: imported content and the demo models carry them. `shuffle` controls shuffling.
 - New configuration key `mathMlOptions`.
 

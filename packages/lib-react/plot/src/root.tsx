@@ -177,6 +177,8 @@ export class Root extends React.Component {
     labelsCharactersLimit: PropTypes.number,
     ariaLabel: PropTypes.string,
     ariaDescription: PropTypes.string,
+    // room the left axis's labels need beyond the default left padding, so they clear the left label
+    leftAxisOverhang: PropTypes.number,
   };
 
   mouseMove: any = (g, event) => {
@@ -307,6 +309,7 @@ export class Root extends React.Component {
       labelsCharactersLimit,
       ariaLabel,
       ariaDescription,
+      leftAxisOverhang = 0,
     } = this.props;
     const {
       size: { width = 500, height = 500 },
@@ -315,7 +318,9 @@ export class Root extends React.Component {
     } = graphProps;
 
     const topPadding = 40;
-    const leftPadding = isEmptyString(extractTextFromHTML(labels?.left)) && isEmptyObject(labelsPlaceholders) ? 48 : 70;
+    const leftPadding =
+      (isEmptyString(extractTextFromHTML(labels?.left)) && isEmptyObject(labelsPlaceholders) ? 48 : 70) +
+      leftAxisOverhang;
     const rightPadding =
       isEmptyString(extractTextFromHTML(labels?.right)) && isEmptyObject(labelsPlaceholders) ? 48 : 70;
     const finalWidth = width + leftPadding + rightPadding + (domain.padding || 0) * 2;

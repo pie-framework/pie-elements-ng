@@ -1,6 +1,7 @@
 import userEvent from '@testing-library/user-event';
 import React, { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CorrectAnswerToggle } from '../src/index';
 
@@ -10,6 +11,7 @@ type ToggleProps = {
   onToggle?: (toggled: boolean) => void;
   showMessage?: string;
   hideMessage?: string;
+  language?: string;
 };
 
 // The component file is untyped; this is the props contract its callers use.
@@ -110,5 +112,30 @@ describe('CorrectAnswerToggle', () => {
 
     await user.tab();
     expect(document.activeElement).toBe(document.body);
+  });
+
+  describe('labels', () => {
+    it('follows the item language once its catalog is loaded', async () => {
+      await loadLocale('es-MX');
+      const button = render(<Toggle show language="es-MX" onToggle={() => {}} />);
+      expect(button.textContent).toBe('Mostrar respuesta correcta');
+    });
+
+    it('labels each toggle in its own item language', async () => {
+      await loadLocale('es');
+      render(
+        <>
+          <Toggle show language="es" onToggle={() => {}} />
+          <Toggle show onToggle={() => {}} />
+        </>
+      );
+      const labels = [...container.querySelectorAll('button')].map((b) => b.textContent);
+      expect(labels).toEqual(['Mostrar respuesta correcta', 'Show correct answer']);
+    });
+
+    it('prefers labels the caller passes', () => {
+      const button = render(<Toggle show showMessage="Reveal" language="es" onToggle={() => {}} />);
+      expect(button.textContent).toBe('Reveal');
+    });
   });
 });

@@ -1,5 +1,21 @@
 # @pie-lib/config-ui
 
+## 14.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640)]:
+  - @pie-lib/render-ui@8.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+
+## 14.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`fba9a4a`](https://github.com/pie-framework/pie-elements-ng/commit/fba9a4a54cc58a44691931b2df78f3bc7041f716), [`cf587a2`](https://github.com/pie-framework/pie-elements-ng/commit/cf587a2502b8707a71708c58e0b6c610306ed198), [`e9fef46`](https://github.com/pie-framework/pie-elements-ng/commit/e9fef46f9bc652603fac3732f2ae92a680b3d86b), [`6db1c21`](https://github.com/pie-framework/pie-elements-ng/commit/6db1c2148d603b26b2ad57b4a471b0184ac1c422)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-lib/editable-html-tip-tap@3.1.0
+
 ## 14.0.4
 
 ### Patch Changes

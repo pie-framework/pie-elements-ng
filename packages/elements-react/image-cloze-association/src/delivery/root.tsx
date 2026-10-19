@@ -438,6 +438,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         teacherInstructions,
         prompt,
         autoplayAudioEnabled,
+        autoplayAudioHeld,
         showDashedBorder,
         mode,
         rationale,
@@ -574,6 +575,7 @@ export class ImageClozeAssociationComponent extends React.Component {
             className="prompt"
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
+            autoplayAudioHeld={autoplayAudioHeld}
             customAudioButton={customAudioButton}
             language={language}
           />

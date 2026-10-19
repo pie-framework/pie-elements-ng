@@ -34,6 +34,7 @@ import {
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
   fetchPublishedReleases,
+  fetchUnpublishedPackages,
   gitSubject,
   isAncestor,
   planDependencyPins,
@@ -116,6 +117,7 @@ async function selectPackages(rootDir, tag, all) {
   const publishedGitHeads = await fetchPublishedGitHeads(packages, tag, {
     isKnownCommit: (sha) => isAncestor(rootDir, sha, 'HEAD'),
   });
+  const unpublished = await fetchUnpublishedPackages(packages);
   // `HEAD`, not `GITHUB_SHA`: the release workflow fast-forwards the checkout to the branch tip
   // before this runs, and the tree is the thing being released.
   const changedFiles = collectUnreleasedFiles({
@@ -123,6 +125,7 @@ async function selectPackages(rootDir, tag, all) {
     head: 'HEAD',
     packages,
     publishedGitHeads,
+    unpublished,
   });
   // No pending-changeset exclusion: a pending changeset is release intent for master, and says
   // nothing about whether `next` already carries the package.

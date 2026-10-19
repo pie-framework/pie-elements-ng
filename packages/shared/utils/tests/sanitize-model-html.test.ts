@@ -98,6 +98,16 @@ describe('sanitizeModelHtml', () => {
     expect(parse(sanitizeModelHtml(html)).querySelector(selector)).toBeNull();
   });
 
+  it('removes autoplay, so only the model setting starts prompt audio', () => {
+    const out = parse(
+      sanitizeModelHtml('<audio autoplay src="a.mp3"></audio><video autoplay></video>')
+    );
+
+    expect(out.querySelector('audio')?.hasAttribute('autoplay')).toBe(false);
+    expect(out.querySelector('video')?.hasAttribute('autoplay')).toBe(false);
+    expect(out.querySelector('audio')?.getAttribute('src')).toBe('a.mp3');
+  });
+
   it('removes an SVG xlink:href', () => {
     const html = '<svg><a xlink:href="javascript:alert(1)"><text>x</text></a></svg>';
 

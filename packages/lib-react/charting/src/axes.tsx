@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { AxisBottom, AxisLeft } from '@visx/axis';
@@ -21,6 +21,11 @@ const { translator } = Translator;
 // how tall a category label can be before it reaches the axis label below it: a one line input fits,
 // a fraction does not
 const LABEL_ROOM = 24;
+
+// where the authoring labels beside the checkbox rows ("Student can edit name") start, and how many characters
+// fit on one of their lines: narrow enough to end before the checkbox of a category at x = 0
+const AUTHORING_LABEL_X = -110;
+const AUTHORING_LABEL_CHARS = 12;
 
 // one document-level MutationObserver shared across all
 // RawChartAxes instances so that no chart misses a MathJax render batch
@@ -296,7 +301,7 @@ export class TickComponent extends React.Component {
 
         {defineChart && index === 0 && (
           <svg
-            x={-100}
+            x={AUTHORING_LABEL_X}
             style={{
               overflow: 'visible',
             }}
@@ -314,7 +319,7 @@ export class TickComponent extends React.Component {
                   display: 'inline-block',
                 }}
               >
-                {this.splitText(changeInteractive?.authoringLabel, 20).map((word, index) => (
+                {this.splitText(changeInteractive?.authoringLabel, AUTHORING_LABEL_CHARS).map((word, index) => (
                   <tspan key={index} x="0" dy={`${index > 0 ? '1.2em' : '.6em'}`}>
                     {word}
                   </tspan>
@@ -335,7 +340,7 @@ export class TickComponent extends React.Component {
                   display: 'inline-block',
                 }}
               >
-                {this.splitText(changeEditable?.authoringLabel, 20).map((word, index) => (
+                {this.splitText(changeEditable?.authoringLabel, AUTHORING_LABEL_CHARS).map((word, index) => (
                   <tspan key={index} x="0" dy={`${index > 0 ? '1.2em' : '.6em'}`}>
                     {word}
                   </tspan>
@@ -422,6 +427,54 @@ TickComponent.propTypes = {
   language: PropTypes.string,
 };
 
+// how wide a range axis label can be, and the gap between it and its tick
+const RANGE_LABEL_WIDTH = 80;
+const RANGE_LABEL_GAP = 6;
+// how wide a range axis label can be and still clear the range axis label beside it: two digits fit, three
+// do not. Measured, in delivery and authoring alike, with a 4px gap.
+const RANGE_LABEL_ROOM = 18;
+
+const StyledRangeLabel: any = styled('div')(({ theme }) => ({
+  textAlign: 'right',
+  fontSize: theme.typography.fontSize + 2,
+  fontFamily: theme.typography.fontFamily,
+  color: color.defaults.TEXT,
+  lineHeight: 1,
+}));
+
+// a range axis label, typeset as math like the numeric category labels so the numbers on both axes look alike
+export const RangeTickLabel = ({ x, y, formattedValue }) => {
+  const ref = useRef(null);
+  const math = `\\(${formattedValue}\\)`;
+
+  useEffect(() => {
+    const el = ref.current;
+
+    if (el) {
+      el.textContent = math;
+      renderMath(el);
+    }
+  }, [math]);
+
+  return (
+    <foreignObject
+      x={x - RANGE_LABEL_GAP - RANGE_LABEL_WIDTH}
+      y={y}
+      width={RANGE_LABEL_WIDTH}
+      height={1}
+      style={{ pointerEvents: 'none', overflow: 'visible' }}
+    >
+      <StyledRangeLabel ref={ref} data-range-label style={{ transform: 'translateY(-50%)' }} />
+    </foreignObject>
+  );
+};
+
+RangeTickLabel.propTypes = {
+  x: PropTypes.number,
+  y: PropTypes.number,
+  formattedValue: PropTypes.string,
+};
+
 export class RawChartAxes extends React.Component {
   static propTypes = {
     bottomScale: PropTypes.func,
@@ -444,11 +497,14 @@ export class RawChartAxes extends React.Component {
     hiddenLabelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
     language: PropTypes.string,
     onLabelOverhang: PropTypes.func,
+    onRangeLabelOverhang: PropTypes.func,
   };
 
-  state = { height: 0, width: 0, labelHeight: 0 };
+  state = { height: 0, width: 0, labelHeight: 0, rangeLabelWidth: 0 };
 
   reportedOverhang = 0;
+
+  reportedRangeOverhang = 0;
 
   // the bar width, and the angle the category labels are drawn at
   labelLayout: any = () => {
@@ -483,6 +539,17 @@ export class RawChartAxes extends React.Component {
     }
   };
 
+  // tells the chart how far past its room the widest range axis label reaches, so it moves the axis right
+  reportRangeLabelOverhang: any = () => {
+    const { onRangeLabelOverhang } = this.props;
+    const overhang = Math.max(0, Math.ceil(this.state.rangeLabelWidth - RANGE_LABEL_ROOM));
+
+    if (onRangeLabelOverhang && overhang !== this.reportedRangeOverhang) {
+      this.reportedRangeOverhang = overhang;
+      onRangeLabelOverhang(overhang);
+    }
+  };
+
   measureHiddenLabel: any = () => {
     if (!this.hiddenLabelRef) return;
 
@@ -497,9 +564,18 @@ export class RawChartAxes extends React.Component {
     const mathLabels = this.axesNode ? [...this.axesNode.querySelectorAll('[data-math-label]')] : [];
     mathLabels.forEach((label) => this._sizeObserver?.observe(label));
     const labelHeight = Math.max(0, ...mathLabels.map((label) => label.offsetHeight));
+    // the width of the widest range axis label, once MathJax has typeset it
+    const rangeMath = this.axesNode ? [...this.axesNode.querySelectorAll('[data-range-label] mjx-container')] : [];
+    rangeMath.forEach((label) => this._sizeObserver?.observe(label));
+    const rangeLabelWidth = Math.max(0, ...rangeMath.map((label) => label.getBoundingClientRect().width));
 
-    if (height !== this.state.height || width !== this.state.width || labelHeight !== this.state.labelHeight) {
-      this.setState({ height, width, labelHeight });
+    if (
+      height !== this.state.height ||
+      width !== this.state.width ||
+      labelHeight !== this.state.labelHeight ||
+      rangeLabelWidth !== this.state.rangeLabelWidth
+    ) {
+      this.setState({ height, width, labelHeight, rangeLabelWidth });
     }
   };
 
@@ -553,6 +629,7 @@ export class RawChartAxes extends React.Component {
       this.observeHiddenLabel(this.hiddenLabelRef);
     }
     this.reportLabelOverhang();
+    this.reportRangeLabelOverhang();
   }
 
   componentWillUnmount() {
@@ -570,6 +647,7 @@ export class RawChartAxes extends React.Component {
       this._updateTimer = setTimeout(() => this.measureHiddenLabel(), 50);
     }
     this.reportLabelOverhang();
+    this.reportRangeLabelOverhang();
   }
 
   render() {
@@ -598,11 +676,6 @@ export class RawChartAxes extends React.Component {
     const { bandWidth, barWidth, rotate } = this.labelLayout();
 
     const rowTickValues = getTickValues({ ...range, step: range.labelStep });
-
-    const getTickLabelProps = (value) => ({
-      dy: 4,
-      dx: -10 - (value.toLocaleString().length || 1) * 5,
-    });
 
     const getTickComponent = (props) => {
       const properties = {
@@ -639,9 +712,9 @@ export class RawChartAxes extends React.Component {
           <AxisLeft
             scale={scale.y}
             tickLength={10}
-            tickFormat={(value) => value}
+            tickFormat={(value) => `${value}`}
             tickValues={rowTickValues}
-            tickLabelProps={getTickLabelProps}
+            tickComponent={RangeTickLabel}
           />
         )}
         <AxisBottom

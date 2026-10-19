@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "CLI tools for managing PIE Elements NG",
   "type": "module",
   "bin": {
@@ -22,16 +22,16 @@
   },
   "dependencies": {
     "@oclif/core": "^5.1.2",
-    "@oclif/plugin-help": "^6.2.0",
+    "@oclif/plugin-help": "^7.0.4",
     "@pie-element/element-bundler": "workspace:*",
-    "es-module-lexer": "^1.7.0",
+    "es-module-lexer": "^3.0.3",
     "glob": "^13.0.0",
     "open": "^10.0.3",
     "ts-json-schema-generator": "^2.9.0",
-    "webpack": "^5.104.1"
+    "webpack": "^5.111.1"
   },
   "devDependencies": {
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "bun-types": "^1.4.2",
     "typescript": "^5.9.3"
   },

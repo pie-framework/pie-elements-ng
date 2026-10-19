@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/render-ui",
-  "version": "8.0.4",
+  "version": "8.0.6",
   "description": "Some shared ui elements when rendering - but not worthy of their own package yet.",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/icons": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.7.2",
     "react-transition-group": "^4.4.5",

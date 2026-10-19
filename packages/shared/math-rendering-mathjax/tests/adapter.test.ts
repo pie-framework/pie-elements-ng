@@ -456,6 +456,8 @@ describe('createMathjaxRenderer', () => {
         napprox: '\\not\\approx',
         longdiv: '\\enclose{longdiv}',
         abs: ['\\left|#1\\right|', 1],
+        perpendicular: '\\perp',
+        divide: '\\div',
       },
     });
     expect(config.output).toEqual({ displayOverflow: 'linebreak' });

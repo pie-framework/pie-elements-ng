@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/editable-html-tip-tap",
-  "version": "3.0.4",
+  "version": "3.1.1",
   "description": "",
   "repository": {
     "type": "git",
@@ -52,7 +52,7 @@
     "@tiptap/extension-list": "3.31.4",
     "@tiptap/extension-bubble-menu": "3.31.4",
     "@tiptap/extension-floating-menu": "3.31.4",
-    "@floating-ui/dom": "^1.7.6",
+    "@floating-ui/dom": "^1.8.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

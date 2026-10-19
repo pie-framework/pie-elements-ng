@@ -35,9 +35,8 @@ const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapR
 import Expander from './expander.js';
 import React from 'react';
 import PropTypes from 'prop-types';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
+import { elementLanguageAttributes } from '@pie-element/shared-i18n';
 
 const noTouch = {
   WebkitTouchCallout: 'none',
@@ -116,15 +115,16 @@ export class CorrectAnswerToggle extends React.Component {
     onToggle: PropTypes.func,
     toggled: PropTypes.bool,
     show: PropTypes.bool,
+    /** Overrides the localized label of the toggled state. */
     hideMessage: PropTypes.string,
+    /** Overrides the localized label of the untoggled state. */
     showMessage: PropTypes.string,
     className: PropTypes.string,
+    /** The item language, which the default labels follow. */
     language: PropTypes.string,
   };
 
   static defaultProps = {
-    showMessage: 'Show correct answer',
-    hideMessage: 'Hide correct answer',
     show: false,
     toggled: false,
   };
@@ -136,13 +136,10 @@ export class CorrectAnswerToggle extends React.Component {
     };
     this.openIconRef = React.createRef();
     this.closedIconRef = React.createRef();
-
-    CorrectAnswerToggle.defaultProps = {
-      ...CorrectAnswerToggle.defaultProps,
-      showMessage: translator.t('common:showCorrectAnswer', { lng: props.language }),
-      hideMessage: translator.t('common:hideCorrectAnswer', { lng: props.language }),
-    };
   }
+
+  /** Re-renders once the item language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
 
   onClick() {
     this.props.onToggle(!this.props.toggled);
@@ -156,21 +153,21 @@ export class CorrectAnswerToggle extends React.Component {
     this.setState({
       show: nextProps.show,
     });
-
-    if (nextProps.language !== this.props?.language) {
-      CorrectAnswerToggle.defaultProps = {
-        ...CorrectAnswerToggle.defaultProps,
-        showMessage: translator.t('common:showCorrectAnswer', { lng: nextProps.language }),
-        hideMessage: translator.t('common:hideCorrectAnswer', { lng: nextProps.language }),
-      };
-    }
   }
 
   render() {
-    const { className, toggled, hideMessage, showMessage } = this.props;
+    const { className, toggled, language } = this.props;
+    // Resolved per render and per instance: two toggles on one page can follow two items' languages.
+    const i18n = catalogs.forLocale(language, this.relabel);
+    const hideMessage = this.props.hideMessage ?? i18n.t('hideCorrectAnswer');
+    const showMessage = this.props.showMessage ?? i18n.t('showCorrectAnswer');
+    // The chrome root names the language its strings are in, so a toggle label
+    // inside content of another language is announced correctly. No language
+    // prop, no assertion — the root inherits.
+    const languageAttributes = elementLanguageAttributes(language);
 
     return (
-      <StyledRoot className={className}>
+      <StyledRoot className={className} {...languageAttributes}>
         <Expander show={this.state.show}>
           <StyledContent
             type="button"

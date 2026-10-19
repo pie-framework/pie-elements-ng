@@ -1,5 +1,24 @@
 # @pie-lib/plot
 
+## 5.0.6
+
+### Patch Changes
+
+- [#470](https://github.com/pie-framework/pie-elements-ng/pull/470) [`aaf6107`](https://github.com/pie-framework/pie-elements-ng/commit/aaf6107ee7dd6ed68adb503037c7d4438ffb2c8f) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(charting): render numeric axis labels as math, aligned and in place PIE-1249
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+
+## 5.0.5
+
+### Patch Changes
+
+- [#447](https://github.com/pie-framework/pie-elements-ng/pull/447) [`4e9ba81`](https://github.com/pie-framework/pie-elements-ng/commit/4e9ba811ef927a3810a8866d4505ce2ff4482d80) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - test(touch): cover graph dragging with touch input (PIE-1087)
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`fba9a4a`](https://github.com/pie-framework/pie-elements-ng/commit/fba9a4a54cc58a44691931b2df78f3bc7041f716), [`cf587a2`](https://github.com/pie-framework/pie-elements-ng/commit/cf587a2502b8707a71708c58e0b6c610306ed198), [`e9fef46`](https://github.com/pie-framework/pie-elements-ng/commit/e9fef46f9bc652603fac3732f2ae92a680b3d86b), [`6db1c21`](https://github.com/pie-framework/pie-elements-ng/commit/6db1c2148d603b26b2ad57b4a471b0184ac1c422)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-lib/editable-html-tip-tap@3.1.0
+
 ## 5.0.4
 
 ### Patch Changes

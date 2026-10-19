@@ -13,6 +13,7 @@ import {
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+import { autoplayAudioOn, promptAudioPending, trackPromptAudioFailure } from '@pie-element/shared-utils';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -43,9 +44,13 @@ const renderUi =
 const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 import { exceedsMaxSelections } from './utils.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 const log = debug('pie-ui:multiple-choice');
 
@@ -54,16 +59,8 @@ export const isComplete = (session, model, audioComplete, elementContext) => {
 
   // check audio completion if the setting is enabled and audio actually exists,
   // whether the audio is started by autoplay or by the student
-  if (completeAudioEnabled && !audioComplete) {
-    if (elementContext) {
-      const audio = elementContext.querySelector('audio');
-      const isInsidePrompt = audio && audio.closest('.preview-prompt');
-
-      // only require audio completion if audio exists and is inside the prompt
-      if (audio && isInsidePrompt) {
-        return false;
-      }
-    }
+  if (completeAudioEnabled && promptAudioPending(elementContext, session, audioComplete)) {
+    return false;
   }
 
   if (!session || !session.value) {
@@ -149,10 +146,23 @@ export default class MultipleChoice extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // The locale the player publishes, once it answers; null until then. While
+    // it is null the chrome follows the item's declared language, the
+    // transitional precedence (published, else `model.language`, else `en-US`).
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
 
     this._rerender = debounce(
       () => {
         if (this._model && this._session) {
+          // The chrome speaks the locale the player publishes, else the item's
+          // declared language, else `en-US`. Rendered once every catalog on the
+          // render path holds it, so no English frame precedes it.
+          const chromeLanguage = this._interfaceLocale ?? this._model.language;
+          if (!isLocaleReady(chromeLanguage)) {
+            void loadLocale(chromeLanguage).then(() => this._rerender());
+            return;
+          }
           var element = React.createElement(Main, {
             model: this._model,
             session: this._session,
@@ -160,21 +170,21 @@ export default class MultipleChoice extends HTMLElement {
             onChoiceChanged: this._onChange.bind(this),
             onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
             eliminatedChoices: [...this._eliminatedChoices],
+            language: chromeLanguage,
             ...resolveHeadingProps(this),
           });
 
           //TODO: aria-label is set in the _rerender because we need to change it when the model.choiceMode is updated. Consider revisiting the placement of the aria-label setting in the _rerender
+          const i18n = catalogs.forLocale(chromeLanguage);
           this.setAttribute(
             'aria-label',
-            translator.t(
-              this._model.choiceMode === 'radio'
-                ? 'multipleChoice.multipleChoiceQuestion'
-                : 'multipleChoice.multipleCorrectAnswerQuestion',
-              { lng: this._model.language },
-            ),
+            i18n.t(this._model.choiceMode === 'radio' ? 'multipleChoiceQuestion' : 'multipleCorrectAnswerQuestion'),
           );
           this.setAttribute('role', 'region');
-          this.setLangAttribute();
+          // The host names the content language; the chrome roots (the
+          // correct-answer toggle) carry the chrome language from the
+          // `language` prop below.
+          stampElementLanguage(this, this._model.language);
 
           this._initMathObserver();
 
@@ -255,12 +265,6 @@ export default class MultipleChoice extends HTMLElement {
 
   onShowCorrectToggle() {
     renderMath(this);
-  }
-
-  setLangAttribute() {
-    const language = this._model && typeof this._model.language ? this._model.language : '';
-    const lang = language ? language.slice(0, 2) : 'en';
-    this.setAttribute('lang', lang);
   }
 
   set model(s) {
@@ -389,6 +393,17 @@ export default class MultipleChoice extends HTMLElement {
   connectedCallback() {
     this._initMathObserver();
     this._initPlayerObserver();
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(
+        this,
+        (value) => {
+          if (value?.locale && value.locale !== this._interfaceLocale) {
+            this._interfaceLocale = value.locale;
+            this._rerender();
+          }
+        },
+      );
+    }
     this._rerender();
 
     // Observation:  audio in Chrome will have the autoplay attribute,
@@ -404,7 +419,9 @@ export default class MultipleChoice extends HTMLElement {
 
           if (!this._model) return;
 
-          const { autoplayAudioEnabled, completeAudioEnabled } = this._model;
+          const { completeAudioEnabled } = this._model;
+          // A hold from the item player reads as autoplay off.
+          const autoplayAudioEnabled = autoplayAudioOn(this._model);
 
           if (!autoplayAudioEnabled && !completeAudioEnabled) return;
           if (audio && !isInsidePrompt) return;
@@ -459,6 +476,9 @@ export default class MultipleChoice extends HTMLElement {
 
           audio.addEventListener('ended', handleEnded);
 
+          // Audio that cannot load stops holding completion back.
+          this._stopTrackingAudioFailure = trackPromptAudioFailure(audio, () => this._dispatchResponseChanged());
+
           // store references to remove later
           this._audio = audio;
           this._handlePlaying = handlePlaying;
@@ -505,6 +525,9 @@ export default class MultipleChoice extends HTMLElement {
   disconnectedCallback() {
     flushSessionNotifiers(this);
 
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
+
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();
     if (this._keyboardEventsEnabled) {
@@ -517,6 +540,7 @@ export default class MultipleChoice extends HTMLElement {
     if (this._audio) {
       this._audio.removeEventListener('playing', this._handlePlaying);
       this._audio.removeEventListener('ended', this._handleEnded);
+      this._stopTrackingAudioFailure?.();
       this._audio = null;
     }
 

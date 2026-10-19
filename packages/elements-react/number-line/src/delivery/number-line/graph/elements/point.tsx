@@ -205,7 +205,7 @@ export class Point extends React.Component {
               $empty={empty}
               className={isDragging ? 'dnd-kit-dragging' : undefined}
             />
-            {showCorrectness && <CorrectnessMark x={xScale(position) + 16} y={y} correct={correct} />}
+            {showCorrectness && <CorrectnessMark x={xScale(position)} y={y} correct={correct} />}
           </g>
         )}
       </ Draggable>

@@ -1,5 +1,20 @@
 # @pie-element/video-stimulus
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [[`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3)]:
+  - @pie-element/shared-types@0.2.2
+
+## 0.1.4
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+- Updated dependencies []:
+  - @pie-lib/delivery-events-svelte@0.2.1
+
 ## 0.1.3
 
 ### Patch Changes

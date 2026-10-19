@@ -11,46 +11,34 @@ import CorrectnessMark from './correctness-mark.js';
 import { basePropTypes } from './base.js';
 import { isNumber } from '@pie-element/shared-lodash';
 
-const StyledRayGroup: any = styled('g')(({ $selected, $correct }) => ({
-  '& line': {
-    cursor: 'pointer',
-    strokeWidth: '5px',
-    stroke: color.primary(),
-  },
-  '& line, & .arrow': {
-    transition: 'stroke 150ms linear, fill 150ms linear',
-  },
-  ...($selected && {
+const rayColor = (selected, correct) => {
+  if (correct === true) return colors.correct;
+  if (correct === false) return colors.incorrect;
+  return selected ? colors.selected : undefined;
+};
+
+// One `line` rule for every state: a state that redeclares the selector replaces the whole rule,
+// dropping its stroke width to the SVG default of 1px.
+const StyledRayGroup: any = styled('g')(({ $selected, $correct }) => {
+  const stateColor = rayColor($selected, $correct);
+  return {
     '& line': {
-      stroke: colors.selected,
+      cursor: 'pointer',
+      strokeWidth: '5px',
+      stroke: stateColor ?? color.primary(),
     },
-    '& .arrow': {
-      fill: colors.selected,
-      strokeWidth: '1px',
-      stroke: colors.selected,
+    '& line, & .arrow': {
+      transition: 'stroke 150ms linear, fill 150ms linear',
     },
-  }),
-  ...($correct === true && {
-    '& line': {
-      stroke: colors.correct,
-    },
-    '& .arrow': {
-      fill: colors.correct,
-      strokeWidth: '1px',
-      stroke: colors.correct,
-    },
-  }),
-  ...($correct === false && {
-    '& line': {
-      stroke: colors.incorrect,
-    },
-    '& .arrow': {
-      fill: colors.incorrect,
-      strokeWidth: '1px',
-      stroke: colors.incorrect,
-    },
-  }),
-}));
+    ...(stateColor && {
+      '& .arrow': {
+        fill: stateColor,
+        strokeWidth: '1px',
+        stroke: stateColor,
+      },
+    }),
+  };
+});
 
 const StyledArrow: any = styled(Arrow)(({ $correct, $selected }) => ({
   fill: color.primary(),
@@ -154,7 +142,7 @@ export class Ray extends React.Component {
           onClick={this.props.onToggleSelect}
         />
         <StyledArrow x={arrowX} $correct={correct} $selected={selected} direction={arrowDirection} />
-        <CorrectnessMark x={xScale(finalPosition) + (positive ? -16 : 16)} correct={correct} />
+        <CorrectnessMark x={xScale(finalPosition)} correct={correct} />
       </StyledRayGroup>
     );
   }

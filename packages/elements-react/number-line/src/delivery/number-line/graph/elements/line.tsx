@@ -13,10 +13,20 @@ import { basePropTypes } from './base.js';
 
 const duration = '150ms';
 
+const judged = (correct) => correct === true || correct === false;
+
+const lineStroke = (selected, correct) => {
+  if (correct === true) return color.correct();
+  if (correct === false) return color.incorrect();
+  return selected ? color.primaryDark() : color.primary();
+};
+
+// One `.line-handle` rule for every state: a state that redeclares the selector replaces the
+// whole rule, dropping its stroke width to the SVG default of 1px.
 const StyledLineGroup: any = styled('g')(({ $disabled, $selected, $correct }) => ({
   '& .line-handle': {
-    stroke: color.primary(),
-    cursor: 'pointer',
+    stroke: lineStroke($selected, $correct),
+    cursor: judged($correct) ? 'inherit' : 'pointer',
     strokeWidth: '5px',
     transition: `opacity ${duration} linear, 
     stroke-width ${duration} linear,
@@ -33,23 +43,6 @@ const StyledLineGroup: any = styled('g')(({ $disabled, $selected, $correct }) =>
   ...($disabled && {
     cursor: 'not-allowed',
     opacity: 0.8,
-  }),
-  ...($selected && {
-    '& .line-handle': {
-      stroke: color.primaryDark(),
-    },
-  }),
-  ...($correct === true && {
-    '& .line-handle': {
-      cursor: 'inherit',
-      stroke: color.correct(),
-    },
-  }),
-  ...($correct === false && {
-    '& .line-handle': {
-      cursor: 'inherit',
-      stroke: color.incorrect(),
-    },
   }),
 }));
 
@@ -242,7 +235,8 @@ export class Line extends React.Component {
                 onMove={onMoveRight}
                 onClick={onRectClick}
               />
-              <CorrectnessMark x={Math.max(xScale(left), xScale(right)) + 16} correct={correct} />
+              {/* Over an endpoint the mark reads as judging that endpoint alone. */}
+              <CorrectnessMark x={(xScale(left) + xScale(right)) / 2} correct={correct} />
             </g>
           </StyledLineGroup>
         )}

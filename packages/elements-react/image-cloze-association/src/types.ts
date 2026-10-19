@@ -25,6 +25,13 @@ export interface ImageClozeAssociationResponseContainer {
   width?: string;
   /** The height of the response container, as a percentage of the image height (e.g. `"23.6%"`) */
   height?: string;
+  /**
+   * Plain text that screen readers announce as the response container's name, in place of
+   * "Response area {index} of {total}", which an absent or blank label leaves
+   */
+  ariaLabel?: string;
+  /** Snake-case form of `ariaLabel`, which imported content carries */
+  aria_label?: string;
 }
 
 /** The correct images of one response container */
@@ -154,6 +161,8 @@ export interface ImageClozeAssociationModel extends PieModel {
   fontSizeFactor?: number;
   /** Indicates if the audio for the prompt should autoplay */
   autoplayAudioEnabled?: boolean;
+  /** Set by the player when the host holds autoplay; it outranks `autoplayAudioEnabled` */
+  autoplayAudioHeld?: boolean;
   /** Indicates if the audio should reach the end before the item can be marked as 'complete' */
   completeAudioEnabled?: boolean;
   /** Indicates if the audio should be replaced with a custom audio button */

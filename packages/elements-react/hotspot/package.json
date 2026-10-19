@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/hotspot",
-  "version": "12.0.4",
+  "version": "12.0.6",
   "description": "",
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@pie-element/shared-types": "workspace:*"

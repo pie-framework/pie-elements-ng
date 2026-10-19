@@ -6,7 +6,12 @@ import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-export const isComplete = (session) => !!(session && session.value && session.value.length);
+// The response is the selected choice's number, so 0 and negative values count; the default
+// session's empty array means nothing is selected.
+export const isComplete = (session) => {
+  const value = session?.value;
+  return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null;
+};
 
 export default class Likert extends HTMLElement {
   constructor() {

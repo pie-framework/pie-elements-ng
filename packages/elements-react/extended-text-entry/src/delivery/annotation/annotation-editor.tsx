@@ -84,6 +84,8 @@ if (!document.getElementById('annotation-editor-styles')) {
   document.head.appendChild(styleElement);
 }
 
+const SELECTION_SETTLE_MS = 300;
+
 class AnnotationEditor extends React.Component {
   static propTypes = {
     text: PropTypes.string,
@@ -140,6 +142,8 @@ class AnnotationEditor extends React.Component {
       this.adjustAnnotationsPosition();
       this.textRef.addEventListener('scroll', this.adjustAnnotationsPosition);
     }
+
+    document.addEventListener('selectionchange', this.handleSelectionChange);
   }
 
   adjustAnnotationsPosition: any = () => {
@@ -310,6 +314,25 @@ class AnnotationEditor extends React.Component {
         });
       }
     }
+  };
+
+  // A touch selection (long-press, then the selection handles) is a moved touch, which gets no
+  // compatibility mouse events, so `onMouseUp` never runs. Read the selection once it settles instead.
+  handleSelectionChange: any = () => {
+    if (this.props.disabled || this.pointerType === 'mouse') {
+      return;
+    }
+
+    clearTimeout(this.selectionTimer);
+    this.selectionTimer = setTimeout(() => {
+      if (!this.state.openedMenu && !this.state.openedEditor) {
+        this.handleSelection({ detail: 0 });
+      }
+    }, SELECTION_SETTLE_MS);
+  };
+
+  handlePointerDown: any = (event) => {
+    this.pointerType = event.pointerType;
   };
 
   deleteAnnotation: any = () => {
@@ -540,6 +563,8 @@ class AnnotationEditor extends React.Component {
 
   componentWillUnmount() {
     this.textRef.removeEventListener('scroll', this.adjustAnnotationsPosition);
+    document.removeEventListener('selectionchange', this.handleSelectionChange);
+    clearTimeout(this.selectionTimer);
   }
 
   render() {
@@ -569,6 +594,7 @@ class AnnotationEditor extends React.Component {
           <TextContainer
             style={{ width: width - 34, minHeight: height, maxHeight: maxHeight }}
             ref={(r) => (this.textRef = r)}
+            onPointerDown={this.handlePointerDown}
             onMouseDown={!disabled ? clearSelection : () => {}}
             onMouseUp={!disabled ? this.handleSelection : () => {}}
             dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(text) }}

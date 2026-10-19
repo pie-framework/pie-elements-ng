@@ -1,5 +1,39 @@
 # @pie-element/image-cloze-association
 
+## 11.0.6
+
+### Patch Changes
+
+- [#476](https://github.com/pie-framework/pie-elements-ng/pull/476) [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293) Thanks [@chillenious](https://github.com/chillenious)! - Prompt audio honours `autoplayAudioHeld`, which pie-players' item player writes when the host holds autoplay: the audio does not start on its own and the learner gets native controls to start it. EBSR holds both parts. The model sanitizer drops authored `autoplay`, so the model setting is the only start. Completion no longer waits on prompt audio that failed to load, has no source, or that a resumed session (`audioEndTime`) already played.
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - The IIFE ships English only for the libraries that render from their own catalogs, `@pie-lib/render-ui` and `@pie-lib/correct-answer-toggle` so far; a host serves another locale through `registerMessages`.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-lib/correct-answer-toggle@5.0.6
+  - @pie-element/shared-types@0.2.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/config-ui@14.0.6
+  - @pie-lib/drag@5.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+  - @pie-element/shared-controller-utils@0.1.3
+
+## 11.0.5
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+
+- [#446](https://github.com/pie-framework/pie-elements-ng/pull/446) [`868a64f`](https://github.com/pie-framework/pie-elements-ng/commit/868a64f254de10114bae98b79e27e0171b7ddb6a) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - feat(image-cloze-association): name response areas from the model (PI…
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`fba9a4a`](https://github.com/pie-framework/pie-elements-ng/commit/fba9a4a54cc58a44691931b2df78f3bc7041f716), [`026d10e`](https://github.com/pie-framework/pie-elements-ng/commit/026d10ed3f16b1e016f8ad2d25facce600080857), [`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`cf587a2`](https://github.com/pie-framework/pie-elements-ng/commit/cf587a2502b8707a71708c58e0b6c610306ed198), [`e9fef46`](https://github.com/pie-framework/pie-elements-ng/commit/e9fef46f9bc652603fac3732f2ae92a680b3d86b), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`6db1c21`](https://github.com/pie-framework/pie-elements-ng/commit/6db1c2148d603b26b2ad57b4a471b0184ac1c422), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-lib/editable-html-tip-tap@3.1.0
+  - @pie-element/shared-player-events@0.2.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+  - @pie-lib/config-ui@14.0.5
+  - @pie-lib/correct-answer-toggle@5.0.5
+  - @pie-lib/drag@5.0.5
+
 ## 11.0.4
 
 ### Patch Changes

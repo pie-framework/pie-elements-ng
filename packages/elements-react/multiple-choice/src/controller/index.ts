@@ -135,6 +135,7 @@ export async function model(
     maxSelections: normalizedQuestion.maxSelections,
     keyboardEventsEnabled: normalizedQuestion.keyboardEventsEnabled,
     autoplayAudioEnabled: normalizedQuestion.autoplayAudioEnabled,
+    autoplayAudioHeld: normalizedQuestion.autoplayAudioHeld,
     completeAudioEnabled: normalizedQuestion.completeAudioEnabled,
     customAudioButton: normalizedQuestion.customAudioButton,
     teacherInstructions:

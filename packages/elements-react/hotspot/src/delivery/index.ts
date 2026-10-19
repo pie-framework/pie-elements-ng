@@ -4,6 +4,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+import { autoplayAudioOn, promptAudioPending, trackPromptAudioFailure } from '@pie-element/shared-utils';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -65,16 +66,8 @@ export default class Hotspot extends HTMLElement {
 
     // check audio completion if the setting is enabled and audio actually exists,
     // whether the audio is started by autoplay or by the student
-    if (completeAudioEnabled && !this.audioComplete) {
-      if (elementContext) {
-        const audio = elementContext.querySelector('audio');
-        const isInsidePrompt = audio && audio.closest('.preview-prompt');
-
-        // only require audio completion if audio exists and is inside the prompt
-        if (audio && isInsidePrompt) {
-          return false;
-        }
-      }
+    if (completeAudioEnabled && promptAudioPending(elementContext, this._session, this.audioComplete)) {
+      return false;
     }
 
     if (!Array.isArray(this._session.answers)) {
@@ -149,7 +142,9 @@ export default class Hotspot extends HTMLElement {
 
           if (!this._model) return;
 
-          const { autoplayAudioEnabled, completeAudioEnabled } = this._model;
+          const { completeAudioEnabled } = this._model;
+          // A hold from the item player reads as autoplay off.
+          const autoplayAudioEnabled = autoplayAudioOn(this._model);
 
           if (!autoplayAudioEnabled && !completeAudioEnabled) return;
           if (audio && !isInsidePrompt) return;
@@ -214,6 +209,9 @@ export default class Hotspot extends HTMLElement {
 
           audio.addEventListener('ended', handleEnded);
 
+          // Audio that cannot load stops holding completion back.
+          this._stopTrackingAudioFailure = trackPromptAudioFailure(audio, () => this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.isComplete())));
+
           // store references to remove later
           this._audio = audio;
           this._handlePlaying = handlePlaying;
@@ -254,6 +252,7 @@ export default class Hotspot extends HTMLElement {
     if (this._audio) {
       this._audio.removeEventListener('playing', this._handlePlaying);
       this._audio.removeEventListener('ended', this._handleEnded);
+      this._stopTrackingAudioFailure?.();
       this._audio = null;
     }
 

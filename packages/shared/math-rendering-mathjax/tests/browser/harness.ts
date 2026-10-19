@@ -8,7 +8,8 @@
  * browser build is a separate set of modules, as each element that bundles the adapter has its
  * own. Under `/assets/` it is served as a host's bundle would be, with no asset root to find.
  * `ASSET_ORIGIN` serves the same files from another origin, as a CDN does. Under `/emitted/` each
- * file of the npm layout has a flat name, as a bundler emits the files a module names.
+ * file of the npm layout has a flat name, as a bundler emits the files a module names. Under
+ * `/dist-assets/` is the built `./assets` export, its module and the copies it names.
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -58,6 +59,11 @@ const NPM_PACKAGES: Record<string, string> = {
     require.resolve('@mathjax/mathjax-mhchem-font-extension/package.json')
   ),
 };
+
+const ASSETS_DIST = join(packageDir, 'dist', 'assets');
+
+/** The built `./assets` export's module, whose URLs name the copies beside it. */
+export const ASSETS_EXPORT_URL = `${ORIGIN}/dist-assets/index.js`;
 
 /** A URL outside the npm layout serving the file at npm path `path`, as a bundler emits it. */
 export const emittedUrl = (path: string) => `${ORIGIN}/emitted/${encodeURIComponent(path)}`;
@@ -179,10 +185,15 @@ export async function openPage(
     }
     const unrooted = pathname.match(/^\/assets\/([\w.-]+\.js)$/)?.[1];
     const emitted = pathname.match(/^\/emitted\/([^/]+)$/)?.[1];
-    if (!unrooted && !emitted && !NPM_PATH.test(pathname)) return route.fulfill({ status: 404 });
+    const exported = pathname.match(/^\/dist-assets\/(.+)$/)?.[1];
+    if (!unrooted && !emitted && !exported && !NPM_PATH.test(pathname)) {
+      return route.fulfill({ status: 404 });
+    }
     const file = unrooted
       ? adapterFile(unrooted, build)
-      : npmFile(emitted ? `/npm/${decodeURIComponent(emitted)}` : pathname, build);
+      : exported
+        ? join(ASSETS_DIST, decodeURIComponent(exported))
+        : npmFile(emitted ? `/npm/${decodeURIComponent(emitted)}` : pathname, build);
     if (!file || !existsSync(file)) {
       unserved.push(url);
       return route.fulfill({ status: 404 });

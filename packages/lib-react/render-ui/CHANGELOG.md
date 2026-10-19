@@ -1,5 +1,27 @@
 # @pie-lib/render-ui
 
+## 8.0.6
+
+### Patch Changes
+
+- [#476](https://github.com/pie-framework/pie-elements-ng/pull/476) [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293) Thanks [@chillenious](https://github.com/chillenious)! - Prompt audio honours `autoplayAudioHeld`, which pie-players' item player writes when the host holds autoplay: the audio does not start on its own and the learner gets native controls to start it. EBSR holds both parts. The model sanitizer drops authored `autoplay`, so the model setting is the only start. Completion no longer waits on prompt audio that failed to load, has no source, or that a resumed session (`audioEndTime`) already played.
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - These libraries render their labels from their own catalogs through `@pie-element/shared-i18n` in place of `@pie-lib/translator`, in the language passed as before. Under an element that has not loaded that language, they render one English frame first. An element's IIFE ships their English only; its host serves another locale through `registerMessages`.
+
+- [#481](https://github.com/pie-framework/pie-elements-ng/pull/481) [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640) Thanks [@chillenious](https://github.com/chillenious)! - Ship eleven generated interface locales alongside the carried `es`: `th-TH`, `en-GB`, `en-AU`, `fr`, `ar`, `pt`, `ko`, `ja`, `zh`, `cy` and `sv`, completing the locale inventory pie-players ships. Each is machine-generated and unreviewed, recorded `generated` against the `en-US` hash in the package's `catalog-manifest.json`; Welsh and Arabic carry their full CLDR plural-category sets. Browser ESM splits each locale into a chunk fetched on first use, the IIFE stays English-only (a host serves any locale through `registerMessages`), and a webpack build of `./delivery` inlines the locale bytes without executing them on an English page. Until the interface-locale channel lands (Phase 2), element chrome reaches these locales only through `model.language`.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`6f14e54`](https://github.com/pie-framework/pie-elements-ng/commit/6f14e54211250dd1180d4c687a0057c7a7e60a20), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-element/shared-i18n@0.1.1
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+
+## 8.0.5
+
+### Patch Changes
+
+- [#436](https://github.com/pie-framework/pie-elements-ng/pull/436) [`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6) Thanks [@chillenious](https://github.com/chillenious)! - A link in a prompt that plays the prompt's `<audio>` by id plays it. The prompt replaces the audio's authored id with its own, and the link now names that id instead of the authored one.
+- Updated dependencies [[`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+
 ## 8.0.4
 
 ### Patch Changes
