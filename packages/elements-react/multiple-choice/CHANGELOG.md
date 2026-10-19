@@ -1,5 +1,27 @@
 # @pie-element/multiple-choice
 
+## 14.0.6
+
+### Patch Changes
+
+- [#468](https://github.com/pie-framework/pie-elements-ng/pull/468) [`e089540`](https://github.com/pie-framework/pie-elements-ng/commit/e089540fc1cd629fb18160bdaf236799a6008612) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - On a touch device, a deselected checkbox or radio choice no longer keeps the 2px hover ring after it is tapped. The ring now shows only where hover is real (`@media (hover: hover)`); keyboard focus styling is unchanged.
+
+- [#476](https://github.com/pie-framework/pie-elements-ng/pull/476) [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293) Thanks [@chillenious](https://github.com/chillenious)! - Prompt audio honours `autoplayAudioHeld`, which pie-players' item player writes when the host holds autoplay: the audio does not start on its own and the learner gets native controls to start it. EBSR holds both parts. The model sanitizer drops authored `autoplay`, so the model setting is the only start. Completion no longer waits on prompt audio that failed to load, has no source, or that a resumed session (`audioEndTime`) already played.
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - Multiple-choice renders its interface strings from its own catalogs and no longer bundles i18next. Spanish loads on demand, except in the IIFE, which ships English only; an IIFE host serves Spanish through `registerMessages`. Its host carries `lang` and `dir` for the language the item declares and neither when it declares none, where it used to stamp `lang="en"`.
+
+- [#481](https://github.com/pie-framework/pie-elements-ng/pull/481) [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640) Thanks [@chillenious](https://github.com/chillenious)! - Ship eleven generated interface locales alongside the carried `es`: `th-TH`, `en-GB`, `en-AU`, `fr`, `ar`, `pt`, `ko`, `ja`, `zh`, `cy` and `sv`, completing the locale inventory pie-players ships. Each is machine-generated and unreviewed, recorded `generated` against the `en-US` hash in the package's `catalog-manifest.json`; Welsh and Arabic carry their full CLDR plural-category sets. Browser ESM splits each locale into a chunk fetched on first use, the IIFE stays English-only (a host serves any locale through `registerMessages`), and a webpack build of `./delivery` inlines the locale bytes without executing them on an English page. Until the interface-locale channel lands (Phase 2), element chrome reaches these locales only through `model.language`.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`6f14e54`](https://github.com/pie-framework/pie-elements-ng/commit/6f14e54211250dd1180d4c687a0057c7a7e60a20), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-i18n@0.1.1
+  - @pie-lib/correct-answer-toggle@5.0.6
+  - @pie-element/shared-types@0.2.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/config-ui@14.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+  - @pie-element/shared-controller-utils@0.1.3
+
 ## 14.0.5
 
 ### Patch Changes

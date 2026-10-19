@@ -1,5 +1,11 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.7
+
+### Patch Changes
+
+- [#483](https://github.com/pie-framework/pie-elements-ng/pull/483) [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551) Thanks [@chillenious](https://github.com/chillenious)! - Adds a `./mathml` entry exporting `texToMathml(html)`, which converts the TeX in authored HTML to MathML Core in Node or the browser, reading the macros and delimiters delivery typesets. It bundles the MathJax it uses.
+
 ## 0.1.6
 
 ### Patch Changes

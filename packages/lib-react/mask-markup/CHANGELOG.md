@@ -1,5 +1,19 @@
 # @pie-lib/mask-markup
 
+## 4.1.1
+
+### Patch Changes
+
+- [#466](https://github.com/pie-framework/pie-elements-ng/pull/466) [`5436a2b`](https://github.com/pie-framework/pie-elements-ng/commit/5436a2b1a42eaba43a4fefed83650e57722572e4) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - The open dropdown menu now has a border, matching the trigger button. Its surface resolves to the page background (`--pie-background`), so without a border the menu blended into the item content in dark themes.
+
+- [#473](https://github.com/pie-framework/pie-elements-ng/pull/473) [`0768a1e`](https://github.com/pie-framework/pie-elements-ng/commit/0768a1e45954c62ec613166594e6f62ae4eed7cc) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(drag-in-the-blank): rank any touched blank ahead of the choice po…
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/drag@5.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+
 ## 4.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @pie-element/shared-types
 
+## 0.2.2
+
+### Patch Changes
+
+- [#483](https://github.com/pie-framework/pie-elements-ng/pull/483) [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3) Thanks [@chillenious](https://github.com/chillenious)! - Adds the element summary contract types (`ElementSummary`, `SummaryPart`, `SummaryOption`, `SummaryOptions`, `SummarizeFn`), which describe an item's content as data for players to list without loading the element.
+
 ## 0.2.1
 
 ### Patch Changes

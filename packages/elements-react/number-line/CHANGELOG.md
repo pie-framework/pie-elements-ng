@@ -1,5 +1,20 @@
 # @pie-element/number-line
 
+## 14.0.6
+
+### Patch Changes
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - The IIFE ships English only for the libraries that render from their own catalogs, `@pie-lib/render-ui` and `@pie-lib/correct-answer-toggle` so far; a host serves another locale through `registerMessages`.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-lib/correct-answer-toggle@5.0.6
+  - @pie-element/shared-types@0.2.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/config-ui@14.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+  - @pie-element/shared-controller-utils@0.1.3
+
 ## 14.0.5
 
 ### Patch Changes
