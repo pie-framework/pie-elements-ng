@@ -2,7 +2,7 @@
   "locales": {
     "es": {
       "status": "reviewed",
-      "from": "@pie-lib/translator es catalog, carried unchanged",
+      "from": "@pie-lib/translator es catalog, carried over; 'Sólo' → 'Solo' (current RAE orthography) in maxSelections on 2026-10-20 after a three-reviewer agent review",
       "english": {
         "multipleChoiceQuestion": "Multiple Choice Question",
         "multipleCorrectAnswerQuestion": "Multiple Correct Answer Question",
@@ -33,7 +33,7 @@
     "th-TH": {
       "status": "generated",
       "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
@@ -54,7 +54,7 @@
     "fr": {
       "status": "generated",
       "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
@@ -68,21 +68,21 @@
     "pt": {
       "status": "generated",
       "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
       "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
       "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
@@ -96,7 +96,7 @@
     "cy": {
       "status": "generated",
       "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
