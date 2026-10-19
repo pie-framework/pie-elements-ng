@@ -42,4 +42,16 @@ describe('drag-in-the-blank choice chip', () => {
   it('keeps the line height it inherits, as the legacy tile did', () => {
     expect(renderChip({}).lineHeight).toBe('normal');
   });
+
+  it('drops the margins of a paragraph in its label, so the chip alone sets the spacing', () => {
+    render(
+      <DndContext>
+        <Choice choice={{ id: '0', value: '<p>Saturn</p>' }} instanceId="dib" />
+      </DndContext>,
+    );
+    const paragraph = getComputedStyle(screen.getByText('Saturn'));
+
+    expect(paragraph.marginTop).toBe('0px');
+    expect(paragraph.marginBottom).toBe('0px');
+  });
 });
