@@ -704,8 +704,10 @@ jobs:
       - name: Notify Slack on Successful Publish
         if: steps.published.outputs.published == 'true'
         continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v4.0.0
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "text": "📦 PIE Elements Package Published to NPM",
@@ -757,15 +759,14 @@ jobs:
                 }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Notify Slack on Release PR Created/Updated
         if: steps.changesets.outputs.has-changesets == 'true' && steps.published.outputs.published != 'true'
         continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v4.0.0
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "text": "📝 Release PR updated",
@@ -800,9 +801,6 @@ jobs:
                 }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       # A merged change must never reach `next` unpublished and unflagged. Everything this run
       # selected and the publish script did not report as published was dropped, and is named
@@ -842,8 +840,10 @@ jobs:
       - name: Notify Slack on Release Failure
         if: failure()
         continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v4.0.0
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "text": "❌ PIE Elements Release Failed",
@@ -882,6 +882,3 @@ jobs:
                 }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
