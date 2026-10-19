@@ -15,91 +15,102 @@
           "other": "Only {count} answers are allowed."
         },
         "showTeacherInstructions": "Show Teacher Instructions",
-        "hideTeacherInstructions": "Hide Teacher Instructions"
+        "hideTeacherInstructions": "Hide Teacher Instructions",
+        "answerChoicesA11y": "Answer choices",
+        "partAnswerChoicesA11y": "{partLabel}, answer choices",
+        "pickTheAnswerBelowA11y": "Pick the answer below"
       },
-      "reviewedAt": "2026-10-16"
+      "reviewedAt": "2026-10-16",
+      "awaitingReview": {
+        "keys": [
+          "answerChoicesA11y",
+          "partAnswerChoicesA11y",
+          "pickTheAnswerBelowA11y"
+        ],
+        "note": "translated on 2026-10-19 by Claude (Anthropic) for PIE-1244; anchored so the gate passes, not yet reviewed by a person"
+      }
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "f41ba265324fa2b6255f96c55e840b50063bdf87837e2e76bfcd83c079532849",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen)",
+      "sourceHash": "402011c8fea7992be9c83881aaac16ebe0baca056d595f5471563d7cc7f24765",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen); answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-19",
       "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     }

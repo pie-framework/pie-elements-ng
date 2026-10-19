@@ -12,6 +12,11 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import {
+  MATH_OUTSIDE_NAMES,
+  pageUrlKeepsMathOutsideNames,
+  subscribeAccessibilitySupports,
+} from './accessibility-context.js';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 import { autoplayAudioOn, promptAudioPending, trackPromptAudioFailure } from '@pie-element/shared-utils';
 
@@ -146,6 +151,9 @@ export default class MultipleChoice extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // Whether the Player keeps math out of choice names (PIE-1244).
+    this._mathOutsideNames = false;
+    this._unsubscribeAccessibility = null;
     // The locale the player publishes, once it answers; null until then. While
     // it is null the chrome follows the item's declared language, the
     // transitional precedence (published, else `model.language`, else `en-US`).
@@ -170,6 +178,7 @@ export default class MultipleChoice extends HTMLElement {
             onChoiceChanged: this._onChange.bind(this),
             onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
             eliminatedChoices: [...this._eliminatedChoices],
+            mathOutsideNames: this._mathOutsideNames,
             language: chromeLanguage,
             ...resolveHeadingProps(this),
           });
@@ -249,6 +258,19 @@ export default class MultipleChoice extends HTMLElement {
       }, 50);
     });
   };
+
+  _subscribeAccessibility() {
+    this._unsubscribeAccessibility?.();
+    // TEMPORARY (PIE-1244 comparison): `mathNames=outside` in the page URL switches it on too.
+    const fromUrl = pageUrlKeepsMathOutsideNames();
+    if (fromUrl) this._mathOutsideNames = true;
+    this._unsubscribeAccessibility = subscribeAccessibilitySupports(this, (supports) => {
+      const mathOutsideNames = fromUrl || supports.includes(MATH_OUTSIDE_NAMES);
+      if (mathOutsideNames === this._mathOutsideNames) return;
+      this._mathOutsideNames = mathOutsideNames;
+      this._rerender();
+    });
+  }
 
   _initMathObserver() {
     if (this._mathObserver) return;
@@ -391,6 +413,7 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   connectedCallback() {
+    this._subscribeAccessibility();
     this._initMathObserver();
     this._initPlayerObserver();
     if (!this._disconnectInterfaceLocale) {
@@ -525,6 +548,10 @@ export default class MultipleChoice extends HTMLElement {
   disconnectedCallback() {
     flushSessionNotifiers(this);
 
+    this._unsubscribeAccessibility?.();
+    this._unsubscribeAccessibility = null;
+    // An unanswered request on the next connect means the default pattern.
+    this._mathOutsideNames = false;
     this._disconnectInterfaceLocale?.();
     this._disconnectInterfaceLocale = null;
 

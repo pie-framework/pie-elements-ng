@@ -12,4 +12,7 @@ export default {
   },
   showTeacherInstructions: 'แสดงคำแนะนำสำหรับครู',
   hideTeacherInstructions: 'ซ่อนคำแนะนำสำหรับครู',
+  answerChoicesA11y: 'ตัวเลือกคำตอบ',
+  partAnswerChoicesA11y: '{partLabel}, ตัวเลือกคำตอบ',
+  pickTheAnswerBelowA11y: 'เลือกคำตอบด้านล่าง',
 } satisfies MessageCatalog;

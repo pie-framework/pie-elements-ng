@@ -582,6 +582,28 @@ describe('createMathjaxRenderer', () => {
     expect(typesetPromise.mock.calls).toEqual([[[later]]]);
   });
 
+  it('renames math typeset earlier when its control is named differently, without typesetting', async () => {
+    interceptScripts();
+    const renderer = createMathjaxRenderer();
+    const output =
+      '<mjx-container><mjx-assistive-mml><math><mi>x</mi></math></mjx-assistive-mml></mjx-container>';
+    const element = elementWith(
+      `<label><input type="radio"><span id="key">A.</span>${output}</label>`
+    );
+    const math = () => element.querySelector('mjx-container') as Element;
+
+    await renderer(element);
+    expect(math().getAttribute('aria-label')).toBe('x');
+
+    element.querySelector('input')?.setAttribute('aria-labelledby', 'key');
+    await renderer(element);
+    expect(math().hasAttribute('aria-label')).toBe(false);
+
+    element.querySelector('input')?.removeAttribute('aria-labelledby');
+    await renderer(element);
+    expect(math().getAttribute('aria-label')).toBe('x');
+  });
+
   it('leaves a failed load unobserved by renders without math', async () => {
     const scripts = interceptScripts();
     const unhandled = vi.fn();

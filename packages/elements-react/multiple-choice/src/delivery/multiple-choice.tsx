@@ -83,13 +83,27 @@ const StyledFieldset: any = styled('fieldset')({
   minWidth: '0px',
 });
 
-const SrOnly: any = styled('h3')({
+const srOnly = {
   position: 'absolute',
   left: '-10000px',
   top: 'auto',
   width: '1px',
   height: '1px',
   overflow: 'hidden',
+};
+
+const SrOnly: any = styled('h3')(srOnly);
+
+// The group's name. The prompt renders before the fieldset instead of as its legend, because a
+// name built from the prompt leaves its MathML out (PIE-1244). An EBSR part names its group with its
+// part label, so its parts' groups stay apart. `pie-sr-only` keeps read-aloud off it, and the
+// `!important` keeps it hidden from authored CSS that styles `legend`, as prompts were legends.
+const AnswerChoicesLegend = styled('legend')({
+  ...Object.fromEntries(Object.entries(srOnly).map(([key, value]) => [key, `${value} !important`])),
+  padding: '0 !important',
+  border: '0 !important',
+  clip: 'rect(0 0 0 0) !important',
+  whiteSpace: 'nowrap !important',
 });
 
 // --pie-missing holds 4.5:1 on the page in every pie-players scheme; the layout theme's error red
@@ -114,6 +128,7 @@ export class MultipleChoice extends React.Component {
     disabled: PropTypes.bool,
     // Choice values struck out by the answer eliminator, which cannot be selected.
     eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
+    mathOutsideNames: PropTypes.bool,
     onChoiceChanged: PropTypes.func,
     responseCorrect: PropTypes.bool,
     correctResponse: PropTypes.array,
@@ -321,6 +336,7 @@ export class MultipleChoice extends React.Component {
       options,
       baseHeadingLevel,
       eliminatedChoices = [],
+      mathOutsideNames,
     } = this.props;
     const { showCorrect, maxSelectionsErrorState } = this.state;
     const isEvaluateMode = mode === 'evaluate';
@@ -394,17 +410,22 @@ export class MultipleChoice extends React.Component {
           </TeacherInstructions>
         )}
 
+        {/* The `legend` class keeps the layout and the authored-CSS hooks the prompt had as a legend. */}
+        <PreviewPrompt
+          className="prompt legend"
+          defaultClassName="prompt"
+          prompt={transformPrompt(prompt)}
+          tagName="div"
+          autoplayAudioEnabled={autoplayAudioEnabled}
+          autoplayAudioHeld={autoplayAudioHeld}
+          customAudioButton={customAudioButton}
+          language={language}
+        />
+
         <StyledFieldset role={choiceMode === 'radio' ? 'radiogroup' : 'group'}>
-          <PreviewPrompt
-            className="prompt"
-            defaultClassName="prompt"
-            prompt={transformPrompt(prompt)}
-            tagName={'legend'}
-            autoplayAudioEnabled={autoplayAudioEnabled}
-            autoplayAudioHeld={autoplayAudioHeld}
-            customAudioButton={customAudioButton}
-            language={language}
-          />
+          <AnswerChoicesLegend className="pie-sr-only">
+            {partLabel ? i18n.t('partAnswerChoicesA11y', { partLabel }) : i18n.t('answerChoicesA11y')}
+          </AnswerChoicesLegend>
 
           {!(options && alwaysShowCorrect) && (
             <CorrectAnswerToggle
@@ -441,6 +462,8 @@ export class MultipleChoice extends React.Component {
                 correctness={isEvaluateMode ? this.getCorrectness(choice) : undefined}
                 displayKey={this.indexToSymbol(index)}
                 isSelectionButtonBelow={isSelectionButtonBelow}
+                mathOutsideNames={mathOutsideNames}
+                pickTheAnswerBelow={i18n.t('pickTheAnswerBelowA11y')}
               />
             ))}
           </LayoutComponent>

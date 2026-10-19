@@ -13,4 +13,7 @@ export default {
   },
   showTeacherInstructions: 'Mostrar instrucciones para el maestro',
   hideTeacherInstructions: 'Ocultar instrucciones para el maestro',
+  answerChoicesA11y: 'Opciones de respuesta',
+  partAnswerChoicesA11y: '{partLabel}, opciones de respuesta',
+  pickTheAnswerBelowA11y: 'Seleccione la respuesta de abajo',
 } satisfies MessageCatalog;

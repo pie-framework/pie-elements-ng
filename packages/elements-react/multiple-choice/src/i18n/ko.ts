@@ -12,4 +12,7 @@ export default {
   },
   showTeacherInstructions: '교사 지침 표시',
   hideTeacherInstructions: '교사 지침 숨기기',
+  answerChoicesA11y: '답안 선택지',
+  partAnswerChoicesA11y: '{partLabel}, 답안 선택지',
+  pickTheAnswerBelowA11y: '아래에서 답을 선택해 주세요',
 } satisfies MessageCatalog;

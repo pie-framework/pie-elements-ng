@@ -12,6 +12,10 @@ import {
   parsePlayerType,
   type PlayerType,
 } from '#lib/config/player-runtime.ts';
+import {
+  provideAccessibilitySupports,
+  supportsFromUrl,
+} from '#lib/config/accessibility-context.ts';
 import { get } from 'svelte/store';
 import '@pie-element/element-player';
 import {
@@ -41,6 +45,11 @@ let esmModelReady = $state(false);
 let modelRequestId = 0;
 const debug = false;
 const playerType = $derived<PlayerType>(parsePlayerType(page.url.searchParams.get('player')));
+
+// Answers the accessibility context as a Player would, before the element connects and again when
+// the URL changes; `&mathNames=outside` keeps math out of multiple-choice choice names (PIE-1244).
+provideAccessibilitySupports(supportsFromUrl(page.url));
+$effect(() => provideAccessibilitySupports(supportsFromUrl(page.url)));
 
 // Normalize session - ensure it's an object without imposing specific structure
 const normalizeSession = (nextSession: any) => {

@@ -17,4 +17,7 @@ export default {
   },
   showTeacherInstructions: 'عرض تعليمات المعلم',
   hideTeacherInstructions: 'إخفاء تعليمات المعلم',
+  answerChoicesA11y: 'خيارات الإجابة',
+  partAnswerChoicesA11y: '{partLabel}، خيارات الإجابة',
+  pickTheAnswerBelowA11y: 'اختر الإجابة أدناه',
 } satisfies MessageCatalog;
