@@ -19,6 +19,10 @@ vi.mock('@pie-lib/render-ui', () => ({
   },
 }));
 
+const { renderMath } = vi.hoisted(() => ({ renderMath: vi.fn() }));
+
+vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath }));
+
 vi.mock('@dnd-kit/core', () => ({
   useDraggable: vi.fn(() => ({
     attributes: {},
@@ -122,6 +126,47 @@ describe('Layout', () => {
       expect(getComputedStyle(container.firstChild as Element).opacity).not.toBe('0.5');
       expect(getComputedStyle(container.firstChild!.firstChild as Element).opacity).toBe('0.5');
     });
+  });
+});
+
+// A choice typesets its own math, so it never depends on the element's mutation observer, which is paused
+// during a drag: the pool and the categories key their choices by position, and a choice moving up into
+// another's element gets that element's content rewritten with untypeset TeX.
+describe('Layout math', () => {
+  const layout = (content: string) => (
+    <ThemeProvider theme={theme}>
+      <Layout content={content} />
+    </ThemeProvider>
+  );
+  const typesetTexts = () => renderMath.mock.calls.map(([el]) => (el as HTMLElement).textContent);
+
+  it('typesets its content when it mounts', () => {
+    renderMath.mockClear();
+    render(layout('Circle: \\(A = \\pi r^2\\)'));
+
+    expect(typesetTexts()).toEqual(['Circle: \\(A = \\pi r^2\\)']);
+  });
+
+  it('typesets the new content when its element is given to another choice', () => {
+    const { rerender } = render(layout('Circle: \\(A = \\pi r^2\\)'));
+    renderMath.mockClear();
+
+    rerender(layout('Sphere: \\(V = \\frac{4}{3}\\pi r^3\\)'));
+
+    expect(typesetTexts()).toEqual(['Sphere: \\(V = \\frac{4}{3}\\pi r^3\\)']);
+  });
+
+  it('does not typeset again when only its state changes', () => {
+    const { rerender } = render(layout('Circle: \\(A = \\pi r^2\\)'));
+    renderMath.mockClear();
+
+    rerender(
+      <ThemeProvider theme={theme}>
+        <Layout content={'Circle: \\(A = \\pi r^2\\)'} isDragging isSelected />
+      </ThemeProvider>,
+    );
+
+    expect(renderMath).not.toHaveBeenCalled();
   });
 });
 
