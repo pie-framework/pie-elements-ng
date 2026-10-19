@@ -2120,6 +2120,9 @@
     "packages/shared/i18n": {
       "name": "@pie-element/shared-i18n",
       "version": "0.1.1",
+      "dependencies": {
+        "@pie-players/pie-context": "1.0.0-beta.3",
+      },
       "devDependencies": {
         "@types/bun": "^1.4.2",
         "typescript": "^5.9.3",
