@@ -50,7 +50,8 @@ updates:
       - dependency-name: "@types/react-dom"
         update-types: ["version-update:semver-major"]
     groups:
-      # react and react-dom must be the same exact version, so minors and patches land together.
+      # react and react-dom must be the same exact version and react-konva's minor tracks React's, so
+      # minors and patches land together.
       # Listed first: a dependency joins the first group it matches, and dev-dependencies below
       # would otherwise take the @types packages.
       react:
@@ -58,6 +59,7 @@ updates:
           - "react"
           - "react-dom"
           - "react-is"
+          - "react-konva"
           - "@types/react"
           - "@types/react-dom"
         update-types:
