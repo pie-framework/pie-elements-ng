@@ -62,6 +62,7 @@ export class Chart extends React.Component {
       actionsAnchorEl: null,
       // how much lower the rotated category labels reach than horizontal ones
       labelOverhang: 0,
+      rangeLabelOverhang: 0,
     };
     this.maskUid = this.generateMaskId();
   }
@@ -141,6 +142,8 @@ export class Chart extends React.Component {
   }
 
   setLabelOverhang = (labelOverhang) => this.setState({ labelOverhang });
+
+  setRangeLabelOverhang = (rangeLabelOverhang) => this.setState({ rangeLabelOverhang });
 
   handleAlertDialog = (open, callback) =>
     this.setState(
@@ -339,6 +342,7 @@ export class Chart extends React.Component {
           labelsCharactersLimit={labelsCharactersLimit}
           ariaLabel={ariaLabel}
           ariaDescription={ariaDescription}
+          leftAxisOverhang={this.state.rangeLabelOverhang}
           {...rootCommon}
         >
           <ChartGrid {...common} xBand={xBand} rowTickValues={horizontalLines} columnTickValues={verticalLines} />
@@ -360,6 +364,7 @@ export class Chart extends React.Component {
             showCorrectness={chartType === 'linePlot' || chartType === 'dotPlot'}
             language={language}
             onLabelOverhang={this.setLabelOverhang}
+            onRangeLabelOverhang={this.setRangeLabelOverhang}
           />
           {addCategoryEnabled ? (
             <foreignObject x={width} y={height - 16} width={width} height={height}>

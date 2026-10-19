@@ -15,7 +15,7 @@ describe('multiple-choice language', () => {
     ['checkbox', 'en_US', 'Multiple Select Question', 'Show Teacher Instructions'],
     ['radio', 'es_ES', 'Pregunta de opción múltiple', 'Mostrar instrucciones para el maestro'],
     ['checkbox', 'es_ES', 'Pregunta de selección múltiple', 'Mostrar instrucciones para el maestro'],
-  ])('names a %s heading and teacher instructions in the %s item language', (choiceMode, language, heading, toggle) => {
+  ])('names a %s heading and teacher instructions in the %s item language', async (choiceMode, language, heading, toggle) => {
     render(
       <Item
         mode="gather"
@@ -29,7 +29,8 @@ describe('multiple-choice language', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    // Rendered without the element, nothing preloads: the component loads its catalog itself.
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: toggle })).toBeInTheDocument();
   });
 });

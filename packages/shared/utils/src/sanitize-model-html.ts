@@ -14,6 +14,7 @@
 
 import DOMPurify, { type Config } from 'dompurify';
 import { markAuthoredColors } from './authored-colors.js';
+import { AUTOPLAY_AUDIO_MARKUP_ATTRS } from './prompt-audio.js';
 
 export const MODEL_HTML_FORBIDDEN_TAGS = [
   'script',
@@ -110,7 +111,8 @@ const CONFIG: Config = {
   ADD_TAGS: (tagName: string) => EXTRA_TAGS.has(tagName) || PREFIXED_TAG.test(tagName),
   ADD_ATTR: EXTRA_ATTRS,
   FORBID_TAGS: MODEL_HTML_FORBIDDEN_TAGS,
-  FORBID_ATTR: MODEL_HTML_FORBIDDEN_ATTRS,
+  // Security first, then the switches a model setting replaces, which their feature owns.
+  FORBID_ATTR: [...MODEL_HTML_FORBIDDEN_ATTRS, ...AUTOPLAY_AUDIO_MARKUP_ATTRS],
   ALLOW_UNKNOWN_PROTOCOLS: false,
   RETURN_TRUSTED_TYPE: false,
 };

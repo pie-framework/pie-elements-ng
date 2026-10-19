@@ -58,17 +58,18 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(prompt.classList.contains('legend')).toBe(true);
   });
 
-  it('names the group in the item language', () => {
+  it('names the group in the item language', async () => {
     render(item({ language: 'es_ES' }));
-    expect(screen.getByRole('radiogroup', { name: 'Opciones de respuesta' })).toBeInTheDocument();
+    // Rendered without the element, nothing preloads: the component loads its catalog itself.
+    expect(await screen.findByRole('radiogroup', { name: 'Opciones de respuesta' })).toBeInTheDocument();
   });
 
   it.each([
     ['en_US', 'Part A', 'Part A, answer choices'],
     ['es_ES', 'Parte A', 'Parte A, opciones de respuesta'],
-  ])('names an EBSR part group by its part label in %s', (language, partLabel, name) => {
+  ])('names an EBSR part group by its part label in %s', async (language, partLabel, name) => {
     render(item({ language, partLabel }));
-    expect(screen.getByRole('radiogroup', { name })).toBeInTheDocument();
+    expect(await screen.findByRole('radiogroup', { name })).toBeInTheDocument();
   });
 
   it('names choices from their labels by default, as #404 does', () => {
@@ -93,8 +94,9 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
   });
 
-  it('keeps the note in the item language and out of read-aloud', () => {
+  it('keeps the note in the item language and out of read-aloud', async () => {
     render(item({ language: 'es_ES', mathOutsideNames: true }));
+    await screen.findByRole('radiogroup', { name: 'Opciones de respuesta' });
     const [math] = screen.getAllByRole('radio');
     const note = document.getElementById((math.getAttribute('aria-labelledby') || '').split(' ')[1]);
 

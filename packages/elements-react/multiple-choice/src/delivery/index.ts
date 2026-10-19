@@ -14,6 +14,7 @@ import {
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { MATH_OUTSIDE_NAMES, subscribeAccessibilitySupports } from './accessibility-context.js';
 import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+import { autoplayAudioOn, promptAudioPending, trackPromptAudioFailure } from '@pie-element/shared-utils';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -44,9 +45,8 @@ const renderUi =
 const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 import { exceedsMaxSelections } from './utils.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { isLocaleReady, loadLocale, stampElementLanguage } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 const log = debug('pie-ui:multiple-choice');
 
@@ -55,16 +55,8 @@ export const isComplete = (session, model, audioComplete, elementContext) => {
 
   // check audio completion if the setting is enabled and audio actually exists,
   // whether the audio is started by autoplay or by the student
-  if (completeAudioEnabled && !audioComplete) {
-    if (elementContext) {
-      const audio = elementContext.querySelector('audio');
-      const isInsidePrompt = audio && audio.closest('.preview-prompt');
-
-      // only require audio completion if audio exists and is inside the prompt
-      if (audio && isInsidePrompt) {
-        return false;
-      }
-    }
+  if (completeAudioEnabled && promptAudioPending(elementContext, session, audioComplete)) {
+    return false;
   }
 
   if (!session || !session.value) {
@@ -157,6 +149,12 @@ export default class MultipleChoice extends HTMLElement {
     this._rerender = debounce(
       () => {
         if (this._model && this._session) {
+          // Render once every catalog on the render path holds the item language, so no
+          // English frame precedes it.
+          if (!isLocaleReady(this._model.language)) {
+            void loadLocale(this._model.language).then(() => this._rerender());
+            return;
+          }
           var element = React.createElement(Main, {
             model: this._model,
             session: this._session,
@@ -169,17 +167,13 @@ export default class MultipleChoice extends HTMLElement {
           });
 
           //TODO: aria-label is set in the _rerender because we need to change it when the model.choiceMode is updated. Consider revisiting the placement of the aria-label setting in the _rerender
+          const i18n = catalogs.forLocale(this._model.language);
           this.setAttribute(
             'aria-label',
-            translator.t(
-              this._model.choiceMode === 'radio'
-                ? 'multipleChoice.multipleChoiceQuestion'
-                : 'multipleChoice.multipleCorrectAnswerQuestion',
-              { lng: this._model.language },
-            ),
+            i18n.t(this._model.choiceMode === 'radio' ? 'multipleChoiceQuestion' : 'multipleCorrectAnswerQuestion'),
           );
           this.setAttribute('role', 'region');
-          this.setLangAttribute();
+          stampElementLanguage(this, this._model.language);
 
           this._initMathObserver();
 
@@ -270,12 +264,6 @@ export default class MultipleChoice extends HTMLElement {
 
   onShowCorrectToggle() {
     renderMath(this);
-  }
-
-  setLangAttribute() {
-    const language = this._model && typeof this._model.language ? this._model.language : '';
-    const lang = language ? language.slice(0, 2) : 'en';
-    this.setAttribute('lang', lang);
   }
 
   set model(s) {
@@ -420,7 +408,9 @@ export default class MultipleChoice extends HTMLElement {
 
           if (!this._model) return;
 
-          const { autoplayAudioEnabled, completeAudioEnabled } = this._model;
+          const { completeAudioEnabled } = this._model;
+          // A hold from the item player reads as autoplay off.
+          const autoplayAudioEnabled = autoplayAudioOn(this._model);
 
           if (!autoplayAudioEnabled && !completeAudioEnabled) return;
           if (audio && !isInsidePrompt) return;
@@ -474,6 +464,9 @@ export default class MultipleChoice extends HTMLElement {
           };
 
           audio.addEventListener('ended', handleEnded);
+
+          // Audio that cannot load stops holding completion back.
+          this._stopTrackingAudioFailure = trackPromptAudioFailure(audio, () => this._dispatchResponseChanged());
 
           // store references to remove later
           this._audio = audio;
@@ -538,6 +531,7 @@ export default class MultipleChoice extends HTMLElement {
     if (this._audio) {
       this._audio.removeEventListener('playing', this._handlePlaying);
       this._audio.removeEventListener('ended', this._handleEnded);
+      this._stopTrackingAudioFailure?.();
       this._audio = null;
     }
 

@@ -1,5 +1,33 @@
 # @pie-lib/mask-markup
 
+## 4.1.1
+
+### Patch Changes
+
+- [#466](https://github.com/pie-framework/pie-elements-ng/pull/466) [`5436a2b`](https://github.com/pie-framework/pie-elements-ng/commit/5436a2b1a42eaba43a4fefed83650e57722572e4) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - The open dropdown menu now has a border, matching the trigger button. Its surface resolves to the page background (`--pie-background`), so without a border the menu blended into the item content in dark themes.
+
+- [#473](https://github.com/pie-framework/pie-elements-ng/pull/473) [`0768a1e`](https://github.com/pie-framework/pie-elements-ng/commit/0768a1e45954c62ec613166594e6f62ae4eed7cc) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(drag-in-the-blank): rank any touched blank ahead of the choice po…
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/drag@5.0.6
+  - @pie-lib/editable-html-tip-tap@3.1.1
+
+## 4.1.0
+
+### Minor Changes
+
+- [#442](https://github.com/pie-framework/pie-elements-ng/pull/442) [`026d10e`](https://github.com/pie-framework/pie-elements-ng/commit/026d10ed3f16b1e016f8ad2d25facce600080857) Thanks [@lakatosandrei](https://github.com/lakatosandrei)! - Extended text entry and explicit constructed response save the student's response once the student stops typing for the player's idle-save delay, not only when the editor loses focus. The player sets the delay through `sessionCommitContext` from `@pie-players/pie-context` (`idleSaveDelayMs`); without a provider, or with the field left out, the delay is 1500 ms, and `0` saves on blur only. `@pie-element/shared-player-events` exports `subscribeIdleSaveDelay`, `resolveIdleSaveDelay` and `DEFAULT_IDLE_SAVE_DELAY_MS` for this. `ConstructedResponse` in `@pie-lib/mask-markup` passes a new `idleSaveDelay` prop on to each blank's editor. Its `onChange` also gets the changed blank's id as a second argument, which explicit constructed response uses so a blank's save no longer overwrites another blank's answer. A player's `commitPendingSession()` now also sends a save still waiting in the response editor, so the session it commits holds what the student typed in the last delay.
+
+### Patch Changes
+
+- Updated dependencies [[`ee6c6a3`](https://github.com/pie-framework/pie-elements-ng/commit/ee6c6a37ca728f6842339c5e8c78ae1370a4c0e6), [`fba9a4a`](https://github.com/pie-framework/pie-elements-ng/commit/fba9a4a54cc58a44691931b2df78f3bc7041f716), [`6119567`](https://github.com/pie-framework/pie-elements-ng/commit/61195673dd2c1eec5c0eb1dbc92e0132ad0d216a), [`cf587a2`](https://github.com/pie-framework/pie-elements-ng/commit/cf587a2502b8707a71708c58e0b6c610306ed198), [`e9fef46`](https://github.com/pie-framework/pie-elements-ng/commit/e9fef46f9bc652603fac3732f2ae92a680b3d86b), [`61787ab`](https://github.com/pie-framework/pie-elements-ng/commit/61787ab9e601cb7e119ea90258fce530db05d9fc), [`6db1c21`](https://github.com/pie-framework/pie-elements-ng/commit/6db1c2148d603b26b2ad57b4a471b0184ac1c422), [`d487690`](https://github.com/pie-framework/pie-elements-ng/commit/d4876907c31e3be17a8d19de2a722a120ddb63ea)]:
+  - @pie-lib/render-ui@8.0.5
+  - @pie-lib/editable-html-tip-tap@3.1.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.6
+  - @pie-lib/drag@5.0.5
+
 ## 4.0.4
 
 ### Patch Changes

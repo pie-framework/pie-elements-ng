@@ -22,7 +22,7 @@ const answered = { value: ['a'] };
 
 function contextWithPromptAudio() {
   const context = document.createElement('div');
-  context.innerHTML = '<div class="preview-prompt"><audio></audio></div>';
+  context.innerHTML = '<div class="preview-prompt"><audio src="prompt.mp3"></audio></div>';
   return context;
 }
 
@@ -82,7 +82,7 @@ describe('multiple-choice prompt audio tracking', () => {
 
     // Main is mocked, so stand in for the markup it renders around the prompt.
     element.innerHTML =
-      '<div class="main-container"><div class="preview-prompt"><audio></audio></div></div>';
+      '<div class="main-container"><div class="preview-prompt"><audio src="prompt.mp3"></audio></div></div>';
     await Promise.resolve();
 
     const events: CustomEvent[] = [];
@@ -129,5 +129,84 @@ describe('multiple-choice prompt audio tracking', () => {
 
     expect(element.audioComplete).toBe(false);
     expect(element.session.audioEndTime).toBeUndefined();
+  });
+});
+
+describe('multiple-choice autoplay policy', () => {
+  const PROMPT_AUDIO =
+    '<div class="main-container"><div class="preview-prompt"><audio src="prompt.mp3"></audio></div></div>';
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.innerHTML = '';
+  });
+
+  async function mount(modelFlags: Record<string, boolean>, html = PROMPT_AUDIO, session = {}) {
+    const element = document.createElement(TAG) as any;
+    document.body.appendChild(element);
+    element.model = {
+      choiceMode: 'radio',
+      prompt: 'p',
+      language: 'en-US',
+      choices: [{ value: 'a', label: 'A' }],
+      ...modelFlags,
+    };
+    element.session = { value: ['a'], ...session };
+    vi.advanceTimersByTime(100);
+    element.innerHTML = html;
+    await Promise.resolve();
+    const events: CustomEvent[] = [];
+    element.addEventListener('session-changed', (event: Event) => {
+      events.push(event as CustomEvent);
+    });
+    const done = () => isComplete(element.session, element._model, element.audioComplete, element);
+    return { element, events, done, audio: element.querySelector('audio') as HTMLAudioElement };
+  }
+
+  it('offers to enable blocked autoplay when autoplay is on', async () => {
+    const { element } = await mount({ autoplayAudioEnabled: true });
+
+    vi.advanceTimersByTime(600);
+
+    expect(element.querySelector('.play-audio-info')).not.toBeNull();
+  });
+
+  it('treats a hold as autoplay off', async () => {
+    const { element } = await mount({ autoplayAudioEnabled: true, autoplayAudioHeld: true });
+
+    vi.advanceTimersByTime(600);
+
+    expect(element.querySelector('.play-audio-info')).toBeNull();
+  });
+
+  it('stops waiting on audio that fails to load', async () => {
+    const { events, done, audio } = await mount({ completeAudioEnabled: true });
+
+    expect(done()).toBe(false);
+
+    audio.dispatchEvent(new Event('error'));
+    vi.advanceTimersByTime(10);
+
+    expect(done()).toBe(true);
+    expect(events.at(-1)?.detail.complete).toBe(true);
+  });
+
+  it('does not wait on audio the item declares but does not supply', async () => {
+    const { done } = await mount(
+      { completeAudioEnabled: true },
+      '<div class="main-container"><div class="preview-prompt"><audio><source src=""></audio></div></div>',
+    );
+
+    expect(done()).toBe(true);
+  });
+
+  it('does not wait on audio a resumed session already played', async () => {
+    const { done } = await mount({ completeAudioEnabled: true }, PROMPT_AUDIO, { audioEndTime: 1 });
+
+    expect(done()).toBe(true);
   });
 });

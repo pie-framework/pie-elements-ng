@@ -200,6 +200,12 @@ export async function model(
   partA.prompt = normalizedQuestion.partA.promptEnabled ? normalizedQuestion.partA.prompt : null;
   partB.prompt = normalizedQuestion.partB.promptEnabled ? normalizedQuestion.partB.prompt : null;
 
+  // A hold on the item holds both parts, which each read only their own model.
+  if (normalizedQuestion.autoplayAudioHeld) {
+    partA.autoplayAudioHeld = true;
+    partB.autoplayAudioHeld = true;
+  }
+
   return new Promise((resolve) => {
     resolve({
       disabled: env.mode !== 'gather',

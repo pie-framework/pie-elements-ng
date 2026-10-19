@@ -5,12 +5,15 @@ import { createRoot } from 'react-dom/client';
 import {
   ModelSetEvent,
   SessionChangedEvent,
+  DEFAULT_IDLE_SAVE_DELAY_MS,
   createSessionNotifier,
   flushSessionNotifiers,
+  subscribeIdleSaveDelay,
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import Main from './main.js';
+import { flushPendingEditorSaves } from '@pie-lib/editable-html-tip-tap';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
@@ -32,6 +35,10 @@ export default class InlineDropdown extends HTMLElement {
     this._model = null;
     this._session = null;
     this._root = null;
+    this._disconnecting = false;
+    // The player sets it through `sessionCommitContext`; the model carries none. See PIE-916.
+    this._idleSaveDelay = DEFAULT_IDLE_SAVE_DELAY_MS;
+    this._unsubscribeIdleSaveDelay = null;
 
     // The session is written synchronously on commit; the dispatch and the
     // re-render are what get coalesced, which keeps the render cadence the
@@ -79,6 +86,10 @@ export default class InlineDropdown extends HTMLElement {
   }
 
   _render: any = () => {
+    if (this._disconnecting) {
+      return;
+    }
+
     if (this._model && this._session) {
       let elem = React.createElement(Main, {
         choices: this._model.choices,
@@ -93,6 +104,7 @@ export default class InlineDropdown extends HTMLElement {
         note: this._model.note,
         onChange: this.changeSession,
         playerSpellCheckEnabled: this._model.playerSpellCheckEnabled,
+        idleSaveDelay: this._idleSaveDelay,
         prompt: this._model.prompt,
         rationale: this._model.rationale,
         role: this._model.role,
@@ -116,8 +128,11 @@ export default class InlineDropdown extends HTMLElement {
     this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.session && !!this.session.value));
   };
 
-  changeSession: any = (value) => {
-    this.session.value = value;
+  // A blank builds `value` on the session from the last render, and the re-render after a commit
+  // waits for the notifier, so another blank's commit since then would be overwritten. With the
+  // blank's id, only that blank's answer is written.
+  changeSession: any = (value, id) => {
+    this.session.value = id === undefined ? value : { ...this.session.value, [id]: value[id] };
     this._sessionNotifier.notify();
   };
 
@@ -125,15 +140,43 @@ export default class InlineDropdown extends HTMLElement {
     this.setRegionLabel();
     this.setAttribute('role', 'region');
 
+    this._unsubscribeIdleSaveDelay?.();
+    this._unsubscribeIdleSaveDelay = subscribeIdleSaveDelay(this, (delay) => {
+      if (delay === this._idleSaveDelay) {
+        return;
+      }
+
+      this._idleSaveDelay = delay;
+      this._render();
+    });
+
     this._render();
   }
 
-  disconnectedCallback() {
-    flushSessionNotifiers(this);
+  // A prototype method, so the session notifier's `commitPendingSession` wraps it and runs it first:
+  // an idle save still waiting in a response editor reaches the session before the notifiers flush.
+  // A class field would be an own property, which the notifier leaves alone. See PIE-916.
+  commitPendingSession() {
+    flushPendingEditorSaves(this);
+  }
 
-    if (this._root) {
-      this._root.unmount();
-      this._root = null;
+  disconnectedCallback() {
+    this._unsubscribeIdleSaveDelay?.();
+    this._unsubscribeIdleSaveDelay = null;
+
+    // Unmount first: the response editor sends its pending idle save as it unmounts, and that
+    // write has to be in the session before the notifiers flush. Nothing re-renders meanwhile.
+    this._disconnecting = true;
+
+    try {
+      if (this._root) {
+        this._root.unmount();
+        this._root = null;
+      }
+
+      flushSessionNotifiers(this);
+    } finally {
+      this._disconnecting = false;
     }
   }
 }

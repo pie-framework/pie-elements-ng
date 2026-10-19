@@ -79,8 +79,8 @@ export class Choice extends React.Component {
       hoverAnswerStrokeColor,
       hoverAnswerStrokeWidth,
       tagName,
-      language,
       mathOutsideNames,
+      pickTheAnswerBelow,
     } = this.props;
     
     const { isHovered } = this.state;
@@ -105,8 +105,8 @@ export class Choice extends React.Component {
       selectedAnswerStrokeColor,
       selectedAnswerStrokeWidth,
       tagName,
-      language,
       mathOutsideNames,
+      pickTheAnswerBelow,
     };
 
     const normalizeStrokeWidth = (width) => {
@@ -199,8 +199,8 @@ Choice.propTypes = {
   hoverAnswerStrokeWidth: PropTypes.string,
   tagName: PropTypes.string,
   isSelectionButtonBelow: PropTypes.bool,
-  language: PropTypes.string,
   mathOutsideNames: PropTypes.bool,
+  pickTheAnswerBelow: PropTypes.string,
 };
 
 export default Choice;

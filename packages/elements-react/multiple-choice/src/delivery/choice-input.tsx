@@ -39,11 +39,7 @@ const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapR
 import Radio from '@mui/material/Radio';
 import classNames from 'clsx';
 
-import Translator from '@pie-lib/translator';
-
 import FeedbackTick from './feedback-tick.js';
-
-const { translator } = Translator;
 
 const MATH_MARKERS = ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container'];
 
@@ -166,9 +162,11 @@ const StyledCheckboxBase: any = styled(Checkbox, {
       ...styles[key('root')],
       '&.Mui-checked': styles[key('checked')],
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
-      '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
-        borderRadius: '4px',
+      '@media (hover: hover)': {
+        '&:hover:not(.Mui-disabled) svg': {
+          boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
+          borderRadius: '4px',
+        },
       },
     },
     '&.Mui-focusVisible': {
@@ -209,9 +207,11 @@ const StyledRadioBase: any = styled(Radio, {
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
       '&.Mui-focusVisible:not(.Mui-checked)': styles.focusVisibleUnchecked,
       '&.Mui-focusVisible.Mui-checked': styles.focusVisibleChecked,
-      '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
-        borderRadius: '50%',
+      '@media (hover: hover)': {
+        '&:hover:not(.Mui-disabled) svg': {
+          boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
+          borderRadius: '50%',
+        },
       },
     },
     '&.Mui-focusVisible': {
@@ -257,8 +257,9 @@ export class ChoiceInput extends React.Component {
     isEvaluateMode: PropTypes.bool,
     choicesLayout: PropTypes.oneOf(['vertical', 'grid', 'horizontal']),
     isSelectionButtonBelow: PropTypes.bool,
-    language: PropTypes.string,
     mathOutsideNames: PropTypes.bool,
+    // The translated note a math choice's name ends with when math is kept out of names.
+    pickTheAnswerBelow: PropTypes.string,
   };
 
   static defaultProps = {
@@ -327,8 +328,8 @@ export class ChoiceInput extends React.Component {
       checked,
       tagName,
       isSelectionButtonBelow,
-      language,
       mathOutsideNames,
+      pickTheAnswerBelow,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -375,7 +376,7 @@ export class ChoiceInput extends React.Component {
 
     const note = namedByNote ? (
       <SrOnly id={this.noteId} className="pie-sr-only">
-        {translator.t('multipleChoice.pickTheAnswerBelow', { lng: language })}
+        {pickTheAnswerBelow}
       </SrOnly>
     ) : null;
 

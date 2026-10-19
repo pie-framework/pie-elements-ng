@@ -1,0 +1,44 @@
+{
+  "name": "@pie-element/shared-i18n",
+  "version": "0.1.1",
+  "description": "Interface-string i18n engine for PIE elements: typed per-package catalogs, lazy locales, RFC 4647 resolution",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.11"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/i18n"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
+}

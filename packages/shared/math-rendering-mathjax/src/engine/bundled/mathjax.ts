@@ -33,54 +33,8 @@ import { dynamicFonts } from 'virtual:bundled-mathjax-assets';
 import type { MathJaxGlobal } from '../../adapter.js';
 import { assetUrl, MATHJAX_VERSION, type MathjaxAssets, reportNoAssetRoot } from '../../assets.js';
 import { speechWorkerScript, startWorker } from '../../speech-worker.js';
+import { TEX_PACKAGES } from '../../tex-packages.js';
 import { combineDefaults, MathJax } from './global.js';
-
-// The TeX packages `input/tex` preloads, less require and autoload, which load packages through
-// the component loader.
-import '@mathjax/src/js/input/tex/base/BaseConfiguration.js';
-import '@mathjax/src/js/input/tex/ams/AmsConfiguration.js';
-import '@mathjax/src/js/input/tex/newcommand/NewcommandConfiguration.js';
-import '@mathjax/src/js/input/tex/textmacros/TextMacrosConfiguration.js';
-import '@mathjax/src/js/input/tex/noundefined/NoUndefinedConfiguration.js';
-import '@mathjax/src/js/input/tex/configmacros/ConfigMacrosConfiguration.js';
-// The packages autoload loads on the first use of one of their macros.
-import '@mathjax/src/js/input/tex/action/ActionConfiguration.js';
-import '@mathjax/src/js/input/tex/amscd/AmsCdConfiguration.js';
-import '@mathjax/src/js/input/tex/bbox/BboxConfiguration.js';
-import '@mathjax/src/js/input/tex/boldsymbol/BoldsymbolConfiguration.js';
-import '@mathjax/src/js/input/tex/braket/BraketConfiguration.js';
-import '@mathjax/src/js/input/tex/bussproofs/BussproofsConfiguration.js';
-import '@mathjax/src/js/input/tex/cancel/CancelConfiguration.js';
-import '@mathjax/src/js/input/tex/color/ColorConfiguration.js';
-import '@mathjax/src/js/input/tex/enclose/EncloseConfiguration.js';
-import '@mathjax/src/js/input/tex/extpfeil/ExtpfeilConfiguration.js';
-import '@mathjax/src/js/input/tex/html/HtmlConfiguration.js';
-import '@mathjax/src/js/input/tex/mhchem/MhchemConfiguration.js';
-import '@mathjax/src/js/input/tex/unicode/UnicodeConfiguration.js';
-import '@mathjax/src/js/input/tex/verb/VerbConfiguration.js';
-
-export const TEX_PACKAGES = [
-  'base',
-  'ams',
-  'newcommand',
-  'textmacros',
-  'noundefined',
-  'configmacros',
-  'action',
-  'amscd',
-  'bbox',
-  'boldsymbol',
-  'braket',
-  'bussproofs',
-  'cancel',
-  'color',
-  'enclose',
-  'extpfeil',
-  'html',
-  'mhchem',
-  'unicode',
-  'verb',
-];
 
 /** The components this engine takes from `loader.load`. */
 const LOADABLE = ['a11y/assistive-mml'];

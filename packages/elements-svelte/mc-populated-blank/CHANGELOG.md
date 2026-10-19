@@ -1,5 +1,23 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.6
+
+### Patch Changes
+
+- [#476](https://github.com/pie-framework/pie-elements-ng/pull/476) [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293) Thanks [@chillenious](https://github.com/chillenious)! - Prompt audio honours `autoplayAudioHeld`, which pie-players' item player writes when the host holds autoplay: the audio does not start on its own and the learner gets native controls to start it. EBSR holds both parts. The model sanitizer drops authored `autoplay`, so the model setting is the only start. Completion no longer waits on prompt audio that failed to load, has no source, or that a resumed session (`audioEndTime`) already played.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-element/shared-types@0.2.2
+  - @pie-element/shared-controller-utils@0.1.3
+
+## 0.3.5
+
+### Patch Changes
+
+- [#462](https://github.com/pie-framework/pie-elements-ng/pull/462) [`444c24c`](https://github.com/pie-framework/pie-elements-ng/commit/444c24cc4443d6f5a570278a9473cfdf70ee4dfb) Thanks [@chillenious](https://github.com/chillenious)! - Every `./browser/*` module exports `piePackage`, a frozen `{ name, version }` naming the package it was built from, so a host that bundles the module registers it with `registerPreloadedElements` without restating the package and version it installed.
+- Updated dependencies []:
+  - @pie-lib/delivery-events-svelte@0.2.1
+
 ## 0.3.4
 
 ### Patch Changes

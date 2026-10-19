@@ -7,6 +7,7 @@ import {
   collectPublishablePackages,
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
+  fetchUnpublishedPackages,
   isOwnSnapshotVersion,
   manifestChangeShips,
   planDependencyPins,
@@ -422,6 +423,20 @@ describe('published gitHead lookup', () => {
     expect(requested).toEqual(['https://registry.npmjs.org/@pie-element%2Fa/next']);
   });
 
+  it('names the packages whose committed version npm does not hold', async () => {
+    const { fetchImpl } = registry({}, { '@pie-element/a': { '1.0.0': 'a'.repeat(40) } });
+    const failingC = async (url: string) =>
+      url.includes('%2Fc/') ? new Response('error', { status: 502 }) : fetchImpl(url);
+
+    const unpublished = await fetchUnpublishedPackages(
+      PACKAGES.map((pkg) => ({ ...pkg, version: '1.0.0' })),
+      { fetchImpl: failingC }
+    );
+
+    // c's registry error measures it from its version bump, as before.
+    expect([...unpublished]).toEqual(['@pie-element/b']);
+  });
+
   it('reads a missing tag or a registry error as no gitHead', async () => {
     const { fetchImpl } = registry({ '@pie-element/c': 502 });
 
@@ -480,13 +495,14 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
     await write(rootDir, `${dir}/package.json`, JSON.stringify({ name, version }));
   };
 
-  const unreleased = (rootDir: string, head = 'HEAD') =>
+  const unreleased = (rootDir: string, head = 'HEAD', unpublished?: Set<string>) =>
     planSynthesizedChangeset({
       rootDir,
       changedFiles: collectUnreleasedFiles({
         rootDir,
         head,
         packages: collectPublishablePackages(rootDir),
+        unpublished,
       }),
     });
 
@@ -568,8 +584,8 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
     run(rootDir, ['init', '-q', '-b', 'develop']);
     commit(rootDir, 'initial');
 
-    // Its manifest arrived with a version, so the add commit is its release point, and only
-    // code added after it counts.
+    // Its manifest arrived with a version npm holds, as a package moved here from another repo
+    // does, so the add commit is its release point, and only code added after it counts.
     expect(unreleased(rootDir)).toEqual([]);
 
     await write(
@@ -580,6 +596,20 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
     commit(rootDir, 'feat(brand-new): first code');
 
     expect(unreleased(rootDir)).toEqual(['@pie-element/brand-new']);
+  });
+
+  it('reports a new package, whose version npm does not hold, from the commit that adds it', async () => {
+    const rootDir = await makeRepoFixture({
+      ...ELEMENTS,
+      'packages/shared/brand-new': { name: '@pie-element/brand-new' },
+    });
+    run(rootDir, ['init', '-q', '-b', 'develop']);
+    await write(rootDir, 'packages/shared/brand-new/src/index.ts', 'export const a = 1;\n');
+    commit(rootDir, 'feat(brand-new): add the package');
+
+    expect(unreleased(rootDir, 'HEAD', new Set(['@pie-element/brand-new']))).toEqual([
+      '@pie-element/brand-new',
+    ]);
   });
 
   it('does not treat a dependency-only manifest edit as a release point', async () => {
@@ -644,7 +674,11 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
   // Snapshots commit no version, so the last bump in git is the last stable release. Measured
   // from there, every package touched since would republish on every merge.
   describe('measured from the published snapshot', () => {
-    const unreleasedSince = (rootDir: string, gitHeads: Record<string, string | null>) =>
+    const unreleasedSince = (
+      rootDir: string,
+      gitHeads: Record<string, string | null>,
+      unpublished?: Set<string>
+    ) =>
       planSynthesizedChangeset({
         rootDir,
         changedFiles: collectUnreleasedFiles({
@@ -652,6 +686,7 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
           head: 'HEAD',
           packages: collectPublishablePackages(rootDir),
           publishedGitHeads: new Map(Object.entries(gitHeads)),
+          unpublished,
         }),
       });
 
@@ -688,6 +723,23 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
           '@pie-element/multiple-choice': 'f'.repeat(40),
         })
       ).toEqual(['@pie-element/mc-populated-blank', '@pie-element/multiple-choice']);
+    });
+
+    // render-ui's hand-set `8.0.0-next.0` was never published, but its snapshots were.
+    it('measures from the snapshot even when npm does not hold the committed version', async () => {
+      const rootDir = await makeGitFixture();
+      commit(rootDir, 'initial');
+
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+      const snapshotted = commit(rootDir, 'feat(mc): a');
+
+      expect(
+        unreleasedSince(
+          rootDir,
+          { '@pie-element/mc-populated-blank': snapshotted },
+          new Set(['@pie-element/mc-populated-blank'])
+        )
+      ).toEqual([]);
     });
 
     // A version edited by hand, such as render-ui's base raised past legacy's 7.x, is a bump in

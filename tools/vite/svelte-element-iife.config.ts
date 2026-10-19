@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
+import { englishOnlyCatalogs } from './iife-english-only-catalogs';
 
 const packageDir = process.cwd();
 const entry = resolve(packageDir, 'src/index.iife.ts');
@@ -31,6 +32,7 @@ export default defineConfig({
       },
       emitCss: false,
     }),
+    englishOnlyCatalogs(),
   ],
   build: {
     emptyOutDir: false,

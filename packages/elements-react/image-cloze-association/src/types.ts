@@ -161,6 +161,8 @@ export interface ImageClozeAssociationModel extends PieModel {
   fontSizeFactor?: number;
   /** Indicates if the audio for the prompt should autoplay */
   autoplayAudioEnabled?: boolean;
+  /** Set by the player when the host holds autoplay; it outranks `autoplayAudioEnabled` */
+  autoplayAudioHeld?: boolean;
   /** Indicates if the audio should reach the end before the item can be marked as 'complete' */
   completeAudioEnabled?: boolean;
   /** Indicates if the audio should be replaced with a custom audio button */

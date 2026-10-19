@@ -3,12 +3,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DragProvider } from '@pie-lib/drag';
-import { DragOverlay, rectIntersection } from '@dnd-kit/core';
+import { DragOverlay } from '@dnd-kit/core';
 import Choices from './choices/index.js';
 import Choice from './choices/choice.js';
 import Blank from './components/blank.js';
 import { withMask } from './with-mask.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+import { blanksFirst } from './collision-detection.js';
 
 // A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
 // the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
@@ -311,7 +312,7 @@ export default class DragInTheBlank extends React.Component {
         onDragStart={this.handleDragStart}
         onDragEnd={this.handleDragEnd}
         onDragCancel={this.onDragCancel}
-        collisionDetection={rectIntersection}
+        collisionDetection={blanksFirst}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
       >
