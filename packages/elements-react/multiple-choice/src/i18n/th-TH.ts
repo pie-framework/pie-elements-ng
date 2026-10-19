@@ -8,7 +8,7 @@ export default {
   minmaxSelectionsEqual: 'เลือก {minSelections} รายการ',
   minmaxSelectionsRange: 'เลือก {minSelections} ถึง {maxSelections} รายการ',
   maxSelections: {
-    other: 'ตอบได้เพียง {count} คำตอบ',
+    other: 'เลือกได้เพียง {count} รายการ',
   },
   showTeacherInstructions: 'แสดงคำแนะนำสำหรับครู',
   hideTeacherInstructions: 'ซ่อนคำแนะนำสำหรับครู',

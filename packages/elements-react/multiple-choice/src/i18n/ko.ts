@@ -8,7 +8,7 @@ export default {
   minmaxSelectionsEqual: '{minSelections}개를 선택해 주세요.',
   minmaxSelectionsRange: '{minSelections}개에서 {maxSelections}개 사이로 선택해 주세요.',
   maxSelections: {
-    other: '{count}개의 답만 허용됩니다.',
+    other: '{count}개의 답안만 허용됩니다.',
   },
   showTeacherInstructions: '교사 지침 표시',
   hideTeacherInstructions: '교사 지침 숨기기',

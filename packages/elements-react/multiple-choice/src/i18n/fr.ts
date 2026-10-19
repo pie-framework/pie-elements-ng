@@ -3,7 +3,7 @@ import type { MessageCatalog } from '@pie-element/shared-i18n';
 export default {
   multipleChoiceQuestion: 'Question à choix multiple',
   multipleCorrectAnswerQuestion: 'Question à plusieurs réponses correctes',
-  multipleSelectQuestion: 'Question à choix multiples',
+  multipleSelectQuestion: 'Question à réponses multiples',
   minSelections: 'Sélectionnez au moins {minSelections}.',
   minmaxSelectionsEqual: 'Sélectionnez {minSelections}.',
   minmaxSelectionsRange: 'Sélectionnez entre {minSelections} et {maxSelections}.',

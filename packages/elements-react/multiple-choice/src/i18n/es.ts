@@ -8,8 +8,8 @@ export default {
   minmaxSelectionsEqual: 'Seleccione {minSelections}.',
   minmaxSelectionsRange: 'Seleccione entre {minSelections} y {maxSelections}.',
   maxSelections: {
-    one: 'Sólo se permite {count} respuesta.',
-    other: 'Sólo se permiten {count} respuestas.',
+    one: 'Solo se permite {count} respuesta.',
+    other: 'Solo se permiten {count} respuestas.',
   },
   showTeacherInstructions: 'Mostrar instrucciones para el maestro',
   hideTeacherInstructions: 'Ocultar instrucciones para el maestro',
