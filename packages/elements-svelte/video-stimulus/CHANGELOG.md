@@ -1,5 +1,12 @@
 # @pie-element/video-stimulus
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [[`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3)]:
+  - @pie-element/shared-types@0.2.2
+
 ## 0.1.4
 
 ### Patch Changes

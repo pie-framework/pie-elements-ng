@@ -1,5 +1,16 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640)]:
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/drag@5.0.6
+  - @pie-lib/math-input@9.0.6
+  - @pie-lib/math-toolbar@4.0.6
+
 ## 3.1.0
 
 ### Minor Changes

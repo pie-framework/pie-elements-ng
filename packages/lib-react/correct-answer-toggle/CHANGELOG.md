@@ -1,5 +1,16 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.6
+
+### Patch Changes
+
+- [#475](https://github.com/pie-framework/pie-elements-ng/pull/475) [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d) Thanks [@chillenious](https://github.com/chillenious)! - These libraries render their labels from their own catalogs through `@pie-element/shared-i18n` in place of `@pie-lib/translator`, in the language passed as before. Under an element that has not loaded that language, they render one English frame first. An element's IIFE ships their English only; its host serves another locale through `registerMessages`.
+
+- [#481](https://github.com/pie-framework/pie-elements-ng/pull/481) [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640) Thanks [@chillenious](https://github.com/chillenious)! - Ship eleven generated interface locales alongside the carried `es`: `th-TH`, `en-GB`, `en-AU`, `fr`, `ar`, `pt`, `ko`, `ja`, `zh`, `cy` and `sv`, completing the locale inventory pie-players ships. Each is machine-generated and unreviewed, recorded `generated` against the `en-US` hash in the package's `catalog-manifest.json`; Welsh and Arabic carry their full CLDR plural-category sets. Browser ESM splits each locale into a chunk fetched on first use, the IIFE stays English-only (a host serves any locale through `registerMessages`), and a webpack build of `./delivery` inlines the locale bytes without executing them on an English page. Until the interface-locale channel lands (Phase 2), element chrome reaches these locales only through `model.language`.
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`6f14e54`](https://github.com/pie-framework/pie-elements-ng/commit/6f14e54211250dd1180d4c687a0057c7a7e60a20)]:
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-i18n@0.1.1
+
 ## 5.0.5
 
 ### Patch Changes

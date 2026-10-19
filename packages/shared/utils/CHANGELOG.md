@@ -1,5 +1,15 @@
 # @pie-element/shared-utils
 
+## 0.1.5
+
+### Patch Changes
+
+- [#476](https://github.com/pie-framework/pie-elements-ng/pull/476) [`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293) Thanks [@chillenious](https://github.com/chillenious)! - Prompt audio honours `autoplayAudioHeld`, which pie-players' item player writes when the host holds autoplay: the audio does not start on its own and the learner gets native controls to start it. EBSR holds both parts. The model sanitizer drops authored `autoplay`, so the model setting is the only start. Completion no longer waits on prompt audio that failed to load, has no source, or that a resumed session (`audioEndTime`) already played.
+
+- [#477](https://github.com/pie-framework/pie-elements-ng/pull/477) [`2751283`](https://github.com/pie-framework/pie-elements-ng/commit/275128308e656ed8d9296f5e49b4ff891245206c) Thanks [@chillenious](https://github.com/chillenious)! - refactor(shared-utils): move the autoplay strip into a prompt-audio feature list (PIE-1286)
+- Updated dependencies [[`4d6379c`](https://github.com/pie-framework/pie-elements-ng/commit/4d6379cf5c32a6e89ba923cf167f125307d027e3)]:
+  - @pie-element/shared-types@0.2.2
+
 ## 0.1.4
 
 ### Patch Changes

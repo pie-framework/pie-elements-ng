@@ -1,5 +1,17 @@
 # @pie-lib/charting
 
+## 8.0.6
+
+### Patch Changes
+
+- [#470](https://github.com/pie-framework/pie-elements-ng/pull/470) [`aaf6107`](https://github.com/pie-framework/pie-elements-ng/commit/aaf6107ee7dd6ed68adb503037c7d4438ffb2c8f) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(charting): render numeric axis labels as math, aligned and in place PIE-1249
+- Updated dependencies [[`306f0fd`](https://github.com/pie-framework/pie-elements-ng/commit/306f0fd281436a318a3c7b7d051e8bb65249b293), [`d6b12ad`](https://github.com/pie-framework/pie-elements-ng/commit/d6b12ad98e8c9417588803b1cfaaed60dcebd18d), [`311d768`](https://github.com/pie-framework/pie-elements-ng/commit/311d768af33682ddbaf0e4e856a5ea026423f551), [`b6644b7`](https://github.com/pie-framework/pie-elements-ng/commit/b6644b7af119bb2bc38a8608d9e2695d9ece6640), [`5f6567b`](https://github.com/pie-framework/pie-elements-ng/commit/5f6567b3823809a52bf483334ea51308af2bac13), [`0ecc727`](https://github.com/pie-framework/pie-elements-ng/commit/0ecc727bcc895e989126c8f0fba4471eb41c0648)]:
+  - @pie-element/shared-utils@0.1.5
+  - @pie-lib/render-ui@8.0.6
+  - @pie-element/shared-math-rendering-mathjax@0.1.7
+  - @pie-lib/plot@5.0.6
+  - @pie-lib/config-ui@14.0.6
+
 ## 8.0.5
 
 ### Patch Changes
