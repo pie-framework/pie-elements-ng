@@ -67,6 +67,12 @@
   },
   "overrides": [
     {
+      "includes": ["packages/shared/i18n/tests/i18n-conformance-fixtures.json"],
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
       "includes": ["**/*.svelte"],
       "linter": {
         "rules": {
