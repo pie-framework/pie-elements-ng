@@ -70,4 +70,23 @@ describe('media dialog', () => {
     expect(hiddenBodyChildren()).toEqual([]);
     expect(document.body.children).toHaveLength(1);
   });
+
+  it('unmounts the dialog a second one replaces', async () => {
+    const page = document.createElement('main');
+    document.body.appendChild(page);
+    document.body.style.overflow = 'auto';
+
+    act(() => insertDialog({ type: 'video', callback: vi.fn(), options: {} }));
+    await openDialog();
+    act(() => insertDialog({ type: 'audio', callback: vi.fn(), options: {} }));
+    await openDialog();
+    expect(screen.getAllByRole('dialog', { hidden: true })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog', { hidden: true })).toBeNull());
+    expect(hiddenBodyChildren()).toEqual([]);
+    expect(document.body.children).toHaveLength(1);
+    expect(document.body.style.overflow).toBe('auto');
+  });
 });

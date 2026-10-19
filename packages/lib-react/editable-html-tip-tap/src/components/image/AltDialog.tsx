@@ -34,10 +34,6 @@ export class AltDialog extends React.Component {
     onClose();
   };
 
-  handleOverflow: any = () => {
-    document.body.style.removeProperty('overflow');
-  };
-
   render() {
     const { value } = this.state;
 
@@ -48,7 +44,6 @@ export class AltDialog extends React.Component {
         id="text-dialog"
         hideBackdrop
         disableScrollLock
-        onEntered={this.handleOverflow}
       >
         <DialogContent>
           <div style={{ display: 'flex' }}>

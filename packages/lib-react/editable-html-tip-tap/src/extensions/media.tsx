@@ -98,29 +98,36 @@ export const Media = Node.create({
   },
 });
 
-const removeDialogs = () => {
-  const prevDialogs = document.querySelectorAll('.insert-media-dialog');
-
-  prevDialogs.forEach((s) => s.remove());
-};
+// Unmounting runs MUI's modal cleanup, which lifts the aria-hidden it put on the rest of the page.
+let removeOpenDialog = null;
 
 export const insertDialog = (props) => {
+  removeOpenDialog?.();
+
   const newEl = document.createElement('div');
   const { type, callback, options, ...rest } = props;
   const initialBodyOverflow = document.body.style.overflow;
-
-  removeDialogs();
 
   newEl.className = 'insert-media-dialog';
   document.body.style.overflow = 'hidden';
 
   const root = createRoot(newEl);
 
-  const handleClose = (val, data) => {
-    callback(val, data);
+  const remove = () => {
     root.unmount();
     newEl.remove();
     document.body.style.overflow = initialBodyOverflow;
+
+    if (removeOpenDialog === remove) {
+      removeOpenDialog = null;
+    }
+  };
+
+  removeOpenDialog = remove;
+
+  const handleClose = (val, data) => {
+    callback(val, data);
+    remove();
   };
 
   const el = (
