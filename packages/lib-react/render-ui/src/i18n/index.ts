@@ -18,5 +18,6 @@ export const catalogs = defineCatalogs({
     cy: () => import(/* webpackMode: "eager" */ './cy.js'),
     sv: () => import(/* webpackMode: "eager" */ './sv.js'),
     'nl-NL': () => import(/* webpackMode: "eager" */ './nl-NL.js'),
+    ro: () => import(/* webpackMode: "eager" */ './ro.js'),
   },
 });
