@@ -28,7 +28,7 @@
     "d3-selection": "^3.0.0",
     "debug": "^4.1.1",
     "invariant": "^2.2.4",
-    "react-draggable": "^4.7.1",
+    "react-draggable": "^4.7.2",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
