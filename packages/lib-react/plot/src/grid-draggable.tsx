@@ -30,6 +30,17 @@ export const gridDraggable = (opts) => (Comp) => {
     !!opts && isFunction(opts.fromDelta) && isFunction(opts.bounds) && isFunction(opts.anchorPoint),
     'You must supply an object with: { anchorPoint: Function, fromDelta: Function, bounds: Function }',
   );
+
+  // DraggableCore needs a DOM node for its touchstart listener, and finds one with
+  // ReactDOM.findDOMNode unless it gets a nodeRef; React 19 removes findDOMNode. The <g> supplies
+  // that node, and the mouse and touch-end handlers DraggableCore clones onto its child still
+  // reach Comp, so the mouse drag target stays where Comp puts it.
+  const DragNode = ({ dragNodeRef, ...props }) => (
+    <g ref={dragNodeRef}>
+      <Comp {...props} />
+    </g>
+  );
+
   return class GridDraggable extends React.Component {
     static propTypes = {
       disabled: PropTypes.bool,
@@ -40,6 +51,8 @@ export const gridDraggable = (opts) => (Comp) => {
       onMove: PropTypes.func,
       graphProps: GraphPropsType.isRequired,
     };
+
+    nodeRef = React.createRef();
 
     constructor(props) {
       super(props);
@@ -338,6 +351,7 @@ export const gridDraggable = (opts) => (Comp) => {
 
       return (
         <DraggableCore
+          nodeRef={this.nodeRef}
           onMouseDown={onMouseDown}
           onStart={this.onStart}
           onDrag={this.onDrag}
@@ -345,7 +359,13 @@ export const gridDraggable = (opts) => (Comp) => {
           axis={opts.axis || 'both'}
           grid={[grid.x, grid.y]}
         >
-          <Comp {...rest} disabled={disabled} isDragging={isDragging} onClick={isDragging ? undefined : onClick} />
+          <DragNode
+            dragNodeRef={this.nodeRef}
+            {...rest}
+            disabled={disabled}
+            isDragging={isDragging}
+            onClick={isDragging ? undefined : onClick}
+          />
         </DraggableCore>
       );
     }

@@ -9,7 +9,7 @@ const StyledPath: any = styled('path')({
   fill: color.primary(),
 });
 
-export function Arrow({ x, y, direction, className }) {
+export function Arrow({ x = 0, y = 0, direction = 'left', className }) {
   let transform = `translate(${x || 0},${y})`;
 
   if (direction && direction === 'right') {
@@ -24,12 +24,6 @@ Arrow.propTypes = {
   x: PropTypes.number,
   direction: PropTypes.oneOf(['left', 'right']),
   className: PropTypes.string,
-};
-
-Arrow.defaultProps = {
-  y: 0,
-  x: 0,
-  direction: 'left',
 };
 
 export default Arrow;

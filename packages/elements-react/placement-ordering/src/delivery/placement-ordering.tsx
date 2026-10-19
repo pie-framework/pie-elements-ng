@@ -1,7 +1,6 @@
 // @ts-nocheck
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import debug from 'debug';
 import { difference, isEqual } from '@pie-element/shared-lodash';
@@ -193,6 +192,8 @@ export class PlacementOrdering extends React.Component {
     session: PropTypes.oneOfType([PropTypes.array.isRequired, PropTypes.object.isRequired]),
   };
 
+  containerRef = React.createRef<HTMLDivElement>();
+
   constructor(props) {
     super(props);
 
@@ -224,10 +225,10 @@ export class PlacementOrdering extends React.Component {
   toggleCorrect = (showingCorrect) => this.setState({ showingCorrect });
 
   componentDidUpdate() {
-    //eslint-disable-next-line
-    const domNode = ReactDOM.findDOMNode(this);
-
-    renderMath(domNode);
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   validateSession: any = ({ model, session }, areChoicesShuffled = false) => {
@@ -609,7 +610,7 @@ export class PlacementOrdering extends React.Component {
         modifiers={[restrictToParentElement]}
         {...getKeyboardDragOptions(includeTargets)}
       >
-        <PlacementOrderingContainer>
+        <PlacementOrderingContainer ref={this.containerRef}>
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
               <StyledCollapsible

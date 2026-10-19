@@ -1,7 +1,6 @@
 // @ts-nocheck
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
@@ -24,18 +23,20 @@ class ResponseAreaComponent extends React.Component {
     responseAreaChoicesError: PropTypes.string,
   };
 
-  componentDidMount() {
-    // eslint-disable-next-line react/no-find-dom-node
-    const domNode = ReactDOM.findDOMNode(this);
+  containerRef = React.createRef<HTMLDivElement>();
 
-    renderMath(domNode);
+  componentDidMount() {
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   render() {
     const { editableHtmlProps, responseAreasError, responseAreaChoicesError } = this.props;
 
     return (
-      <ResponseArea>
+      <ResponseArea ref={this.containerRef}>
         <EditableHtml {...editableHtmlProps} />
         {responseAreasError && <ErrorText>{responseAreasError}</ErrorText>}
         {responseAreaChoicesError && <ErrorText>{responseAreaChoicesError}</ErrorText>}

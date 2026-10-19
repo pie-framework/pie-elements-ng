@@ -1,7 +1,6 @@
 // @ts-nocheck
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { isEmpty } from '@pie-element/shared-lodash';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
@@ -101,6 +100,8 @@ export class InlineDropdown extends React.Component {
     language: PropTypes.string,
   };
 
+  containerRef = React.createRef<HTMLElement>();
+
   static defaultProps = {
     value: {},
   };
@@ -116,10 +117,10 @@ export class InlineDropdown extends React.Component {
   }
 
   componentDidUpdate() {
-    // eslint-disable-next-line
-    const domNode = ReactDOM.findDOMNode(this);
-
-    renderMath(domNode);
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   toggleShowCorrect: any = () => {
@@ -149,7 +150,7 @@ export class InlineDropdown extends React.Component {
     );
 
     return (
-      <StyledUiLayout extraCSSRules={extraCSSRules} style={{ display: `${displayType}` }}>
+      <StyledUiLayout extraCSSRules={extraCSSRules} containerRef={this.containerRef} style={{ display: `${displayType}` }}>
         {mode === 'gather' && (
           <SrOnly>{translator.t('inlineDropdown.inlineDropdownQuestion', { lng: language })}</SrOnly>
         )}

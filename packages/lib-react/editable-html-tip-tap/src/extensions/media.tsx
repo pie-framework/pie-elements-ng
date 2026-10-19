@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import MediaDialog from '../components/media/MediaDialog.js';
@@ -98,26 +98,36 @@ export const Media = Node.create({
   },
 });
 
-const removeDialogs = () => {
-  const prevDialogs = document.querySelectorAll('.insert-media-dialog');
-
-  prevDialogs.forEach((s) => s.remove());
-};
+// Unmounting runs MUI's modal cleanup, which lifts the aria-hidden it put on the rest of the page.
+let removeOpenDialog = null;
 
 export const insertDialog = (props) => {
+  removeOpenDialog?.();
+
   const newEl = document.createElement('div');
   const { type, callback, options, ...rest } = props;
   const initialBodyOverflow = document.body.style.overflow;
 
-  removeDialogs();
-
   newEl.className = 'insert-media-dialog';
   document.body.style.overflow = 'hidden';
 
-  const handleClose = (val, data) => {
-    callback(val, data);
+  const root = createRoot(newEl);
+
+  const remove = () => {
+    root.unmount();
     newEl.remove();
     document.body.style.overflow = initialBodyOverflow;
+
+    if (removeOpenDialog === remove) {
+      removeOpenDialog = null;
+    }
+  };
+
+  removeOpenDialog = remove;
+
+  const handleClose = (val, data) => {
+    callback(val, data);
+    remove();
   };
 
   const el = (
@@ -125,13 +135,12 @@ export const insertDialog = (props) => {
       {...rest}
       uploadSoundSupport={options.uploadSoundSupport}
       type={type}
-      disablePortal={true}
       open={true}
       handleClose={handleClose}
     />
   );
 
-  ReactDOM.render(el, newEl);
+  root.render(el);
 
   document.body.appendChild(newEl);
 };
