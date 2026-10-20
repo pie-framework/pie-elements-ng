@@ -80,7 +80,7 @@
     "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/media-svelte": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "svelte": "^5.57.1",
+    "svelte": "^5.57.2",
     "typescript": "^5.9.3",
     "vite": "^8.3.4",
     "vitest": "^4.1.11"
