@@ -338,3 +338,49 @@ describe('optional peer dependencies', () => {
     ]);
   }, 60_000);
 });
+
+describe('TypeScript sources', () => {
+  it('compiles a generic arrow function in a .ts file and JSX in a .tsx file', async () => {
+    const workspaceDir = makeWorkspace();
+    symlinkSync(
+      realpathSync(join(bundlerNodeModules, 'esbuild-loader')),
+      join(workspaceDir, 'node_modules', 'esbuild-loader'),
+      'dir'
+    );
+    // In a tsx parse `<T>(` opens a JSX tag, so this only compiles as plain TypeScript.
+    write(
+      workspaceDir,
+      'src/keys.ts',
+      'export const sortedKeys = <T>(items: Record<string, T> | undefined) => Object.keys(items || {}).sort();\n'
+    );
+    write(
+      workspaceDir,
+      'src/view.tsx',
+      "export const view = (name: string) => <span title={name}>{name}</span>;\n"
+    );
+    write(
+      workspaceDir,
+      'src/index.ts',
+      [
+        "import { sortedKeys } from './keys';",
+        "import { view } from './view';",
+        'export const keys = sortedKeys({ b: 1, a: 2 });',
+        "export const jsx = typeof view;",
+        '',
+      ].join('\n')
+    );
+    const outputPath = join(workspaceDir, 'out');
+
+    const stats = await runWebpack(
+      createControllerWebpackConfig({
+        context: workspaceDir,
+        entry: { index: './src/index.ts' },
+        outputPath,
+        workspaceDir,
+      })
+    );
+
+    expect(stats.toJson({ errors: true }).errors ?? []).toEqual([]);
+    expect(createRequire(import.meta.url)(join(outputPath, 'index.js')).keys).toEqual(['a', 'b']);
+  }, 60_000);
+});
