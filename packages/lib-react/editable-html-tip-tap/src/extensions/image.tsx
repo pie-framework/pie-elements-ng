@@ -79,13 +79,19 @@ export const ImageUploadNode = Node.create({
 
   addAttributes() {
     return {
-      nodeKey: { default: null },
-      loaded: { default: false },
+      // Markup saved without these attributes (a host can strip what it does not know, and older
+      // content never had them) still has to load as an editable, finished image.
+      nodeKey: { default: null, parseHTML: (el) => el.getAttribute('nodeKey') || newImageNodeKey() },
+      loaded: {
+        default: false,
+        parseHTML: (el) =>
+          el.hasAttribute('loaded') ? el.getAttribute('loaded') !== 'false' : !/^data:/i.test(el.getAttribute('src') ?? ''),
+      },
       deleteStatus: { default: null },
       alignment: { default: null },
       percent: { default: null },
-      width: { default: null },
-      height: { default: null },
+      width: { default: null, parseHTML: (el) => parseInt(el.getAttribute('width'), 10) || null },
+      height: { default: null, parseHTML: (el) => parseInt(el.getAttribute('height'), 10) || null },
       src: { default: null },
       alt: { default: null },
     };
@@ -95,6 +101,10 @@ export const ImageUploadNode = Node.create({
     return [
       {
         tag: 'img[data-type="image-upload-node"]',
+      },
+      // Any other picture, such as the plain <img> older content and the host's saved markup hold.
+      {
+        tag: 'img[src]',
       },
     ];
   },

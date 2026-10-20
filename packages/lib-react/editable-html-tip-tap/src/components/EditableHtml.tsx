@@ -10,7 +10,6 @@ import { CharacterCount } from '@tiptap/extension-character-count';
 import SuperScript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
-import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { ExternalPaste } from '../external-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
@@ -365,7 +364,6 @@ export const EditableHtml = (props) => {
     }),
     SubScript,
     SuperScript,
-    Image,
     ImageUploadNode.configure({
       toolbarOpts: toolbarOptsToUse,
       imageHandling: {

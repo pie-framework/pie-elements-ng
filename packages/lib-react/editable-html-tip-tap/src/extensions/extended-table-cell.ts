@@ -11,7 +11,7 @@ import { scopeAttribute } from './table-semantics.js';
  * (see DivNode) while still allowing other blocks (lists, headings, images, …).
  */
 const TABLE_CELL_BLOCK_CONTENT =
-  '(div | paragraph | heading | bulletList | orderedList | blockquote | codeBlock | horizontalRule | image | imageUploadNode)+';
+  '(div | paragraph | heading | bulletList | orderedList | blockquote | codeBlock | horizontalRule | imageUploadNode)+';
 
 export const ExtendedTableCell = TableCell.extend({
   content: TABLE_CELL_BLOCK_CONTENT,
