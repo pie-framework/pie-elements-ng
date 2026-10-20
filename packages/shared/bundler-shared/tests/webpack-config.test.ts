@@ -356,7 +356,7 @@ describe('TypeScript sources', () => {
     write(
       workspaceDir,
       'src/view.tsx',
-      "export const view = (name: string) => <span title={name}>{name}</span>;\n"
+      'export const view = (name: string) => <span title={name}>{name}</span>;\n'
     );
     write(
       workspaceDir,
@@ -365,7 +365,7 @@ describe('TypeScript sources', () => {
         "import { sortedKeys } from './keys';",
         "import { view } from './view';",
         'export const keys = sortedKeys({ b: 1, a: 2 });',
-        "export const jsx = typeof view;",
+        'export const jsx = typeof view;',
         '',
       ].join('\n')
     );

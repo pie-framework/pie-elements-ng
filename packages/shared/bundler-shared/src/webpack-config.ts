@@ -185,10 +185,20 @@ const moduleRules: webpack.RuleSetRule[] = [
     oneOf: [
       {
         test: /\.tsx$/,
-        use: [{ loader: 'esbuild-loader', options: { loader: 'tsx', target: 'es2015', legalComments: 'none' } }],
+        use: [
+          {
+            loader: 'esbuild-loader',
+            options: { loader: 'tsx', target: 'es2015', legalComments: 'none' },
+          },
+        ],
       },
       {
-        use: [{ loader: 'esbuild-loader', options: { loader: 'ts', target: 'es2015', legalComments: 'none' } }],
+        use: [
+          {
+            loader: 'esbuild-loader',
+            options: { loader: 'ts', target: 'es2015', legalComments: 'none' },
+          },
+        ],
       },
     ],
   },
