@@ -49,6 +49,11 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/react-dom"
         update-types: ["version-update:semver-major"]
+      # mathjs 14+ pulls in fraction.js 5, which uses BigInt and `**`. bundler-shared compiles
+      # to es2015, where esbuild lowers `**` to Math.pow, and Math.pow throws on BigInt, so
+      # Number Line never renders. Hold the major until PIE-1006 raises the bundler target.
+      - dependency-name: "mathjs"
+        update-types: ["version-update:semver-major"]
     groups:
       # react and react-dom must be the same exact version and react-konva's minor tracks React's, so
       # minors and patches land together.
