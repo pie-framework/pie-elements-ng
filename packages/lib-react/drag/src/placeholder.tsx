@@ -101,9 +101,10 @@ export const PlaceHolder = (props) => {
 
   // The "type" is only sent through placement-ordering / placeholder
   // It can be "choice" or "target"
-  // We apply a different style for the "choice" type
+  // We apply a different style for the "choice" type, except while a tile is over it: this inline
+  // style would outrank the `over` class, and the slot must light up as a "target" one does
   // For any other type, use a dashed text-coloured border on the page background
-  if (type === 'choice') {
+  if (type === 'choice' && !isOver) {
     style.border = `1px solid ${color.borderDark()}`;
     style.background = color.surface();
   }

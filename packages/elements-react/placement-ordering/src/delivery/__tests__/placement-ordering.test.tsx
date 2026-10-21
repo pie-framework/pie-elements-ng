@@ -158,6 +158,47 @@ describe('PlacementOrdering drag end', () => {
   });
 });
 
+describe('PlacementOrdering drag collision', () => {
+  const rect = (left: number, top: number, width = 100, height = 50) => ({
+    left,
+    top,
+    right: left + width,
+    bottom: top + height,
+    width,
+    height,
+  });
+
+  const droppable = (id: string, type: string, tileId: string, index: number) => ({
+    id,
+    data: { current: { id: tileId, type, index } },
+  });
+
+  it('hands a choice dragged toward a response area to it, not to the source slot beside it', () => {
+    render(<PlacementOrdering model={model} session={{}} onSessionChange={vi.fn()} />);
+
+    // c1 picked up from the first source slot (its own droppable is off) and dragged 30 right and
+    // down to the second row: 70x50 over c2's source slot, 10x50 over the second response area.
+    const { collisionDetection } = provider.props;
+    const found = collisionDetection({
+      active: { id: 'tile', data: { current: { id: 'c1', type: 'choice', index: 0 } } },
+      collisionRect: rect(30, 60),
+      droppableRects: new Map([
+        ['source-c2', rect(0, 60)],
+        ['target-0', rect(120, 0)],
+        ['target-1', rect(120, 60)],
+      ]),
+      droppableContainers: [
+        droppable('source-c2', 'choice', 'c2', 1),
+        droppable('target-0', 'target', 'c1', 0),
+        droppable('target-1', 'target', 'c2', 1),
+      ],
+      pointerCoordinates: null,
+    });
+
+    expect(found.map(({ id }: { id: string }) => id)).toEqual(['target-1']);
+  });
+});
+
 describe('PlacementOrdering toggles', () => {
   it.each([
     ['en_US', 'Show Teacher Instructions', 'Show Rationale'],

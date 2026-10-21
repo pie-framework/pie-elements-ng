@@ -48,6 +48,7 @@ import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { buildState, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+import { placementAreaCollision } from './placement-area-collision.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 // A click that lands right after a real drag gesture ends must be ignored by the
@@ -208,7 +209,7 @@ export class PlacementOrdering extends React.Component {
     };
     this.lastDragEndAt = 0;
     // Records the pointer of the drag in progress, for onDragEnd.
-    this.dragCollision = createDragCollision();
+    this.dragCollision = createDragCollision({ detect: placementAreaCollision });
 
     const { model } = props || {};
     const { env } = model || {};
