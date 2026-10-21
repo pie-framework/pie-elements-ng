@@ -10,6 +10,7 @@ vi.mock('../src/lib/unified-player-loader', () => ({
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({
   createMathjaxRenderer: () => async () => undefined,
+  latexToMml: () => null,
 }));
 
 import '../src/players/PieElementPlayer.svelte';

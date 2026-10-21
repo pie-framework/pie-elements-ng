@@ -8,7 +8,7 @@ Elements typeset math with MathJax 4.1.3 through `@pie-element/shared-math-rende
 
 ## Packages
 
-1. **`@pie-element/shared-math-rendering-mathjax`** (`packages/shared/math-rendering-mathjax/`): the adapter. It exports the legacy API (`renderMath`, `wrapMath`, `unWrapMath`, `mmlToLatex`) and `createMathjaxRenderer` for players.
+1. **`@pie-element/shared-math-rendering-mathjax`** (`packages/shared/math-rendering-mathjax/`): the adapter. It exports the legacy API (`renderMath`, `wrapMath`, `unWrapMath`, `mmlToLatex`) and `createMathjaxRenderer` for players. It also exports `latexToMml`, which editors use to save math as MathML (`mathMlOptions.mmlOutput`); `mmlToLatex` converts with a bundled converter when the page installs none, which editors use to edit MathML as math (`mmlEditing`).
 2. **`@pie-lib/math-rendering`** (`packages/lib-react/math-rendering/`): a wrapper that re-exports the legacy API from the adapter for code that imports the legacy package name.
 
 Elements import `@pie-element/shared-math-rendering-mathjax` directly.
@@ -181,6 +181,20 @@ Options, which apply only when this renderer is the one that loads MathJax:
 - `loadFonts` (default `true`): load MathJax's fonts.
 - `assetRoot`, `speechPath`, `speechLocales`: where MathJax's files load from and which speech locales the menu lists ([Assets](#assets)).
 - `srcUrl`: the MathJax script URL, by default `mathjax@4.1.3/tex-mml-chtml.js` under the asset root. The browser build ignores it.
+
+### Saving math as MathML (`mmlOutput`)
+
+Editors that save MathML (`mathMlOptions.mmlOutput`) call `latexToMml(latex, { display })`. It answers synchronously, and only once a MathJax has started, so it returns `null` before that and for LaTeX MathJax cannot read; the editor then keeps the LaTeX.
+
+An element's copy of the adapter hands its typesetting to the page's renderer and never starts a MathJax of its own, so it asks the page's renderer for the conversion. A host that installs its own renderer at `window['@pie-lib/math-rendering']` should therefore expose `latexToMml` next to `renderMath`; without it, editors in that host keep saving LaTeX. `createMathjaxRenderer` users can pass the adapter's `latexToMml`:
+
+```typescript
+import { createMathjaxRenderer, latexToMml } from '@pie-element/shared-math-rendering-mathjax';
+
+window['@pie-lib/math-rendering'] = { renderMath: createMathjaxRenderer(), latexToMml };
+```
+
+The saved MathML keeps its source LaTeX in `data-pie-latex`, never `data-latex`: the renderers rewrite the text of every `[data-latex]` element as `\(…\)`, which would turn the MathML into a "Math input error".
 
 ## Authoring Tools
 

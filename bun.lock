@@ -2153,6 +2153,7 @@
         "@mathjax/mathjax-mhchem-font-extension": "4.1.3",
         "@mathjax/mathjax-newcm-font": "4.1.3",
         "@mathjax/src": "4.1.3",
+        "@pie-framework/mathml-to-latex": "1.4.4",
         "@pie-lib/math-rendering-module": "6.0.0",
         "@playwright/test": "^1.64.1",
         "mathjax": "4.1.3",
@@ -2680,6 +2681,8 @@
 
     "@pie-framework/math-validation": ["@pie-framework/math-validation@1.4.2", "", { "dependencies": { "lodash": "^4.17.21", "mathjs": "^9.4.2" } }, "sha512-qQPvLb6fAhQOPyqkpiYTrw6nsaARlGZcAIqBA13a2WLNkeRYodqRGH/+31UdRWnDc/ibqGRG/I41wTCb50kl7Q=="],
 
+    "@pie-framework/mathml-to-latex": ["@pie-framework/mathml-to-latex@1.4.4", "", { "dependencies": { "@xmldom/xmldom": "^0.8.10" } }, "sha512-jXOUH2NsfUEK+D8d5kVgIj3FANth9soCw6fXTLDDCss8IGnQ1RlFgXv9ReNfRnt9uCFYhlqRbNyU+k+c6J8nAA=="],
+
     "@pie-framework/mathquill": ["@pie-framework/mathquill@1.2.1-beta.1", "", { "peerDependencies": { "jquery": "^3.3.1" }, "optionalPeers": ["jquery"] }, "sha512-q7bCrZJCoC071Xwdmg6yNqAn9J0qbYkEkEFaLKtwITLPl7pp+DFKGszFTfUY4DFlZC5l02yCheLfCZkw5V781w=="],
 
     "@pie-framework/parse-english": ["@pie-framework/parse-english@1.0.0", "", { "dependencies": { "nlcst-to-string": "^2.0.0", "parse-latin": "^4.0.0", "unist-util-modify-children": "^1.0.0", "unist-util-visit-children": "^1.0.0" } }, "sha512-LL2DTekKtT36af5Li+qWOZidXJMap6BECEZ7fSR82PgTZe38ktzK4TUw5m1UbyDyr1fONOZ3u8vhEi8UqbvG/g=="],
@@ -3116,7 +3119,7 @@
 
     "@webassemblyjs/wast-printer": ["@webassemblyjs/wast-printer@1.14.1", "", { "dependencies": { "@webassemblyjs/ast": "1.14.1", "@xtuc/long": "4.2.2" } }, "sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw=="],
 
-    "@xmldom/xmldom": ["@xmldom/xmldom@0.9.12", "", {}, "sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A=="],
+    "@xmldom/xmldom": ["@xmldom/xmldom@0.8.15", "", {}, "sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA=="],
 
     "@xtuc/ieee754": ["@xtuc/ieee754@1.2.0", "", {}, "sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA=="],
 
@@ -4229,6 +4232,8 @@
     "reduce-function-call/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
 
     "source-map-support/source-map": ["source-map@0.6.1", "", {}, "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="],
+
+    "speech-rule-engine/@xmldom/xmldom": ["@xmldom/xmldom@0.9.12", "", {}, "sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A=="],
 
     "svelte/aria-query": ["aria-query@5.3.1", "", {}, "sha512-Z/ZeOgVl7bcSYZ/u/rh0fOpvEpq//LZmdbkXyc7syVzjPAhfOa9ebsdTSjEBDU4vs5nC98Kfduj1uFo0qyET3g=="],
 

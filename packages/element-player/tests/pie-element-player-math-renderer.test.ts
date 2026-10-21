@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { loadUnifiedPlayerMock, createMathjaxRendererMock } = vi.hoisted(() => ({
+const { loadUnifiedPlayerMock, createMathjaxRendererMock, latexToMmlMock } = vi.hoisted(() => ({
   loadUnifiedPlayerMock: vi.fn(),
   createMathjaxRendererMock: vi.fn(),
+  latexToMmlMock: vi.fn(),
 }));
 
 vi.mock('../src/lib/unified-player-loader', () => ({
@@ -11,6 +12,7 @@ vi.mock('../src/lib/unified-player-loader', () => ({
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({
   createMathjaxRenderer: createMathjaxRendererMock,
+  latexToMml: latexToMmlMock,
 }));
 
 import '../src/players/PieElementPlayer.svelte';
@@ -91,6 +93,26 @@ describe('PieElementPlayer math renderer', () => {
       expect(typeset.some((element) => second.contains(element))).toBe(true);
     });
     expect(createMathjaxRendererMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("installs the renderer's LaTeX to MathML converter with it, for elements that delegate typesetting", async () => {
+    mountPlayer();
+
+    await waitForAssertion(() => {
+      expect(page[MATH_RENDERING_KEY]).toBeTruthy();
+    });
+    expect((page[MATH_RENDERING_KEY] as { latexToMml?: unknown }).latexToMml).toBe(latexToMmlMock);
+  });
+
+  it('leaves a host renderer without a LaTeX to MathML converter as the host made it', async () => {
+    const host = hostRenderer();
+    page[MATH_RENDERING_KEY] = host;
+    mountPlayer();
+
+    await waitForAssertion(() => {
+      expect(host.renderMath).toHaveBeenCalled();
+    });
+    expect((page[MATH_RENDERING_KEY] as { latexToMml?: unknown }).latexToMml).toBeUndefined();
   });
 
   it('switches to a renderer the host installs after the player mounted', async () => {

@@ -361,6 +361,7 @@ export const EditableHtml = (props) => {
     MathNode.configure({
       toolbarOpts: toolbarOptsToUse,
       math: props.pluginProps?.math || {},
+      mathMlOptions: props.mathMlOptions || {},
     }),
     SubScript,
     SuperScript,
@@ -484,7 +485,9 @@ export const EditableHtml = (props) => {
         commitEditorContent(editor);
       },
     },
-    [props.charactersLimit],
+    // `mmlEditing` decides how the markup is parsed and `mmlOutput` how math is saved, and the math
+    // node reads both when the editor is made, so the editor is rebuilt when either changes.
+    [props.charactersLimit, props.mathMlOptions?.mmlEditing, props.mathMlOptions?.mmlOutput],
   );
 
   useEffect(() => {

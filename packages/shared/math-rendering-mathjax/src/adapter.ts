@@ -78,6 +78,10 @@ export interface MathJaxGlobal {
   output?: { displayOverflow?: string };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
+  /** The TeX converted to serialized MathML; the component build and the bundled engine define it. */
+  tex2mml?: (tex: string, options?: { display?: boolean }) => string;
+  /** Clears the TeX input's labels and tags; the component build and the bundled engine define it. */
+  texReset?: () => void;
   typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
   _?: {
@@ -175,11 +179,14 @@ function isIgnored(element: Element, root: Element): boolean {
  * Rewrites the LaTeX of each `[data-latex]` element as inline math and marks it handled, as the
  * legacy renderer does, so authored math spans typeset whatever delimiters they were saved with.
  * MathJax 4 sets `data-latex` on the nodes of its own output too; those are left alone, as are
- * elements MathJax will not typeset.
+ * elements MathJax will not typeset, and the nodes of authored MathML, which MathJax 4 writes
+ * `data-latex` on as well: their text is digits and symbols, and rewriting it as TeX leaves a text
+ * node where MathML allows none.
  */
 function wrapLatexElements(root: Element): void {
   for (const element of root.querySelectorAll<HTMLElement>('[data-latex]')) {
     if (element.dataset.mathHandled || element.closest('mjx-container')) continue;
+    if (element.closest('math')) continue;
     if (isIgnored(element, root)) continue;
     const latex = element.textContent;
     if (!latex) continue;
