@@ -22,6 +22,7 @@ class InsertImageHandler {
     this.onFinish = onFinish;
     this.isPasted = isPasted;
     this.chosenFile = null;
+    this.settled = false;
     this.nodeKey = this.node?.attrs?.nodeKey || null;
   }
 
@@ -86,6 +87,7 @@ class InsertImageHandler {
 
   done(err, src) {
     log('done: err:', err);
+    this.settled = true;
     if (err) {
       //eslint-disable-next-line
       console.log(err);
@@ -116,6 +118,12 @@ class InsertImageHandler {
     const reader = new FileReader();
     reader.onload = () => {
       const dataURL = reader.result;
+
+      // The preview reads asynchronously and a fast upload can settle first; the uploaded URL
+      // (or the failed upload's data URL) must not be overwritten by a late preview.
+      if (this.settled) {
+        return;
+      }
 
       this.updateNode({ src: dataURL });
     };
