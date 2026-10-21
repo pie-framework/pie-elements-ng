@@ -400,6 +400,32 @@ export class KeyPad extends React.Component {
             return <span key={`empty-${index}`} />;
           }
 
+          // grades.ts pads some layouts with keys that have no label, latex, icon or action; they are
+          // placeholders that fill a grid cell, so they get no hover, no click and no focus
+          const isPlaceholder = !(
+            k.label ||
+            k.latex ||
+            k.icon ||
+            k.command ||
+            k.keystroke ||
+            k.write ||
+            k.type ||
+            k.actions ||
+            k.extraProps
+          );
+
+          if (isPlaceholder) {
+            return (
+              <StyledButton
+                key={`placeholder-${index}`}
+                disabled
+                aria-hidden="true"
+                tabIndex={-1}
+                category={!keysWithoutBaseSet ? k.category : undefined}
+              />
+            );
+          }
+
           const common = {
             onClick,
             disabled: this.keyIsNotAllowed(k),

@@ -61,6 +61,7 @@ const MathToolbarContainer: any = styled('div')(({ theme }) => ({
 const InputAndTypeContainer: any = styled('div')(({ theme, hide }) => ({
   display: hide ? 'none' : 'flex',
   alignItems: 'center',
+
   '& .mq-editable-field .mq-cursor': {
     top: '-4px',
   },
@@ -148,34 +149,41 @@ const InputAndTypeContainer: any = styled('div')(({ theme, hide }) => ({
   },
 }));
 
-const StyledFormControl: any = styled(FormControl)({
-  flex: 'initial',
-  width: '25%',
+const StyledFormControl: any = styled(FormControl)(({ theme }) => ({
+  width: 'fit-content',
   minWidth: '100px',
-  marginLeft: '15px',
-  marginTop: '5px',
-  marginBottom: '5px',
-  marginRight: '5px',
+  maxWidth: `150px`,
+  marginLeft: theme.spacing(2),
+  marginTop: theme.spacing(0.5),
+  marginBottom: theme.spacing(0.5),
+  marginRight: theme.spacing(2),
+
   '& label': {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
   },
   '& div': {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
   },
-});
+}));
 
 const StyledInputLabel: any = styled(InputLabel)(() => ({
   backgroundColor: 'transparent',
 }));
 
-const InputContainerDiv: any = styled('div')(({ theme, error }) => ({
-  minWidth: '500px',
-  maxWidth: '900px',
+const InputContainerDiv: any = styled('div')(({ theme, error, controlledKeypadMode }) => ({
+  ...(controlledKeypadMode
+    ? {
+        // takes whatever the equation editor select leaves; minWidth 0 lets it shrink with the row
+        flex: 1,
+        minWidth: 0,
+      }
+    : {
+        width: '100%',
+        minWidth: '500px',
+        maxWidth: '900px',
+      }),
   minHeight: '30px',
-  width: '100%',
   display: 'flex',
-  marginTop: theme.spacing(1),
-  marginBottom: theme.spacing(1),
   ...(error && {
     border: '2px solid red',
   }),
