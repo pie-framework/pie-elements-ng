@@ -59,10 +59,13 @@ describe('images in saved markup', () => {
     expect(pictures(editor)).toHaveLength(2);
   });
 
-  it('still treats an <img> with a data URL as unfinished, so it is uploaded', async () => {
-    const { editor } = await mountEditor(`<img src="${PNG}" data-type="image-upload-node">`);
+  it.each([
+    ['a data URL', `<img src="${PNG}">`],
+    ['a data URL marked unfinished', `<img src="${PNG}" data-type="image-upload-node" loaded="false">`],
+  ])('shows an <img> with %s as finished, since no upload is running for it', async (_name, markup) => {
+    const { editor } = await mountEditor(markup);
 
-    expect(pictures(editor)[0].loaded).toBe(false);
+    expect(pictures(editor)[0].loaded).toBe(true);
   });
 });
 

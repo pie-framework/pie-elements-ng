@@ -93,7 +93,6 @@ function ImageComponent(props) {
     options,
   } = props;
   // The limits come from the host's authoring configuration, via the extension options.
-  console.log({...props.options})
   const maxImageWidth = options?.imageHandling?.maxImageWidth || DEFAULT_MAX_IMAGE_WIDTH;
   const maxImageHeight = options?.imageHandling?.maxImageHeight || DEFAULT_MAX_IMAGE_HEIGHT;
   const { alt } = node.attrs;
