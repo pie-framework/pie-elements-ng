@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { useDndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 
 import { PlaceHolder } from '@pie-lib/drag';
@@ -33,7 +33,7 @@ Holder.propTypes = {
 };
 
 const StyledTileContent: any = styled('div')(
-  ({ theme, isDragging, isSelected, isOver, disabled, outcome, label, type }) => ({
+  ({ theme, isDragging, isGhost, isSelected, isOver, disabled, outcome, label, type }) => ({
     cursor: disabled ? 'not-allowed' : 'grab',
     width: '100%',
     height: '100%',
@@ -80,6 +80,18 @@ const StyledTileContent: any = styled('div')(
         cursor: 'grabbing',
       }),
 
+    // The tile a drag was picked up from stays in its slot while the preview moves. It must not
+    // lift as a selected tile does: that transform overflows the scroll region around the tiles,
+    // which would then scroll under the drag.
+    ...((type === 'choice' || type === 'target') &&
+      isGhost &&
+      !disabled && {
+        opacity: 0,
+        transform: 'none',
+        boxShadow: 'none',
+        cursor: 'grabbing',
+      }),
+
     ...((type === 'choice' || type === 'target') &&
       disabled && {
         cursor: 'not-allowed',
@@ -109,7 +121,7 @@ const StyledTileContent: any = styled('div')(
 );
 
 const TileContent = (props) => {
-  const { type, isDragging, isSelected, empty, isOver, label, disabled, outcome, guideIndex } = props;
+  const { type, isDragging, isGhost, isSelected, empty, isOver, label, disabled, outcome, guideIndex } = props;
 
   if (empty) {
     return <Holder type={type} index={guideIndex} isOver={isOver} disabled={disabled} />;
@@ -118,6 +130,7 @@ const TileContent = (props) => {
       <StyledTileContent
         type={type}
         isDragging={isDragging}
+        isGhost={isGhost}
         isSelected={isSelected}
         isOver={isOver}
         disabled={disabled}
@@ -127,6 +140,31 @@ const TileContent = (props) => {
       />
     );
   }
+};
+
+// The box a tile's content sits in. The drag preview is drawn outside the tile, so it needs the same
+// box to lay its label out as the tile does, text alignment included.
+const tileBoxStyle = {
+  boxSizing: 'border-box',
+  overflow: 'visible',
+  padding: 0,
+  margin: 0,
+  textAlign: 'center',
+};
+
+/**
+ * The tile under the pointer during a drag. It is drawn by the drag overlay, in a layer of its own,
+ * so it is neither clipped by the element's scroll region nor counted in the region's overflow.
+ * `tile` is the dragged tile's drag data (see `tileData` below).
+ */
+export const DragPreview = ({ tile }) => (
+  <div className="placement-ordering-drag-preview" style={{ ...tileBoxStyle, width: '100%', height: '100%' }}>
+    <TileContent type={tile.type} label={tile.value} isDragging />
+  </div>
+);
+
+DragPreview.propTypes = {
+  tile: PropTypes.shape({ type: PropTypes.string, value: PropTypes.string }).isRequired,
 };
 
 export const Tile = (props) => {
@@ -162,7 +200,6 @@ export const Tile = (props) => {
     attributes,
     listeners,
     setNodeRef: setDragRef,
-    transform,
     isDragging,
   } = useDraggable({
     id: dragId,
@@ -192,14 +229,22 @@ export const Tile = (props) => {
   // drag — one code path, no duplicated CSS.
   const [isHovered, setIsHovered] = React.useState(false);
   const hasSelection = !!selectedChoice && !disabled;
-  const showsHoverEffect = dropIsOver || (type === 'target' && hasSelection && isHovered);
+  // A drag marks its tile as selected too, and its preview takes no pointer events, so the slot under
+  // the pointer is hovered as well as the one dnd-kit finds the tile over. The hover is for clicks only:
+  // during a drag, `dropIsOver` alone says which slot takes the tile.
+  const { active: activeDrag } = useDndContext();
+  // A picked-up placed answer can only go back to the source slot of its own choice, so that is the
+  // one choice tile a click can place it on, and the one that takes the hover effect for it.
+  const isReturnSlotOfSelection = type === 'choice' && selectedChoice?.type === 'target' && selectedChoice.id === id;
+  const showsHoverEffect =
+    dropIsOver || (!activeDrag && (type === 'target' || isReturnSlotOfSelection) && hasSelection && isHovered);
 
   // Click-to-select/click-to-place (both choices and targets are handled by this same
   // component, differentiated by `type`):
   //  - Choice tile: selects/switches/deselects it, UNLESS a placed answer (a "target")
-  //    is currently selected, in which case clicking any choice-row tile returns it to
-  //    the choices column/row (choice -> choice has no placement meaning in the
-  //    reducer, so there's no ambiguity there).
+  //    is currently selected. Then clicking the tile it belongs to returns it to the
+  //    choices column/row, and clicking any other choice-row tile does nothing: a
+  //    choice can only go back to its own spot.
   //  - Target tile: clicking the already-selected placed answer again deselects it;
   //    clicking it while something else is selected places that selection here
   //    (empty or occupied); clicking a filled target with nothing selected selects
@@ -210,7 +255,7 @@ export const Tile = (props) => {
 
     if (type === 'choice') {
       if (selectedChoice?.type === 'target') {
-        onPlacementClick?.(tileData);
+        if (isReturnSlotOfSelection) onPlacementClick?.(tileData);
       } else if (draggable) {
         onChoiceClick?.(tileData);
       }
@@ -287,17 +332,17 @@ export const Tile = (props) => {
 
   const dataTileId = slotId ? `${instanceId}:${slotId}` : undefined;
 
+  // The tile does not move while it is dragged: the drag overlay draws the dragged copy.
   const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    boxSizing: 'border-box',
-    overflow: 'visible',
-    padding: 0,
-    margin: 0,
-    textAlign: 'center',
+    ...tileBoxStyle,
     pointerEvents: 'auto',
-    cursor: disabled ? 'not-allowed' : type === 'target' && hasSelection ? 'pointer' : isDragging ? 'grabbing' : 'grab',
-    zIndex: isDragging ? 1000 : 'auto',
-    willChange: isDragging ? 'transform' : 'auto',
+    cursor: disabled
+      ? 'not-allowed'
+      : (type === 'target' || isReturnSlotOfSelection) && hasSelection
+        ? 'pointer'
+        : isDragging
+          ? 'grabbing'
+          : 'grab',
   };
 
   return (
@@ -320,7 +365,7 @@ export const Tile = (props) => {
         index={index}
         guideIndex={guideIndex}
         isOver={showsHoverEffect}
-        isDragging={isDragging}
+        isGhost={isDragging}
         isSelected={isSelected}
         disabled={disabled}
         outcome={outcome}
