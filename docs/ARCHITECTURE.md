@@ -24,8 +24,6 @@ This is a **completely new project**, not a refactor of the original pie-element
 
 ### Legacy vs Modern: Key Architectural Differences
 
-![Legacy vs Modern: Key Architectural Differences](img/unified-arch-comparison-v2-1-1769807593578.jpg)
-
 This project differs fundamentally from the legacy pie-elements in eight key ways:
 
 1. **Framework Flexibility**: Legacy was React-only; this project is framework-agnostic via web components
