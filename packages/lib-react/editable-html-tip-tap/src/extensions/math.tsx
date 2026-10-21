@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import { Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
+import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
 import { latexToMml, mmlToLatex, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 import { setToolbarOpened } from '../utils/toolbar.js';
@@ -29,13 +30,24 @@ const isDisplayMath = (wrapper) =>
   typeof wrapper === 'string' ? wrapper === 'double_dollar' : ['$$', '\\['].includes(wrapper?.open);
 
 /**
- * LaTeX for a MathML string, or null when there is none to give. `mmlToLatex` answers an empty
- * string for MathML it cannot read, and the input back when its converter throws; neither is LaTeX,
- * and neither may become a math node.
+ * LaTeX for a MathML string, or null when there is none to give. A converter the page installed,
+ * such as the legacy renderer's, answers first; `mmlToLatex` gives the input back when there is
+ * none, and then this converts, so the ESM page, which installs only `renderMath`, converts too.
+ * The converter belongs here, not in the math adapter: only authoring needs it, and every
+ * element's delivery bundle carries the adapter. It answers an empty string for MathML it cannot
+ * read and throws on some; neither is LaTeX, and neither may become a math node.
  */
 export const convertMathMlToLatex = (mathMl) => {
   const input = mathMl.replaceAll('&nbsp;', ' ');
-  const converted = mmlToLatex(input);
+  let converted = mmlToLatex(input);
+
+  if (converted === input) {
+    try {
+      converted = MathMLToLaTeX.convert(input);
+    } catch {
+      return null;
+    }
+  }
 
   if (!converted || converted === input) {
     return null;
@@ -107,6 +119,43 @@ const mathMlSpan = (html) => {
   span.innerHTML = html;
 
   return span;
+};
+
+const MATHML_ELEMENTS = new Set(
+  (
+    'math maction maligngroup malignmark menclose merror mfenced mfrac mglyph mi mlabeledtr mlongdiv mmultiscripts ' +
+    'mn mo mover mpadded mphantom mprescripts mroot mrow ms mscarries mscarry msgroup msline mspace msqrt msrow ' +
+    'mstack mstyle msub msubsup msup mtable mtd mtext mtr munder munderover semantics'
+  ).split(' ')
+);
+
+/**
+ * MathML that is safe to put in the live page: only MathML presentation elements, with no event
+ * handlers and no script URLs. `mathMlSpan` parses in an inert document, but markup shown in the page runs.
+ */
+export const sanitizeMathMl = (html) => {
+  const span = mathMlSpan(html);
+
+  const clean = (parent) => {
+    for (const child of Array.from(parent.children)) {
+      if (!MATHML_ELEMENTS.has(child.localName)) {
+        child.remove();
+        continue;
+      }
+
+      for (const { name, value } of Array.from(child.attributes)) {
+        if (/^on/i.test(name) || /^\s*javascript:/i.test(value)) {
+          child.removeAttribute(name);
+        }
+      }
+
+      clean(child);
+    }
+  };
+
+  clean(span);
+
+  return span.innerHTML;
 };
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
@@ -552,7 +601,7 @@ export const MathNodeView = (props) => {
         data-type="mathml"
         style={{ display: 'inline-block', margin: '0 4px' }}
         contentEditable={false}
-        dangerouslySetInnerHTML={{ __html: node.attrs.html }}
+        dangerouslySetInnerHTML={{ __html: sanitizeMathMl(node.attrs.html) }}
       />
     );
   }

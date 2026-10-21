@@ -1374,7 +1374,6 @@ describe('renderMath', () => {
 
     expect(typesetPromise.mock.calls).toEqual([[[target]]]);
     expect(wrapMath('x^2')).toBe('\\(x^2\\)');
-    expect(mmlToLatex('<math><mfrac><mn>2</mn><mn>9</mn></mfrac></math>')).toBe('\\frac{2}{9}');
   });
 
   it("renders through another copy of the adapter installed as the page's renderer", async () => {
@@ -1451,42 +1450,6 @@ describe('wrapMath', () => {
 
   it('keeps \\displaystyle, which only rendering drops', () => {
     expect(wrapMath('\\displaystyle\\sum_{i=1}^n i')).toBe('\\(\\displaystyle\\sum_{i=1}^n i\\)');
-  });
-});
-
-describe('mmlToLatex', () => {
-  const MATHML_NS = 'xmlns="http://www.w3.org/1998/Math/MathML"';
-
-  it('converts MathML itself when the page installs no converter', () => {
-    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
-
-    expect(
-      mmlToLatex(
-        `<math ${MATHML_NS}> <mrow> <mfrac> <mn>2</mn> <mn>9</mn> </mfrac> </mrow> </math>`
-      )
-    ).toBe('\\frac{2}{9}');
-    expect(
-      mmlToLatex(
-        `<math ${MATHML_NS}> <mrow> <mn>4</mn><mfrac> <mn>1</mn> <mn>2</mn> </mfrac> </mrow> </math>`
-      )
-    ).toBe('4 \\frac{1}{2}');
-  });
-
-  it('converts as the legacy renderer does', () => {
-    const mml = `<math ${MATHML_NS}>  <mn>2</mn>  <mi>x</mi>  <mtext>&#xA0;</mtext>  <mo>&#x2264;</mo>  <mn>4</mn>  <mi>y</mi>  <mtext>&#xA0;</mtext>  <mo>+</mo>  <mtext>&#xA0;</mtext>  <mn>8</mn> <msqrt>    <mi>h</mi>  </msqrt></math>`;
-
-    expect(mmlToLatex(mml)).toBe('2 x \\textrm{ } \\leq 4 y \\textrm{ } + \\textrm{ } 8 \\sqrt{h}');
-  });
-
-  it('prefers the converter the page installed', () => {
-    page['@pie-lib/math-rendering'] = { renderMath: vi.fn(), mmlToLatex: () => 'from-page' };
-
-    expect(mmlToLatex('<math><mn>1</mn></math>')).toBe('from-page');
-  });
-
-  it('gives no LaTeX for MathML it cannot read', () => {
-    expect(mmlToLatex('<math></math>')).toBe('');
-    expect(mmlToLatex('not mathml')).toBe('');
   });
 });
 
@@ -1620,6 +1583,20 @@ describe('latexToMml', () => {
 
     page['@pie-lib/math-rendering'] = { renderMath: () => '' };
     expect(latexToMml('x')).toBeNull();
+  });
+
+  it("does not leave a rejection when the page's async renderer cannot take markup", async () => {
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    page['@pie-lib/math-rendering'] = {
+      renderMath: () => Promise.reject(new TypeError('not an element')),
+    };
+
+    expect(latexToMml('x')).toBeNull();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    process.off('unhandledRejection', unhandled);
+
+    expect(unhandled).not.toHaveBeenCalled();
   });
 
   it("uses its own MathJax when the page's renderer has no converter", () => {

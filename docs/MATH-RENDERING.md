@@ -8,7 +8,7 @@ Elements typeset math with MathJax 4.1.3 through `@pie-element/shared-math-rende
 
 ## Packages
 
-1. **`@pie-element/shared-math-rendering-mathjax`** (`packages/shared/math-rendering-mathjax/`): the adapter. It exports the legacy API (`renderMath`, `wrapMath`, `unWrapMath`, `mmlToLatex`) and `createMathjaxRenderer` for players. It also exports `latexToMml`, which editors use to save math as MathML (`mathMlOptions.mmlOutput`); `mmlToLatex` converts with a bundled converter when the page installs none, which editors use to edit MathML as math (`mmlEditing`).
+1. **`@pie-element/shared-math-rendering-mathjax`** (`packages/shared/math-rendering-mathjax/`): the adapter. It exports the legacy API (`renderMath`, `wrapMath`, `unWrapMath`, `mmlToLatex`) and `createMathjaxRenderer` for players. It also exports `latexToMml`, which editors use to save math as MathML (`mathMlOptions.mmlOutput`); editors that edit MathML as math (`mmlEditing`) convert it with a converter of their own, unless the page installs an `mmlToLatex`, so delivery bundles don't carry one.
 2. **`@pie-lib/math-rendering`** (`packages/lib-react/math-rendering/`): a wrapper that re-exports the legacy API from the adapter for code that imports the legacy package name.
 
 Elements import `@pie-element/shared-math-rendering-mathjax` directly.

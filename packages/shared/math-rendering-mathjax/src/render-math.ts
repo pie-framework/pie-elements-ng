@@ -5,7 +5,6 @@
  * MathJax handles LaTeX and MathML natively, so most functions are simple.
  */
 
-import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { createMathjaxRenderer } from './adapter.js';
 import { engineMathJax } from './engine/page.js';
 import { nameMathInControls } from './math-name.js';
@@ -171,26 +170,10 @@ export const unWrapMath = (
 };
 
 /**
- * MathML to LaTeX, for editors that let an author edit MathML as math (`mmlEditing`). A converter
- * the page installed, such as the legacy renderer under the IIFE strategy, wins; otherwise the
- * bundled one, the same converter legacy @pie-lib/math-rendering bundles, converts, so the ESM
- * page, which installs only `renderMath`, converts too. The bundled converter gives an empty
- * string for MathML it cannot read, and the input back if it throws, so callers treat both as
- * "no LaTeX to give".
+ * MathML to LaTeX - MathJax renders MathML natively, so just pass through
  */
-export const mmlToLatex = (mathml: string): string => {
-  const pageConverter = getPlayerMathRenderer()?.mmlToLatex;
-
-  if (pageConverter) {
-    return pageConverter(mathml);
-  }
-
-  try {
-    return MathMLToLaTeX.convert(mathml);
-  } catch {
-    return mathml;
-  }
-};
+export const mmlToLatex = (mathml: string): string =>
+  getPlayerMathRenderer()?.mmlToLatex?.(mathml) ?? mathml;
 
 /**
  * The `data-latex` and `data-latex-item` attributes MathJax 4 writes on every node. `data-latex` is
@@ -223,6 +206,14 @@ function legacyLatexToMml(latex: string, options: { display?: boolean }): string
 
   try {
     const result = renderMath(markup, { skipWaitForMathRenderingLib: true });
+
+    // An async renderer, such as this adapter's, expects an element: it has no MathML to give, and
+    // its rejection must not go unhandled.
+    if (typeof (result as { then?: unknown } | undefined)?.then === 'function') {
+      (result as Promise<unknown>).catch(() => {});
+      return null;
+    }
+
     const mathMl =
       typeof result === 'string' && result !== markup
         ? result.replace(/\n\s*/g, '').replace(TEX_SOURCE_ATTRIBUTES, '')
