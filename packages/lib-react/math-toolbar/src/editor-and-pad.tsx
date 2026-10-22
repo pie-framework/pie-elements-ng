@@ -471,7 +471,7 @@ export class EditorAndPad extends React.Component {
               </Select>
             </StyledFormControl>
           )}
-          <InputContainerDiv error={error}>
+          <InputContainerDiv error={error} controlledKeypadMode={controlledKeypadMode}>
             <MathEditor
               onFocus={() => {
                 onFocus && onFocus();
