@@ -37,6 +37,12 @@ describe('Blank', () => {
     expect(getComputedStyle(screen.getByRole('button', { name: 'Blank 2' })).display).toBe('inline-flex');
   });
 
+  it('sits on the middle of the line, so a filled blank and an empty one share a row height', () => {
+    renderBlank();
+
+    expect(getComputedStyle(screen.getByRole('button', { name: 'Blank 2' })).verticalAlign).toBe('middle');
+  });
+
   it('keeps the line height it inherits, as the legacy blank did', () => {
     renderBlank();
 
