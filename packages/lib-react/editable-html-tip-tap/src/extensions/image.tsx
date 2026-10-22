@@ -82,11 +82,9 @@ export const ImageUploadNode = Node.create({
       // Markup saved without these attributes (a host can strip what it does not know, and older
       // content never had them) still has to load as an editable, finished image.
       nodeKey: { default: null, parseHTML: (el) => el.getAttribute('nodeKey') || newImageNodeKey() },
-      loaded: {
-        default: false,
-        parseHTML: (el) =>
-          el.hasAttribute('loaded') ? el.getAttribute('loaded') !== 'false' : !/^data:/i.test(el.getAttribute('src') ?? ''),
-      },
+      // An upload starts from the paste that makes the node, never from parsing, so a picture parsed
+      // from markup, a data URL included, has nothing in flight and would stay behind its progress bar.
+      loaded: { default: false, parseHTML: () => true },
       deleteStatus: { default: null },
       alignment: { default: null },
       percent: { default: null },
