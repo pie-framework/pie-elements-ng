@@ -37,7 +37,8 @@ const StyledTrigger: any = styled('button')(({ theme }) => ({
 
 const StyledMenuItem: any = styled(MenuItem)(({ theme }) => ({
   fontSize: theme.typography.fontSize,
-  color: color.text(),
+  // theming does not apply in charting
+  color: color.defaults.TEXT,
 }));
 
 export class ActionsButton extends React.Component {
