@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@pie-lib/math-toolbar', () => ({ MathPreview: () => null, MathToolbar: () => null }));
 
-import { MathNode } from '../src/extensions/math';
+import { convertMathMlToLatex, MathNode, sanitizeMathMl } from '../src/extensions/math';
 
 const PAGE_RENDERER_KEY = '@pie-lib/math-rendering';
 const MATHML = '<math><mfrac><mn>4</mn><mn>18</mn></mfrac></math>';
@@ -80,5 +80,51 @@ describe('math node with mmlEditing', () => {
   it('still reads LaTeX spans when mmlEditing is on', () => {
     installConverter();
     expect(save(`<p>${SAVED}</p>`, { mmlEditing: true })).toContain(SAVED);
+  });
+});
+
+describe('converting MathML to LaTeX', () => {
+  const NS = 'xmlns="http://www.w3.org/1998/Math/MathML"';
+
+  afterEach(() => {
+    delete (window as any)[PAGE_RENDERER_KEY];
+  });
+
+  it('converts itself when the page installs no converter', () => {
+    expect(convertMathMlToLatex(`<math ${NS}> <mrow> <mfrac> <mn>2</mn> <mn>9</mn> </mfrac> </mrow> </math>`)).toBe(
+      '\\frac{2}{9}'
+    );
+    expect(
+      convertMathMlToLatex(`<math ${NS}> <mrow> <mn>4</mn><mfrac> <mn>1</mn> <mn>2</mn> </mfrac> </mrow> </math>`)
+    ).toBe('4 \\frac{1}{2}');
+  });
+
+  it('converts as the legacy renderer does', () => {
+    const mml = `<math ${NS}>  <mn>2</mn>  <mi>x</mi>  <mtext>&#xA0;</mtext>  <mo>&#x2264;</mo>  <mn>4</mn>  <mi>y</mi>  <mtext>&#xA0;</mtext>  <mo>+</mo>  <mtext>&#xA0;</mtext>  <mn>8</mn> <msqrt>    <mi>h</mi>  </msqrt></math>`;
+
+    expect(convertMathMlToLatex(mml)).toBe('2 x \\textrm{ } \\leq 4 y \\textrm{ } + \\textrm{ } 8 \\sqrt{h}');
+  });
+
+  it('prefers the converter the page installed', () => {
+    (window as any)[PAGE_RENDERER_KEY] = { renderMath: vi.fn(), mmlToLatex: () => 'from-page' };
+
+    expect(convertMathMlToLatex('<math><mn>1</mn></math>')).toBe('from-page');
+  });
+
+  it('gives no LaTeX for MathML it cannot read', () => {
+    expect(convertMathMlToLatex('<math></math>')).toBeNull();
+    expect(convertMathMlToLatex('not mathml')).toBeNull();
+  });
+});
+
+describe('MathML shown in the page', () => {
+  it('keeps MathML and drops what could run', () => {
+    const html = sanitizeMathMl(
+      '<math><mn onclick="x()">1</mn><img src="x" onerror="x()"><mi href="javascript:x()">y</mi><script>x()</script></math>'
+    );
+
+    expect(html).toContain('<mn>1</mn>');
+    expect(html).toContain('<mi>y</mi>');
+    expect(html).not.toMatch(/onclick|onerror|javascript:|<img|<script/);
   });
 });
