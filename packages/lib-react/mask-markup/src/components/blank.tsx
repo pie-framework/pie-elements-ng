@@ -21,6 +21,9 @@ const StyledContent: any = styled('span')(({ dragged, over, selected, showsPoint
   border: `solid 0px ${color.primary()}`,
   // The named target takes the chip's box (WCAG 2.5.8); as a plain inline span it measured one text line.
   display: 'inline-flex',
+  // An inline-flex box sits on its content's baseline, so a filled blank and an empty one would
+  // land at different heights and the row would grow on the first drop.
+  verticalAlign: 'middle',
   whiteSpace: 'nowrap',
   opacity: 1,
   cursor: 'default',
