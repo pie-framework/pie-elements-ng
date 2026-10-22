@@ -118,6 +118,15 @@ describe('multiple-choice prompt audio tracking', () => {
     expect(events.at(-1)?.detail.complete).toBe(true);
   });
 
+  it('lets a host skip the wait through audioComplete', async () => {
+    const { element } = await mount({ completeAudioEnabled: true });
+
+    element.audioComplete = true;
+
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
+    expect(element.session.audioEndTime).toBeUndefined();
+  });
+
   it('does not show the enable-autoplay overlay with autoplay off', async () => {
     const { element } = await mount({ autoplayAudioEnabled: false, completeAudioEnabled: true });
 

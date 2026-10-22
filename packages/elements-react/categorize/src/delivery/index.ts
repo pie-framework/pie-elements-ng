@@ -198,6 +198,15 @@ export default class Categorize extends HTMLElement {
     return this._session;
   }
 
+  /** Whether the prompt audio counts as played. A host sets it to skip the `completeAudioEnabled` wait. */
+  get audioComplete() {
+    return this.promptAudio.hasEnded;
+  }
+
+  set audioComplete(value) {
+    this.promptAudio.markPlayed(!!value);
+  }
+
   eliminateBlindAnswersFromSession() {
     const { answers = [] } = this._session || {};
     const { choices = [] } = this._model || {};

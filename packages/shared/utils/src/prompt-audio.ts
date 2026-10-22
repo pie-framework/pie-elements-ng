@@ -128,6 +128,15 @@ export class PromptAudioTracker<S extends PromptAudioTiming = PromptAudioTiming>
     this.#host.announce();
   }
 
+  /**
+   * Counts the audio as played, or not, without recording timing or announcing: a host's
+   * override of the wait, which hosts set through an element's `audioComplete` before the
+   * learner responds.
+   */
+  markPlayed(played = true): void {
+    this.#ended = played;
+  }
+
   #record(timing: Pick<PromptAudioTiming, 'audioStartTime' | 'audioEndTime'>): void {
     const session = this.#host.session() ?? ({} as S);
     const next = withPromptAudioTiming(session, timing);

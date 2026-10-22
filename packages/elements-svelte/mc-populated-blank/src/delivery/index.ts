@@ -47,6 +47,15 @@ class McPopulatedBlankElement extends DeliveryElement {
     return super.model;
   }
 
+  /** Whether the prompt audio counts as played. A host sets it to skip the `completeAudioEnabled` wait. */
+  get audioComplete(): boolean {
+    return this.promptAudio.hasEnded;
+  }
+
+  set audioComplete(value: boolean) {
+    this.promptAudio.markPlayed(!!value);
+  }
+
   isComplete(): boolean {
     return super.isComplete() && !(requiresAudioCompletion(this.model) && this.promptAudio.pending);
   }

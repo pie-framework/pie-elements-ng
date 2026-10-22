@@ -308,6 +308,15 @@ export default class MultipleChoice extends HTMLElement {
     return this._session;
   }
 
+  /** Whether the prompt audio counts as played. A host sets it to skip the `completeAudioEnabled` wait. */
+  get audioComplete() {
+    return this.promptAudio.hasEnded;
+  }
+
+  set audioComplete(value) {
+    this.promptAudio.markPlayed(!!value);
+  }
+
   get options() {
     return this._options;
   }

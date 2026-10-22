@@ -67,6 +67,15 @@ describe('categorize audio requirement', () => {
 
     expect(element.isComplete()).toBe(true);
   });
+
+  it('lets a host skip the wait through audioComplete', () => {
+    const element = create({ completeAudioEnabled: true });
+    element.innerHTML = PROMPT_AUDIO;
+    element.audioComplete = true;
+
+    expect(element.isComplete()).toBe(true);
+    expect(element.session.audioEndTime).toBeUndefined();
+  });
 });
 
 describe('categorize prompt audio tracking', () => {

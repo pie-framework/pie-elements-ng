@@ -67,6 +67,15 @@ describe('drag-in-the-blank audio requirement', () => {
 
     expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
   });
+
+  it('lets a host skip the wait through audioComplete', () => {
+    const element = create({ completeAudioEnabled: true });
+    element.innerHTML = PROMPT_AUDIO;
+    element.audioComplete = true;
+
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
+    expect(element.session.audioEndTime).toBeUndefined();
+  });
 });
 
 describe('drag-in-the-blank prompt audio tracking', () => {

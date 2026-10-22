@@ -88,6 +88,18 @@ describe('PromptAudioTracker', () => {
     expect(host.announce).toHaveBeenCalledTimes(1);
   });
 
+  it('lets a host count the audio as played without timing or an announcement', () => {
+    const { tracker: t, host } = tracker();
+
+    t.markPlayed();
+    expect(t.pending).toBe(false);
+    t.markPlayed(false);
+    expect(t.pending).toBe(true);
+
+    expect(host.writeSession).not.toHaveBeenCalled();
+    expect(host.announce).not.toHaveBeenCalled();
+  });
+
   it('starts over for another source and keeps the state for the same one', () => {
     const { tracker: t } = tracker(null);
     t.follow('a.mp3');
