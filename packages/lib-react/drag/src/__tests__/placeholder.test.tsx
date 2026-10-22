@@ -43,4 +43,15 @@ describe('PlaceHolder', () => {
     expect(slot.backgroundColor).toBe('#ffffff');
     expect(slot.borderTopColor).toBe('#66686A');
   });
+
+  // placement-ordering's vacated source slot is a `choice` placeholder; it must light up under a
+  // dragged tile exactly as a `target` one does.
+  it('shows the hover state of a response area on a source slot a tile is dragged over', () => {
+    const target = renderSlot({}, { type: 'target', isOver: true });
+    const source = renderSlot({}, { type: 'choice', isOver: true });
+
+    expect(source.backgroundColor).toBe(target.backgroundColor);
+    expect(source.borderTopColor).toBe(target.borderTopColor);
+    expect(source.backgroundColor).not.toBe(renderSlot({}, { type: 'choice' }).backgroundColor);
+  });
 });

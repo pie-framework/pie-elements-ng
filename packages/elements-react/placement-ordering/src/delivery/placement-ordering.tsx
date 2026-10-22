@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { difference, isEqual } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
-import { restrictToParentElement } from '@dnd-kit/modifiers';
+import { DragOverlay } from '@dnd-kit/core';
 
 import { Collapsible as CollapsibleImport, color, createUniqueId, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
@@ -45,9 +45,11 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { createDragCollision, DragProvider } from '@pie-lib/drag';
 
 import { HorizontalTiler, VerticalTiler } from './tiler.js';
+import { DragPreview } from './tile.js';
 import { buildState, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+import { placementAreaCollision } from './placement-area-collision.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 // A click that lands right after a real drag gesture ends must be ignored by the
@@ -77,9 +79,10 @@ const isOverOwnOriginSlot = (initialRect, releasedRect) => {
   );
 };
 
-// The released tile of a pointer drag is where the pointer took it: `restrictToParentElement`
-// holds the drawn tile, `active.rect.current.translated`, inside the tiler's grid, so a tile
-// released outside the grid can still be drawn over its own slot. A keyboard drag has no
+// The released tile of a pointer drag is where the pointer took it. The drag overlay draws the tile
+// there too, so for a pointer drag this agrees with the drawn tile, `active.rect.current.translated`;
+// it is read from the pointer so that a tile released outside the element is placed by where it was
+// let go, not by where a modifier or the overlay's last measurement left it. A keyboard drag has no
 // pointer, and its released tile is the drawn one.
 const releasedTileRect = (rect, pointer, activatorEvent) => {
   const { initial, translated } = rect || {};
@@ -205,10 +208,12 @@ export class PlacementOrdering extends React.Component {
     this.state = {
       showingCorrect: false,
       selectedChoice: null,
+      // The drag data of the tile being dragged, which the drag overlay draws.
+      draggedTile: null,
     };
     this.lastDragEndAt = 0;
     // Records the pointer of the drag in progress, for onDragEnd.
-    this.dragCollision = createDragCollision();
+    this.dragCollision = createDragCollision({ detect: placementAreaCollision });
 
     const { model } = props || {};
     const { env } = model || {};
@@ -389,6 +394,7 @@ export class PlacementOrdering extends React.Component {
     // A real drag (pointer or keyboard) just ended — whatever mirrored selection it
     // set on start is now resolved, and any click landing immediately after this must
     // not be misread as a fresh selection/placement
+    this.setState({ draggedTile: null });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
 
@@ -426,6 +432,8 @@ export class PlacementOrdering extends React.Component {
 
     this.dragCollision.reset();
 
+    this.setState({ draggedTile: active?.data?.current || null });
+
     if (active?.data?.current) {
       // A real drag (pointer or keyboard) is itself a selection — mirror it into the
       // same selectedChoice state that click-to-select uses, so the two interaction
@@ -435,6 +443,7 @@ export class PlacementOrdering extends React.Component {
   };
 
   onDragCancel: any = () => {
+    this.setState({ draggedTile: null });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
   };
@@ -607,7 +616,6 @@ export class PlacementOrdering extends React.Component {
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
         collisionDetection={this.dragCollision.collisionDetection}
-        modifiers={[restrictToParentElement]}
         {...getKeyboardDragOptions(includeTargets)}
       >
         <PlacementOrderingContainer ref={this.containerRef}>
@@ -662,6 +670,14 @@ export class PlacementOrdering extends React.Component {
             )}
 
             {!showingCorrect && <Feedback correctness={correctness} feedback={feedback} />}
+
+            {/* The dragged tile is drawn here, in a layer of its own, rather than moved inside the
+                interactive region: that region scrolls horizontally, so it would clip the tile at its
+                edge and scroll under the drag as the tile overflowed it. Dropped tiles reflow at once,
+                so there is no drop animation to slide the preview back from. */}
+            <DragOverlay style={{ pointerEvents: 'none' }} dropAnimation={null}>
+              {this.state.draggedTile ? <DragPreview tile={this.state.draggedTile} /> : null}
+            </DragOverlay>
           </UiLayout>
         </PlacementOrderingContainer>
       </DragProvider>

@@ -158,6 +158,237 @@ describe('PlacementOrdering drag end', () => {
   });
 });
 
+describe('PlacementOrdering drag collision', () => {
+  const rect = (left: number, top: number, width = 100, height = 50) => ({
+    left,
+    top,
+    right: left + width,
+    bottom: top + height,
+    width,
+    height,
+  });
+
+  const droppable = (id: string, type: string, tileId: string, index: number) => ({
+    id,
+    data: { current: { id: tileId, type, index } },
+  });
+
+  it('hands a choice dragged toward a response area to it, not to the source slot beside it', () => {
+    render(<PlacementOrdering model={model} session={{}} onSessionChange={vi.fn()} />);
+
+    // c1 picked up from the first source slot (its own droppable is off) and dragged 30 right and
+    // down to the second row: 70x50 over c2's source slot, 10x50 over the second response area.
+    const { collisionDetection } = provider.props;
+    const found = collisionDetection({
+      active: { id: 'tile', data: { current: { id: 'c1', type: 'choice', index: 0 } } },
+      collisionRect: rect(30, 60),
+      droppableRects: new Map([
+        ['source-c2', rect(0, 60)],
+        ['target-0', rect(120, 0)],
+        ['target-1', rect(120, 60)],
+      ]),
+      droppableContainers: [
+        droppable('source-c2', 'choice', 'c2', 1),
+        droppable('target-0', 'target', 'c1', 0),
+        droppable('target-1', 'target', 'c2', 1),
+      ],
+      pointerCoordinates: null,
+    });
+
+    expect(found.map(({ id }: { id: string }) => id)).toEqual(['target-1']);
+  });
+});
+
+describe('PlacementOrdering click to return a placed choice', () => {
+  // Both choices are placed, so both source slots are vacated; Blueberry (c1) is the one picked up.
+  const setup = () => {
+    const onSessionChange = vi.fn();
+    const { container } = render(
+      <PlacementOrdering model={model} session={{ value: ['c1', 'c2'] }} onSessionChange={onSessionChange} />,
+    );
+    const tile = (slot: string) => container.querySelector<HTMLElement>(`[data-tile-id$=":${slot}"]`) as HTMLElement;
+    const isOver = (slot: string) => !!tile(slot).querySelector('.over');
+
+    fireEvent.click(tile('target-0'));
+
+    return { onSessionChange, tile, isOver };
+  };
+
+  it('lights up the source slot the picked-up choice belongs to, as a response area, on hover', () => {
+    const { tile, isOver } = setup();
+
+    expect(isOver('choice-c1')).toBe(false);
+
+    fireEvent.mouseEnter(tile('choice-c1'));
+
+    expect(isOver('choice-c1')).toBe(true);
+
+    fireEvent.mouseLeave(tile('choice-c1'));
+
+    expect(isOver('choice-c1')).toBe(false);
+  });
+
+  it('does not light up the source slot of another choice on hover', () => {
+    const { tile, isOver } = setup();
+
+    fireEvent.mouseEnter(tile('choice-c2'));
+
+    expect(isOver('choice-c2')).toBe(false);
+  });
+
+  it('returns the choice when its own source slot is clicked', () => {
+    const { tile, onSessionChange } = setup();
+
+    fireEvent.click(tile('choice-c1'));
+
+    expect(onSessionChange).toHaveBeenCalledWith({ value: [undefined, 'c2'] });
+  });
+
+  it('does nothing when the source slot of another choice is clicked', () => {
+    const { tile, onSessionChange, isOver } = setup();
+
+    fireEvent.click(tile('choice-c2'));
+
+    expect(onSessionChange).not.toHaveBeenCalled();
+
+    // Still picked up: its own slot takes it afterwards.
+    fireEvent.mouseEnter(tile('choice-c1'));
+    expect(isOver('choice-c1')).toBe(true);
+  });
+
+  it('does nothing when a choice still in the source column is clicked', () => {
+    const onSessionChange = vi.fn();
+    const { container } = render(
+      <PlacementOrdering model={model} session={{ value: ['c1'] }} onSessionChange={onSessionChange} />,
+    );
+    const tile = (slot: string) => container.querySelector<HTMLElement>(`[data-tile-id$=":${slot}"]`) as HTMLElement;
+
+    // The component pads a short session on mount; only what the clicks do is under test.
+    onSessionChange.mockClear();
+
+    fireEvent.click(tile('target-0'));
+    fireEvent.click(tile('choice-c2'));
+
+    expect(onSessionChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('PlacementOrdering drag preview', () => {
+  // One answer placed, and the second response area empty: an empty response area is an empty entry.
+  const oneAnswerPlaced = { value: ['c1', undefined] as unknown as string[] };
+
+  // A pointer drag as dnd-kit's sensor reads it: a press, then a move past its activation distance.
+  const startDrag = (tile: HTMLElement) => {
+    const pointer = { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 };
+
+    fireEvent.pointerDown(tile, { ...pointer, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(document, { ...pointer, clientX: 40, clientY: 60 });
+  };
+
+  const setup = () => {
+    const { container } = render(<Item />);
+    const tile = container.querySelector<HTMLElement>('[data-tile-id$=":choice-c1"]') as HTMLElement;
+
+    return { container, tile };
+  };
+
+  // The tile moves by a transform inside the element's scroll region, which clips it at the region's
+  // edge, restricts it to the grid and, once the tile overflows the region, scrolls the region.
+  it('draws the tile being dragged outside the region that scrolls the tiles', async () => {
+    const { tile } = setup();
+    const scrollRegion = (node: HTMLElement) => {
+      for (let el = node.parentElement; el; el = el.parentElement) {
+        if (getComputedStyle(el).overflowX === 'auto') return el;
+      }
+      return null;
+    };
+
+    startDrag(tile);
+
+    const preview = await waitFor(() => {
+      const found = document.querySelector<HTMLElement>('.placement-ordering-drag-preview');
+      expect(found).not.toBeNull();
+      return found as HTMLElement;
+    });
+
+    const region = scrollRegion(tile);
+
+    expect(region).not.toBeNull();
+    expect(preview).toHaveTextContent('Blueberry');
+    expect(region?.contains(tile)).toBe(true);
+    expect(region?.contains(preview)).toBe(false);
+  });
+
+  // The tile's own wrapper centres its label; the overlay is drawn outside of it.
+  it('centres the label of the tile being dragged, as the tile in its slot does', async () => {
+    const { tile } = setup();
+
+    startDrag(tile);
+
+    const preview = await waitFor(() => {
+      const found = document.querySelector<HTMLElement>('.placement-ordering-drag-preview');
+      expect(found).not.toBeNull();
+      return found as HTMLElement;
+    });
+
+    expect(getComputedStyle(tile).textAlign).toBe('center');
+    expect(getComputedStyle(preview).textAlign).toBe('center');
+  });
+
+  // The preview does not take pointer events, so the slot under the pointer is hovered as the tile
+  // is dragged over it. Only the slot dnd-kit finds the tile over may light up, or two do at once.
+  it('lights up no slot for being under the pointer while a tile is dragged', async () => {
+    const onSessionChange = vi.fn();
+    const { container } = render(
+      <PlacementOrdering model={model} session={oneAnswerPlaced} onSessionChange={onSessionChange} />,
+    );
+    const slot = (name: string) => container.querySelector<HTMLElement>(`[data-tile-id$=":${name}"]`) as HTMLElement;
+
+    startDrag(slot('target-0'));
+    await waitFor(() => expect(document.querySelector('.placement-ordering-drag-preview')).not.toBeNull());
+    fireEvent.mouseEnter(slot('target-1'));
+
+    expect(slot('target-1').querySelector('.over')).toBeNull();
+
+    fireEvent.pointerUp(document, { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 });
+    await waitFor(() => expect(document.querySelector('.placement-ordering-drag-preview')).toBeNull());
+  });
+
+  it('still lights up a response area under the pointer when a choice is only picked up by a click', async () => {
+    const { container } = render(
+      <PlacementOrdering model={model} session={oneAnswerPlaced} onSessionChange={vi.fn()} />,
+    );
+    const slot = (name: string) => container.querySelector<HTMLElement>(`[data-tile-id$=":${name}"]`) as HTMLElement;
+
+    // dnd-kit swallows document clicks for a moment after a drag, such as the previous test's.
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    fireEvent.click(slot('target-0'));
+    fireEvent.mouseEnter(slot('target-1'));
+
+    expect(slot('target-1').querySelector('.over')).not.toBeNull();
+  });
+
+  it('leaves the tile being dragged where it is', async () => {
+    const { tile } = setup();
+
+    startDrag(tile);
+    await waitFor(() => expect(document.querySelector('.placement-ordering-drag-preview')).not.toBeNull());
+
+    expect(tile.style.transform).toBe('');
+  });
+
+  it('removes the preview when the drag ends', async () => {
+    const { tile } = setup();
+
+    startDrag(tile);
+    await waitFor(() => expect(document.querySelector('.placement-ordering-drag-preview')).not.toBeNull());
+    fireEvent.pointerUp(document, { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 });
+
+    await waitFor(() => expect(document.querySelector('.placement-ordering-drag-preview')).toBeNull());
+  });
+});
+
 describe('PlacementOrdering toggles', () => {
   it.each([
     ['en_US', 'Show Teacher Instructions', 'Show Rationale'],
