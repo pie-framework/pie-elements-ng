@@ -56,7 +56,7 @@ describe('hotspot audio requirement', () => {
     (autoplayAudioEnabled, completeAudioEnabled, audioComplete, expected) => {
       const element = create({ autoplayAudioEnabled, completeAudioEnabled });
       element.innerHTML = PROMPT_AUDIO;
-      element.audioComplete = audioComplete;
+      if (audioComplete) element.promptAudio.recordEnd();
 
       expect(element.isComplete()).toBe(expected);
     },
@@ -106,7 +106,7 @@ describe('hotspot prompt audio tracking', () => {
     audio.dispatchEvent(new Event('ended'));
     vi.advanceTimersByTime(100);
 
-    expect(element.audioComplete).toBe(true);
+    expect(element.promptAudio.hasEnded).toBe(true);
     expect(element.session.audioStartTime).toEqual(expect.any(Number));
     expect(element.session.audioEndTime).toEqual(expect.any(Number));
     expect(events.at(-1)?.detail.complete).toBe(true);
@@ -128,7 +128,7 @@ describe('hotspot prompt audio tracking', () => {
 
     audio.dispatchEvent(new Event('ended'));
 
-    expect(element.audioComplete).toBeFalsy();
+    expect(element.promptAudio.hasEnded).toBe(false);
   });
 });
 

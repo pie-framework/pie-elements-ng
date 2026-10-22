@@ -3,8 +3,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
-import { autoplayAudioOn, promptAudioPending, trackPromptAudioFailure } from '@pie-element/shared-utils';
+import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+import { PromptAudioTracker, PromptAudioWatcher, promptAudioPending } from '@pie-element/shared-utils';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -41,6 +41,17 @@ export default class ImageClozeAssociation extends HTMLElement {
   constructor() {
     super();
     this._root = null;
+    this.promptAudio = new PromptAudioTracker({
+      session: () => this._session,
+      writeSession: (next) => this._session && Object.assign(this._session, next),
+      announce: () => this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.isComplete())),
+    });
+    this._promptAudioWatcher = new PromptAudioWatcher({
+      root: this,
+      tracker: this.promptAudio,
+      settings: () => this._model,
+      enableAudioImage: EnableAudioAutoplayImage,
+    });
   }
 
   set model(m) {
@@ -59,11 +70,9 @@ export default class ImageClozeAssociation extends HTMLElement {
       maxResponsePerZone,
       responseAreasToBeFilled,
     } = this._model || {};
-    const elementContext = this;
-
     // check audio completion if the setting is enabled and audio actually exists,
     // whether the audio is started by autoplay or by the student
-    if (completeAudioEnabled && promptAudioPending(elementContext, this._session, this.audioComplete)) {
+    if (completeAudioEnabled && promptAudioPending(this, this.promptAudio)) {
       return false;
     }
 
@@ -130,131 +139,13 @@ export default class ImageClozeAssociation extends HTMLElement {
     this._render();
   }
 
-  _createAudioInfoToast() {
-    const info = document.createElement('div');
-    // Looked up by its class, which authored CSS may also target; a fixed id repeats when items share a page.
-    info.id = createUniqueId('play-audio-info');
-    info.className = 'play-audio-info';
-
-    Object.assign(info.style, {
-      position: 'absolute',
-      top: 0,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: 'white',
-      zIndex: '1000',
-      cursor: 'pointer',
-    });
-
-    const img = document.createElement('img');
-    img.src = EnableAudioAutoplayImage;
-    img.alt = 'Click anywhere to enable audio autoplay';
-    img.width = 500;
-    img.height = 300;
-
-    info.appendChild(img);
-    return info;
-  }
-
   connectedCallback() {
     this._render();
-
-    // Observation:  audio in Chrome will have the autoplay attribute,
-    // while other browsers will not have the autoplay attribute and will need a user interaction to play the audio
-    // This workaround fixes the issue of audio being cached and played on any user interaction in Safari and Firefox
-    const observer = new MutationObserver((mutationsList, observer) => {
-      mutationsList.forEach((mutation) => {
-        if (mutation.type === 'childList') {
-          const audio = this.querySelector('audio');
-          const isInsidePrompt = audio && audio.closest('.preview-prompt');
-
-          if (!this._model) return;
-
-          const { completeAudioEnabled } = this._model;
-          // A hold from the item player reads as autoplay off.
-          const autoplayAudioEnabled = autoplayAudioOn(this._model);
-
-          if (!autoplayAudioEnabled && !completeAudioEnabled) return;
-          if (audio && !isInsidePrompt) return;
-          if (!audio) return;
-
-          const info = this._createAudioInfoToast();
-          const container = this.querySelector('.main-container');
-          const enableAudio = () => {
-            if (this.querySelector('.play-audio-info')) {
-              audio.play();
-              container.removeChild(info);
-            }
-
-            document.removeEventListener('click', enableAudio);
-          };
-
-          if (autoplayAudioEnabled) {
-            // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
-            // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
-            setTimeout(() => {
-              if (audio.paused && !this.querySelector('.play-audio-info')) {
-                // add info message as a toast to enable audio playback
-                container.appendChild(info);
-                document.addEventListener('click', enableAudio);
-              } else {
-                document.removeEventListener('click', enableAudio);
-              }
-            }, 500);
-          }
-
-          // we need to listen for the playing event to remove the toast in case the audio plays because of re-rendering
-          const handlePlaying = () => {
-            const info = this.querySelector('.play-audio-info');
-
-            if (info) {
-              container.removeChild(info);
-            }
-
-            audio.removeEventListener('playing', handlePlaying);
-          };
-
-          audio.addEventListener('playing', handlePlaying);
-
-          // we need to listen for the ended event to update the isComplete state
-          const handleEnded = () => {
-            this.audioComplete = true;
-            this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.isComplete()));
-
-            audio.removeEventListener('ended', handleEnded);
-          };
-
-          audio.addEventListener('ended', handleEnded);
-
-          // Audio that cannot load stops holding completion back.
-          this._stopTrackingAudioFailure = trackPromptAudioFailure(audio, () => this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.isComplete())));
-
-          // store references to remove later
-          this._audio = audio;
-          this._handlePlaying = handlePlaying;
-          this._handleEnded = handleEnded;
-          this._enableAudio = enableAudio;
-
-          observer.disconnect();
-        }
-      });
-    });
-
-    observer.observe(this, { childList: true, subtree: true });
+    this._promptAudioWatcher.connect();
   }
 
   disconnectedCallback() {
-    document.removeEventListener('click', this._enableAudio);
-
-    if (this._audio) {
-      this._audio.removeEventListener('playing', this._handlePlaying);
-      this._audio.removeEventListener('ended', this._handleEnded);
-      this._stopTrackingAudioFailure?.();
-      this._audio = null;
-    }
+    this._promptAudioWatcher.disconnect();
 
     if (this._root) {
       this._root.unmount();

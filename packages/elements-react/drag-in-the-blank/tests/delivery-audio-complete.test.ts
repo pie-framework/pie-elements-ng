@@ -56,16 +56,16 @@ describe('drag-in-the-blank audio requirement', () => {
     (autoplayAudioEnabled, completeAudioEnabled, audioComplete, expected) => {
       const element = create({ autoplayAudioEnabled, completeAudioEnabled });
       element.innerHTML = PROMPT_AUDIO;
-      element.audioComplete = audioComplete;
+      if (audioComplete) element.promptAudio.recordEnd();
 
-      expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(expected);
+      expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(expected);
     },
   );
 
   it('ignores completeAudioEnabled when the prompt has no audio', () => {
     const element = create({ completeAudioEnabled: true });
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(true);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
   });
 });
 
@@ -100,13 +100,13 @@ describe('drag-in-the-blank prompt audio tracking', () => {
       completeAudioEnabled: true,
     });
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(false);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(false);
 
     audio.dispatchEvent(new Event('playing'));
     audio.dispatchEvent(new Event('ended'));
     vi.advanceTimersByTime(100);
 
-    expect(element.audioComplete).toBe(true);
+    expect(element.promptAudio.hasEnded).toBe(true);
     expect(element.session.audioStartTime).toEqual(expect.any(Number));
     expect(element.session.audioEndTime).toEqual(expect.any(Number));
     expect(events.at(-1)?.detail.complete).toBe(true);
@@ -128,7 +128,7 @@ describe('drag-in-the-blank prompt audio tracking', () => {
 
     audio.dispatchEvent(new Event('ended'));
 
-    expect(element.audioComplete).toBeFalsy();
+    expect(element.promptAudio.hasEnded).toBe(false);
   });
 });
 
@@ -172,12 +172,12 @@ describe('drag-in-the-blank autoplay policy', () => {
   it('stops waiting on audio that fails to load', async () => {
     const { element, events, audio } = await mount({ completeAudioEnabled: true });
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(false);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(false);
 
     audio.dispatchEvent(new Event('error'));
     vi.advanceTimersByTime(100);
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(true);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
     expect(events.at(-1)?.detail.complete).toBe(true);
   });
 
@@ -187,7 +187,7 @@ describe('drag-in-the-blank autoplay policy', () => {
       '<div class="main-container"><div class="preview-prompt"><audio><source src=""></audio></div></div>',
     );
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(true);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
   });
 
   it('does not wait on audio a resumed session already played', async () => {
@@ -195,6 +195,6 @@ describe('drag-in-the-blank autoplay policy', () => {
     element.session = { ...answeredSession(), audioEndTime: 1 };
     element.innerHTML = PROMPT_AUDIO;
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(true);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
   });
 });
