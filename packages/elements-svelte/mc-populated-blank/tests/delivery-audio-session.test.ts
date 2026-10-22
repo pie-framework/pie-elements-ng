@@ -196,6 +196,16 @@ describe('mc-populated-blank audio it cannot wait on', () => {
     expect(atDocument.at(-1)?.detail.complete).toBe(true);
   });
 
+  it('lets a host skip the wait through audioComplete', () => {
+    const { element, atDocument, playerSession } = mount(undefined, AUDIO_MODEL);
+
+    element.audioComplete = true;
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
+
+    expect(atDocument.at(-1)?.detail.complete).toBe(true);
+    expect(playerSession.audioEndTime).toBeUndefined();
+  });
+
   it('does not wait on audio a resumed session already played', () => {
     const { element, atDocument } = mount(
       { id: '1', element: TAG, audioStartTime: 1000, audioEndTime: 4000 },

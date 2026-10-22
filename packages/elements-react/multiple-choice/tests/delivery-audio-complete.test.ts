@@ -12,6 +12,7 @@ vi.mock('react-dom/client', () => ({
 }));
 
 const { default: MultipleChoice, isComplete } = await import('../src/delivery/index.js');
+const { PromptAudioTracker } = await import('@pie-element/shared-utils');
 
 const TAG = 'pie-multiple-choice-audio-complete-test';
 if (!customElements.get(TAG)) {
@@ -19,6 +20,12 @@ if (!customElements.get(TAG)) {
 }
 
 const answered = { value: ['a'] };
+
+function promptAudio(ended: boolean) {
+  const tracker = new PromptAudioTracker({ session: () => null, writeSession: () => {}, announce: () => {} });
+  if (ended) tracker.recordEnd();
+  return tracker;
+}
 
 function contextWithPromptAudio() {
   const context = document.createElement('div');
@@ -40,20 +47,20 @@ describe('isComplete audio requirement', () => {
     (autoplayAudioEnabled, completeAudioEnabled, audioComplete, expected) => {
       const model = { choiceMode: 'radio', autoplayAudioEnabled, completeAudioEnabled };
 
-      expect(isComplete(answered, model, audioComplete, contextWithPromptAudio())).toBe(expected);
+      expect(isComplete(answered, model, promptAudio(audioComplete), contextWithPromptAudio())).toBe(expected);
     },
   );
 
   it('still requires a response once the audio has finished', () => {
     const model = { choiceMode: 'radio', completeAudioEnabled: true };
 
-    expect(isComplete({ value: [] }, model, true, contextWithPromptAudio())).toBe(false);
+    expect(isComplete({ value: [] }, model, promptAudio(true), contextWithPromptAudio())).toBe(false);
   });
 
   it('ignores completeAudioEnabled when the prompt has no audio', () => {
     const model = { choiceMode: 'radio', completeAudioEnabled: true };
 
-    expect(isComplete(answered, model, false, document.createElement('div'))).toBe(true);
+    expect(isComplete(answered, model, promptAudio(false), document.createElement('div'))).toBe(true);
   });
 });
 
@@ -99,16 +106,25 @@ describe('multiple-choice prompt audio tracking', () => {
       completeAudioEnabled: true,
     });
 
-    expect(isComplete(element.session, element._model, element.audioComplete, element)).toBe(false);
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(false);
 
     audio.dispatchEvent(new Event('playing'));
     audio.dispatchEvent(new Event('ended'));
     vi.advanceTimersByTime(10);
 
-    expect(element.audioComplete).toBe(true);
+    expect(element.promptAudio.hasEnded).toBe(true);
     expect(element.session.audioStartTime).toEqual(expect.any(Number));
     expect(element.session.audioEndTime).toEqual(expect.any(Number));
     expect(events.at(-1)?.detail.complete).toBe(true);
+  });
+
+  it('lets a host skip the wait through audioComplete', async () => {
+    const { element } = await mount({ completeAudioEnabled: true });
+
+    element.audioComplete = true;
+
+    expect(isComplete(element.session, element._model, element.promptAudio, element)).toBe(true);
+    expect(element.session.audioEndTime).toBeUndefined();
   });
 
   it('does not show the enable-autoplay overlay with autoplay off', async () => {
@@ -127,7 +143,7 @@ describe('multiple-choice prompt audio tracking', () => {
 
     audio.dispatchEvent(new Event('ended'));
 
-    expect(element.audioComplete).toBe(false);
+    expect(element.promptAudio.hasEnded).toBe(false);
     expect(element.session.audioEndTime).toBeUndefined();
   });
 });
@@ -163,7 +179,7 @@ describe('multiple-choice autoplay policy', () => {
     element.addEventListener('session-changed', (event: Event) => {
       events.push(event as CustomEvent);
     });
-    const done = () => isComplete(element.session, element._model, element.audioComplete, element);
+    const done = () => isComplete(element.session, element._model, element.promptAudio, element);
     return { element, events, done, audio: element.querySelector('audio') as HTMLAudioElement };
   }
 
