@@ -46,6 +46,7 @@ const StyledEditorHolder: any = styled('div')(({ theme }) => ({
 
 const EditableHtmlContainer = ({
   label,
+  ariaLabel,
   onChange,
   value,
   className,
@@ -66,6 +67,7 @@ const EditableHtmlContainer = ({
     <InputContainer label={label} className={className}>
       <StyledEditorHolder>
         <EditableHtml
+          ariaLabel={ariaLabel || label}
           markup={value || ''}
           disabled={disabled}
           spellCheck={spellCheck}
@@ -110,7 +112,7 @@ const StyledEditableHtmlContainer: any = styled(EditableHtmlContainer)(({ theme 
   marginTop: theme.spacing(2),
 }));
 
-const Feedback = ({ value, onChange, type, correct, defaults, toolbarOpts, mathMlOptions = {} }) => {
+const Feedback = ({ value, onChange, type, correct, defaults, toolbarOpts, choiceName, mathMlOptions = {} }) => {
   if (!type || type === 'none') {
     return null;
   } else if (type === 'default') {
@@ -119,6 +121,7 @@ const Feedback = ({ value, onChange, type, correct, defaults, toolbarOpts, mathM
         <StyledArrowIcon />
         <StyledTextField
           label="Feedback Text"
+          slotProps={{ htmlInput: { 'aria-label': `Feedback Text for ${choiceName}` } }}
           value={correct ? defaults.correct : defaults.incorrect}
           variant="standard"
         />
@@ -130,6 +133,7 @@ const Feedback = ({ value, onChange, type, correct, defaults, toolbarOpts, mathM
         <StyledArrowIcon />
         <StyledEditableHtmlContainer
           label="Feedback Text"
+          ariaLabel={`Feedback Text for ${choiceName}`}
           value={value}
           onChange={onChange}
           toolbarOpts={toolbarOpts}
@@ -312,12 +316,14 @@ export class ChoiceConfiguration extends React.Component {
     } = this.props;
 
     const InputToggle = mode === 'checkbox' ? InputCheckbox : InputRadio;
+    const choiceLabel = index > 0 ? (useLetterOrdering ? String.fromCharCode(96 + index).toUpperCase() : String(index)) : '';
+    const choiceName = choiceLabel ? `choice ${choiceLabel}` : 'choice';
 
     return (
       <StyledTopRow>
         {index > 0 && (
           <StyledIndex type="title">
-            {useLetterOrdering ? String.fromCharCode(96 + index).toUpperCase() : index}
+            {choiceLabel}
           </StyledIndex>
         )}
 
@@ -325,6 +331,7 @@ export class ChoiceConfiguration extends React.Component {
           <InputToggle
             onChange={this.onCheckedChange}
             label={!noLabels ? 'Correct' : ''}
+            ariaLabel={`Correct answer for ${choiceName}`}
             checked={!!data.correct}
             error={noCorrectAnswerError}
           />
@@ -333,6 +340,7 @@ export class ChoiceConfiguration extends React.Component {
         <StyledMiddleColumn>
           <EditableHtmlContainer
             label={!noLabels ? 'Label' : ''}
+            ariaLabel={noLabels ? `Choice ${choiceLabel}`.trim() : `Label for ${choiceName}`}
             value={data.label}
             onChange={this.onLabelChange}
             imageSupport={imageSupport}
@@ -352,6 +360,7 @@ export class ChoiceConfiguration extends React.Component {
 
           {allowFeedBack && (
             <Feedback
+              choiceName={choiceName}
               {...data.feedback}
               correct={data.correct}
               defaults={defaultFeedback}

@@ -39,6 +39,7 @@ import { styled } from '@mui/material/styles';
 const InputTypes = {
   className: PropTypes.string,
   label: PropTypes.string,
+  ariaLabel: PropTypes.string,
   checked: PropTypes.bool,
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
@@ -50,10 +51,10 @@ const StyledSwitch: any = styled(Switch)(() => ({
   transform: 'translate(-20%, 20%)',
 }));
 
-const InputSwitch = ({ className, label, checked, onChange }) => {
+const InputSwitch = ({ className, label, ariaLabel, checked, onChange }) => {
   return (
     <InputContainer className={className} label={label}>
-      <StyledSwitch checked={checked} onChange={onChange} aria-label={label} />
+      <StyledSwitch checked={checked} onChange={onChange} slotProps={{ input: { 'aria-label': ariaLabel || label } }} />
     </InputContainer>
   );
 };
@@ -68,10 +69,10 @@ const StyledCheckbox: any = styled(Checkbox)(({ theme, error }) => ({
   }),
 }));
 
-const InputCheckbox = ({ className, label, checked, onChange, disabled, error }) => {
+const InputCheckbox = ({ className, label, ariaLabel, checked, onChange, disabled, error }) => {
   return (
     <InputContainer className={className} label={label}>
-      <StyledCheckbox disabled={disabled} checked={checked} onChange={onChange} aria-label={label} error={error} />
+      <StyledCheckbox disabled={disabled} checked={checked} onChange={onChange} slotProps={{ input: { 'aria-label': ariaLabel || label } }} error={error} />
     </InputContainer>
   );
 };
@@ -86,10 +87,10 @@ const StyledRadio: any = styled(Radio)(({ theme, error }) => ({
   }),
 }));
 
-const InputRadio = ({ className, label, checked, onChange, disabled, error }) => {
+const InputRadio = ({ className, label, ariaLabel, checked, onChange, disabled, error }) => {
   return (
     <InputContainer className={className} label={label}>
-      <StyledRadio disabled={disabled} checked={checked} onChange={onChange} aria-label={label} error={error} />
+      <StyledRadio disabled={disabled} checked={checked} onChange={onChange} slotProps={{ input: { 'aria-label': ariaLabel || label } }} error={error} />
     </InputContainer>
   );
 };
