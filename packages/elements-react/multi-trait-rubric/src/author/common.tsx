@@ -200,7 +200,7 @@ const SubLabel: any = styled('div')({
 });
 
 export const ScorePoint = ({
-  ariaLabel,
+  ariaLabel = '',
   error = '',
   scorePointsValue,
   scoreDescriptor,
@@ -270,7 +270,7 @@ const StyledBootstrapInput: any = styled(InputBase)(({ theme }) => ({
 
 const createMaxScoreOptions = (maxMaxPoints) => Array.from({ length: maxMaxPoints }, (_, i) => i + 1);
 
-export const MaxPointsPicker = ({ maxPoints, onChange, maxMaxPoints, ariaLabel }) => (
+export const MaxPointsPicker = ({ maxPoints, onChange, maxMaxPoints, ariaLabel = '' }) => (
   <InputContainer label="Max Points">
     <Select
       inputProps={{ 'aria-label': ariaLabel || 'Max Points' }}
@@ -301,7 +301,7 @@ const SimpleInputWrapper: any = styled('div')(({ theme }) => ({
 }));
 
 export const SimpleInput = ({
-  ariaLabel,
+  ariaLabel = '',
   markup,
   onChange,
   pluginProps,
@@ -342,7 +342,7 @@ const UnderlinedInputWrapper: any = styled('div')({
 });
 
 export const UnderlinedInput = ({
-  ariaLabel,
+  ariaLabel = '',
   error,
   markup,
   onChange,
@@ -379,7 +379,7 @@ export const UnderlinedInput = ({
 );
 
 export const ExpandedInput = ({
-  ariaLabel,
+  ariaLabel = '',
   error,
   markup,
   onChange,

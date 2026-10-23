@@ -7,6 +7,11 @@ import NumberTextField from '../src/number-text-field.js';
 import { Panel, dropdown } from '../src/settings/index.js';
 
 describe('authoring input names', () => {
+  it('preserves the checkbox visible label when no override is supplied', () => {
+    const { getByRole } = render(<Checkbox checked={false} onChange={vi.fn()} label="Allow duplicates" />);
+    expect(getByRole('checkbox', { name: 'Allow duplicates' })).toBeInTheDocument();
+  });
+
   it('names a checkbox without a visible label', () => {
     const { getByRole } = render(<Checkbox checked={false} onChange={vi.fn()} label="" ariaLabel="Correct answer for row 1, column 2" />);
     expect(getByRole('checkbox', { name: 'Correct answer for row 1, column 2' })).toBeInTheDocument();
