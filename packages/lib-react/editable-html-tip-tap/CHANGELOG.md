@@ -1,5 +1,40 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.1.2
+
+### Patch Changes
+
+- [#528](https://github.com/pie-framework/pie-elements-ng/pull/528) [`d154a28`](https://github.com/pie-framework/pie-elements-ng/commit/d154a2806a4bb7036e8e4089b6d799107cc32a26) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - Images saved as a plain `<img>` (older content, and markup whose editor attributes a host stripped) now load as editable images with a resize handle and the configured `maxImageWidth` / `maxImageHeight` limits, instead of a plain picture that cannot be resized.
+
+- [#490](https://github.com/pie-framework/pie-elements-ng/pull/490) [`90b0e5f`](https://github.com/pie-framework/pie-elements-ng/commit/90b0e5f90c3b01cb7a5f1da2ef60ebccc641a8b0) Thanks [@arimieandreea](https://github.com/arimieandreea)! - fix: support mmlEditing and mmlOutput MathML options PIE-1217
+
+- [#496](https://github.com/pie-framework/pie-elements-ng/pull/496) [`c1d5a76`](https://github.com/pie-framework/pie-elements-ng/commit/c1d5a766f0af2a5eaa9a32012defce50a3608621) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the tiptap group across 1 directory with 25 updates
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#525](https://github.com/pie-framework/pie-elements-ng/pull/525) [`ac2a264`](https://github.com/pie-framework/pie-elements-ng/commit/ac2a264beb033828621d0939585b38aaebe67676) Thanks [@chillenious](https://github.com/chillenious)! - fix(editable-html-tip-tap): tear down a CSS class dialog when another replaces it
+
+- [#530](https://github.com/pie-framework/pie-elements-ng/pull/530) [`ac97136`](https://github.com/pie-framework/pie-elements-ng/commit/ac97136360b1abdf1884b7fdfb684ca0d658c062) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - chore(editable-html-tip-tap): clean up image follow-ups PIE-1298
+
+- [#533](https://github.com/pie-framework/pie-elements-ng/pull/533) [`790261e`](https://github.com/pie-framework/pie-elements-ng/commit/790261e6d2d235a18d52fcb77cb55294c15317c8) Thanks [@arimieandreea](https://github.com/arimieandreea)! - fix: keep the MathML converter out of delivery bundles and harden Mat…
+
+- [#507](https://github.com/pie-framework/pie-elements-ng/pull/507) [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2) Thanks [@chillenious](https://github.com/chillenious)! - Stop using the React APIs that React 19 removes — `findDOMNode`, `ReactDOM.render`, legacy
+  context and `defaultProps` on function components — while staying on React 18. `UiLayout` and
+  `ConfigLayout` take a `containerRef` for their root element; the elements that measured or
+  rendered math into that element through `findDOMNode` got the extraCSSRules `<style>` node
+  instead whenever rules were set. `@pie-lib/editable-html-tip-tap` drops its unused `react-jss`
+  dependency.
+
+- [#507](https://github.com/pie-framework/pie-elements-ng/pull/507) [`675bcae`](https://github.com/pie-framework/pie-elements-ng/commit/675bcae8cf9cc5b37530c85b61944d481b07d11b) Thanks [@chillenious](https://github.com/chillenious)! - The editor's alt-text and media dialogs stay visible to screen readers while open, and closing the alt-text dialog no longer leaves the rest of the page `aria-hidden`.
+- Updated dependencies [[`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848), [`1398db7`](https://github.com/pie-framework/pie-elements-ng/commit/1398db7e02995a0734729529529011d1b4003e19), [`ee562c9`](https://github.com/pie-framework/pie-elements-ng/commit/ee562c9523b1c064879670ecca94cbef7fc0f0c5), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`be09f67`](https://github.com/pie-framework/pie-elements-ng/commit/be09f672d003e4a2ab598e0700b1767aa9ff2083), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`feb4d06`](https://github.com/pie-framework/pie-elements-ng/commit/feb4d060bc1a867bbe524cdf597fb903b0f771ac), [`46d022d`](https://github.com/pie-framework/pie-elements-ng/commit/46d022d74dcd1ef1bf073d837138c0c4143bcfe4), [`cb30a68`](https://github.com/pie-framework/pie-elements-ng/commit/cb30a68fa78dff12c84a661ad529a49137b64d73), [`3f3a33e`](https://github.com/pie-framework/pie-elements-ng/commit/3f3a33ef90964281a31d486be8b1fc2ccdc982c5), [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2), [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a)]:
+  - @pie-lib/render-ui@8.0.7
+  - @pie-element/shared-math-rendering-mathjax@0.1.8
+  - @pie-lib/translator@5.0.2
+  - @pie-element/shared-lodash@0.1.3
+  - @pie-lib/drag@5.0.7
+  - @pie-lib/math-input@9.0.7
+  - @pie-lib/math-toolbar@4.0.7
+
 ## 3.1.1
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.8
+
+### Patch Changes
+
+- [#489](https://github.com/pie-framework/pie-elements-ng/pull/489) [`dff4ca5`](https://github.com/pie-framework/pie-elements-ng/commit/dff4ca5b89573d48aeecdb74524f1e0d0694beb5) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - feat(multiple-choice): name the group without dropping math, and prototype math kept out of choice names (PIE-1244)
+
+- [#490](https://github.com/pie-framework/pie-elements-ng/pull/490) [`90b0e5f`](https://github.com/pie-framework/pie-elements-ng/commit/90b0e5f90c3b01cb7a5f1da2ef60ebccc641a8b0) Thanks [@arimieandreea](https://github.com/arimieandreea)! - fix: support mmlEditing and mmlOutput MathML options PIE-1217
+
+- [#495](https://github.com/pie-framework/pie-elements-ng/pull/495) [`a8c784d`](https://github.com/pie-framework/pie-elements-ng/commit/a8c784d4ba7caa63370862160611bd61508beef8) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the test-dependencies group across 1 directory with 3 updates
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#533](https://github.com/pie-framework/pie-elements-ng/pull/533) [`790261e`](https://github.com/pie-framework/pie-elements-ng/commit/790261e6d2d235a18d52fcb77cb55294c15317c8) Thanks [@arimieandreea](https://github.com/arimieandreea)! - fix: keep the MathML converter out of delivery bundles and harden Mat…
+
 ## 0.1.7
 
 ### Patch Changes

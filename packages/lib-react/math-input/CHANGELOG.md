@@ -1,5 +1,17 @@
 # @pie-lib/math-input
 
+## 9.0.7
+
+### Patch Changes
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#534](https://github.com/pie-framework/pie-elements-ng/pull/534) [`f8bdaca`](https://github.com/pie-framework/pie-elements-ng/commit/f8bdaca6ad9255f8f740de7b05a2de3b8ba34e80) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(math-toolbar): size the math input beside the equation editor select, and make empty keypad keys inert PIE-1131
+- Updated dependencies [[`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`be09f67`](https://github.com/pie-framework/pie-elements-ng/commit/be09f672d003e4a2ab598e0700b1767aa9ff2083), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`feb4d06`](https://github.com/pie-framework/pie-elements-ng/commit/feb4d060bc1a867bbe524cdf597fb903b0f771ac), [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2), [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a)]:
+  - @pie-lib/render-ui@8.0.7
+  - @pie-lib/translator@5.0.2
+  - @pie-element/shared-lodash@0.1.3
+
 ## 9.0.6
 
 ### Patch Changes

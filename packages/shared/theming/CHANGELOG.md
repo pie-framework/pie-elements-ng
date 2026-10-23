@@ -1,5 +1,13 @@
 # @pie-element/shared-theming
 
+## 0.2.4
+
+### Patch Changes
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+- Updated dependencies [[`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9)]:
+  - @pie-element/shared-types@0.2.3
+
 ## 0.2.3
 
 ### Patch Changes

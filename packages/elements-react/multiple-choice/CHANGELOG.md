@@ -1,5 +1,63 @@
 # @pie-element/multiple-choice
 
+## 14.0.7
+
+### Patch Changes
+
+- [#539](https://github.com/pie-framework/pie-elements-ng/pull/539) [`eda6ba3`](https://github.com/pie-framework/pie-elements-ng/commit/eda6ba328b2140d1d1ed08c13454c334219bf5cc) Thanks [@chillenious](https://github.com/chillenious)! - Name native authoring inputs and associate settings dropdowns with their visible
+  labels. Name rich-text prompts, instructions, templates, choices, passages and
+  rubric fields, including repeated row, column, passage, trait and scale context.
+  Preserve configured labels and formatted choice-rationale labels.
+
+- [#492](https://github.com/pie-framework/pie-elements-ng/pull/492) [`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848) Thanks [@chillenious](https://github.com/chillenious)! - Adds an `nl-NL` locale bundle to each package: one chunk per locale in the
+  browser build, inlined by webpack consumers through the eager comment, and
+  absent from IIFE, like every other shipped locale. The set now covers every
+  locale pie-players ships (`en-US`, `nl-NL`, `th-TH`), so a player publishing
+  `nl-NL` renders Dutch chrome inside the item as well as around it. The
+  catalogs are `generated` (unreviewed) in the manifest; register and terminology
+  follow pie-players' `briefs/nl-NL.md` and its reviewed Dutch catalog —
+  impersonal infinitive for labels, imperative for learner instructions,
+  `vraag`/`antwoord`/`leraar`, `weergeven`/`verbergen`.
+
+- [#508](https://github.com/pie-framework/pie-elements-ng/pull/508) [`d21299f`](https://github.com/pie-framework/pie-elements-ng/commit/d21299f5802515be3a900fb7c2da75c80d514a1a) Thanks [@chillenious](https://github.com/chillenious)! - Corrections to seven of the multiple-choice interface catalogs from a review by three independent expert reviewers per locale, applied only where at least two agreed. French renames the multi-select heading `Question à réponses multiples`: `Question à choix multiples` was a homophone of the single-answer heading (the final s is silent), so a screen-reader user could not hear which of the two question types was announced. Welsh takes the Termiadur term `Cwestiwn aml-ddewis` for the multiple-choice heading and `Cwestiwn dewis lluosog` for multi-select, keeping the pair audibly distinct, and puts the singular noun after 5–6 in `maxSelections.many` like every other plural group in the suite. Japanese counts answer choices with 個 in `maxSelections.other`, matching its minimum-selection strings; Korean says 답안 there, matching its answer-choices group name; Thai aligns `maxSelections.other` with its sibling `เลือก … รายการ` constraints; Portuguese names the answer-choices group `Alternativas de resposta`, the Brazilian assessment term pie-players already uses; Spanish drops the pre-2010 accent on `Solo`. Keys, placeholders and plural shapes are unchanged.
+
+- [#537](https://github.com/pie-framework/pie-elements-ng/pull/537) [`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5) Thanks [@chillenious](https://github.com/chillenious)! - The prompt-audio elements share one implementation of autoplay, `completeAudioEnabled` and audio
+  timing from `@pie-element/shared-utils`. image-cloze-association now records `audioStartTime`,
+  `audioEndTime` and `waitTime` like the others, so the session changes when its prompt audio ends
+  (PIE-1340).
+
+- [#489](https://github.com/pie-framework/pie-elements-ng/pull/489) [`dff4ca5`](https://github.com/pie-framework/pie-elements-ng/commit/dff4ca5b89573d48aeecdb74524f1e0d0694beb5) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - feat(multiple-choice): name the group without dropping math, and prototype math kept out of choice names (PIE-1244)
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#487](https://github.com/pie-framework/pie-elements-ng/pull/487) [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b) Thanks [@chillenious](https://github.com/chillenious)! - The chrome follows the locale the player publishes through the interface-locale context, else the
+  item's declared language, else `en-US`, and the resolved locale now reaches the React tree: the
+  region label, the SR heading, the selection-count text and the correct-answer toggle all render
+  it, where the element previously localized only its region label and left the component chrome on
+  English. Republishes re-render without a remount. The element host still names the content
+  language alone (`lang`/`dir` for a declared language, nothing otherwise).
+
+- [#506](https://github.com/pie-framework/pie-elements-ng/pull/506) [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a) Thanks [@chillenious](https://github.com/chillenious)! - Adds a Romanian (`ro`) locale bundle to each package, keeping the three in
+  step with pie-players, whose generated tier gained Romanian the same day. One
+  chunk per locale in the browser build, inlined by webpack consumers, absent
+  from IIFE. Register and terminology follow pie-players' `briefs/ro.md`:
+  imperative on controls (`Afișează răspunsul corect`), comma-below diacritics,
+  and all three CLDR plural forms — `other` takes `de` before the noun (`Sunt
+  permise doar 20 de răspunsuri.`). Status `generated`, unreviewed.
+- Updated dependencies [[`eda6ba3`](https://github.com/pie-framework/pie-elements-ng/commit/eda6ba328b2140d1d1ed08c13454c334219bf5cc), [`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848), [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b), [`83fb0b5`](https://github.com/pie-framework/pie-elements-ng/commit/83fb0b5d16b566175871f0c3731073e66bd27c56), [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b), [`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5), [`d154a28`](https://github.com/pie-framework/pie-elements-ng/commit/d154a2806a4bb7036e8e4089b6d799107cc32a26), [`1398db7`](https://github.com/pie-framework/pie-elements-ng/commit/1398db7e02995a0734729529529011d1b4003e19), [`ee562c9`](https://github.com/pie-framework/pie-elements-ng/commit/ee562c9523b1c064879670ecca94cbef7fc0f0c5), [`cb133b3`](https://github.com/pie-framework/pie-elements-ng/commit/cb133b324791060747a3cb422bcb8ad203e9bbfe), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`a6f3cb6`](https://github.com/pie-framework/pie-elements-ng/commit/a6f3cb617a20f6365052c4d435433c16cec91328), [`79d8b17`](https://github.com/pie-framework/pie-elements-ng/commit/79d8b17e6925cd8256a9b76caf99efbcfa53567f), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`feb4d06`](https://github.com/pie-framework/pie-elements-ng/commit/feb4d060bc1a867bbe524cdf597fb903b0f771ac), [`0c12aca`](https://github.com/pie-framework/pie-elements-ng/commit/0c12aca126763c30cdc6fcec2d87aa8167e486a8), [`4e73bb7`](https://github.com/pie-framework/pie-elements-ng/commit/4e73bb760a728f4268050efc822a6161ad8cc2a2), [`cb30a68`](https://github.com/pie-framework/pie-elements-ng/commit/cb30a68fa78dff12c84a661ad529a49137b64d73), [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2), [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a), [`675bcae`](https://github.com/pie-framework/pie-elements-ng/commit/675bcae8cf9cc5b37530c85b61944d481b07d11b)]:
+  - @pie-lib/config-ui@14.0.7
+  - @pie-lib/render-ui@8.0.7
+  - @pie-lib/correct-answer-toggle@5.0.7
+  - @pie-element/shared-i18n@0.1.2
+  - @pie-element/shared-utils@0.1.6
+  - @pie-lib/editable-html-tip-tap@3.1.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.8
+  - @pie-element/shared-configure-events@0.1.2
+  - @pie-element/shared-controller-utils@0.1.4
+  - @pie-element/shared-lodash@0.1.3
+  - @pie-element/shared-player-events@0.2.1
+  - @pie-element/shared-types@0.2.3
+
 ## 14.0.6
 
 ### Patch Changes
