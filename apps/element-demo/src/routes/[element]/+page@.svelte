@@ -20,8 +20,8 @@ const hasAuthor = $derived(data.capabilities.includes('author'));
 const hasPrint = $derived(data.capabilities.includes('print'));
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-primary to-secondary p-6">
-  <div class="card bg-base-100 shadow-2xl">
+<div class="min-h-screen p-6">
+  <div class="card bg-base-100 border border-base-300 max-w-screen-xl mx-auto">
       <!-- Header -->
       <div class="card-body p-8 pb-6 border-b border-base-300">
         <div class="flex items-center gap-6">
@@ -31,7 +31,7 @@ const hasPrint = $derived(data.capabilities.includes('print'));
             class="w-20 h-20 flex-shrink-0"
           />
           <div class="flex-1">
-            <h1 class="text-4xl font-bold mb-2">
+            <h1 class="font-editorial text-5xl mb-3">
               {data.elementTitle}
             </h1>
             <code class="badge badge-lg badge-outline font-mono">
@@ -39,15 +39,15 @@ const hasPrint = $derived(data.capabilities.includes('print'));
             </code>
           </div>
           <div class="flex gap-2 flex-wrap justify-end">
-            <span class="badge badge-primary">Delivery</span>
+            <span class="badge badge-outline">Delivery</span>
             {#if hasAuthor}
-              <span class="badge badge-primary">Author</span>
+              <span class="badge badge-outline">Author</span>
             {/if}
             {#if hasPrint}
-              <span class="badge badge-primary">Print</span>
+              <span class="badge badge-outline">Print</span>
             {/if}
-            <span class="badge badge-primary">Docs</span>
-            <span class="badge badge-primary">Source</span>
+            <span class="badge badge-outline">Docs</span>
+            <span class="badge badge-outline">Source</span>
           </div>
         </div>
       </div>
