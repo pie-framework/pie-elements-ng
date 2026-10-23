@@ -194,6 +194,7 @@ export class Row extends React.Component {
         <RowContainer>
           <QuestionText>
             <EditableHtml
+              ariaLabel={`Row ${idx + 1} label`}
               imageSupport={imageSupport}
               autoWidthToolbar
               disableUnderline
@@ -216,11 +217,13 @@ export class Row extends React.Component {
             <RowItem key={rowIdx}>
               {model.choiceMode === 'radio' ? (
                 <RadioButtonStyled
+                  slotProps={{ input: { 'aria-label': `Correct answer for row ${idx + 1}, column ${rowIdx + 2}` } }}
                   error={error?.includes('No correct response defined.')}
                   onChange={this.onRowValueChange(idx, rowIdx)}
                   checked={rowValue === true} />
               ) : (
                 <Checkbox
+                  ariaLabel={`Correct answer for row ${idx + 1}, column ${rowIdx + 2}`}
                   onChange={this.onRowValueChange(idx, rowIdx)}
                   checked={rowValue === true}
                   label={''}

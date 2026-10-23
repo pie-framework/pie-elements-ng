@@ -71,6 +71,7 @@ function TraitTile({
   labelPluginProps = {},
   imageSupport = {},
   index,
+  scaleIndex = 0,
   onTraitChanged,
   onTraitRemoved,
   onTraitDropped,
@@ -180,6 +181,7 @@ function TraitTile({
           </Controls>
 
           <UnderlinedInput
+            ariaLabel={`Trait ${index + 1} name in scale ${scaleIndex + 1}`}
             markup={name}
             error={error?.name || ''}
             onChange={(name) => onTraitChangedHandler({ name })}
@@ -203,6 +205,7 @@ function TraitTile({
             <Block>
               <ExpandedInput
                 placeholder="Standards"
+                ariaLabel={`Standards for trait ${index + 1} in scale ${scaleIndex + 1}`}
                 markup={standards.join(',')}
                 onChange={(standards) => onTraitChangedHandler({ standards: standards.split(',') })}
                 pluginProps={expandedPluginProps}
@@ -218,6 +221,7 @@ function TraitTile({
             <Block>
               <ExpandedInput
                 placeholder="Enter Description"
+                ariaLabel={`Description for trait ${index + 1} in scale ${scaleIndex + 1}`}
                 markup={description}
                 error={error?.description || ''}
                 onChange={(description) => onTraitChangedHandler({ description })}
@@ -247,6 +251,7 @@ function TraitTile({
               <Block key={`key-key-${scoreIndex}`}>
                 <ExpandedInput
                   placeholder="Enter Descriptor"
+                  ariaLabel={`Descriptor for score ${scorePointsValue} in trait ${index + 1} in scale ${scaleIndex + 1}`}
                   markup={scoreDescriptor}
                   onChange={(descriptor) => onScorePointDescriptorChange({ descriptor, value })}
                   pluginProps={expandedPluginProps}

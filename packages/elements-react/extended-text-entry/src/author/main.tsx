@@ -193,6 +193,7 @@ export class Main extends React.Component<MainProps, MainState> {
         {teacherInstructionsEnabled && (
           <PromptContainer label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               className="prompt"
               markup={model.teacherInstructions || ''}
               onChange={this.changeTeacherInstructions}
@@ -215,6 +216,7 @@ export class Main extends React.Component<MainProps, MainState> {
         {promptEnabled && (
           <PromptContainer label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               activePlugins={ALL_PLUGINS}
               className="prompt"
               markup={model.prompt || ''}

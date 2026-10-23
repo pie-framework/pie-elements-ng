@@ -163,6 +163,7 @@ export class TraitsHeaderTile extends React.Component {
         <PrimaryBlockGreyHeader>
           {showLevelTagInput && (
             <SimpleInput
+              ariaLabel={`Level Label for scale ${scaleIndex + 1}`}
               markup={traitLabel || 'Trait'}
               onChange={onTraitLabelChange}
               pluginProps={labelPluginProps}
@@ -178,7 +179,7 @@ export class TraitsHeaderTile extends React.Component {
             <div>Scale {scaleIndex + 1}</div>
 
             {maxPointsEnabled && (
-              <MaxPointsPicker maxPoints={maxPoints} maxMaxPoints={maxMaxPoints} onChange={updateMaxPointsFieldValue} />
+              <MaxPointsPicker ariaLabel={`Max Points for scale ${scaleIndex + 1}`} maxPoints={maxPoints} maxMaxPoints={maxMaxPoints} onChange={updateMaxPointsFieldValue} />
             )}
 
             <div>
@@ -245,6 +246,7 @@ export class TraitsHeaderTile extends React.Component {
             return (
               <Block key={`secondary-block-part-${index}`}>
                 <ScorePoint
+                  ariaLabel={`Score ${scorePointsValue} label for scale ${scaleIndex + 1}`}
                   scorePointsValue={scorePointsValue}
                   error={error}
                   scoreDescriptor={scoreDescriptor}

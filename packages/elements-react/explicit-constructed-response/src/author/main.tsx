@@ -375,6 +375,7 @@ export class Main extends React.Component<MainProps, State> {
         {teacherInstructionsEnabled && (
           <PromptHolder label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               className="prompt"
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChanged}
@@ -398,6 +399,7 @@ export class Main extends React.Component<MainProps, State> {
         {promptEnabled && (
           <PromptHolder label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               className="prompt"
               markup={model.prompt}
               onChange={this.onPromptChanged}
@@ -427,6 +429,7 @@ export class Main extends React.Component<MainProps, State> {
         </FlexContainer>
 
         <MarkupContainer
+          ariaLabel="Response template"
           activePlugins={ALL_PLUGINS}
           toolbarOpts={{ position: 'top' }}
           spellCheck={spellCheckEnabled}
@@ -491,6 +494,7 @@ export class Main extends React.Component<MainProps, State> {
         {rationaleEnabled && (
           <PromptHolder label={rationale.label}>
             <EditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               className="prompt"
               markup={model.rationale || ''}
               onChange={this.onRationaleChanged}

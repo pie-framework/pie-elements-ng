@@ -155,6 +155,7 @@ export class Main extends React.Component<MainProps, State> {
 
         <StyledFormSection label={title?.label || 'Title'}>
           <EditableHtml
+            ariaLabel={title?.label || 'Title'}
             markup={model.title || ''}
             onChange={(title: string) => onChange({ title })}
             toolbarOpts={toolbarOpts}
@@ -179,6 +180,7 @@ export class Main extends React.Component<MainProps, State> {
 
         <StyledFormSection label={prompt?.label || 'Question'}>
           <EditableHtml
+            ariaLabel={prompt?.label || 'Question'}
             markup={model.prompt || ''}
             minHeight={60}
             onChange={(prompt: string) => onChange({ prompt })}

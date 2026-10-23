@@ -99,6 +99,7 @@ export class Root extends React.Component<RootProps> {
         {model && model.teacherInstructionsEnabled && (
           <StyledInputContainer label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChanged}
               imageSupport={imageSupport}

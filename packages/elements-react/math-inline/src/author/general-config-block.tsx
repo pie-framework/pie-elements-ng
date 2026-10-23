@@ -372,6 +372,7 @@ class GeneralConfigBlock extends React.Component {
         {promptEnabled && (
           <PromptHolder label={cPrompt.label}>
             <EditableHtml
+              ariaLabel={cPrompt.label || 'Prompt'}
               onFocus={this.onPromptFocus}
               markup={prompt || ''}
               onChange={this.onChange('prompt')}
@@ -483,6 +484,7 @@ class GeneralConfigBlock extends React.Component {
         {rationaleEnabled && (
           <PromptHolder label={cRationale.label}>
             <EditableHtml
+              ariaLabel={cRationale.label || 'Rationale'}
               markup={rationale || ''}
               onChange={this.onChange('rationale')}
               imageSupport={imageSupport}

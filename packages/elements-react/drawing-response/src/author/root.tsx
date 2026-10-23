@@ -146,6 +146,7 @@ export class Root extends React.Component<RootProps> {
         {teacherInstructionsEnabled && (
           <PromptHolder label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChanged}
               imageSupport={imageSupport}
@@ -167,6 +168,7 @@ export class Root extends React.Component<RootProps> {
         {promptEnabled && (
           <PromptHolder label="Item Stem">
             <EditableHtml
+              ariaLabel={'Item Stem'}
               markup={model.prompt}
               onChange={this.onPromptChanged}
               error={promptError}
