@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 // MathJax loads off a CDN and has no bearing on the toolbar.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -72,6 +72,90 @@ describe('EditableHtml toolbar', () => {
 
     act(() => screen.getByRole('button', { name: 'After' }).focus());
     await waitFor(() => expect(inert(toolbar())).toBe(true));
+  });
+
+  describe('Done button', () => {
+    // Focuses the text, then the toolbar's Done button, as Tab from the text does.
+    const focusDone = async (props: Record<string, unknown> = {}) => {
+      let tiptap: any;
+      const onChange = vi.fn();
+      render(
+        editor({
+          markup: '<p>Hello</p>',
+          onChange,
+          editorRef: (instance: unknown) => {
+            tiptap = instance;
+          },
+          ...props,
+        }),
+      );
+      const box = await textbox();
+      await waitFor(() => expect(tiptap).toBeTruthy());
+      act(() => box.focus());
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+      const done = toolbar().querySelector('button[aria-label="Done"]') as HTMLButtonElement;
+      act(() => done.focus());
+
+      return { box, done, onChange, tiptap };
+    };
+
+    // A click the keyboard synthesises (Enter or Space) has `detail` 0.
+    const pressFromKeyboard = (button: HTMLElement) =>
+      act(() => {
+        fireEvent.click(button, { detail: 0 });
+      });
+
+    it('from the keyboard, closes the toolbar and returns focus to the end of the text', async () => {
+      const { box, done, onChange, tiptap } = await focusDone();
+
+      pressFromKeyboard(done);
+
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      expect(document.activeElement).toBe(box);
+      expect(tiptap.state.selection.empty).toBe(true);
+      expect(tiptap.state.selection.from).toBe(tiptap.state.doc.content.size - 1);
+      expect(onChange).toHaveBeenCalledWith('<p>Hello</p>');
+    });
+
+    it('opens the toolbar again once the text is edited or the cursor moves', async () => {
+      const { done, tiptap } = await focusDone();
+
+      pressFromKeyboard(done);
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      act(() => {
+        tiptap.commands.insertContent('!');
+      });
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+      act(() => done.focus());
+      pressFromKeyboard(done);
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      act(() => {
+        tiptap.commands.setTextSelection(1);
+      });
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+    });
+
+    it('opens the toolbar again when focus leaves the editor and comes back', async () => {
+      const { box, done } = await focusDone();
+
+      pressFromKeyboard(done);
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      act(() => screen.getByRole('button', { name: 'After' }).focus());
+      act(() => box.focus());
+
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+    });
+
+    it('from the keyboard, returns focus to the text when the toolbar is always visible', async () => {
+      const { box, done } = await focusDone({ toolbarOpts: { alwaysVisible: true } });
+
+      pressFromKeyboard(done);
+
+      expect(document.activeElement).toBe(box);
+      expect(inert(toolbar())).toBe(false);
+    });
   });
 
   it('stays open when the caller keeps it always visible', async () => {
