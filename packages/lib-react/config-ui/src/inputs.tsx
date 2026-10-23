@@ -51,7 +51,7 @@ const StyledSwitch: any = styled(Switch)(() => ({
   transform: 'translate(-20%, 20%)',
 }));
 
-const InputSwitch = ({ className, label, ariaLabel, checked, onChange }) => {
+const InputSwitch = ({ className, label, ariaLabel = '', checked, onChange }) => {
   return (
     <InputContainer className={className} label={label}>
       <StyledSwitch checked={checked} onChange={onChange} slotProps={{ input: { 'aria-label': ariaLabel || label } }} />
@@ -69,7 +69,7 @@ const StyledCheckbox: any = styled(Checkbox)(({ theme, error }) => ({
   }),
 }));
 
-const InputCheckbox = ({ className, label, ariaLabel, checked, onChange, disabled, error }) => {
+const InputCheckbox = ({ className, label, ariaLabel = '', checked, onChange, disabled, error }) => {
   return (
     <InputContainer className={className} label={label}>
       <StyledCheckbox disabled={disabled} checked={checked} onChange={onChange} slotProps={{ input: { 'aria-label': ariaLabel || label } }} error={error} />
@@ -87,7 +87,7 @@ const StyledRadio: any = styled(Radio)(({ theme, error }) => ({
   }),
 }));
 
-const InputRadio = ({ className, label, ariaLabel, checked, onChange, disabled, error }) => {
+const InputRadio = ({ className, label, ariaLabel = '', checked, onChange, disabled, error }) => {
   return (
     <InputContainer className={className} label={label}>
       <StyledRadio disabled={disabled} checked={checked} onChange={onChange} slotProps={{ input: { 'aria-label': ariaLabel || label } }} error={error} />
