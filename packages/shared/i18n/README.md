@@ -5,7 +5,13 @@ package, `en-US` resident in the bundle, every other locale loaded on demand, an
 registry that a host call reaches across every bundled copy of this engine.
 
 The engine is a port of pie-players' `players-shared/src/i18n`. The two repositories share its
-semantics (tag resolution, lookup order, plural handling, host messages) and no code.
+semantics (tag resolution, lookup order, plural handling, host messages) and no code. What
+"shared semantics" means is written down once:
+[`tests/i18n-conformance-fixtures.json`](./tests/i18n-conformance-fixtures.json), a byte-identical
+copy of the file pie-players keeps at `packages/players-shared/tests/`, which each repository runs
+against its own engine. A case one engine passes and the other fails is drift; the fix goes to the
+engine. A semantics change edits both copies in the same breath. `biome.json` leaves that one file
+unformatted so the bytes stay the other repository's: byte identity is the whole point of the copy.
 
 `@pie-lib/translator` stays in place for every package not yet migrated;
 [`docs/prds/interface-i18n/PRD.md`](../../../docs/prds/interface-i18n/PRD.md) has the design and

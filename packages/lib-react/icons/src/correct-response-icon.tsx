@@ -81,7 +81,7 @@ const CorrectResponseContainer: any = styled('div')(({ size }) => ({
 }));
 
 // Main component. The icon repeats the toggle's visible label, so it is hidden from assistive technology.
-const CorrectResponse = ({ open, size }) => {
+const CorrectResponse = ({ open = false, size }) => {
   // Colors can be customized or pulled from theme
   const openBg = '#bce2ff';
   const openFg = '#1a9cff';
@@ -103,10 +103,6 @@ const CorrectResponse = ({ open, size }) => {
 CorrectResponse.propTypes = {
   open: PropTypes.bool,
   size: PropTypes.string,
-};
-
-CorrectResponse.defaultProps = {
-  open: false,
 };
 
 export default CorrectResponse;

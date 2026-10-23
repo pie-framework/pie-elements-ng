@@ -4,8 +4,7 @@
  * a control to start it.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import React from 'react';
-import { act } from 'react-dom/test-utils';
+import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));

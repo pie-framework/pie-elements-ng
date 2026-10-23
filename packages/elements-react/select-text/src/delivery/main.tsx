@@ -1,7 +1,6 @@
 // @ts-nocheck
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { TextSelect, Legend } from '@pie-lib/text-select';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
@@ -80,6 +79,8 @@ export class Main extends React.Component {
 
   static defaultProps = {};
 
+  containerRef = React.createRef<HTMLElement>();
+
   constructor(props) {
     super(props);
 
@@ -97,17 +98,18 @@ export class Main extends React.Component {
   }
 
   componentDidMount() {
-    // eslint-disable-next-line react/no-find-dom-node
-    const domNode = ReactDOM.findDOMNode(this);
-
-    renderMath(domNode);
+    this.renderContainerMath();
   }
 
   componentDidUpdate() {
-    // eslint-disable-next-line react/no-find-dom-node
-    const domNode = ReactDOM.findDOMNode(this);
+    this.renderContainerMath();
+  }
 
-    renderMath(domNode);
+  renderContainerMath() {
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   toggleShowCorrect: any = () => {
@@ -134,7 +136,7 @@ export class Main extends React.Component {
     log('[render] selectedTokens:', selectedTokens);
 
     return (
-      <StyledUiLayout extraCSSRules={extraCSSRules}>
+      <StyledUiLayout extraCSSRules={extraCSSRules} containerRef={this.containerRef}>
         {showTeacherInstructions &&
           (!model.animationsDisabled ? (
             <StyledCollapsible

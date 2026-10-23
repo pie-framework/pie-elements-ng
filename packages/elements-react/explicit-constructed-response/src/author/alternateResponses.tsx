@@ -181,6 +181,7 @@ export class AlternateResponses extends React.Component {
             return (
               <AlternateSection
                 key={key}
+                responseAreaIndex={key}
                 value={selected && selected.value}
                 errors={choicesErrors && choicesErrors[key]}
                 onSelect={(choice) => this.onSectionSelect(choice, key)}

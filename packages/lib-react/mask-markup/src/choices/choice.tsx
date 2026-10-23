@@ -53,6 +53,13 @@ const StyledChipLabel: any = styled('span')(() => ({
     display: 'block',
     padding: '2px 0',
   },
+  // Remove default <p> margins to ensure consistent spacing across all wrapped content (p, span, div, math)
+  // Padding for top and bottom will instead be controlled by the container for consistent layout
+  // Ensures consistent behavior with pie-api-browser, where marginTop is already removed by a Bootstrap stylesheet
+  '& p': {
+    marginTop: '0',
+    marginBottom: '0',
+  },
   '& mjx-frac': {
     fontSize: '120% !important',
   },

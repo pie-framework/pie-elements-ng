@@ -39,6 +39,9 @@ class MeasuredConfigLayout extends React.Component {
       names: PropTypes.arrayOf(PropTypes.string),
       rules: PropTypes.string,
     }),
+    // The container element, for callers that need the layout's DOM node in place of
+    // ReactDOM.findDOMNode, which React 19 removes.
+    containerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -54,6 +57,19 @@ class MeasuredConfigLayout extends React.Component {
 
   // Scoped as in `UiLayout`: the rules nest under a class only this layout carries.
   scopeClass = createUniqueId('extra-css-rules');
+
+  // Stable, so React does not detach and reattach the refs on every render.
+  setContainer: any = (node) => {
+    const { containerRef } = this.props;
+
+    this.measureRef?.(node);
+
+    if (typeof containerRef === 'function') {
+      containerRef(node);
+    } else if (containerRef) {
+      containerRef.current = node;
+    }
+  };
 
   onResize: any = (contentRect) => {
     const { bounds } = contentRect;
@@ -77,6 +93,7 @@ class MeasuredConfigLayout extends React.Component {
         <ThemeProvider theme={theme}>
           <Measure bounds onResize={this.onResize}>
             {({ measureRef }) => {
+              this.measureRef = measureRef;
               const { children, settings, hideSettings, dimensions, extraCSSRules } = this.props;
               const { layoutMode } = this.state;
 
@@ -86,7 +103,7 @@ class MeasuredConfigLayout extends React.Component {
               const finalClass = `main-container extraCSSRules ${this.scopeClass}`;
 
               return (
-                <div ref={measureRef} className={finalClass}>
+                <div ref={this.setContainer} className={finalClass}>
                   {extraCSSRules?.rules ? (
                     <style dangerouslySetInnerHTML={{ __html: `.${this.scopeClass} { ${extraCSSRules.rules} }` }} />
                   ) : null}

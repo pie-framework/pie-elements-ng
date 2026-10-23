@@ -15,7 +15,7 @@
     "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
-    "styled-components": "^6.5.3",
+    "styled-components": "^6.6.0",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
@@ -84,7 +84,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.3.4",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
@@ -95,7 +95,7 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/user-event": "^14.6.7"
+    "@testing-library/user-event": "^14.6.8"
   },
   "scripts": {
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",

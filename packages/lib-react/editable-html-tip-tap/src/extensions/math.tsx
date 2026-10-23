@@ -5,10 +5,158 @@ import ReactDOM from 'react-dom';
 import { Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
+import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { latexToMml, mmlToLatex, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 import { setToolbarOpened } from '../utils/toolbar.js';
 import { TOOLBAR_BACKGROUND } from '../constants.js';
+
+// `\left.` and `\right.` come out of the MathML converter for fences the editor cannot use.
+const EMPTY_FENCE = /\\left\.\s*|\\right\.\s*/g;
+
+// The invisible function-application operator MathJax writes after `\log` and `\sin`, which only adds space.
+const EMPTY_MO = /<mo(?: [^>]*)?>&#x2061;<\/mo>/g;
+
+const DISPLAY_WRAPPER = { open: '\\[', close: '\\]' };
+
+// Where saved MathML keeps the LaTeX it was made from. Not `data-latex`, which marks a LaTeX span:
+// the renderers rewrite the text of every element that has it, a MathML node's included.
+const SOURCE_ATTRIBUTE = 'data-pie-latex';
+
+const escapeAttribute = (value) =>
+  value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
+const isDisplayMath = (wrapper) =>
+  typeof wrapper === 'string' ? wrapper === 'double_dollar' : ['$$', '\\['].includes(wrapper?.open);
+
+/**
+ * LaTeX for a MathML string, or null when there is none to give. A converter the page installed,
+ * such as the legacy renderer's, answers first; `mmlToLatex` gives the input back when there is
+ * none, and then this converts, so the ESM page, which installs only `renderMath`, converts too.
+ * The converter belongs here, not in the math adapter: only authoring needs it, and every
+ * element's delivery bundle carries the adapter. It answers an empty string for MathML it cannot
+ * read and throws on some; neither is LaTeX, and neither may become a math node.
+ */
+export const convertMathMlToLatex = (mathMl) => {
+  const input = mathMl.replaceAll('&nbsp;', ' ');
+  let converted = mmlToLatex(input);
+
+  if (converted === input) {
+    try {
+      converted = MathMLToLaTeX.convert(input);
+    } catch {
+      return null;
+    }
+  }
+
+  if (!converted || converted === input) {
+    return null;
+  }
+
+  return converted.replace(EMPTY_FENCE, '') || null;
+};
+
+/**
+ * MathML for LaTeX, or null when there is none to give: MathJax has not started, or cannot read the
+ * LaTeX. A caller keeps the LaTeX then. The MathML carries the LaTeX it was made from, so that
+ * editing it again reads that back exactly, where converting the MathML would lose some.
+ */
+export const convertLatexToMathMl = (latex, wrapper) => {
+  const mathMl = latexToMml(latex, { display: isDisplayMath(wrapper) });
+
+  if (!mathMl || !mathMl.startsWith('<math')) {
+    return null;
+  }
+
+  return mathMl
+    .replace(EMPTY_MO, '')
+    // A function, as the LaTeX can hold `$&` and the like, which a replacement string would expand.
+    .replace('<math', () => `<math ${SOURCE_ATTRIBUTE}="${escapeAttribute(latex)}"`);
+};
+
+/**
+ * Attributes of a math node made from MathML, or false when `mmlEditing` is off or the MathML cannot
+ * be edited as LaTeX. `mathElement` is the `<math>` element, when there is one.
+ */
+const mathMlToAttrs = (mathMl, options, mathElement) => {
+  if (!options?.mathMlOptions?.mmlEditing) {
+    return false;
+  }
+
+  const displayWrapper = mathElement?.getAttribute('display') === 'block' ? DISPLAY_WRAPPER : null;
+
+  // MathML saved under `mmlOutput` carries the LaTeX it was made from. That reads back exactly,
+  // where converting the MathML loses some, an exponent for one. MathJax's own `data-latex` on a
+  // `<math>` holds the same, for MathML made elsewhere.
+  const embedded = (
+    mathElement?.getAttribute(SOURCE_ATTRIBUTE) ?? mathElement?.getAttribute('data-latex')
+  )?.trim();
+
+  if (embedded) {
+    return { latex: embedded, wrapper: displayWrapper };
+  }
+
+  const latex = convertMathMlToLatex(mathMl);
+
+  if (latex === null) {
+    return false;
+  }
+
+  const { unwrapped, wrapper } = unWrapMath(latex);
+
+  return { latex: unwrapped, wrapper: wrapper || displayWrapper };
+};
+
+/**
+ * A span of saved MathML. A DOM node, because an array spec can only set attributes, and the span
+ * must hold markup. It is made in an inert document: an element made in the page's own would load
+ * and run what the markup holds the moment it is parsed.
+ */
+const mathMlSpan = (html) => {
+  const span = document.implementation.createHTMLDocument('').createElement('span');
+
+  span.setAttribute('data-type', 'mathml');
+  span.innerHTML = html;
+
+  return span;
+};
+
+const MATHML_ELEMENTS = new Set(
+  (
+    'math maction maligngroup malignmark menclose merror mfenced mfrac mglyph mi mlabeledtr mlongdiv mmultiscripts ' +
+    'mn mo mover mpadded mphantom mprescripts mroot mrow ms mscarries mscarry msgroup msline mspace msqrt msrow ' +
+    'mstack mstyle msub msubsup msup mtable mtd mtext mtr munder munderover semantics'
+  ).split(' ')
+);
+
+/**
+ * MathML that is safe to put in the live page: only MathML presentation elements, with no event
+ * handlers and no script URLs. `mathMlSpan` parses in an inert document, but markup shown in the page runs.
+ */
+export const sanitizeMathMl = (html) => {
+  const span = mathMlSpan(html);
+
+  const clean = (parent) => {
+    for (const child of Array.from(parent.children)) {
+      if (!MATHML_ELEMENTS.has(child.localName)) {
+        child.remove();
+        continue;
+      }
+
+      for (const { name, value } of Array.from(child.attributes)) {
+        if (/^on/i.test(name) || /^\s*javascript:/i.test(value)) {
+          child.removeAttribute(name);
+        }
+      }
+
+      clean(child);
+    }
+  };
+
+  clean(span);
+
+  return span.innerHTML;
+};
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
 
@@ -147,10 +295,32 @@ export const MathNode = Node.create({
           latex: unWrapMath(el.getAttribute('data-raw') || el.textContent).unwrapped,
         }),
       },
+      // With `mmlEditing` on, MathML is read as LaTeX so that it can be edited as math.
+      {
+        tag: 'span[data-type="mathml"]',
+        priority: 60,
+        getAttrs: (el) => {
+          const math = el.querySelector('math');
+
+          return mathMlToAttrs(math?.outerHTML || el.innerHTML, this.options, math);
+        },
+      },
+      {
+        tag: 'math',
+        getAttrs: (el) => mathMlToAttrs(el.outerHTML, this.options, el),
+      },
       {
         tag: 'span[data-type="mathml"]',
         getAttrs: (el) => ({
           html: el.innerHTML,
+        }),
+      },
+      // MathML that is not edited as math stays as it is, as the Slate editor kept it. Without this,
+      // a bare `<math>` has no node to become, and saving the field leaves only its digits.
+      {
+        tag: 'math',
+        getAttrs: (el) => ({
+          html: el.outerHTML,
         }),
       },
     ];
@@ -190,7 +360,16 @@ export const MathNode = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     if (HTMLAttributes.html) {
-      return ['span', { 'data-type': 'mathml', dangerouslySetInnerHTML: { __html: HTMLAttributes.html } }];
+      return mathMlSpan(HTMLAttributes.html);
+    }
+
+    // With `mmlOutput` on, math is saved as MathML, and as LaTeX when MathML cannot be made of it.
+    if (this.options.mathMlOptions?.mmlOutput) {
+      const mathMl = convertLatexToMathMl(HTMLAttributes.latex, HTMLAttributes.wrapper);
+
+      if (mathMl) {
+        return mathMlSpan(mathMl);
+      }
     }
 
     return [
@@ -412,6 +591,20 @@ export const MathNodeView = (props) => {
 
     return () => document.removeEventListener('click', handleClickOutside);
   }, [editor, showToolbar, node]);
+
+  // MathML kept as MathML (mmlEditing off, or MathML that cannot be read as LaTeX) has no LaTeX to
+  // edit: it is shown as it is, as Slate showed it, and has no toolbar.
+  if (node.attrs.html && !latex) {
+    return (
+      <NodeViewWrapper
+        as="span"
+        data-type="mathml"
+        style={{ display: 'inline-block', margin: '0 4px' }}
+        contentEditable={false}
+        dangerouslySetInnerHTML={{ __html: sanitizeMathMl(node.attrs.html) }}
+      />
+    );
+  }
 
   return (
     <NodeViewWrapper

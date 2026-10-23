@@ -41,7 +41,6 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import ReactDOM from 'react-dom';
 import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
@@ -904,11 +903,8 @@ export class Main extends React.Component {
     return (
       <StyledUiLayout
         extraCSSRules={extraCSSRules}
-        ref={(r) => {
-          // eslint-disable-next-line react/no-find-dom-node
-          const domNode = ReactDOM.findDOMNode(r);
-
-          this.root = domNode || this.root;
+        containerRef={(node) => {
+          this.root = node || this.root;
         }}
       >
         <MainContainer>

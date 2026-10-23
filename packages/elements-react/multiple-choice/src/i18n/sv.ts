@@ -13,4 +13,7 @@ export default {
   },
   showTeacherInstructions: 'Visa lärarinstruktioner',
   hideTeacherInstructions: 'Dölj lärarinstruktioner',
+  answerChoicesA11y: 'Svarsalternativ',
+  partAnswerChoicesA11y: '{partLabel}, svarsalternativ',
+  pickTheAnswerBelowA11y: 'Välj svaret nedan',
 } satisfies MessageCatalog;

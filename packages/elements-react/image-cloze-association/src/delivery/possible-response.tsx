@@ -73,13 +73,13 @@ const hasTextAlternative = (html) => {
 
 const PossibleResponse = ({
   canDrag,
-  containerStyle,
+  containerStyle = {},
   data,
   getChoiceLabel,
   onDragBegin,
-  answerChoiceTransparency,
-  isOverlay,
-  selectedResponse,
+  answerChoiceTransparency = false,
+  isOverlay = false,
+  selectedResponse = null,
   onSelectClick,
   onPlacementClick,
 }) => {
@@ -209,13 +209,6 @@ PossibleResponse.propTypes = {
   selectedResponse: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
-};
-
-PossibleResponse.defaultProps = {
-  containerStyle: {},
-  answerChoiceTransparency: false,
-  isOverlay: false,
-  selectedResponse: null,
 };
 
 export default PossibleResponse;

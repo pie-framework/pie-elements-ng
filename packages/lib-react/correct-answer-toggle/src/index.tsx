@@ -36,6 +36,7 @@ import Expander from './expander.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { catalogs } from './i18n/index.js';
+import { elementLanguageAttributes } from '@pie-element/shared-i18n';
 
 const noTouch = {
   WebkitTouchCallout: 'none',
@@ -160,9 +161,13 @@ export class CorrectAnswerToggle extends React.Component {
     const i18n = catalogs.forLocale(language, this.relabel);
     const hideMessage = this.props.hideMessage ?? i18n.t('hideCorrectAnswer');
     const showMessage = this.props.showMessage ?? i18n.t('showCorrectAnswer');
+    // The chrome root names the language its strings are in, so a toggle label
+    // inside content of another language is announced correctly. No language
+    // prop, no assertion — the root inherits.
+    const languageAttributes = elementLanguageAttributes(language);
 
     return (
-      <StyledRoot className={className}>
+      <StyledRoot className={className} {...languageAttributes}>
         <Expander show={this.state.show}>
           <StyledContent
             type="button"

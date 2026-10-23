@@ -28,11 +28,11 @@
   },
   "devDependencies": {
     "@pie-element/shared-types": "workspace:*",
-    "@sveltejs/vite-plugin-svelte": "^7.3.0",
-    "dompurify": "^3.4.14",
-    "svelte": "^5.57.1",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "dompurify": "^3.4.17",
+    "svelte": "^5.57.2",
     "typescript": "^5.9.3",
-    "vite": "^8.1.5",
+    "vite": "^8.3.4",
     "vitest": "^4.1.11"
   },
   "license": "MIT",

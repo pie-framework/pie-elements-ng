@@ -1,7 +1,6 @@
 // @ts-nocheck
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, createUniqueId, Collapsible as CollapsibleImport, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasMedia } from '@pie-lib/render-ui';
@@ -57,6 +56,8 @@ class HotspotComponent extends React.Component {
   // The delivery element finds the container by its class, which authored CSS may also target.
   mainContainerId = createUniqueId('main-container');
 
+  containerRef = React.createRef<HTMLElement>();
+
   constructor(props) {
     super(props);
     this.state = {
@@ -95,17 +96,18 @@ class HotspotComponent extends React.Component {
       this.observer.observe(target, { attributes: true, attributeFilter: ['style'] });
     }
 
-    // eslint-disable-next-line react/no-find-dom-node
-    const domNode = ReactDOM.findDOMNode(this);
-
-    renderMath(domNode);
+    this.renderContainerMath();
   }
 
   componentDidUpdate() {
-    // eslint-disable-next-line react/no-find-dom-node
-    const domNode = ReactDOM.findDOMNode(this);
+    this.renderContainerMath();
+  }
 
-    renderMath(domNode);
+  renderContainerMath() {
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   componentWillUnmount() {
@@ -154,7 +156,7 @@ class HotspotComponent extends React.Component {
       teacherInstructions && (hasText(teacherInstructions) || hasMedia(teacherInstructions));
 
     return (
-      <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
+      <StyledUiLayout extraCSSRules={extraCSSRules} containerRef={this.containerRef} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
           <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
             <PreviewPrompt className="prompt" prompt={teacherInstructions} />

@@ -39,7 +39,7 @@ const StyledMarker: any = styled('marker')(({ disabled, correctness }) => ({
   },
 }));
 
-export const ArrowHead = ({ size, transform, points, disabled, correctness }) => (
+export const ArrowHead = ({ size = 10, transform = '', points = '', disabled, correctness }) => (
   <StyledArrowHead
     points={points || `0,0 ${size},${size / 2} 0,${size}`}
     transform={transform}
@@ -54,12 +54,7 @@ ArrowHead.propTypes = {
   disabled: PropTypes.bool,
   correctness: PropTypes.string,
 };
-ArrowHead.defaultProps = {
-  points: '',
-  size: 10,
-  transform: '',
-};
-export const ArrowMarker = ({ id, size, className, disabled, correctness }) => {
+export const ArrowMarker = ({ id, size = 5, className, disabled, correctness }) => {
   // Parse styling info from className if provided (for backward compatibility)
   const isDisabled = disabled || className?.includes('disabled');
   const parsedCorrectness =
@@ -94,7 +89,4 @@ ArrowMarker.propTypes = {
   className: PropTypes.string,
   disabled: PropTypes.bool,
   correctness: PropTypes.string,
-};
-ArrowMarker.defaultProps = {
-  size: 5,
 };

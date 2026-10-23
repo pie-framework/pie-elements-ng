@@ -8,5 +8,5 @@ import { ListItem } from '@tiptap/extension-list-item';
  */
 export const ExtendedListItem = ListItem.extend({
   content:
-    '(div | paragraph | heading | bulletList | orderedList | blockquote | codeBlock | horizontalRule | image | imageUploadNode)+',
+    '(div | paragraph | heading | bulletList | orderedList | blockquote | codeBlock | horizontalRule | imageUploadNode)+',
 });

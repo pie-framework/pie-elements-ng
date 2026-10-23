@@ -298,6 +298,7 @@ const Design = (props: DesignProps) => {
       {teacherInstructionsEnabled && (
         <PromptHolder label={teacherInstructions.label}>
           <EditableHtml
+            ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
             markup={model.teacherInstructions || ''}
             onChange={onTeacherInstructionsChanged}
             imageSupport={imageSupport}
@@ -313,6 +314,7 @@ const Design = (props: DesignProps) => {
 
       <PromptHolder label={prompt.label}>
         <EditableHtml
+          ariaLabel={prompt?.label || 'Prompt'}
           markup={model.prompt}
           onChange={onPromptChanged}
           imageSupport={imageSupport}
@@ -337,6 +339,7 @@ const Design = (props: DesignProps) => {
           <InputFormGroupIndex>{index + 1}.</InputFormGroupIndex>
           <LikertLabelInput key={`likert-label-${index}`} label={'Likert Label'}>
             <StyledEditableHtml
+              ariaLabel={`Likert Label ${index + 1}`}
               markup={choice.label || ''}
               onChange={(c: string) => onChoiceChanged(index, { ...choice, label: c })}
               imageSupport={imageSupport}

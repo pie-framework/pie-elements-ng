@@ -8,8 +8,11 @@ export default {
   minmaxSelectionsEqual: 'เลือก {minSelections} รายการ',
   minmaxSelectionsRange: 'เลือก {minSelections} ถึง {maxSelections} รายการ',
   maxSelections: {
-    other: 'ตอบได้เพียง {count} คำตอบ',
+    other: 'เลือกได้เพียง {count} รายการ',
   },
   showTeacherInstructions: 'แสดงคำแนะนำสำหรับครู',
   hideTeacherInstructions: 'ซ่อนคำแนะนำสำหรับครู',
+  answerChoicesA11y: 'ตัวเลือกคำตอบ',
+  partAnswerChoicesA11y: '{partLabel}, ตัวเลือกคำตอบ',
+  pickTheAnswerBelowA11y: 'เลือกคำตอบด้านล่าง',
 } satisfies MessageCatalog;

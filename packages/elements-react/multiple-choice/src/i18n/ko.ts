@@ -8,8 +8,11 @@ export default {
   minmaxSelectionsEqual: '{minSelections}개를 선택해 주세요.',
   minmaxSelectionsRange: '{minSelections}개에서 {maxSelections}개 사이로 선택해 주세요.',
   maxSelections: {
-    other: '{count}개의 답만 허용됩니다.',
+    other: '{count}개의 답안만 허용됩니다.',
   },
   showTeacherInstructions: '교사 지침 표시',
   hideTeacherInstructions: '교사 지침 숨기기',
+  answerChoicesA11y: '답안 선택지',
+  partAnswerChoicesA11y: '{partLabel}, 답안 선택지',
+  pickTheAnswerBelowA11y: '아래에서 답을 선택해 주세요',
 } satisfies MessageCatalog;

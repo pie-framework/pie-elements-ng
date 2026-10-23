@@ -24,9 +24,9 @@
     "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.2",
+    "@types/bun": "^1.4.3",
     "typescript": "^5.9.3",
-    "vite": "^8.1.5",
+    "vite": "^8.3.4",
     "vitest": "^4.1.11"
   },
   "publishConfig": {

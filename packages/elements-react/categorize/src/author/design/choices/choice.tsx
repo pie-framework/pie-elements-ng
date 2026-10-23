@@ -130,6 +130,7 @@ const Choice = ({
         </DragHandleContainer>
       </StyledCardActions>
       <InputHeader
+        ariaLabel={`Choice ${index + 1}`}
         imageSupport={imageSupport}
         focusedEl={focusedEl}
         deleteFocusedEl={deleteFocusedEl}

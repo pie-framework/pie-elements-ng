@@ -4,8 +4,7 @@
  */
 import { loadLocale } from '@pie-element/shared-i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import React from 'react';
-import { act } from 'react-dom/test-utils';
+import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));

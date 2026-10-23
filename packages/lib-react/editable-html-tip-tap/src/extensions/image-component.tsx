@@ -72,6 +72,16 @@ const StyledResize: any = styled('div')(({ theme }) => ({
 
 const sizePx = (s) => (s ? `${s}px` : 'calc(20px)');
 
+const DEFAULT_MAX_IMAGE_WIDTH = 700;
+const DEFAULT_MAX_IMAGE_HEIGHT = 900;
+
+// Scales `size` down, keeping its aspect ratio, until it fits within the limits. Never enlarges.
+const fitWithin = ({ width, height }, maxWidth, maxHeight) => {
+  const scale = Math.min(1, maxWidth / width, maxHeight / height);
+
+  return scale < 1 ? { width: Math.round(width * scale), height: Math.round(height * scale) } : { width, height };
+};
+
 function ImageComponent(props) {
   const {
     node,
@@ -81,9 +91,10 @@ function ImageComponent(props) {
     getPos,
     selected,
     options,
-    maxImageWidth = 700,
-    maxImageHeight = 900,
   } = props;
+  // The limits come from the host's authoring configuration, via the extension options.
+  const maxImageWidth = options?.imageHandling?.maxImageWidth || DEFAULT_MAX_IMAGE_WIDTH;
+  const maxImageHeight = options?.imageHandling?.maxImageHeight || DEFAULT_MAX_IMAGE_HEIGHT;
   const { alt } = node.attrs;
   const pos = getPos();
 
@@ -180,8 +191,11 @@ function ImageComponent(props) {
     if (!box) return;
 
     if (!box.style.width || box.style.width === 'calc(20px)') {
-      const w = Math.min(box.naturalWidth, maxImageWidth);
-      const h = Math.min(box.naturalHeight, maxImageHeight);
+      const { width: w, height: h } = fitWithin(
+        { width: box.naturalWidth, height: box.naturalHeight },
+        maxImageWidth,
+        maxImageHeight,
+      );
 
       box.style.width = `${w}px`;
       box.style.height = `${h}px`;
@@ -210,19 +224,23 @@ function ImageComponent(props) {
       const bounds = e.target.getBoundingClientRect();
       const initial = { width: box.naturalWidth, height: box.naturalHeight };
 
-      const next = updateAspect(initial, {
-        width: e.clientX - bounds.left,
-        height: e.clientY - bounds.top,
-      });
+      const next = fitWithin(
+        updateAspect(initial, {
+          width: e.clientX - bounds.left,
+          height: e.clientY - bounds.top,
+        }),
+        maxImageWidth,
+        maxImageHeight,
+      );
 
-      if (next.width > 50 && next.height > 50 && next.width <= 700 && next.height <= 900) {
+      if (next.width > 50 && next.height > 50) {
         box.style.width = `${next.width}px`;
         box.style.height = `${next.height}px`;
 
         updateThisNode({ width: next.width, height: next.height });
       }
     },
-    [editor, updateThisNode],
+    [editor, updateThisNode, maxImageWidth, maxImageHeight],
   );
 
   const onChange = useCallback(
@@ -330,8 +348,6 @@ ImageComponent.propTypes = {
   editor: PropTypes.object.isRequired,
   attributes: PropTypes.object,
   onFocus: PropTypes.func,
-  maxImageWidth: PropTypes.number,
-  maxImageHeight: PropTypes.number,
 };
 
 export default ImageComponent;

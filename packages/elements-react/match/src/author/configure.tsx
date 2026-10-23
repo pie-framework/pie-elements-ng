@@ -319,6 +319,7 @@ class Configure extends React.Component<ConfigureProps, ConfigureState> {
           <InputContainer label={teacherInstructions.label} className="promptHolder">
             <PromptHolder>
               <EditableHtml
+                ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
                 className="prompt"
                 markup={model.teacherInstructions || ''}
                 onChange={this.onTeacherInstructionsChanged}
@@ -342,6 +343,7 @@ class Configure extends React.Component<ConfigureProps, ConfigureState> {
           <InputContainer label={prompt.label} className="promptHolder">
             <PromptHolder>
               <EditableHtml
+                ariaLabel={prompt?.label || 'Prompt'}
                 className="prompt"
                 markup={model.prompt}
                 onChange={this.onPromptChanged}
@@ -385,6 +387,7 @@ class Configure extends React.Component<ConfigureProps, ConfigureState> {
           <InputContainer label={rationale.label} className="promptHolder">
             <PromptHolder>
               <EditableHtml
+                ariaLabel={rationale?.label || 'Rationale'}
                 className="prompt"
                 markup={model.rationale || ''}
                 onChange={this.onRationaleChanged}

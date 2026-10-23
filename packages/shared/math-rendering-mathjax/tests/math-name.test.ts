@@ -51,6 +51,59 @@ describe('nameMathInControls', () => {
     expect(labels(root)).toEqual(['four twelfths']);
   });
 
+  it('leaves math out of a control named by aria-labelledby from elsewhere', () => {
+    const root = render(
+      [
+        `<label><span id="key">A.</span><span id="note">Pick the answer below</span>`,
+        `<input type="radio" aria-labelledby="key note">${typeset()}</label>`,
+        `<div role="option" aria-labelledby="key">${typeset()}</div>`,
+      ].join('')
+    );
+    nameMathInControls(root);
+    expect(labels(root)).toEqual([null, null]);
+  });
+
+  it('labels math that aria-labelledby names the control from', () => {
+    const root = render(
+      `<label><input type="radio" aria-labelledby="key content"><span id="key">A.</span><span id="content">${typeset()}</span></label>`
+    );
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12']);
+  });
+
+  it('takes back its own label once the control is named from elsewhere', () => {
+    const root = render(`<label><input type="radio"><span id="key">A.</span>${typeset()}</label>`);
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12']);
+
+    root.querySelector('input')?.setAttribute('aria-labelledby', 'key');
+    nameMathInControls(root);
+    expect(labels(root)).toEqual([null]);
+  });
+
+  it('keeps a label it did not set when the control is named from elsewhere', () => {
+    const root = render(
+      `<label><input type="radio" aria-labelledby="key"><span id="key">A.</span>${typeset().replace('class', 'aria-label="four twelfths" class')}</label>`
+    );
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['four twelfths']);
+  });
+
+  it('labels math in a detached tree that aria-labelledby names the control from', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `<label><input type="radio" aria-labelledby="key content"><span id="key">A.</span><span id="content">${typeset()}</span></label>`;
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12']);
+  });
+
+  it('keeps labelling math when the aria-labelledby ids resolve to nothing', () => {
+    const root = render(
+      `<label><input type="radio" aria-labelledby="missing">${typeset()}</label>`
+    );
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12']);
+  });
+
   it('leaves a container without hidden MathML unlabelled', () => {
     const root = render(
       '<button><mjx-container><mjx-math>glyphs</mjx-math></mjx-container></button>'

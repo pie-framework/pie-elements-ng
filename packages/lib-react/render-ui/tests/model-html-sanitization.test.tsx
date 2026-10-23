@@ -5,8 +5,7 @@
  * text into the DOM sanitize it: inline handlers and scripts never reach the page.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import React from 'react';
-import { act } from 'react-dom/test-utils';
+import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 // The prompt renders math on mount, which pulls MathJax off a CDN - it has no

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { GraphContext } from '../graph-context.js';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
@@ -78,10 +79,7 @@ export class Point extends React.Component {
     onDragStart: PropTypes.func,
   };
 
-  static contextTypes = {
-    xScale: PropTypes.func.isRequired,
-    snapValue: PropTypes.func.isRequired,
-  };
+  static contextType = GraphContext;
 
   render() {
     const {

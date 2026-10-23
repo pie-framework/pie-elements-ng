@@ -17,6 +17,7 @@ import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
 import { Fade } from '../transitions/index.js';
+import { GraphContext } from './graph-context.js';
 
 const getXScale = (min, max, width, padding) => {
   if (min === undefined || max === undefined || width === undefined) {
@@ -37,11 +38,6 @@ const Debug = (props) => (
 );
 
 export class NumberLineGraph extends React.Component {
-  static childContextTypes = {
-    xScale: PropTypes.func.isRequired,
-    snapValue: PropTypes.func.isRequired,
-  };
-
   static propTypes = {
     domain: PropTypes.shape({
       min: PropTypes.number.isRequired,
@@ -92,13 +88,6 @@ export class NumberLineGraph extends React.Component {
   snapValueFn() {
     const { domain, ticks } = this.props;
     return snapTo.bind(null, domain.min, domain.max, ticks.minor);
-  }
-
-  getChildContext() {
-    return {
-      xScale: this.xScaleFn(),
-      snapValue: this.snapValueFn(),
-    };
   }
 
   /**
@@ -225,43 +214,45 @@ export class NumberLineGraph extends React.Component {
       });
 
       return (
-        <DndContext id={this.dragInstructionsId}>
-          <div style={{ display: 'inline-block' }}>
-            {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
-                and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
-            <svg
-              width={width}
-              height={fraction ? height + 20 : height}
-              style={{ touchAction: 'none' }}
-              // a group, because an img would hide the draggable points inside it
-              role="group"
-              aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}
-              aria-describedby={this.descriptionId}
-            >
-              <desc id={this.descriptionId}>
-                {describePlottedElements(this.props.elements, { fraction, language })}
-              </desc>
-              {false && <Debug domain={domain} ticks={ticks} />}
-              <BaseLine y={lineY} width={width} />
-              {arrows.left && <Arrow y={lineY} />}
-              {arrows.right && <Arrow x={width} y={lineY} direction="right" />}
-              <Ticks y={lineY} domain={domain} width={width} ticks={ticks} fraction={fraction} />
-              <rect
-                ref={(rect) => (this.rect = rect)}
-                //need to have a fill for it to be clickable
-                fill={color.primary()}
-                fillOpacity="0.0"
+        <GraphContext.Provider value={{ xScale: this.xScaleFn(), snapValue: this.snapValueFn() }}>
+          <DndContext id={this.dragInstructionsId}>
+            <div style={{ display: 'inline-block' }}>
+              {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
+                  and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
+              <svg
                 width={width}
-                height={height}
-              />
-              <TransitionGroup component="g">
-                {elements.map((c, index) => (
-                  <Fade key={index}>{c}</Fade>
-                ))}
-              </TransitionGroup>
-            </svg>
-          </div>
-        </DndContext>
+                height={fraction ? height + 20 : height}
+                style={{ touchAction: 'none' }}
+                // a group, because an img would hide the draggable points inside it
+                role="group"
+                aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}
+                aria-describedby={this.descriptionId}
+              >
+                <desc id={this.descriptionId}>
+                  {describePlottedElements(this.props.elements, { fraction, language })}
+                </desc>
+                {false && <Debug domain={domain} ticks={ticks} />}
+                <BaseLine y={lineY} width={width} />
+                {arrows.left && <Arrow y={lineY} />}
+                {arrows.right && <Arrow x={width} y={lineY} direction="right" />}
+                <Ticks y={lineY} domain={domain} width={width} ticks={ticks} fraction={fraction} />
+                <rect
+                  ref={(rect) => (this.rect = rect)}
+                  //need to have a fill for it to be clickable
+                  fill={color.primary()}
+                  fillOpacity="0.0"
+                  width={width}
+                  height={height}
+                />
+                <TransitionGroup component="g">
+                  {elements.map((c, index) => (
+                    <Fade key={index}>{c}</Fade>
+                  ))}
+                </TransitionGroup>
+              </svg>
+            </div>
+          </DndContext>
+        </GraphContext.Provider>
       );
     }
   }

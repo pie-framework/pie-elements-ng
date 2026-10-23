@@ -180,14 +180,25 @@ const moduleRules: webpack.RuleSetRule[] = [
       }
       return true;
     },
-    use: [
+    // A .ts file must not go through the tsx loader: there `<T>(x) => x` reads as a JSX tag, so a generic
+    // arrow function fails to parse.
+    oneOf: [
       {
-        loader: 'esbuild-loader',
-        options: {
-          loader: 'tsx',
-          target: 'es2015',
-          legalComments: 'none',
-        },
+        test: /\.tsx$/,
+        use: [
+          {
+            loader: 'esbuild-loader',
+            options: { loader: 'tsx', target: 'es2015', legalComments: 'none' },
+          },
+        ],
+      },
+      {
+        use: [
+          {
+            loader: 'esbuild-loader',
+            options: { loader: 'ts', target: 'es2015', legalComments: 'none' },
+          },
+        ],
       },
     ],
   },

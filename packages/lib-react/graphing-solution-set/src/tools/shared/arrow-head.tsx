@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
 
-export const ArrowHead = ({ size, transform, points }) => (
+export const ArrowHead = ({ size = 10, transform = '', points = '' }) => (
   <polygon points={points || `0,0 ${size},${size / 2} 0,${size}`} transform={transform} />
 );
 ArrowHead.propTypes = {
@@ -12,12 +12,7 @@ ArrowHead.propTypes = {
   size: PropTypes.number,
   transform: PropTypes.string,
 };
-ArrowHead.defaultProps = {
-  points: '',
-  size: 10,
-  transform: '',
-};
-export const ArrowMarker = ({ id, size, className }) => {
+export const ArrowMarker = ({ id, size = 5, className }) => {
   return (
     <marker
       id={id}
@@ -38,7 +33,4 @@ ArrowMarker.propTypes = {
   id: PropTypes.string,
   size: PropTypes.number,
   className: PropTypes.string,
-};
-ArrowMarker.defaultProps = {
-  size: 5,
 };

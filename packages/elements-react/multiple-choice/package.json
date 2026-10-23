@@ -14,6 +14,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-element/shared-i18n": "workspace:*",
+    "@pie-players/pie-context": "1.0.0-beta.3",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "react-transition-group": "^4.4.5",
@@ -101,7 +102,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.3.4",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",

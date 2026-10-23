@@ -1,9 +1,9 @@
 import type { MessageCatalog } from '@pie-element/shared-i18n';
 
 export default {
-  multipleChoiceQuestion: 'Cwestiwn dewis aml',
+  multipleChoiceQuestion: 'Cwestiwn aml-ddewis',
   multipleCorrectAnswerQuestion: 'Cwestiwn gyda sawl ateb cywir',
-  multipleSelectQuestion: 'Cwestiwn aml-ddewis',
+  multipleSelectQuestion: 'Cwestiwn dewis lluosog',
   minSelections: 'Dewiswch o leiaf {minSelections}.',
   minmaxSelectionsEqual: 'Dewiswch {minSelections}.',
   minmaxSelectionsRange: 'Dewiswch rhwng {minSelections} a {maxSelections}.',
@@ -12,9 +12,12 @@ export default {
     one: "Dim ond {count} ateb sy'n cael ei ganiatáu.",
     two: "Dim ond {count} ateb sy'n cael eu caniatáu.",
     few: "Dim ond {count} ateb sy'n cael eu caniatáu.",
-    many: "Dim ond {count} o atebion sy'n cael eu caniatáu.",
+    many: "Dim ond {count} ateb sy'n cael eu caniatáu.",
     other: "Dim ond {count} o atebion sy'n cael eu caniatáu.",
   },
   showTeacherInstructions: "Dangos cyfarwyddiadau'r athro",
   hideTeacherInstructions: "Cuddio cyfarwyddiadau'r athro",
+  answerChoicesA11y: 'Dewisiadau ateb',
+  partAnswerChoicesA11y: '{partLabel}, dewisiadau ateb',
+  pickTheAnswerBelowA11y: 'Dewiswch yr ateb isod',
 } satisfies MessageCatalog;

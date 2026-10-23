@@ -26,4 +26,4 @@ export type { NoAssetRootDetail, NoAssetRootEffect } from './assets.js';
 export { speakMathml } from './math-speech.js';
 
 // Legacy @pie-lib/math-rendering API for backward compatibility
-export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math.js';
+export { renderMath, wrapMath, unWrapMath, mmlToLatex, latexToMml } from './render-math.js';

@@ -2,9 +2,8 @@
  * Two layouts on one page, each with its own authored rules: each layout's rules
  * target a class only that layout carries.
  */
-import React from 'react';
+import React, { act } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { act } from 'react-dom/test-utils';
 import { createRoot, type Root } from 'react-dom/client';
 import UiLayout from '../src/ui-layout.js';
 

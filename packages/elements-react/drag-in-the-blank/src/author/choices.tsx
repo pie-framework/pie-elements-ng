@@ -269,6 +269,7 @@ export class Choices extends React.Component {
                 }}
               >
                 <EditableHtml
+                  ariaLabel={`Choice ${index + 1}`}
                   ref={(ref) => (this.focusedNodeRef = ref)}
                   autoFocus
                   imageSupport={imageSupport}

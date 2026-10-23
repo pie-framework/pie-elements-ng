@@ -56,7 +56,7 @@ describe('image-cloze-association audio requirement', () => {
     (autoplayAudioEnabled, completeAudioEnabled, audioComplete, expected) => {
       const element = create({ autoplayAudioEnabled, completeAudioEnabled });
       element.innerHTML = PROMPT_AUDIO;
-      element.audioComplete = audioComplete;
+      if (audioComplete) element.promptAudio.recordEnd();
 
       expect(element.isComplete()).toBe(expected);
     },
@@ -66,6 +66,15 @@ describe('image-cloze-association audio requirement', () => {
     const element = create({ completeAudioEnabled: true });
 
     expect(element.isComplete()).toBe(true);
+  });
+
+  it('lets a host skip the wait through audioComplete', () => {
+    const element = create({ completeAudioEnabled: true });
+    element.innerHTML = PROMPT_AUDIO;
+    element.audioComplete = true;
+
+    expect(element.isComplete()).toBe(true);
+    expect(element.session.audioEndTime).toBeUndefined();
   });
 });
 
@@ -106,7 +115,9 @@ describe('image-cloze-association prompt audio tracking', () => {
     audio.dispatchEvent(new Event('ended'));
     vi.advanceTimersByTime(100);
 
-    expect(element.audioComplete).toBe(true);
+    expect(element.promptAudio.hasEnded).toBe(true);
+    expect(element.session.audioStartTime).toEqual(expect.any(Number));
+    expect(element.session.audioEndTime).toEqual(expect.any(Number));
     expect(events.at(-1)?.detail.complete).toBe(true);
   });
 
@@ -126,7 +137,7 @@ describe('image-cloze-association prompt audio tracking', () => {
 
     audio.dispatchEvent(new Event('ended'));
 
-    expect(element.audioComplete).toBeFalsy();
+    expect(element.promptAudio.hasEnded).toBe(false);
   });
 });
 

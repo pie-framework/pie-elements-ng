@@ -584,6 +584,7 @@ export class Main extends React.Component<MainProps, State> {
         {teacherInstructionsEnabled && (
           <StyledInputContainer label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={(teacherInstructions: string) => onChange({ teacherInstructions })}
               nonEmpty={false}
@@ -604,6 +605,7 @@ export class Main extends React.Component<MainProps, State> {
         {promptEnabled && (
           <StyledInputContainer label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt || ''}
               onChange={(prompt: string) => onChange({ prompt })}
               nonEmpty={false}
@@ -697,6 +699,7 @@ export class Main extends React.Component<MainProps, State> {
         {titleEnabled && (
           <StyledFormSection label={title?.label || 'Title'}>
             <EditableHtml
+              ariaLabel={title?.label || 'Title'}
               markup={graph.title || ''}
               onChange={this.changeGraphTitle}
               toolbarOpts={toolbarOpts}
@@ -798,6 +801,7 @@ export class Main extends React.Component<MainProps, State> {
         {rationaleEnabled && (
           <StyledInputContainer label={rationale.label || 'Rationale'}>
             <EditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={(rationale: string) => onChange({ rationale })}
               error={rationaleError}

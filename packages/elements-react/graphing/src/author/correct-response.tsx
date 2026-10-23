@@ -1,7 +1,6 @@
 // @ts-nocheck
 
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { GraphContainer as Graph } from '@pie-lib/graphing';
@@ -213,15 +212,12 @@ export class CorrectResponse extends React.Component {
     },
   };
 
-  componentDidMount() {
-    try {
-      // eslint-disable-next-line react/no-find-dom-node
-      const domNode = ReactDOM.findDOMNode(this);
+  containerRef = React.createRef<HTMLDivElement>();
 
-      renderMath(domNode);
-    } catch (e) {
-      // Added try-catch block to handle "Unable to find node on an unmounted component" error from tests, thrown because of the usage of shallow
-      console.error('DOM not mounted');
+  componentDidMount() {
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
     }
   }
 
@@ -399,7 +395,7 @@ export class CorrectResponse extends React.Component {
     const { correctAnswerErrors = {}, toolbarToolsError } = errors || {};
 
     return (
-      <div>
+      <div ref={this.containerRef}>
         <Typography component="div" variant="h6">
           Define Tool Set and Correct Response
         </Typography>

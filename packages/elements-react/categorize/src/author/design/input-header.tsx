@@ -49,6 +49,7 @@ export class InputHeader extends React.Component {
   }
 
   render() {
+    const { ariaLabel } = this.props;
     const {
       onChange,
       configuration,
@@ -73,6 +74,7 @@ export class InputHeader extends React.Component {
     return (
       <InputHeaderContainer>
         <StyledEditableHtml
+          ariaLabel={ariaLabel || `Category ${index + 1}`}
           imageSupport={imageSupport}
           disabled={disabled}
           autoFocus={shouldAutoFocus}

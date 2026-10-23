@@ -20,6 +20,8 @@ import { EnrichHandler } from '@mathjax/src/js/a11y/semantic-enrich.js';
 import { SpeechHandler } from '@mathjax/src/js/a11y/speech.js';
 import * as Sre from '@mathjax/src/js/a11y/sre.js';
 import { browserAdaptor } from '@mathjax/src/js/adaptors/browserAdaptor.js';
+import { STATE } from '@mathjax/src/js/core/MathItem.js';
+import { SerializedMmlVisitor } from '@mathjax/src/js/core/MmlTree/SerializedMmlVisitor.js';
 import { HTMLHandler } from '@mathjax/src/js/handlers/html/HTMLHandler.js';
 import { MathML } from '@mathjax/src/js/input/mathml.js';
 import { TeX } from '@mathjax/src/js/input/tex.js';
@@ -237,6 +239,7 @@ export function createMathJax(
         fontURL: fontDir('mathjax-mhchem-font-extension'),
       });
       const tex = new TeX({ packages: TEX_PACKAGES, ...config.tex });
+      MathJax.texReset = () => tex.reset();
       const mml = new MathML();
       const chtml = new CHTML(
         combineDefaults({ chtml: { ...config.chtml } }, 'chtml', {
@@ -285,6 +288,13 @@ export function createMathJax(
       await mathDocument.renderPromise();
     });
   };
+  // As the component startup defines it: the TeX converted as far as the internal MathML tree,
+  // then serialized. It needs the document `startup.defaultReady` builds.
+  const mmlVisitor = new SerializedMmlVisitor();
+  MathJax.tex2mml = (math: string, options: Record<string, unknown> = {}) =>
+    mmlVisitor.visitTree(
+      startup.document.convert(math, { ...options, end: STATE.CONVERT, format: 'TeX' })
+    );
   MathJax.typesetClear = (elements: Element[] | null = null) => {
     if (elements) {
       startup.document.clearMathItemsWithin(elements);

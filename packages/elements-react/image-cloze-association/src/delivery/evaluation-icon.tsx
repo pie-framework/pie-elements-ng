@@ -31,7 +31,7 @@ const getCorrectnessClass = (isCorrect, filled) => {
   return `${correctness}${fillState}`;
 };
 
-const EvaluationIcon = ({ containerStyle, isCorrect, filled }) => {
+const EvaluationIcon = ({ containerStyle = {}, isCorrect, filled = false }) => {
   const Icon = isCorrect ? Check : Close;
   const showCorrectness = isCorrect !== undefined;
   const correctness = showCorrectness ? getCorrectnessClass(isCorrect, filled) : '';
@@ -45,12 +45,6 @@ EvaluationIcon.propTypes = {
   containerStyle: PropTypes.object,
   filled: PropTypes.bool,
   isCorrect: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
-};
-
-EvaluationIcon.defaultProps = {
-  containerStyle: {},
-  filled: false,
-  isCorrect: undefined,
 };
 
 export default EvaluationIcon;

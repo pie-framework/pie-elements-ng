@@ -45,7 +45,6 @@ import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
-import ReactDOM from 'react-dom';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 const { translator } = Translator;
 let registered = false;
@@ -836,11 +835,8 @@ export class Main extends React.Component {
       return (
         <StyledUiLayout
           extraCSSRules={extraCSSRules}
-          ref={(r) => {
-            // eslint-disable-next-line react/no-find-dom-node
-            const domNode = ReactDOM.findDOMNode(r);
-
-            this.root = domNode || this.root;
+          containerRef={(node) => {
+            this.root = node || this.root;
           }}
         >
           <StyledTooltip
@@ -937,11 +933,8 @@ export class Main extends React.Component {
     return (
       <StyledUiLayout
         extraCSSRules={extraCSSRules}
-        ref={(r) => {
-          // eslint-disable-next-line react/no-find-dom-node
-          const domNode = ReactDOM.findDOMNode(r);
-
-          this.root = domNode || this.root;
+        containerRef={(node) => {
+          this.root = node || this.root;
         }}
       >
         {midContent}

@@ -4,8 +4,7 @@
  * render and the modal root has to take pointer events.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import React from 'react';
-import { act } from 'react-dom/test-utils';
+import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import userEvent from '@testing-library/user-event';
 import type { MenuProps } from '@mui/material/Menu';

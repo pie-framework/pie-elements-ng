@@ -43,6 +43,7 @@ import PropTypes from 'prop-types';
 import PointChooser from './point-chooser/index.js';
 import { buildElementModel } from './graph/elements/builder.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const { translator } = Translator;
 
@@ -131,6 +132,27 @@ export class NumberLine extends React.Component<NumberLineSizeProps> {
       elementType: initialType,
       answers: props.answer,
     };
+  }
+
+  titleRef = React.createRef<HTMLDivElement>();
+
+  // The title typesets its own math. The element's mutation observer would do it, but React commits
+  // after the element has scheduled its typeset and the observer is blind for a moment after each
+  // render, so on first load the title kept its raw TeX until a later re-render.
+  componentDidMount() {
+    this.typesetTitle();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.model?.graph?.title !== this.props.model?.graph?.title) {
+      this.typesetTitle();
+    }
+  }
+
+  typesetTitle() {
+    if (this.titleRef.current) {
+      renderMath(this.titleRef.current);
+    }
   }
 
   toggleElement(index) {
@@ -373,7 +395,7 @@ export class NumberLine extends React.Component<NumberLineSizeProps> {
             debug={false}
             language={language}
           />
-          {title && <GraphTitle dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />}
+          {title && <GraphTitle ref={this.titleRef} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />}
 
           {showMaxPointsWarning && <Feedback type="info" width={adjustedWidth} message={maxPointsMessage()} />}
           {feedback && !showCorrectAnswer && <Feedback {...feedback} width={adjustedWidth} />}

@@ -308,6 +308,7 @@ export class Design extends React.Component<DesignProps> {
           {teacherInstructionsEnabled && (
             <StyledInputContainer label={teacherInstructions.label}>
               <EditableHtml
+                ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
                 className="prompt"
                 markup={model.teacherInstructions || ''}
                 onChange={this.onTeacherInstructionsChange}
@@ -330,6 +331,7 @@ export class Design extends React.Component<DesignProps> {
           {promptEnabled && (
             <StyledInputContainer label={prompt && prompt.label}>
               <EditableHtml
+                ariaLabel={prompt?.label || 'Prompt'}
                 className="prompt"
                 markup={model.prompt}
                 onChange={this.onPromptChange}
@@ -373,6 +375,7 @@ export class Design extends React.Component<DesignProps> {
               {choiceLabelEnabled && (
                 <StyledInputContainer label={choiceLabel && choiceLabel.label && `${singularLabel} label`}>
                   <EditableHtml
+                    ariaLabel={`${singularLabel} label`}
                     {...(model.placementArea && { autoWidthToolbar: true })}
                     className="prompt"
                     markup={model.choiceLabel}
@@ -392,6 +395,7 @@ export class Design extends React.Component<DesignProps> {
               {targetLabel.settings && model.placementArea && (
                 <StyledInputContainer label={targetLabel && targetLabel.label && targetLabel.label}>
                   <EditableHtml
+                    ariaLabel={targetLabel?.label || 'Target label'}
                     autoWidthToolbar
                     className="prompt"
                     markup={model.targetLabel}
@@ -433,6 +437,7 @@ export class Design extends React.Component<DesignProps> {
           {rationaleEnabled && (
             <StyledInputContainer label={rationale.label}>
               <EditableHtml
+                ariaLabel={rationale?.label || 'Rationale'}
                 className="prompt"
                 markup={model.rationale || ''}
                 onChange={this.onRationaleChange}

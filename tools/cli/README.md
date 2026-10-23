@@ -105,7 +105,12 @@ bun run cli verify:react-build
 
 #### `verify:dependency-integrity`
 
-Inspect package imports and classify dependency usage as direct, transitive, hoist-reliant, or broken.
+Check that every declared `workspace:` dependency in each scanned package resolves
+to the corresponding workspace directory, then classify source imports as direct,
+transitive, hoist-reliant, or broken. Workspace identity is checked even without
+source imports or build output; direct and hoisted workspace links are accepted.
+Copies, forwarding directories, missing or broken links, and links into another
+checkout fail the check.
 
 ```bash
 # Scan all element/lib-react packages
@@ -117,6 +122,12 @@ bun run cli verify:dependency-integrity --package @pie-element/ebsr
 # Fail on hoist-reliant imports too (not only broken)
 bun run cli verify:dependency-integrity --fail-on-hoist
 ```
+
+For an invalid workspace entry, restore the install with `bun install --frozen-lockfile`.
+If install leaves a stale forwarding directory in place, move that specific entry
+aside and install again. The checker reports the consumer, dependency, installed
+location and expected workspace. `--fix` repairs missing declarations; it does not
+replace installed files.
 
 ## CLI Development
 

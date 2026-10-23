@@ -21,12 +21,12 @@
     "lint": "biome check ."
   },
   "dependencies": {
-    "@oclif/core": "^5.1.2",
+    "@oclif/core": "^5.1.8",
     "@oclif/plugin-help": "^7.0.4",
     "@pie-element/element-bundler": "workspace:*",
     "es-module-lexer": "^3.0.3",
     "glob": "^13.0.0",
-    "open": "^10.0.3",
+    "open": "^11.0.4",
     "ts-json-schema-generator": "^2.9.0",
     "webpack": "^5.111.1"
   },

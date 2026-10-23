@@ -213,6 +213,7 @@ export class Configure extends React.Component<ConfigureProps, State> {
         {teacherInstructionsEnabled && (
           <PromptHolder label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChange}
               imageSupport={imageSupport}
@@ -233,6 +234,7 @@ export class Configure extends React.Component<ConfigureProps, State> {
         {promptEnabled && (
           <PromptHolder label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt}
               onChange={this.onPromptChange}
               imageSupport={imageSupport}
@@ -291,6 +293,7 @@ export class Configure extends React.Component<ConfigureProps, State> {
         {rationaleEnabled && (
           <PromptHolder label={rationale.label || 'Rationale'}>
             <EditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={this.onRationaleChange}
               imageSupport={imageSupport}

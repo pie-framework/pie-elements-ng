@@ -8,7 +8,7 @@ Elements typeset math with MathJax 4.1.3 through `@pie-element/shared-math-rende
 
 ## Packages
 
-1. **`@pie-element/shared-math-rendering-mathjax`** (`packages/shared/math-rendering-mathjax/`): the adapter. It exports the legacy API (`renderMath`, `wrapMath`, `unWrapMath`, `mmlToLatex`) and `createMathjaxRenderer` for players.
+1. **`@pie-element/shared-math-rendering-mathjax`** (`packages/shared/math-rendering-mathjax/`): the adapter. It exports the legacy API (`renderMath`, `wrapMath`, `unWrapMath`, `mmlToLatex`) and `createMathjaxRenderer` for players. It also exports `latexToMml`, which editors use to save math as MathML (`mathMlOptions.mmlOutput`); editors that edit MathML as math (`mmlEditing`) convert it with a converter of their own, unless the page installs an `mmlToLatex`, so delivery bundles don't carry one.
 2. **`@pie-lib/math-rendering`** (`packages/lib-react/math-rendering/`): a wrapper that re-exports the legacy API from the adapter for code that imports the legacy package name.
 
 Elements import `@pie-element/shared-math-rendering-mathjax` directly.
@@ -142,7 +142,7 @@ Turning on speech, braille or the magnifier from the menu starts MathJax's explo
 
 ### Control names
 
-Browsers leave MathML out of the name a control takes from its content, so a button or option holding only math has no name, and a radio or checkbox labelled with math is named from its bare symbols (4/12 reads "4 12", "412" in Firefox). After typesetting, the adapter puts an `aria-label` holding the expression's speech on each `mjx-container` inside a control: a button, link, `label` or `summary`, or an element with a button, link, option, radio, checkbox, switch, tab, menu item, tree item or combobox role. `renderMath` does the same after delegating to the page's renderer. Chromium, Firefox and WebKit then name the control from that speech among its other text, so `(9.7 + √25) feet` reads as one phrase. The speech comes from the hidden MathML, so it needs neither semantic enrichment nor the speech worker and works under `worker-src 'self'`. Math outside controls stays unlabelled for screen readers to navigate, and a container that already has a label keeps it.
+Browsers leave MathML out of the name a control takes from its content, so a button or option holding only math has no name, and a radio or checkbox labelled with math is named from its bare symbols (4/12 reads "4 12", "412" in Firefox). After typesetting, the adapter puts an `aria-label` holding the expression's speech on each `mjx-container` inside a control: a button, link, `label` or `summary`, or an element with a button, link, option, radio, checkbox, switch, tab, menu item, tree item or combobox role. `renderMath` does the same after delegating to the page's renderer. Chromium, Firefox and WebKit then name the control from that speech among its other text, so `(9.7 + √25) feet` reads as one phrase. The speech comes from the hidden MathML, so it needs neither semantic enrichment nor the speech worker and works under `worker-src 'self'`. Math outside controls stays unlabelled for screen readers to navigate, and so does math in a control named by `aria-labelledby` from elements that do not hold it, such as a multiple-choice choice named "A. Pick the answer below" ([math in accessible names](./prds/math-in-names/PRD.md)); a label the adapter set before such a name is taken back. A container that already has a label it did not set keeps it.
 
 The built-in speaker, `speakMathml`, speaks school math in English: numbers, signs and operators, fences, fractions, roots, scripts, sums, integrals and limits, accents and tables. A fraction of two atoms reads "4 over 12", the formula as written. The trade is deliberate: no dependency and no worker, at the cost of English in every locale and of diverging from SRE's ClearSpeak rules. A host that wants SRE, another locale or ClearSpeak replaces the label on each container. An element with `role="button"` presents its children as text, so math inside it cannot be explored character by character; the name is the only access to it there.
 
@@ -181,6 +181,20 @@ Options, which apply only when this renderer is the one that loads MathJax:
 - `loadFonts` (default `true`): load MathJax's fonts.
 - `assetRoot`, `speechPath`, `speechLocales`: where MathJax's files load from and which speech locales the menu lists ([Assets](#assets)).
 - `srcUrl`: the MathJax script URL, by default `mathjax@4.1.3/tex-mml-chtml.js` under the asset root. The browser build ignores it.
+
+### Saving math as MathML (`mmlOutput`)
+
+Editors that save MathML (`mathMlOptions.mmlOutput`) call `latexToMml(latex, { display })`. It answers synchronously, and only once a MathJax has started, so it returns `null` before that and for LaTeX MathJax cannot read; the editor then keeps the LaTeX.
+
+An element's copy of the adapter hands its typesetting to the page's renderer and never starts a MathJax of its own, so it asks the page's renderer for the conversion. A host that installs its own renderer at `window['@pie-lib/math-rendering']` should therefore expose `latexToMml` next to `renderMath`; without it, editors in that host keep saving LaTeX. `createMathjaxRenderer` users can pass the adapter's `latexToMml`:
+
+```typescript
+import { createMathjaxRenderer, latexToMml } from '@pie-element/shared-math-rendering-mathjax';
+
+window['@pie-lib/math-rendering'] = { renderMath: createMathjaxRenderer(), latexToMml };
+```
+
+The saved MathML keeps its source LaTeX in `data-pie-latex`, never `data-latex`: the renderers rewrite the text of every `[data-latex]` element as `\(…\)`, which would turn the MathML into a "Math input error".
 
 ## Authoring Tools
 

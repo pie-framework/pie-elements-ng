@@ -253,6 +253,7 @@ const Design = (props: DesignProps) => {
       {teacherInstructionsEnabled && (
         <PromptHolder label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={onTeacherInstructionsChanged}
               imageSupport={imageSupport}
@@ -275,6 +276,7 @@ const Design = (props: DesignProps) => {
       {promptEnabled && (
         <PromptHolder label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt.label || 'Prompt'}
               markup={model.prompt}
               onChange={onPromptChanged}
               imageSupport={imageSupport}
@@ -338,6 +340,7 @@ const Design = (props: DesignProps) => {
           {rationaleEnabled && (
             <RationaleHolder key={`rationale-${index}`} label={rationale.label}>
                 <EditableHtml
+                  ariaLabel={`${rationale.label || 'Rationale'} for choice ${model.choicePrefix === 'letters' ? String.fromCharCode(65 + index) : index + 1}`}
                   markup={choice.rationale || ''}
                   onChange={(c: string) => onChoiceChanged(index, { ...choice, rationale: c })}
                   imageSupport={imageSupport}

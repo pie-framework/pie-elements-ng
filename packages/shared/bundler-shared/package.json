@@ -26,12 +26,12 @@
   },
   "dependencies": {
     "css-loader": "^7.1.2",
-    "esbuild-loader": "^4.3.0",
-    "pacote": "^21.1.0",
+    "esbuild-loader": "^4.5.0",
+    "pacote": "^22.0.0",
     "react": "^18.2.0",
     "string-hash": "^1.1.3",
     "style-loader": "^4.0.0",
-    "svelte": "^5.57.1",
+    "svelte": "^5.57.2",
     "svelte-loader": "^3.2.4",
     "webpack": "^5.111.1"
   },

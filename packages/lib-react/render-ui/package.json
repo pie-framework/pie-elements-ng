@@ -40,13 +40,13 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.3.4",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/user-event": "^14.6.7"
+    "@testing-library/user-event": "^14.6.8"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

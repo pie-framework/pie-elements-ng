@@ -404,5 +404,5 @@ test.describe('My New Feature', () => {
 ## Resources
 
 - [Playwright Documentation](https://playwright.dev/)
-- [Element Demo Architecture](../../README.md)
+- [Element Demo Architecture](../../../../docs/DEMO_SYSTEM.md)
 - [PIE Framework Documentation](https://github.com/pie-framework/pie-elements)

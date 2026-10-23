@@ -2,6 +2,7 @@
 
 import { ModelSetEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { stampElementLanguage } from '@pie-element/shared-i18n';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -46,9 +47,10 @@ export default class PiePassage extends HTMLElement {
   }
 
   setLangAttribute() {
-    const language = this._model && typeof this._model.language ? this._model.language : '';
-    const lang = language ? language.slice(0, 2) : 'en';
-    this.setAttribute('lang', lang);
+    // The element asserts the language the item declares, canonicalized, and
+    // nothing when it declares none: an `en` default claimed undeclared
+    // content — Spanish items included — for English.
+    stampElementLanguage(this, this._model?.language ?? null);
   }
 
   _scheduleMathRender: any = () => {

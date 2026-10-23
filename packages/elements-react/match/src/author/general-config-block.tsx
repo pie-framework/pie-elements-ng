@@ -99,6 +99,7 @@ class GeneralConfigBlock extends React.Component {
               <InputContainerStyled>
               <InputContainer label={layout.label} className="input-container">
                 <NumberTextFieldStyled
+                  ariaLabel={layout.label || 'Layout'}
                   type="number"
                   min={3}
                   max={maxAnswers || 10}
@@ -116,6 +117,7 @@ class GeneralConfigBlock extends React.Component {
               <InputContainerStyled>
                 <InputContainer label={choiceMode.label} className="select-input-container">
                   <Select
+                    inputProps={{ 'aria-label': choiceMode.label || 'Response Type' }}
                     variant="standard"
                     onChange={this.onChangeResponseType('choiceMode')}
                     value={model.choiceMode}

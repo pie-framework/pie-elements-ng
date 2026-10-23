@@ -8,9 +8,9 @@ Rollout for the [interface i18n PRD](../PRD.md). An element migrates together wi
 
 **Phase 2**: the interface-locale channel and the shared labels.
 
-- pie-players: `interfaceLocaleContext` in `@pie-players/pie-context`, answered by the item and section players from `locale`.
-- Here: an engine helper that subscribes a host to it, the transitional precedence (published, else `model.language`, else `en-US`), and `lang`/`dir` on library chrome roots.
-- `Collapsible` gains teacher-instructions and rationale variants. Multiple-choice keeps those labels in its own catalog until then; the next element would otherwise copy them.
+- pie-players (done, pie-players #808): `interfaceLocaleContext` in `@pie-players/pie-context`, answered by the item and section players from `locale`. Its npm release is pending, so the subscriber builds the key here with pie-context's own factory on the same `Symbol.for` registration and becomes the package import when the release lands.
+- Here (done): `subscribeInterfaceLocale` in `@pie-element/shared-i18n`, the transitional precedence (published, else `model.language`, else `en-US`) in multiple-choice — which now passes the resolved locale into the React tree, so the region label, SR heading, selection counts and the toggle all follow it — and `lang`/`dir` on the toggle's root from its `language` prop.
+- Still open in Phase 2: `Collapsible` gains teacher-instructions and rationale variants. Multiple-choice keeps those labels in its own catalog until then; the next element would otherwise copy them.
 
 **Phase 3**: elements in usage order. Shares are of production items; the delivery hour sampled ranks the head the same way, with passage second.
 

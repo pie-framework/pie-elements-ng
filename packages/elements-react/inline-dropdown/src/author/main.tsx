@@ -1,9 +1,8 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import EditableHtml, { ALL_PLUGINS, deleteInlineDropdownByIndex } from '@pie-lib/editable-html-tip-tap';
 import { AlertDialog, InputContainer, layout, settings } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import { cloneDeep, isEmpty, isEqual, isUndefined, max, reduce } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
@@ -132,6 +131,7 @@ const createElementFromHTML = (htmlString: string) => {
 };
 
 export class Main extends React.Component<MainProps, State> {
+  private readonly rationaleLabelId = createUniqueId('inline-dropdown-rationale');
   state: State = {
     warning: { open: false },
   };
@@ -159,11 +159,13 @@ export class Main extends React.Component<MainProps, State> {
     }
   }
 
-  componentDidUpdate() {
-    //eslint-disable-next-line
-    const domNode = ReactDOM.findDOMNode(this);
+  containerRef = React.createRef<HTMLDivElement>();
 
-    renderMath(domNode as Element);
+  componentDidUpdate() {
+    // renderMath with no element renders the whole document body.
+    if (this.containerRef.current) {
+      renderMath(this.containerRef.current);
+    }
   }
 
   onModelChange = (newVal: Partial<AuthorModel>) => {
@@ -408,19 +410,21 @@ export class Main extends React.Component<MainProps, State> {
         <RationaleChoices key={key}>
           <Accordion slotProps={{ transition: { timeout: { enter: 225, exit: 195 } } }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <StyledTypography component={'div'}>{`Rationale for response area #${index + 1}`}</StyledTypography>
+              <StyledTypography id={`${this.rationaleLabelId}-${index}`} component={'div'}>{`Rationale for response area #${index + 1}`}</StyledTypography>
             </AccordionSummary>
 
             <StyledAccordionDetails>
-              {(choices[key] || []).map((choice) => (
+              {(choices[key] || []).map((choice, choiceIndex) => (
                 <React.Fragment key={choice.label}>
                   <RationaleLabel
+                    id={`${this.rationaleLabelId}-${index}-${choiceIndex}`}
                     dangerouslySetInnerHTML={{
                       __html: `${rationale.label} for ${choice.label} (${choice.correct ? 'correct' : 'incorrect'})`,
                     }}
                   />
                   <ChoiceRationaleHolder>
                     <EditableHtml
+                      ariaLabelledBy={`${this.rationaleLabelId}-${index} ${this.rationaleLabelId}-${index}-${choiceIndex}`}
                       markup={choice.rationale || ''}
                       spellCheck={spellCheckEnabled}
                       pluginProps={getPluginProps(rationale?.inputConfiguration)}
@@ -466,6 +470,7 @@ export class Main extends React.Component<MainProps, State> {
 
     return (
       <layout.ConfigLayout
+        containerRef={this.containerRef}
         extraCSSRules={{
           names: ['red', 'blue'],
           rules: `
@@ -496,6 +501,7 @@ export class Main extends React.Component<MainProps, State> {
         {teacherInstructionsEnabled && (
           <PromptHolder label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChanged}
               imageSupport={imageSupport}
@@ -517,6 +523,7 @@ export class Main extends React.Component<MainProps, State> {
         {promptEnabled && (
           <PromptHolder label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt}
               onChange={this.onPromptChanged}
               imageSupport={imageSupport}
@@ -547,6 +554,7 @@ export class Main extends React.Component<MainProps, State> {
           responseAreasError={responseAreasError}
           responseAreaChoicesError={responseAreaChoicesError}
           editableHtmlProps={{
+            ariaLabel: 'Response template',
             pluginProps: getPluginProps(template?.inputConfiguration),
             activePlugins: ALL_PLUGINS,
             toolbarOpts: { position: 'top' },
@@ -624,6 +632,7 @@ export class Main extends React.Component<MainProps, State> {
         {rationaleEnabled && (
           <PromptHolder label={rationale.label}>
             <EditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={this.onRationaleChanged}
               imageSupport={imageSupport}

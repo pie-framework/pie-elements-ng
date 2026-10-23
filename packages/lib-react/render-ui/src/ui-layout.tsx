@@ -50,6 +50,10 @@ class UiLayout extends React.Component {
       rules: PropTypes.string,
     }),
     fontSizeFactor: PropTypes.number,
+    // The container element, for callers that need the layout's DOM node. It replaces
+    // ReactDOM.findDOMNode, which React 19 removes and which returned the extraCSSRules <style>
+    // whenever rules were set.
+    containerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -80,7 +84,7 @@ class UiLayout extends React.Component {
   }
 
   render() {
-    const { children, className, fontSizeFactor, ...rest } = this.props;
+    const { children, className, fontSizeFactor, containerRef, ...rest } = this.props;
 
     const { extraCSSRules, ...restProps } = rest;
     const style = this.computeStyle(fontSizeFactor);
@@ -93,6 +97,7 @@ class UiLayout extends React.Component {
           ) : null}
 
           <StyledContainer
+            ref={containerRef}
             className={`${className} extraCSSRules ${this.scopeClass}`}
             {...restProps}
             {...(style && { style })}

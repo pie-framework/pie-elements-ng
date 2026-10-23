@@ -4,8 +4,15 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { init, parse } from 'es-module-lexer';
 import { loadPackageJson, type PackageJson } from './package-json.js';
+import { checkWorkspaceResolution } from './workspace-resolution.js';
 
-export type ImportIntegrityStatus = 'direct' | 'transitive' | 'hoist' | 'broken' | 'peer';
+export type ImportIntegrityStatus =
+  | 'direct'
+  | 'transitive'
+  | 'hoist'
+  | 'broken'
+  | 'peer'
+  | 'workspace';
 
 export interface ImportIntegrityIssue {
   dependency: string;
@@ -13,6 +20,8 @@ export interface ImportIntegrityIssue {
   declaredDirect: boolean;
   resolvedPath?: string;
   requiredBy?: string;
+  expectedPath?: string;
+  reason?: string;
 }
 
 export interface PackageIntegrityResult {
@@ -51,6 +60,7 @@ interface CollectWorkspaceOptions {
 
 interface AnalyzeIntegrityOptions {
   includePeerGaps?: boolean;
+  workspacePackages?: ReadonlyMap<string, string>;
 }
 
 export interface AutoFixDependencyOptions extends CollectWorkspaceOptions {
@@ -81,12 +91,19 @@ export async function analyzePackageDependencyIntegrity(
     return null;
   }
 
+  const issues: ImportIntegrityIssue[] = options.workspacePackages
+    ? checkWorkspaceResolution(pkgJsonPath, options.workspacePackages).map((issue) => ({
+        ...issue,
+        status: 'workspace',
+        declaredDirect: true,
+      }))
+    : [];
   const sourceDir = join(absPackagePath, 'src');
   if (!existsSync(sourceDir)) {
     return {
       packageName: pkgJson.name,
       packagePath: absPackagePath,
-      issues: [],
+      issues,
     };
   }
 
@@ -103,8 +120,6 @@ export async function analyzePackageDependencyIntegrity(
     resolveFromPackage,
     declaredDirect
   );
-
-  const issues: ImportIntegrityIssue[] = [];
 
   for (const dep of Array.from(importedPackages.keys()).sort()) {
     if (dep === pkgJson.name) {
@@ -587,7 +602,9 @@ export async function autoFixWorkspaceDependencyDeclarations(
   };
 }
 
-async function buildWorkspacePackageNameMap(packageDirs: string[]): Promise<Map<string, string>> {
+export async function buildWorkspacePackageNameMap(
+  packageDirs: string[]
+): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   for (const packageDir of packageDirs) {
     const pkgPath = join(packageDir, 'package.json');

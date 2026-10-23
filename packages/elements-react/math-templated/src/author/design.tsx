@@ -395,6 +395,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
         {teacherInstructionsEnabled && (
           <StyledInputContainer label={teacherInstructions.label}>
             <StyledEditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={(value: string) => this.handleChange('teacherInstructions', value)}
               imageSupport={imageSupport}
@@ -416,6 +417,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
         {promptEnabled && (
           <StyledInputContainer label={prompt.label}>
             <StyledEditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt}
               onChange={(value: string) => this.handleChange('prompt', value)}
               imageSupport={imageSupport}
@@ -441,6 +443,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
           </StyledTooltip>
         </TooltipContainer>
         <StyledMarkup
+          ariaLabel="Response template"
           activePlugins={ALL_PLUGINS}
           toolbarOpts={{ position: 'top' }}
           spellCheck={spellCheckEnabled}
@@ -516,6 +519,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
         {rationaleEnabled && (
           <StyledInputContainer label={rationale.label}>
             <StyledEditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={(value: string) => this.handleChange('rationale', value)}
               imageSupport={imageSupport}

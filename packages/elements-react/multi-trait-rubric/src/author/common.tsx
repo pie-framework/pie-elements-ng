@@ -200,6 +200,7 @@ const SubLabel: any = styled('div')({
 });
 
 export const ScorePoint = ({
+  ariaLabel = '',
   error = '',
   scorePointsValue,
   scoreDescriptor,
@@ -222,6 +223,7 @@ export const ScorePoint = ({
 
           {showScorePointLabels ? (
             <EditableHtml
+              ariaLabel={ariaLabel || `Score ${scorePointsValue} label`}
               className="editable-label"
               error={error}
               markup={scoreDescriptor}
@@ -268,9 +270,10 @@ const StyledBootstrapInput: any = styled(InputBase)(({ theme }) => ({
 
 const createMaxScoreOptions = (maxMaxPoints) => Array.from({ length: maxMaxPoints }, (_, i) => i + 1);
 
-export const MaxPointsPicker = ({ maxPoints, onChange, maxMaxPoints }) => (
+export const MaxPointsPicker = ({ maxPoints, onChange, maxMaxPoints, ariaLabel = '' }) => (
   <InputContainer label="Max Points">
     <Select
+      inputProps={{ 'aria-label': ariaLabel || 'Max Points' }}
       value={maxPoints}
       onChange={onChange}
       input={<StyledBootstrapInput />}
@@ -298,6 +301,7 @@ const SimpleInputWrapper: any = styled('div')(({ theme }) => ({
 }));
 
 export const SimpleInput = ({
+  ariaLabel = '',
   markup,
   onChange,
   pluginProps,
@@ -312,6 +316,7 @@ export const SimpleInput = ({
       {label && <div>{label}</div>}
 
       <EditableHtml
+        ariaLabel={ariaLabel || label || 'Trait Label'}
         className="editable-level"
         markup={markup}
         onChange={onChange}
@@ -337,6 +342,7 @@ const UnderlinedInputWrapper: any = styled('div')({
 });
 
 export const UnderlinedInput = ({
+  ariaLabel = '',
   error,
   markup,
   onChange,
@@ -353,6 +359,7 @@ export const UnderlinedInput = ({
       {label && <div>{label}</div>}
 
       <EditableHtml
+        ariaLabel={ariaLabel || label || 'Trait name'}
         className="underlined-editable-level"
         error={error}
         markup={markup}
@@ -372,6 +379,7 @@ export const UnderlinedInput = ({
 );
 
 export const ExpandedInput = ({
+  ariaLabel = '',
   error,
   markup,
   onChange,
@@ -385,6 +393,7 @@ export const ExpandedInput = ({
 }) => (
   <GlobalStyles>
     <EditableHtml
+      ariaLabel={ariaLabel || placeholder || 'Trait description'}
       className="expanded-input-prompt"
       error={error}
       markup={markup}

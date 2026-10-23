@@ -387,6 +387,7 @@ export class Main extends React.Component<MainProps, State> {
           {teacherInstructionsEnabled && (
             <StyledInputContainer label={teacherInstructions.label}>
               <EditableHtml
+                ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
                 markup={model.teacherInstructions || ''}
                 onChange={this.onTeacherInstructionsChanged}
                 imageSupport={imageSupport}
@@ -408,6 +409,7 @@ export class Main extends React.Component<MainProps, State> {
           {promptEnabled && (
             <StyledInputContainer label={prompt.label}>
               <EditableHtml
+                ariaLabel={prompt?.label || 'Prompt'}
                 markup={model.prompt}
                 onChange={this.onPromptChanged}
                 imageSupport={imageSupport}
@@ -443,6 +445,7 @@ export class Main extends React.Component<MainProps, State> {
 
           <StyledMarkup ref={this.markupRef}>
             <EditableHtml
+              ariaLabel="Response template"
               activePlugins={ALL_PLUGINS}
               responseAreaProps={{
                 type: 'drag-in-the-blank',
@@ -488,6 +491,7 @@ export class Main extends React.Component<MainProps, State> {
           {rationaleEnabled && (
             <StyledInputContainer label={rationale.label}>
               <EditableHtml
+                ariaLabel={rationale?.label || 'Rationale'}
                 markup={model.rationale || ''}
                 onChange={this.onRationaleChanged}
                 imageSupport={imageSupport}

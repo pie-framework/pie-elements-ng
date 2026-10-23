@@ -645,6 +645,7 @@ export class Design extends React.Component {
             {teacherInstructionsEnabled && (
               <StyledInputContainer label={teacherInstructions.label}>
                 <EditableHtml
+                  ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
                   markup={model.teacherInstructions || ''}
                   onChange={this.changeTeacherInstructions}
                   imageSupport={imageSupport}
@@ -666,6 +667,7 @@ export class Design extends React.Component {
             {promptEnabled && (
               <StyledInputContainer label={prompt.label}>
                 <EditableHtml
+                  ariaLabel={prompt?.label || 'Prompt'}
                   markup={model.prompt || ''}
                   onChange={this.onPromptChanged}
                   imageSupport={imageSupport}
@@ -746,6 +748,7 @@ export class Design extends React.Component {
             {rationaleEnabled && (
               <StyledInputContainer label={rationale.label}>
                 <EditableHtml
+                  ariaLabel={rationale?.label || 'Rationale'}
                   markup={model.rationale || ''}
                   onChange={this.changeRationale}
                   imageSupport={imageSupport}

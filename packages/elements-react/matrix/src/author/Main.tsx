@@ -117,6 +117,7 @@ const Design = (props: DesignProps) => {
       {teacherInstructionsEnabled && (
         <StyledInputContainer label={teacherInstructions.label}>
           <EditableHtml
+            ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
             markup={model.teacherInstructions || ''}
             onChange={onTeacherInstructionsChanged}
             imageSupport={imageSupport}
@@ -132,6 +133,7 @@ const Design = (props: DesignProps) => {
 
       <StyledInputContainer label={prompt.label}>
         <EditableHtml
+          ariaLabel={prompt?.label || 'Prompt'}
           markup={model.prompt}
           onChange={onPromptChanged}
           imageSupport={imageSupport}
