@@ -1,5 +1,44 @@
 # @pie-lib/render-ui
 
+## 8.0.7
+
+### Patch Changes
+
+- [#492](https://github.com/pie-framework/pie-elements-ng/pull/492) [`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848) Thanks [@chillenious](https://github.com/chillenious)! - Adds an `nl-NL` locale bundle to each package: one chunk per locale in the
+  browser build, inlined by webpack consumers through the eager comment, and
+  absent from IIFE, like every other shipped locale. The set now covers every
+  locale pie-players ships (`en-US`, `nl-NL`, `th-TH`), so a player publishing
+  `nl-NL` renders Dutch chrome inside the item as well as around it. The
+  catalogs are `generated` (unreviewed) in the manifest; register and terminology
+  follow pie-players' `briefs/nl-NL.md` and its reviewed Dutch catalog —
+  impersonal infinitive for labels, imperative for learner instructions,
+  `vraag`/`antwoord`/`leraar`, `weergeven`/`verbergen`.
+
+- [#495](https://github.com/pie-framework/pie-elements-ng/pull/495) [`a8c784d`](https://github.com/pie-framework/pie-elements-ng/commit/a8c784d4ba7caa63370862160611bd61508beef8) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the test-dependencies group across 1 directory with 3 updates
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#507](https://github.com/pie-framework/pie-elements-ng/pull/507) [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2) Thanks [@chillenious](https://github.com/chillenious)! - Stop using the React APIs that React 19 removes — `findDOMNode`, `ReactDOM.render`, legacy
+  context and `defaultProps` on function components — while staying on React 18. `UiLayout` and
+  `ConfigLayout` take a `containerRef` for their root element; the elements that measured or
+  rendered math into that element through `findDOMNode` got the extraCSSRules `<style>` node
+  instead whenever rules were set. `@pie-lib/editable-html-tip-tap` drops its unused `react-jss`
+  dependency.
+
+- [#506](https://github.com/pie-framework/pie-elements-ng/pull/506) [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a) Thanks [@chillenious](https://github.com/chillenious)! - Adds a Romanian (`ro`) locale bundle to each package, keeping the three in
+  step with pie-players, whose generated tier gained Romanian the same day. One
+  chunk per locale in the browser build, inlined by webpack consumers, absent
+  from IIFE. Register and terminology follow pie-players' `briefs/ro.md`:
+  imperative on controls (`Afișează răspunsul corect`), comma-below diacritics,
+  and all three CLDR plural forms — `other` takes `de` before the noun (`Sunt
+  permise doar 20 de răspunsuri.`). Status `generated`, unreviewed.
+- Updated dependencies [[`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b), [`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5), [`1398db7`](https://github.com/pie-framework/pie-elements-ng/commit/1398db7e02995a0734729529529011d1b4003e19), [`ee562c9`](https://github.com/pie-framework/pie-elements-ng/commit/ee562c9523b1c064879670ecca94cbef7fc0f0c5), [`cb133b3`](https://github.com/pie-framework/pie-elements-ng/commit/cb133b324791060747a3cb422bcb8ad203e9bbfe), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`79d8b17`](https://github.com/pie-framework/pie-elements-ng/commit/79d8b17e6925cd8256a9b76caf99efbcfa53567f), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`feb4d06`](https://github.com/pie-framework/pie-elements-ng/commit/feb4d060bc1a867bbe524cdf597fb903b0f771ac), [`cb30a68`](https://github.com/pie-framework/pie-elements-ng/commit/cb30a68fa78dff12c84a661ad529a49137b64d73), [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2)]:
+  - @pie-element/shared-i18n@0.1.2
+  - @pie-element/shared-utils@0.1.6
+  - @pie-element/shared-math-rendering-mathjax@0.1.8
+  - @pie-element/shared-lodash@0.1.3
+  - @pie-lib/icons@5.0.2
+
 ## 8.0.6
 
 ### Patch Changes

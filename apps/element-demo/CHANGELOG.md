@@ -1,5 +1,14 @@
 # @pie-element/element-demo
 
+## 0.1.9
+
+### Patch Changes
+
+- Updated dependencies [[`8e80f7f`](https://github.com/pie-framework/pie-elements-ng/commit/8e80f7f351c5e3437c35cc91b9770f8f3e479105), [`ee562c9`](https://github.com/pie-framework/pie-elements-ng/commit/ee562c9523b1c064879670ecca94cbef7fc0f0c5), [`ddf1ab6`](https://github.com/pie-framework/pie-elements-ng/commit/ddf1ab6e98314e1042c621d9568cfaf60d633800), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`29d0e3f`](https://github.com/pie-framework/pie-elements-ng/commit/29d0e3f2105733c3b04fcac3a05d7bac73e59afd), [`9a26e38`](https://github.com/pie-framework/pie-elements-ng/commit/9a26e384166c74f6e3c0a0cca2d141a117f630e6), [`ee699f3`](https://github.com/pie-framework/pie-elements-ng/commit/ee699f3b5ec5dc3c3d735c7c25254e5111df01f1)]:
+  - @pie-element/element-bundler@0.1.5
+  - @pie-element/element-player@0.1.9
+  - @pie-element/element-theme-daisyui@0.1.5
+
 ## 0.1.8
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/complex-rubric",
-  "version": "8.0.6",
+  "version": "8.0.7",
   "description": "Complex Rubric Scoring Interaction",
   "repository": {
     "type": "git",
@@ -124,7 +124,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

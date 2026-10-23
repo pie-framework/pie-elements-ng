@@ -1,5 +1,20 @@
 # @pie-element/shared-utils
 
+## 0.1.6
+
+### Patch Changes
+
+- [#537](https://github.com/pie-framework/pie-elements-ng/pull/537) [`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5) Thanks [@chillenious](https://github.com/chillenious)! - The prompt-audio elements share one implementation of autoplay, `completeAudioEnabled` and audio
+  timing from `@pie-element/shared-utils`. image-cloze-association now records `audioStartTime`,
+  `audioEndTime` and `waitTime` like the others, so the session changes when its prompt audio ends
+  (PIE-1340).
+
+- [#499](https://github.com/pie-framework/pie-elements-ng/pull/499) [`0eb31a8`](https://github.com/pie-framework/pie-elements-ng/commit/0eb31a86b9b71f9b8acaea1dea83f827f223c295) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump dompurify from 3.4.16 to 3.4.17
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+- Updated dependencies [[`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9)]:
+  - @pie-element/shared-types@0.2.3
+
 ## 0.1.5
 
 ### Patch Changes

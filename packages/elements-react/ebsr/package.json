@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/ebsr",
-  "version": "15.0.6",
+  "version": "15.0.7",
   "description": "",
   "repository": {
     "type": "git",
@@ -121,7 +121,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

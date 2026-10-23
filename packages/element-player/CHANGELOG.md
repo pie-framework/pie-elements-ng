@@ -1,5 +1,19 @@
 # @pie-element/element-player
 
+## 0.1.9
+
+### Patch Changes
+
+- [#490](https://github.com/pie-framework/pie-elements-ng/pull/490) [`90b0e5f`](https://github.com/pie-framework/pie-elements-ng/commit/90b0e5f90c3b01cb7a5f1da2ef60ebccc641a8b0) Thanks [@arimieandreea](https://github.com/arimieandreea)! - fix: support mmlEditing and mmlOutput MathML options PIE-1217
+
+- [#500](https://github.com/pie-framework/pie-elements-ng/pull/500) [`51273e5`](https://github.com/pie-framework/pie-elements-ng/commit/51273e5d86c2cd0729ce19009c642c2429c63b26) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @sveltejs/vite-plugin-svelte from 7.3.0 to 7.3.1
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#511](https://github.com/pie-framework/pie-elements-ng/pull/511) [`4328ad0`](https://github.com/pie-framework/pie-elements-ng/commit/4328ad030d6893467230860b6eae2922b15d231e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump svelte from 5.57.1 to 5.57.2
+- Updated dependencies [[`1398db7`](https://github.com/pie-framework/pie-elements-ng/commit/1398db7e02995a0734729529529011d1b4003e19), [`ee562c9`](https://github.com/pie-framework/pie-elements-ng/commit/ee562c9523b1c064879670ecca94cbef7fc0f0c5), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`cb30a68`](https://github.com/pie-framework/pie-elements-ng/commit/cb30a68fa78dff12c84a661ad529a49137b64d73)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.8
+
 ## 0.1.8
 
 ### Patch Changes

@@ -1,5 +1,25 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.7
+
+### Patch Changes
+
+- [#537](https://github.com/pie-framework/pie-elements-ng/pull/537) [`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5) Thanks [@chillenious](https://github.com/chillenious)! - The prompt-audio elements share one implementation of autoplay, `completeAudioEnabled` and audio
+  timing from `@pie-element/shared-utils`. image-cloze-association now records `audioStartTime`,
+  `audioEndTime` and `waitTime` like the others, so the session changes when its prompt audio ends
+  (PIE-1340).
+
+- [#500](https://github.com/pie-framework/pie-elements-ng/pull/500) [`51273e5`](https://github.com/pie-framework/pie-elements-ng/commit/51273e5d86c2cd0729ce19009c642c2429c63b26) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @sveltejs/vite-plugin-svelte from 7.3.0 to 7.3.1
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#511](https://github.com/pie-framework/pie-elements-ng/pull/511) [`4328ad0`](https://github.com/pie-framework/pie-elements-ng/commit/4328ad030d6893467230860b6eae2922b15d231e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump svelte from 5.57.1 to 5.57.2
+- Updated dependencies [[`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5), [`79d8b17`](https://github.com/pie-framework/pie-elements-ng/commit/79d8b17e6925cd8256a9b76caf99efbcfa53567f), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9)]:
+  - @pie-element/shared-utils@0.1.6
+  - @pie-element/shared-controller-utils@0.1.4
+  - @pie-element/shared-types@0.2.3
+  - @pie-lib/delivery-events-svelte@0.2.2
+
 ## 0.3.6
 
 ### Patch Changes

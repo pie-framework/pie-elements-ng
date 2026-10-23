@@ -1,5 +1,20 @@
 # @pie-element/cli
 
+## 0.1.6
+
+### Patch Changes
+
+- [#510](https://github.com/pie-framework/pie-elements-ng/pull/510) [`40809aa`](https://github.com/pie-framework/pie-elements-ng/commit/40809aa82900e82f3a19c0383dbcd524feb1e130) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @oclif/core from 5.1.2 to 5.1.8
+
+- [#514](https://github.com/pie-framework/pie-elements-ng/pull/514) [`899ee63`](https://github.com/pie-framework/pie-elements-ng/commit/899ee6323c83cb5d7acd3f4dfe10a57acd25ac1f) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump open from 10.2.0 to 11.0.4
+
+- [#539](https://github.com/pie-framework/pie-elements-ng/pull/539) [`1a48c15`](https://github.com/pie-framework/pie-elements-ng/commit/1a48c15f8954afd9c07b5641a72ef57a6a7166c5) Thanks [@chillenious](https://github.com/chillenious)! - Check that declared workspace dependencies resolve to their workspace package
+  directories before import analysis, including packages with no build output or
+  source imports. Report stale forwarding directories, missing or broken links,
+  and links into another checkout as dependency-integrity failures.
+- Updated dependencies [[`8e80f7f`](https://github.com/pie-framework/pie-elements-ng/commit/8e80f7f351c5e3437c35cc91b9770f8f3e479105), [`29d0e3f`](https://github.com/pie-framework/pie-elements-ng/commit/29d0e3f2105733c3b04fcac3a05d7bac73e59afd), [`9a26e38`](https://github.com/pie-framework/pie-elements-ng/commit/9a26e384166c74f6e3c0a0cca2d141a117f630e6), [`ee699f3`](https://github.com/pie-framework/pie-elements-ng/commit/ee699f3b5ec5dc3c3d735c7c25254e5111df01f1)]:
+  - @pie-element/element-bundler@0.1.5
+
 ## 0.1.5
 
 ### Patch Changes

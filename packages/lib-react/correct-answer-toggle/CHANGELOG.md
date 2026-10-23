@@ -1,5 +1,40 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.7
+
+### Patch Changes
+
+- [#492](https://github.com/pie-framework/pie-elements-ng/pull/492) [`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848) Thanks [@chillenious](https://github.com/chillenious)! - Adds an `nl-NL` locale bundle to each package: one chunk per locale in the
+  browser build, inlined by webpack consumers through the eager comment, and
+  absent from IIFE, like every other shipped locale. The set now covers every
+  locale pie-players ships (`en-US`, `nl-NL`, `th-TH`), so a player publishing
+  `nl-NL` renders Dutch chrome inside the item as well as around it. The
+  catalogs are `generated` (unreviewed) in the manifest; register and terminology
+  follow pie-players' `briefs/nl-NL.md` and its reviewed Dutch catalog —
+  impersonal infinitive for labels, imperative for learner instructions,
+  `vraag`/`antwoord`/`leraar`, `weergeven`/`verbergen`.
+
+- [#487](https://github.com/pie-framework/pie-elements-ng/pull/487) [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b) Thanks [@chillenious](https://github.com/chillenious)! - The toggle stamps `lang` and `dir` from its `language` prop on its root, so the label is
+  announced in the language it renders in — an element's chrome locale — and removes both when no
+  language is passed, as the elements' content stamping already does.
+
+- [#495](https://github.com/pie-framework/pie-elements-ng/pull/495) [`a8c784d`](https://github.com/pie-framework/pie-elements-ng/commit/a8c784d4ba7caa63370862160611bd61508beef8) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the test-dependencies group across 1 directory with 3 updates
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#506](https://github.com/pie-framework/pie-elements-ng/pull/506) [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a) Thanks [@chillenious](https://github.com/chillenious)! - Adds a Romanian (`ro`) locale bundle to each package, keeping the three in
+  step with pie-players, whose generated tier gained Romanian the same day. One
+  chunk per locale in the browser build, inlined by webpack consumers, absent
+  from IIFE. Register and terminology follow pie-players' `briefs/ro.md`:
+  imperative on controls (`Afișează răspunsul corect`), comma-below diacritics,
+  and all three CLDR plural forms — `other` takes `de` before the noun (`Sunt
+  permise doar 20 de răspunsuri.`). Status `generated`, unreviewed.
+- Updated dependencies [[`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848), [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b), [`cb133b3`](https://github.com/pie-framework/pie-elements-ng/commit/cb133b324791060747a3cb422bcb8ad203e9bbfe), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`feb4d06`](https://github.com/pie-framework/pie-elements-ng/commit/feb4d060bc1a867bbe524cdf597fb903b0f771ac), [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2), [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a)]:
+  - @pie-lib/render-ui@8.0.7
+  - @pie-element/shared-i18n@0.1.2
+  - @pie-element/shared-lodash@0.1.3
+  - @pie-lib/icons@5.0.2
+
 ## 5.0.6
 
 ### Patch Changes

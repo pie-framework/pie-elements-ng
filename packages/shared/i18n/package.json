@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-i18n",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Interface-string i18n engine for PIE elements: typed per-package catalogs, lazy locales, RFC 4647 resolution",
   "type": "module",
   "main": "./dist/index.js",
