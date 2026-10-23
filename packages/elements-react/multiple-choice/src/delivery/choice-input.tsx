@@ -257,8 +257,9 @@ export class ChoiceInput extends React.Component {
     isEvaluateMode: PropTypes.bool,
     choicesLayout: PropTypes.oneOf(['vertical', 'grid', 'horizontal']),
     isSelectionButtonBelow: PropTypes.bool,
-    mathOutsideNames: PropTypes.bool,
-    // The translated note a math choice's name ends with when math is kept out of names.
+    // The choice's position, the hidden key of a math choice that has no key.
+    index: PropTypes.number,
+    // The translated note a math choice's name ends with.
     pickTheAnswerBelow: PropTypes.string,
   };
 
@@ -328,7 +329,7 @@ export class ChoiceInput extends React.Component {
       checked,
       tagName,
       isSelectionButtonBelow,
-      mathOutsideNames,
+      index,
       pickTheAnswerBelow,
     } = this.props;
 
@@ -355,20 +356,20 @@ export class ChoiceInput extends React.Component {
       }),
     };
 
-    // By default a choice is named from its label, the renderer labelling its math with speech.
-    // With math kept out of names, which the Player switches on to compare the two patterns, a
-    // lettered choice holding math is named from its key and a note that the answer follows,
-    // "A. Pick the answer below", and the screen reader reads its MathML in the content. A choice
-    // with no key keeps its label as its name (PIE-1244).
+    // A choice holding math or a table is named from its key and a note that the answer follows,
+    // "A. Pick the answer below", and keeps its math out of its name: the screen reader reads the
+    // MathML in the content, where the student can explore it and a braille display shows it as
+    // math. A choice with no key gets its position as a hidden key, so the names stay distinct.
+    // Other choices are named from their label (PIE-1244).
     const content = labelContent(label);
-    const namedByNote = Boolean(displayKey) && mathOutsideNames && (content.math || content.table);
+    const namedByNote = content.math || content.table;
+    const key = displayKey || (namedByNote ? `${index + 1}` : '');
 
-    // The default key text is the one choices carried before this change, read-aloud included.
-    let keyText = displayKey;
-    if (namedByNote) keyText = `${displayKey}.`;
-    else if (content.math || content.image) keyText = `Pick the answer below, ${displayKey}`;
+    let keyText = key;
+    if (namedByNote) keyText = `${key}.`;
+    else if (content.image) keyText = `Pick the answer below, ${key}`;
 
-    const screenReaderLabel = displayKey ? (
+    const screenReaderLabel = key ? (
       <SrOnly id={this.descId} className={namedByNote ? 'pie-sr-only' : undefined}>
         {keyText}
       </SrOnly>

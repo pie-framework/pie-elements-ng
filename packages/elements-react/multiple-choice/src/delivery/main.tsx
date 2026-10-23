@@ -47,7 +47,6 @@ class Main extends React.Component {
     baseHeadingLevel: PropTypes.number,
     includeSrHeading: PropTypes.bool,
     eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
-    mathOutsideNames: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -65,7 +64,6 @@ class Main extends React.Component {
       baseHeadingLevel,
       includeSrHeading,
       eliminatedChoices,
-      mathOutsideNames,
     } = this.props;
     const { extraCSSRules, fontSizeFactor } = model;
 
@@ -81,7 +79,6 @@ class Main extends React.Component {
           baseHeadingLevel={baseHeadingLevel}
           includeSrHeading={includeSrHeading}
           eliminatedChoices={eliminatedChoices}
-          mathOutsideNames={mathOutsideNames}
         />
       </PreviewLayout>
     );

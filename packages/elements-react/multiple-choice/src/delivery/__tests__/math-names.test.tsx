@@ -5,7 +5,6 @@ import { render, screen } from '@testing-library/react';
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
 const { MultipleChoice } = await import('../multiple-choice');
-const { accessibilityContext, MATH_OUTSIDE_NAMES } = await import('../accessibility-context');
 const { default: MultipleChoiceElement } = await import('../index');
 
 // multiple-choice.tsx is untyped, so its class declares no props.
@@ -72,124 +71,66 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(await screen.findByRole('radiogroup', { name })).toBeInTheDocument();
   });
 
-  it('names choices from their labels by default, as #404 does', () => {
+  it('names a math choice by its key and a note, and a text choice by its label', () => {
     render(item());
     const [math, text] = screen.getAllByRole('radio');
 
-    expect(math.hasAttribute('aria-labelledby')).toBe(false);
-    expect(text.hasAttribute('aria-labelledby')).toBe(false);
-    // The key text a math or image choice has carried since before #404, unchanged, class included.
-    const keyText = document.getElementById(`${math.id}-desc`);
-    expect(keyText?.textContent).toBe('Pick the answer below, A');
-    expect(keyText?.classList.contains('pie-sr-only')).toBe(false);
-    expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
-  });
-
-  it('names a math choice by its key and a note with math kept out of names', () => {
-    render(item({ mathOutsideNames: true }));
-    const [math, text] = screen.getAllByRole('radio');
-
     expect(labelledByName(math)).toBe('A. Pick the answer below');
+    // Hidden from read-aloud, which reads the key and the math from the screen.
+    for (const id of (math.getAttribute('aria-labelledby') || '').split(' ')) {
+      expect(document.getElementById(id)?.classList.contains('pie-sr-only')).toBe(true);
+    }
     expect(text.hasAttribute('aria-labelledby')).toBe(false);
     expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
   });
 
-  it('keeps the note in the item language and out of read-aloud', async () => {
-    render(item({ language: 'es_ES', mathOutsideNames: true }));
+  it('names a table choice by its key and a note', () => {
+    render(item({ choices: [{ value: 'a', label: '<table><tr><td>1</td><td>2</td></tr></table>' }] }));
+    expect(labelledByName(screen.getByRole('radio'))).toBe('A. Pick the answer below');
+  });
+
+  it('keeps the key text of an image choice', () => {
+    render(item({ choices: [{ value: 'a', label: '<img src="x.png" alt="A circle">' }] }));
+    const [image] = screen.getAllByRole('radio');
+
+    expect(image.hasAttribute('aria-labelledby')).toBe(false);
+    expect(document.getElementById(`${image.id}-desc`)?.textContent).toBe('Pick the answer below, A');
+  });
+
+  it('keeps the note in the item language', async () => {
+    render(item({ language: 'es_ES' }));
     await screen.findByRole('radiogroup', { name: 'Opciones de respuesta' });
     const [math] = screen.getAllByRole('radio');
-    const note = document.getElementById((math.getAttribute('aria-labelledby') || '').split(' ')[1]);
 
-    expect(note?.textContent).toBe('Seleccione la respuesta de abajo');
-    expect(note?.classList.contains('pie-sr-only')).toBe(true);
+    expect(labelledByName(math)).toBe('A. Seleccione la respuesta de abajo');
   });
 
-  it('names a math choice from its label when it has no key', () => {
-    render(item({ keyMode: 'none', mathOutsideNames: true }));
-    const [math] = screen.getAllByRole('radio');
+  it('names a math choice with no key by its position', () => {
+    render(item({ keyMode: 'none', choices: [CHOICES[1], CHOICES[0]] }));
+    const [text, math] = screen.getAllByRole('radio');
 
-    expect(math.hasAttribute('aria-labelledby')).toBe(false);
+    expect(labelledByName(math)).toBe('2. Pick the answer below');
+    expect(text.hasAttribute('aria-labelledby')).toBe(false);
+    expect(screen.getByRole('radio', { name: '25 and 200' })).toBe(text);
   });
 
   it('names checkbox choices the same way', () => {
-    render(item({ choiceMode: 'checkbox', mathOutsideNames: true }));
+    render(item({ choiceMode: 'checkbox' }));
     const [math] = screen.getAllByRole('checkbox');
 
     expect(screen.getByRole('group', { name: 'Answer choices' })).toBeInTheDocument();
     expect(labelledByName(math)).toBe('A. Pick the answer below');
   });
-});
 
-describe('multiple-choice math kept out of names on request', () => {
-  type Host = HTMLElement & { model: object; session: object };
-  customElements.define('test-mc-math-names', MultipleChoiceElement as unknown as CustomElementConstructor);
-
-  /** A Player that answers the accessibility context and can change its answer later. */
-  function provide(supports: string[]) {
-    const subscribers: Array<(value: unknown, unsubscribe: () => void) => void> = [];
-    const provider = document.createElement('div');
-    provider.addEventListener('context-request', (event) => {
-      const request = event as unknown as {
-        context: unknown;
-        callback: (value: unknown, unsubscribe: () => void) => void;
-      };
-      if (request.context !== accessibilityContext) return;
-      event.stopPropagation();
-      subscribers.push(request.callback);
-      request.callback({ supports }, () => {});
-    });
-    document.body.appendChild(provider);
-    return {
-      provider,
-      answer: (next: string[]) => {
-        for (const callback of subscribers) callback({ supports: next }, () => {});
-      },
-    };
-  }
-
-  const mount = async (parent: Element) => {
+  it('names math choices by their key and a note in the element, with no Player', async () => {
+    type Host = HTMLElement & { model: object; session: object };
+    customElements.define('test-mc-math-names', MultipleChoiceElement as unknown as CustomElementConstructor);
     const el = document.createElement('test-mc-math-names') as Host;
-    parent.appendChild(el);
+    document.body.appendChild(el);
     el.model = { mode: 'gather', choiceMode: 'radio', keyMode: 'letters', prompt: PROMPT, choices: CHOICES };
     el.session = { value: [] };
+
     await vi.waitFor(() => expect(el.querySelector('input')).not.toBeNull());
-    return el;
-  };
-
-  it('names math choices from their labels when no Player answers', async () => {
-    const el = await mount(document.body);
-    await vi.waitFor(() => expect(el.textContent).toContain('Pick the answer below, A'));
-    expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(false);
-  });
-
-  it('follows the Player switching math out of names and back', async () => {
-    const player = provide([MATH_OUTSIDE_NAMES]);
-    const el = await mount(player.provider);
-    const input = () => el.querySelector('input') as HTMLInputElement;
-
-    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(true));
-
-    player.answer(['answerMasking']);
-    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
-  });
-
-  it('keeps math out of names when the page URL asks for it, with no Player', async () => {
-    window.history.pushState({}, '', '/item/E219966/playerpreview?role=instructor&mathNames=outside');
-    try {
-      const el = await mount(document.body);
-      await vi.waitFor(() => expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(true));
-    } finally {
-      window.history.pushState({}, '', '/');
-    }
-  });
-
-  it('falls back to the default after moving away from the Player that switched it', async () => {
-    const player = provide([MATH_OUTSIDE_NAMES]);
-    const el = await mount(player.provider);
-    const input = () => el.querySelector('input') as HTMLInputElement;
-    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(true));
-
-    document.body.appendChild(el);
-    await vi.waitFor(() => expect(input().hasAttribute('aria-labelledby')).toBe(false));
+    expect(labelledByName(el.querySelector('input') as HTMLInputElement)).toBe('A. Pick the answer below');
   });
 });
