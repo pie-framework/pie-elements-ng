@@ -356,7 +356,7 @@ let showAudioTranscript = $state(false);
 
 <div class="flex flex-col h-screen">
   <!-- Navbar -->
-  <div class="bg-base-100 shadow-lg">
+  <div class="bg-base-100 border-b border-base-300">
     <div class="navbar">
       <div class="flex items-center min-w-0 gap-1 flex-1">
         <a href="/" class="btn btn-ghost btn-sm shrink-0" title="All Elements">
@@ -463,7 +463,7 @@ let showAudioTranscript = $state(false);
   </div>
 
   <!-- Tab Navigation using DaisyUI tabs -->
-  <div role="tablist" class="tabs tabs-bordered bg-base-100 border-b border-base-300">
+  <div role="tablist" class="tabs tabs-border bg-base-100 border-b border-base-300">
     {#each tabs as tab}
       {@const isDisabled =
         (tab.id === "author" && !$hasConfigure) ||
