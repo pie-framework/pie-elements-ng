@@ -103,7 +103,13 @@ function MenuBar({
   language,
 }) {
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerTrigger, setPickerTrigger] = useState({ el: null, keyboard: false });
   const toolbarRef = useRef(null);
+  // `detail === 0` means the click was synthesized by the keyboard (Enter/Space)
+  const openPicker = (config, e) => {
+    setPickerTrigger({ el: e?.currentTarget ?? null, keyboard: e?.detail === 0 });
+    setShowPicker(config);
+  };
   const toolbarOpts = toolOpts ?? {};
 
   const editorState = useEditorState({
@@ -379,13 +385,13 @@ function MenuBar({
         icon: <CharacterIcon letter="ñ" />,
         label: buttonLabel('spanishCharacters'),
         hidden: () => !activePlugins?.includes('languageCharacters'),
-        onClick: () => setShowPicker(spanishConfig),
+        onClick: (_editor, e) => openPicker(spanishConfig, e),
       },
       {
         icon: <CharacterIcon letter="€" />,
         label: buttonLabel('specialCharacters'),
         hidden: () => activePlugins?.filter((p) => p === 'languageCharacters').length !== 2,
-        onClick: () => setShowPicker(specialConfig),
+        onClick: (_editor, e) => openPicker(specialConfig, e),
       },
       {
         icon: <TextAlignIcon editor={editor} />,
@@ -477,7 +483,7 @@ function MenuBar({
                     aria-pressed={btn.toggle ? !!active : undefined}
                     onClick={(e) => {
                       e.preventDefault();
-                      btn.onClick(editor);
+                      btn.onClick(editor, e);
                     }}
                     className={classNames(classes.button, { [classes.active]: active })}
                   >
@@ -514,6 +520,8 @@ function MenuBar({
       {showPicker && (
         <CharacterPicker
           editor={editor}
+          triggerEl={pickerTrigger.el}
+          focusOnOpen={pickerTrigger.keyboard}
           opts={{
             ...showPicker,
             renderPopOver: (ev, ch) => console.log('Show popover', ch),

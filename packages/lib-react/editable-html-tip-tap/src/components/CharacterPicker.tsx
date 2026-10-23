@@ -25,7 +25,16 @@ CharacterIcon.propTypes = {
   letter: PropTypes.string,
 };
 
-export function CharacterPicker({ editor, opts, onClose }) {
+const ARROW_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+
+// Left/right step one button, up/down step one row of the character grid; both wrap around.
+const getArrowTarget = (els, index, key, columns) => {
+  const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: columns, ArrowUp: -columns }[key];
+
+  return els[(((index + step) % els.length) + els.length) % els.length];
+};
+
+export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen }) {
   if (!opts?.characters?.length) {
     return null;
   }
@@ -146,11 +155,95 @@ export function CharacterPicker({ editor, opts, onClose }) {
     };
   }, [editor]);
 
+  const getFocusables = () =>
+    Array.from(
+      containerRef.current?.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])') ||
+        [],
+    );
+
+  // When opened with the keyboard, move focus to the first (top left) button once the
+  // dialog has been positioned (it is visibility:hidden until then, which blocks focus).
+  const focusedRef = useRef(false);
+  useEffect(() => {
+    if (!focusOnOpen || focusedRef.current) return;
+    if (position.top === 0 && position.left === 0) return;
+    const first = getFocusables()[0];
+    if (first) {
+      first.focus();
+      focusedRef.current = true;
+    }
+  }, [focusOnOpen, position]);
+
+  // The dialog is portaled to document.body, so natively it sits at the end of the tab
+  // order. Make it behave as if it directly followed the trigger button.
+  useEffect(() => {
+    if (!triggerEl) return;
+
+    const handleKeyDown = (e) => {
+      if (!containerRef.current) return;
+
+      const focusables = getFocusables();
+      if (!focusables.length) return;
+
+      const target = e.target;
+      const inDialog = containerRef.current.contains(target);
+
+      if (inDialog && e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onCloseRef.current();
+        triggerEl.focus();
+        return;
+      }
+
+      if (inDialog && ARROW_KEYS.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        const current = focusables.indexOf(target.closest('button') || target);
+        const next = getArrowTarget(focusables, current < 0 ? 0 : current, e.key, layoutForCharacters.columns || 1);
+        next?.focus();
+        return;
+      }
+
+      if (e.key !== 'Tab') return;
+
+      if (target === triggerEl && !e.shiftKey) {
+        e.preventDefault();
+        focusables[0].focus();
+      } else if (inDialog && e.shiftKey && target === focusables[0]) {
+        e.preventDefault();
+        triggerEl.focus();
+      } else if (inDialog && !e.shiftKey && target === focusables[focusables.length - 1]) {
+        e.preventDefault();
+        // Skip anything Tab itself would skip: the picker, `inert` subtrees (hidden toolbars),
+        // elements that are not rendered, and tabindex="-1".
+        const tabbables = Array.from(
+          document.body.querySelectorAll(
+            'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]',
+          ),
+        ).filter(
+          (el) =>
+            el.tabIndex >= 0 &&
+            !containerRef.current.contains(el) &&
+            !el.closest('[inert]') &&
+            el.getClientRects().length > 0,
+        );
+        const idx = tabbables.indexOf(triggerEl);
+        const next = idx >= 0 ? tabbables[idx + 1] : null;
+        (next || triggerEl).focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, [triggerEl, layoutForCharacters.columns]);
+
   const renderPopOver = (event, el) => setPopover({ anchorEl: event.currentTarget, el });
 
   const handleChange = (val) => {
     if (typeof val === 'string') {
-      editor.chain().focus().insertContent(val).run();
+      // no .focus(): focus must stay on the picker button until the picker is closed
+      editor.chain().insertContent(val).run();
     }
   };
 
@@ -174,7 +267,6 @@ export function CharacterPicker({ editor, opts, onClose }) {
             <PureToolbar
               keyPadCharacterRef={opts.keyPadCharacterRef}
               setKeypadInteraction={opts.setKeypadInteraction}
-              autoFocus
               noDecimal
               hideInput
               noLatexHandling
@@ -211,7 +303,10 @@ export function CharacterPicker({ editor, opts, onClose }) {
               }, [])}
               keypadMode="language"
               onChange={handleChange}
-              onDone={onClose}
+              onDone={() => {
+                onClose();
+                triggerEl?.focus();
+              }}
             />
           </div>
         </div>,
@@ -234,6 +329,8 @@ CharacterPicker.propTypes = {
   editor: PropTypes.object,
   opts: PropTypes.object,
   onClose: PropTypes.func.isRequired,
+  triggerEl: PropTypes.object,
+  focusOnOpen: PropTypes.bool,
 };
 
 export { CharacterIcon };
