@@ -1,5 +1,13 @@
 # @pie-lib/translator
 
+## 5.0.2
+
+### Patch Changes
+
+- [#497](https://github.com/pie-framework/pie-elements-ng/pull/497) [`7fb8768`](https://github.com/pie-framework/pie-elements-ng/commit/7fb8768fa40ba55683dec15c6ae832ab86b3c230) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump i18next from 25.10.10 to 26.4.7
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
 ## 5.0.1
 
 ### Patch Changes

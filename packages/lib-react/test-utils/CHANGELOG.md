@@ -1,5 +1,13 @@
 # @pie-lib/test-utils
 
+## 3.0.3
+
+### Patch Changes
+
+- [#495](https://github.com/pie-framework/pie-elements-ng/pull/495) [`a8c784d`](https://github.com/pie-framework/pie-elements-ng/commit/a8c784d4ba7caa63370862160611bd61508beef8) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the test-dependencies group across 1 directory with 3 updates
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
 ## 3.0.2
 
 ### Patch Changes

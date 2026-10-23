@@ -1,5 +1,17 @@
 # @pie-element/element-bundler
 
+## 0.1.5
+
+### Patch Changes
+
+- [#526](https://github.com/pie-framework/pie-elements-ng/pull/526) [`8e80f7f`](https://github.com/pie-framework/pie-elements-ng/commit/8e80f7f351c5e3437c35cc91b9770f8f3e479105) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - Compile `.ts` files with esbuild's `ts` loader instead of `tsx`, so a generic arrow function such as `<T>(x) => x` no longer fails to parse and break the bundle.
+
+- [#511](https://github.com/pie-framework/pie-elements-ng/pull/511) [`4328ad0`](https://github.com/pie-framework/pie-elements-ng/commit/4328ad030d6893467230860b6eae2922b15d231e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump svelte from 5.57.1 to 5.57.2
+
+- [#516](https://github.com/pie-framework/pie-elements-ng/pull/516) [`1fba8f5`](https://github.com/pie-framework/pie-elements-ng/commit/1fba8f59bb0d1c26092f63a316ff1d699d833383) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump esbuild-loader from 4.4.3 to 4.5.0
+
+- [#521](https://github.com/pie-framework/pie-elements-ng/pull/521) [`96d1aa0`](https://github.com/pie-framework/pie-elements-ng/commit/96d1aa0795df02f3b754e8ed828c6161a4eaff42) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump pacote from 21.5.0 to 22.0.0
+
 ## 0.1.4
 
 ### Patch Changes

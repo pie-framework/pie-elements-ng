@@ -1,5 +1,48 @@
 # @pie-element/inline-dropdown
 
+## 11.0.7
+
+### Patch Changes
+
+- [#539](https://github.com/pie-framework/pie-elements-ng/pull/539) [`eda6ba3`](https://github.com/pie-framework/pie-elements-ng/commit/eda6ba328b2140d1d1ed08c13454c334219bf5cc) Thanks [@chillenious](https://github.com/chillenious)! - Name native authoring inputs and associate settings dropdowns with their visible
+  labels. Name rich-text prompts, instructions, templates, choices, passages and
+  rubric fields, including repeated row, column, passage, trait and scale context.
+  Preserve configured labels and formatted choice-rationale labels.
+
+- [#488](https://github.com/pie-framework/pie-elements-ng/pull/488) [`0ba9ea6`](https://github.com/pie-framework/pie-elements-ng/commit/0ba9ea6749282c158380ae378d94f4b5407c9d4e) Thanks [@chillenious](https://github.com/chillenious)! - These five elements stop stamping `lang="en"` over items that declare no
+  language — on production that is most items, Spanish ones included, and the
+  claim makes a screen reader take English voice rules for content that names no
+  language (WCAG 3.1.2). An element now asserts the language the item declares,
+  canonicalized (`es_MX` stamps `es-MX`) with its direction, and removes the
+  stamp when the item declares none or declares a non-tag such as `Spanish` —
+  the rule `multiple-choice` and the shared `stampElementLanguage` already
+  follow. math-inline's `.player-container` stamp (PD-2483) applies the same
+  declared-only rule.
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#507](https://github.com/pie-framework/pie-elements-ng/pull/507) [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2) Thanks [@chillenious](https://github.com/chillenious)! - Stop using the React APIs that React 19 removes — `findDOMNode`, `ReactDOM.render`, legacy
+  context and `defaultProps` on function components — while staying on React 18. `UiLayout` and
+  `ConfigLayout` take a `containerRef` for their root element; the elements that measured or
+  rendered math into that element through `findDOMNode` got the extraCSSRules `<style>` node
+  instead whenever rules were set. `@pie-lib/editable-html-tip-tap` drops its unused `react-jss`
+  dependency.
+- Updated dependencies [[`eda6ba3`](https://github.com/pie-framework/pie-elements-ng/commit/eda6ba328b2140d1d1ed08c13454c334219bf5cc), [`7f58819`](https://github.com/pie-framework/pie-elements-ng/commit/7f588193b24a703c5df31a315334d2de83c96848), [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b), [`83fb0b5`](https://github.com/pie-framework/pie-elements-ng/commit/83fb0b5d16b566175871f0c3731073e66bd27c56), [`5566524`](https://github.com/pie-framework/pie-elements-ng/commit/55665241c2ab33e8e7b659801d36edb7b78aa62b), [`aefca75`](https://github.com/pie-framework/pie-elements-ng/commit/aefca75b216aa00d02a216b9a2d5e82680fef207), [`b0ec80f`](https://github.com/pie-framework/pie-elements-ng/commit/b0ec80f12fd27eb84f8622ed31edd5a5b09712a5), [`d154a28`](https://github.com/pie-framework/pie-elements-ng/commit/d154a2806a4bb7036e8e4089b6d799107cc32a26), [`1398db7`](https://github.com/pie-framework/pie-elements-ng/commit/1398db7e02995a0734729529529011d1b4003e19), [`ee562c9`](https://github.com/pie-framework/pie-elements-ng/commit/ee562c9523b1c064879670ecca94cbef7fc0f0c5), [`cb133b3`](https://github.com/pie-framework/pie-elements-ng/commit/cb133b324791060747a3cb422bcb8ad203e9bbfe), [`64c3b79`](https://github.com/pie-framework/pie-elements-ng/commit/64c3b7916239a7f913d4624d3622e891459df42b), [`a6f3cb6`](https://github.com/pie-framework/pie-elements-ng/commit/a6f3cb617a20f6365052c4d435433c16cec91328), [`be09f67`](https://github.com/pie-framework/pie-elements-ng/commit/be09f672d003e4a2ab598e0700b1767aa9ff2083), [`79d8b17`](https://github.com/pie-framework/pie-elements-ng/commit/79d8b17e6925cd8256a9b76caf99efbcfa53567f), [`0a16eb5`](https://github.com/pie-framework/pie-elements-ng/commit/0a16eb585bd48633b5ec7d81a8cc502a8002d3a9), [`1fe626e`](https://github.com/pie-framework/pie-elements-ng/commit/1fe626e20c89159a45d547a7f0e0da264a154e32), [`feb4d06`](https://github.com/pie-framework/pie-elements-ng/commit/feb4d060bc1a867bbe524cdf597fb903b0f771ac), [`0c12aca`](https://github.com/pie-framework/pie-elements-ng/commit/0c12aca126763c30cdc6fcec2d87aa8167e486a8), [`4e73bb7`](https://github.com/pie-framework/pie-elements-ng/commit/4e73bb760a728f4268050efc822a6161ad8cc2a2), [`cb30a68`](https://github.com/pie-framework/pie-elements-ng/commit/cb30a68fa78dff12c84a661ad529a49137b64d73), [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2), [`ef4b002`](https://github.com/pie-framework/pie-elements-ng/commit/ef4b00285962728589f521e2eb8cc01834a7c04a), [`675bcae`](https://github.com/pie-framework/pie-elements-ng/commit/675bcae8cf9cc5b37530c85b61944d481b07d11b)]:
+  - @pie-lib/config-ui@14.0.7
+  - @pie-lib/render-ui@8.0.7
+  - @pie-lib/correct-answer-toggle@5.0.7
+  - @pie-element/shared-i18n@0.1.2
+  - @pie-lib/mask-markup@4.1.2
+  - @pie-element/shared-utils@0.1.6
+  - @pie-lib/editable-html-tip-tap@3.1.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.8
+  - @pie-lib/translator@5.0.2
+  - @pie-element/shared-configure-events@0.1.2
+  - @pie-element/shared-controller-utils@0.1.4
+  - @pie-element/shared-lodash@0.1.3
+  - @pie-element/shared-player-events@0.2.1
+  - @pie-element/shared-types@0.2.3
+
 ## 11.0.6
 
 ### Patch Changes

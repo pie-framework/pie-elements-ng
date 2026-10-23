@@ -1,5 +1,13 @@
 # @pie-element/shared-editor-runtime
 
+## 0.1.3
+
+### Patch Changes
+
+- [#496](https://github.com/pie-framework/pie-elements-ng/pull/496) [`c1d5a76`](https://github.com/pie-framework/pie-elements-ng/commit/c1d5a766f0af2a5eaa9a32012defce50a3608621) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the tiptap group across 1 directory with 25 updates
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
 ## 0.1.2
 
 ### Patch Changes

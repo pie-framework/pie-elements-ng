@@ -1,5 +1,18 @@
 # @pie-lib/icons
 
+## 5.0.2
+
+### Patch Changes
+
+- [#501](https://github.com/pie-framework/pie-elements-ng/pull/501) [`6bf1082`](https://github.com/pie-framework/pie-elements-ng/commit/6bf1082d7732ff9c28a010d0344c1749852c43d3) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.1.5 to 8.3.4
+
+- [#507](https://github.com/pie-framework/pie-elements-ng/pull/507) [`851b0f5`](https://github.com/pie-framework/pie-elements-ng/commit/851b0f5206c8e87ae154ffbfc335f4f1500724e2) Thanks [@chillenious](https://github.com/chillenious)! - Stop using the React APIs that React 19 removes — `findDOMNode`, `ReactDOM.render`, legacy
+  context and `defaultProps` on function components — while staying on React 18. `UiLayout` and
+  `ConfigLayout` take a `containerRef` for their root element; the elements that measured or
+  rendered math into that element through `findDOMNode` got the extraCSSRules `<style>` node
+  instead whenever rules were set. `@pie-lib/editable-html-tip-tap` drops its unused `react-jss`
+  dependency.
+
 ## 5.0.1
 
 ### Patch Changes
