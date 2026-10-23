@@ -2,6 +2,7 @@ import { Command, Flags } from '@oclif/core';
 import {
   analyzePackageDependencyIntegrity,
   autoFixWorkspaceDependencyDeclarations,
+  buildWorkspacePackageNameMap,
   collectWorkspacePackageDirs,
   type ImportIntegrityIssue,
 } from '../../utils/dependency-integrity.js';
@@ -14,7 +15,7 @@ type Row = {
 
 export default class VerifyDependencyIntegrity extends Command {
   static override description =
-    'Inspect package imports and classify transitive, hoist-reliant, broken, and missing peer dependency resolution';
+    'Check workspace package identity, imports, and missing peer dependencies';
 
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
@@ -87,10 +88,14 @@ export default class VerifyDependencyIntegrity extends Command {
       includeNonPackageWorkspaces: flags['include-non-package-workspaces'],
     });
     const results = [];
+    const workspacePackages = await buildWorkspacePackageNameMap(
+      await collectWorkspacePackageDirs(repoRoot, { includeNonPackageWorkspaces: true })
+    );
 
     for (const pkgDir of pkgDirs) {
       const analysis = await analyzePackageDependencyIntegrity(pkgDir, {
         includePeerGaps: flags['check-peer-gaps'],
+        workspacePackages,
       });
       if (!analysis) continue;
       if (flags.package && analysis.packageName !== flags.package) continue;
@@ -117,6 +122,7 @@ export default class VerifyDependencyIntegrity extends Command {
     }
 
     const byStatus = {
+      workspace: allIssues.filter((r) => r.issue.status === 'workspace'),
       transitive: allIssues.filter((r) => r.issue.status === 'transitive'),
       hoist: allIssues.filter((r) => r.issue.status === 'hoist'),
       broken: allIssues.filter((r) => r.issue.status === 'broken'),
@@ -124,6 +130,7 @@ export default class VerifyDependencyIntegrity extends Command {
     };
 
     this.log(`Packages scanned: ${results.length}`);
+    this.log(`Workspace mismatches: ${byStatus.workspace.length}`);
     this.log(`Transitive leaks: ${byStatus.transitive.length}`);
     this.log(`Hoist-reliant:    ${byStatus.hoist.length}`);
     this.log(`Broken:           ${byStatus.broken.length}\n`);
@@ -133,6 +140,12 @@ export default class VerifyDependencyIntegrity extends Command {
       this.log('');
     }
 
+    this.printIssueGroup('❌ Invalid workspace resolution', byStatus.workspace);
+    if (byStatus.workspace.length > 0) {
+      this.log(
+        'Restore these entries with bun install --frozen-lockfile. If a stale directory shadows a workspace, move it aside first; install does not always replace it.\n'
+      );
+    }
     this.printIssueGroup('❌ Broken imports', byStatus.broken);
     if (flags['check-peer-gaps']) {
       this.printIssueGroup('⚠️  Missing required peer dependencies', byStatus.peer);
@@ -141,16 +154,19 @@ export default class VerifyDependencyIntegrity extends Command {
     this.printIssueGroup('ℹ️  Transitive imports (currently resolvable)', byStatus.transitive);
 
     const shouldFail =
+      byStatus.workspace.length > 0 ||
       byStatus.broken.length > 0 ||
       (flags['fail-on-hoist'] && byStatus.hoist.length > 0) ||
       (flags['fail-on-peer'] && byStatus.peer.length > 0);
     if (shouldFail) {
       const failReason =
-        byStatus.broken.length > 0
-          ? 'Broken imports found'
-          : byStatus.hoist.length > 0 && flags['fail-on-hoist']
-            ? 'Hoist-reliant imports found (--fail-on-hoist)'
-            : 'Missing required peer dependencies found (--fail-on-peer)';
+        byStatus.workspace.length > 0
+          ? 'Workspace dependencies resolve outside their declared packages'
+          : byStatus.broken.length > 0
+            ? 'Broken imports found'
+            : byStatus.hoist.length > 0 && flags['fail-on-hoist']
+              ? 'Hoist-reliant imports found (--fail-on-hoist)'
+              : 'Missing required peer dependencies found (--fail-on-peer)';
       this.error(failReason, { exit: 1 });
     }
 
@@ -167,6 +183,9 @@ export default class VerifyDependencyIntegrity extends Command {
         : '';
       const requiredBy = row.issue.requiredBy ? ` (required by ${row.issue.requiredBy})` : '';
       this.log(`  - ${row.packageName}: ${row.issue.dependency}${requiredBy}${extra}`);
+      if (row.issue.reason) this.log(`    ${row.issue.reason}`);
+      if (row.issue.expectedPath)
+        this.log(`    Expected: ${this.toRepoRelative(row.issue.expectedPath)}`);
     }
     this.log('');
   }

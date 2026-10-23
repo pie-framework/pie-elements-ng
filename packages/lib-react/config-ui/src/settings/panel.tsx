@@ -15,6 +15,7 @@ import { NChoice } from '../two-choice.js';
 import SettingsRadioLabel from './settings-radio-label.js';
 import NumberTextField from '../number-text-field.js';
 import Checkbox from '../checkbox.js';
+import { useUniqueId } from '@pie-lib/render-ui';
 
 const log = debug('pie-lib:config-ui:settings:panel');
 
@@ -92,15 +93,17 @@ const StyledSelect: any = styled(Select)(({ theme }) => ({
 }));
 
 const Dropdown = ({ label, value, onChange, choices = [] }) => {
+  const id = useUniqueId('settings-dropdown');
   const getItemLabel = (l) => (typeof l === 'string' ? l : l.label);
   const getItemValue = (l) => (typeof l === 'string' ? l : l.value);
   return (
     <div>
-      {label && <StyledLabel>{label}</StyledLabel>}
+      {label && <StyledLabel id={`${id}-label`}>{label}</StyledLabel>}
       <StyledSelect
+        labelId={label ? `${id}-label` : undefined}
         value={value || (choices && choices[0])}
         onChange={({ target }) => onChange(target.value)}
-        input={<Input id={`dropdown-${label}`} />}
+        input={<Input id={id} />}
         disableUnderline
         MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
       >

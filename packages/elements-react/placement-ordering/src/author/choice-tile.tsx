@@ -147,6 +147,7 @@ export const ChoiceTile = (props) => {
             </CardActions>
 
             <StyledEditableHtml
+              ariaLabel={`${type === 'target' ? 'Target' : 'Choice'} ${index + 1}`}
               disabled={!editable}
               placeholder={type !== 'target' && !label.includes('data-latex') ? 'Enter a choice' : ''}
               markup={label}

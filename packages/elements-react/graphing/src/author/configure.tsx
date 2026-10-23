@@ -213,6 +213,7 @@ export class Configure extends React.Component<ConfigureProps> {
         {teacherInstructionsEnabled && (
           <StyledInputContainer label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChange}
               imageSupport={imageSupport}
@@ -233,6 +234,7 @@ export class Configure extends React.Component<ConfigureProps> {
         {promptEnabled && (
           <StyledInputContainer label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt}
               onChange={this.onPromptChange}
               imageSupport={imageSupport}
@@ -279,6 +281,7 @@ export class Configure extends React.Component<ConfigureProps> {
         {rationaleEnabled && (
           <StyledInputContainer label={rationale.label || 'Rationale'}>
             <EditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={this.onRationaleChange}
               imageSupport={imageSupport}

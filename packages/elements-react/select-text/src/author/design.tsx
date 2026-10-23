@@ -338,6 +338,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
         {teacherInstructionsEnabled && (
           <StyledInputContainer label={teacherInstructions.label}>
             <StyledEditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.onTeacherInstructionsChanged}
               imageSupport={imageSupport}
@@ -359,6 +360,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
         {promptEnabled && (
           <StyledInputContainer label={prompt.label || ''}>
             <StyledEditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt}
               onChange={this.onPromptChanged}
               imageSupport={imageSupport}
@@ -423,6 +425,7 @@ export class Design extends React.Component<DesignProps, DesignState> {
         {rationaleEnabled && (
           <StyledInputContainer label={rationale.label || ''}>
             <StyledEditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={this.onRationaleChanged}
               imageSupport={imageSupport}

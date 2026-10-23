@@ -380,6 +380,7 @@ class RespAreaToolbar extends React.Component {
       >
         <ItemBuilder>
           <RespArea
+            ariaLabel={editedChoiceIndex >= 0 ? `Choice ${editedChoiceIndex + 1}` : 'New choice'}
             editorRef={(ref) => {
               if (ref) {
                 this.editorRef = ref;

@@ -371,6 +371,7 @@ export class Scale extends React.Component<ScaleProps> {
           <TraitTile
             key={index}
             index={index}
+            scaleIndex={scaleIndex}
             error={currentScaleTraitsErrors && currentScaleTraitsErrors[index]}
             trait={trait}
             traitLabel={traitLabel || 'Trait'}

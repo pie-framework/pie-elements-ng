@@ -117,6 +117,7 @@ export class ECRToolbar extends React.Component {
     return (
       <div style={toolbarStyle}>
         <StyledEditableHtml
+          ariaLabel={`Correct response for response area ${Number(this.props.node.attrs.index) + 1}`}
           autoFocus={true}
           disableUnderline
           onChange={(respAreaMarkup) => {

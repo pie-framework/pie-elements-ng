@@ -57,6 +57,7 @@ export class NumberTextField extends React.Component {
     min: PropTypes.number,
     max: PropTypes.number,
     label: PropTypes.string,
+    ariaLabel: PropTypes.string,
     suffix: PropTypes.string,
     showErrorWhenOutsideRange: PropTypes.bool,
     disableUnderline: PropTypes.bool,
@@ -163,6 +164,7 @@ export class NumberTextField extends React.Component {
     const {
       className,
       label,
+      ariaLabel,
       disabled,
       suffix,
       min,
@@ -203,6 +205,7 @@ export class NumberTextField extends React.Component {
             endAdornment: suffix && <InputAdornment position="end">{suffix}</InputAdornment>,
             className: inputClassName,
             inputProps: {
+              'aria-label': ariaLabel,
               min,
               max,
             },

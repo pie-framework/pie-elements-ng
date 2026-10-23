@@ -129,6 +129,7 @@ export class Choice extends React.Component {
       <React.Fragment>
         <ChoiceWrapper>
           <StyledEditableHtml
+            ariaLabel={this.props.ariaLabel || 'Alternate response'}
             hasError={!!error}
             disableUnderline
             onChange={this.onChange}
@@ -273,6 +274,7 @@ export class AlternateSection extends React.Component {
       <DesignContainer>
         <SelectContainer>
           <Select
+            inputProps={{ 'aria-label': 'Response area' }}
             variant="standard"
             displayEmpty
             onChange={this.handleSelect}
@@ -322,6 +324,7 @@ export class AlternateSection extends React.Component {
                 index > 0 && (
                   <Choice
                     key={index}
+                    ariaLabel={`Alternate response ${index} for response area ${Number(this.props.responseAreaIndex ?? 0) + 1}`}
                     markup={c.label}
                     onChange={(val) => this.onChoiceChanged(c, val, index)}
                     onDelete={() => this.onRemoveChoice(c)}

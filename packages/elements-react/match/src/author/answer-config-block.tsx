@@ -230,6 +230,7 @@ class AnswerConfigBlock extends React.Component {
                       }
                     >
                       <EditableHtml
+                        ariaLabel={`Column ${idx + 1} label`}
                         onChange={this.onHeaderChange(idx)}
                         markup={header}
                         className={columnsErrors && !columnsErrors[idx] ? 'marginBottom' : 'headerInput'}

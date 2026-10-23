@@ -219,6 +219,7 @@ export class Root extends React.Component<RootProps> {
         {teacherInstructionsEnabled && (
           <PromptContainer label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={onTeacherInstructionsChanged}
               imageSupport={imageSupport}
@@ -240,6 +241,7 @@ export class Root extends React.Component<RootProps> {
         {promptEnabled && (
           <PromptContainer label={prompt.label}>
             <EditableHtml
+              ariaLabel={prompt?.label || 'Prompt'}
               markup={model.prompt || ''}
               onChange={onPromptChanged}
               imageSupport={imageSupport}
@@ -327,6 +329,7 @@ export class Root extends React.Component<RootProps> {
         {rationaleEnabled && (
           <PromptContainer label={rationale.label}>
             <EditableHtml
+              ariaLabel={rationale?.label || 'Rationale'}
               markup={model.rationale || ''}
               onChange={onRationaleChanged}
               imageSupport={imageSupport}

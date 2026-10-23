@@ -40,6 +40,7 @@ const RowLabelContainer: any = styled(InputContainer)(({ theme }) => ({
 }));
 
 export const RowLabel = ({
+    rowIndex,
     categoriesPerRow,
     configuration,
     disabled,
@@ -64,6 +65,7 @@ export const RowLabel = ({
       >
         <RowLabelContainer label="Row Label">
           <EditableHtml
+            ariaLabel={`Row Label ${rowIndex + 1}`}
             disabled={disabled}
             markup={markup}
             onChange={onChange}

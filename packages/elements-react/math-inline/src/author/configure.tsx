@@ -147,6 +147,7 @@ export class Configure extends React.Component<ConfigureProps> {
         {teacherInstructionsEnabled && (
           <PromptHolder label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={teacherInstructions?.label || 'Teacher Instructions'}
               markup={model.teacherInstructions || ''}
               onChange={this.changeTeacherInstructions}
               imageSupport={imageSupport}

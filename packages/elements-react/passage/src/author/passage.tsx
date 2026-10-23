@@ -98,6 +98,7 @@ export class PassageComponent extends React.Component {
         {teacherInstructionsEnabled && (
           <StyledInputContainer label={teacherInstructions.label}>
             <EditableHtml
+              ariaLabel={`${teacherInstructions?.label || 'Teacher Instructions'} for passage ${passageIndex + 1}`}
               activePlugins={ALL_PLUGINS}
               markup={passages[passageIndex].teacherInstructions || ''}
               onChange={(value) => this.handleChange('teacherInstructions', value)}
@@ -116,6 +117,7 @@ export class PassageComponent extends React.Component {
         {titleEnabled && (
           <StyledInputContainer label={title.label}>
             <EditableHtml
+              ariaLabel={`${title?.label || 'Title'} for passage ${passageIndex + 1}`}
               activePlugins={basicPlugins}
               markup={passages[passageIndex].title || ''}
               onChange={(value) => this.handleChange('title', value)}
@@ -132,6 +134,7 @@ export class PassageComponent extends React.Component {
         {subtitleEnabled && (
           <StyledInputContainer label={subtitle.label}>
             <EditableHtml
+              ariaLabel={`${subtitle?.label || 'Subtitle'} for passage ${passageIndex + 1}`}
               activePlugins={basicPlugins}
               markup={passages[passageIndex].subtitle || ''}
               onChange={(value) => this.handleChange('subtitle', value)}
@@ -148,6 +151,7 @@ export class PassageComponent extends React.Component {
         {authorEnabled && (
           <StyledInputContainer label={author.label}>
             <EditableHtml
+              ariaLabel={`${author?.label || 'Author'} for passage ${passageIndex + 1}`}
               activePlugins={basicPlugins}
               markup={passages[passageIndex].author || ''}
               onChange={(value) => this.handleChange('author', value)}
@@ -164,6 +168,7 @@ export class PassageComponent extends React.Component {
         {textEnabled && (
           <StyledInputContainer label={text.label}>
             <EditableHtml
+              ariaLabel={`${text?.label || 'Passage text'} for passage ${passageIndex + 1}`}
               activePlugins={ALL_PLUGINS}
               markup={passages[passageIndex].text || ''}
               onChange={(value) => this.handleChange('text', value)}
