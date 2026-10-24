@@ -10,7 +10,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.4",
+    "@mui/material": "^9.5.0",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-i18n": "workspace:*",
