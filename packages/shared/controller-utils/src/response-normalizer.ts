@@ -17,7 +17,7 @@ export interface NormalizeOptions {
    * marks are `.` and `,`, the form math.js and math-validation compute on.
    */
   language?: string;
-  /** Fold case with `toLocaleLowerCase` in the content language. */
+  /** Fold case, with the Turkish and Azerbaijani i when the language is one of them. */
   ignoreCase?: boolean;
   /**
    * Fold Arabic spelling variants: hamza and madda alef forms to bare alef,
@@ -73,20 +73,26 @@ interface NumberMarks {
 const POINT_DECIMAL: NumberMarks = { decimal: '.', group: ',' };
 const numberMarks = new Map<string, NumberMarks>();
 
-/** The marks the language writes Western digits with: `,` decimal in `de`, `.` in `en`. */
+/**
+ * The marks the language writes Western digits with: `,` decimal in `de`, `.` in `en`.
+ * A tag the runtime has no data for keeps the point-decimal marks, because
+ * `Intl` would otherwise format in the host's default locale.
+ */
 const marksFor = (language: string | undefined): NumberMarks => {
   if (!language) return POINT_DECIMAL;
   const cached = numberMarks.get(language);
   if (cached) return cached;
   let marks = POINT_DECIMAL;
   try {
-    const parts = new Intl.NumberFormat(language, { numberingSystem: 'latn' }).formatToParts(
-      12345.6
-    );
-    marks = {
-      decimal: parts.find((part) => part.type === 'decimal')?.value ?? '.',
-      group: parts.find((part) => part.type === 'group')?.value ?? ',',
-    };
+    if (Intl.NumberFormat.supportedLocalesOf(language).length > 0) {
+      const parts = new Intl.NumberFormat(language, { numberingSystem: 'latn' }).formatToParts(
+        12345.6
+      );
+      marks = {
+        decimal: parts.find((part) => part.type === 'decimal')?.value ?? '.',
+        group: parts.find((part) => part.type === 'group')?.value ?? ',',
+      };
+    }
   } catch {
     // An invalid tag keeps the point-decimal marks.
   }
@@ -112,13 +118,17 @@ export const contentLanguage = (model?: object | null, env?: object | null): str
   return undefined;
 };
 
+// The languages whose dotted and dotless i fold apart. Lithuanian's
+// special casing keeps the dot on accented i, so `Ì` would no longer fold to
+// `ì`; it and every other language fold with `toLowerCase()`.
+const TURKIC = /^(tr|az)(-|$)/i;
+
 /**
- * `toLocaleLowerCase` in the content language, so Turkish and Azerbaijani
- * dotted and dotless i fold correctly. An absent or invalid tag folds with
- * `toLowerCase()`.
+ * Lower case for comparison: `toLocaleLowerCase` in Turkish and Azerbaijani,
+ * so dotted and dotless i fold correctly, and `toLowerCase()` otherwise.
  */
 export const foldCase = (value: string, language?: string): string => {
-  if (!language) return value.toLowerCase();
+  if (!language || !TURKIC.test(language)) return value.toLowerCase();
   try {
     return value.toLocaleLowerCase(language);
   } catch {
@@ -127,17 +137,21 @@ export const foldCase = (value: string, language?: string): string => {
 };
 
 /**
- * The comparable form of a typed response or authored answer: bidi controls
- * and tatweel removed; Arabic presentation forms folded to base letters; NFC;
- * every decimal digit folded to 0–9; `٫` and `٬` replaced by the
- * content language's decimal and group marks. Case and Arabic letter variants
- * fold only when the options ask for it.
+ * The comparable form of a typed response or authored answer: case folded
+ * when the options ask for it; bidi controls and tatweel removed; Arabic
+ * presentation forms folded to base letters; NFC; every decimal digit folded
+ * to 0–9; `٫` and `٬` replaced by the content language's decimal and group
+ * marks. Arabic letter variants fold only when the options ask for it.
  */
 export const normalizeResponse = (value: string, options: NormalizeOptions = {}): string => {
   const marks = marksFor(options.language);
-  // NFC last, because removing a control or tatweel can bring a letter and its
-  // combining mark together.
-  let result = value
+  // Case folds first, on the text as typed: lower-casing can leave combining
+  // marks out of canonical order, and a separator folded to `.` changes where
+  // a Greek sigma counts as final, so folding later could part two strings
+  // that `toLowerCase()` treats as equal. NFC follows the removals, because
+  // removing a control or tatweel can bring a letter and its combining mark
+  // together.
+  let result = (options.ignoreCase ? foldCase(value, options.language) : value)
     .replace(BIDI_CONTROLS_AND_TATWEEL, '')
     .replace(PRESENTATION_FORMS, (forms) => forms.normalize('NFKC'))
     .normalize('NFC');
@@ -151,5 +165,5 @@ export const normalizeResponse = (value: string, options: NormalizeOptions = {})
       .replace(/\u0629/g, '\u0647')
       .replace(/\u0649/g, '\u064A');
   }
-  return options.ignoreCase ? foldCase(result, options.language) : result;
+  return result;
 };

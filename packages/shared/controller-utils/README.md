@@ -33,7 +33,7 @@ const matches =
   normalizeResponse(authored, { language, ignoreCase: true });
 ```
 
-`ignoreCase` folds with `toLocaleLowerCase` in the content language, so Turkish and Azerbaijani İ/ı fold correctly. `foldLetterVariants` folds Arabic hamza and madda alef forms, tashkeel, ة and ى; it changes what counts as correct spelling, so it stays an authoring choice per response. Math controllers call `normalizeResponse` without a language, so `٫` becomes the `.` math-validation computes on.
+`ignoreCase` folds with `toLocaleLowerCase` in Turkish and Azerbaijani, so İ/ı fold correctly, and with `toLowerCase()` in every other language. A tag the runtime has no locale data for keeps `.` and `,`. `foldLetterVariants` folds Arabic hamza and madda alef forms, tashkeel, ة and ى; it changes what counts as correct spelling, so it stays an authoring choice per response. Math controllers call `normalizeResponse` without a language, so `٫` becomes the `.` math-validation computes on.
 
 ## Development
 

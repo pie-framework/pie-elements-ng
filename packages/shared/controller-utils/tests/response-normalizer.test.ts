@@ -113,6 +113,25 @@ describe('normalizeResponse', () => {
     expect(normalizeResponse('٣٫٥', { language: 'not a tag!' })).toBe('3.5');
   });
 
+  it('keeps point-decimal marks for a tag the runtime has no data for, on a host in any locale', () => {
+    // A German host: Intl resolves a tag it has no data for to `de`.
+    const NumberFormat = Intl.NumberFormat;
+    class GermanHostNumberFormat extends NumberFormat {
+      constructor(locales?: string | string[], options?: Intl.NumberFormatOptions) {
+        super(NumberFormat.supportedLocalesOf(locales ?? []).length ? locales : 'de', options);
+      }
+    }
+    Intl.NumberFormat = GermanHostNumberFormat;
+    try {
+      for (const language of ['xx', 'und', 'english']) {
+        expect(normalizeResponse('١٬٢٣٤٫٥', { language }), language).toBe('1,234.5');
+      }
+      expect(normalizeResponse('١٬٢٣٤٫٥', { language: 'it' })).toBe('1.234,5');
+    } finally {
+      Intl.NumberFormat = NumberFormat;
+    }
+  });
+
   it('composes decomposed text to NFC', () => {
     expect(normalizeResponse('e\u0301')).toBe('é');
     expect(normalizeResponse('ا\u0653')).toBe('آ');
@@ -140,6 +159,40 @@ describe('normalizeResponse', () => {
     expect(normalizeResponse('İSTANBUL', { language: 'tr', ignoreCase: true })).toBe('istanbul');
     expect(normalizeResponse('ISPARTA', { language: 'tr-TR', ignoreCase: true })).toBe('ısparta');
   });
+
+  it('never parts two strings that toLowerCase() folds together, outside Turkish and Azerbaijani', () => {
+    // Letters with special casing, combining marks of different classes, and
+    // the characters the normalizer removes or replaces.
+    const pool = [
+      ...'aeiIİıσςΣsßẞǅǄﬀΩÅKΐǰ١٫٬ .',
+      '\u0301',
+      '\u0307',
+      '\u0308',
+      '\u0327',
+      '\u0345',
+      '\u200E',
+      '\u0640',
+      '\u061C',
+      '\u202E',
+      '\u212B',
+    ];
+    for (let i = 0; i < 20000; i++) {
+      let authored = '';
+      let typed = '';
+      for (let length = 1 + Math.floor(random() * 6); length > 0; length--) {
+        const char = pool[Math.floor(random() * pool.length)];
+        authored += char;
+        typed += random() < 0.5 ? char.toUpperCase() : char.toLowerCase();
+      }
+      if (authored.toLowerCase() !== typed.toLowerCase()) continue;
+      for (const language of [undefined, 'en-US', 'de', 'el', 'lt', 'ar']) {
+        expect(
+          normalizeResponse(typed, { language, ignoreCase: true }),
+          JSON.stringify([authored, typed, language])
+        ).toBe(normalizeResponse(authored, { language, ignoreCase: true }));
+      }
+    }
+  });
 });
 
 describe('foldCase', () => {
@@ -148,6 +201,10 @@ describe('foldCase', () => {
       expect(foldCase('İ', language)).toBe('i');
       expect(foldCase('I', language)).toBe('ı');
     }
+  });
+
+  it('folds accented capital I to the accented i in Lithuanian', () => {
+    expect(foldCase('Ì Í Ĩ', 'lt')).toBe('ì í ĩ');
   });
 
   it('folds as toLowerCase() without a language or with an invalid one', () => {
