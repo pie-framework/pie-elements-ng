@@ -77,6 +77,8 @@ describe('multiple-choice keyboard shortcuts', () => {
 
     press(field, { key: 'b', code: 'KeyB' });
     press(firstInput(element), { key: 'b', code: 'KeyB', isComposing: true });
+    // Safari's committing Enter, and other IME-processed keys, carry keyCode 229 with isComposing false.
+    press(firstInput(element), { key: 'b', code: 'KeyB', keyCode: 229 });
     expect(element.session.value ?? []).toEqual([]);
   });
 
