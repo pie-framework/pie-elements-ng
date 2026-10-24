@@ -13,7 +13,7 @@ import type {
 } from '../types.js';
 
 import defaults from './defaults.js';
-import { partialScoring } from '@pie-element/shared-controller-utils';
+import { normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 
 const { translator } = Translator;
 const log = debug('@pie-element:math-templated:controller');
@@ -73,6 +73,12 @@ export type MathTemplatedValidationErrors = {
 const getFeedback = (value: boolean) => (value ? 'correct' : 'incorrect');
 const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
+/**
+ * LaTeX with every decimal digit folded to 0–9 and `٫` to `.`, the form
+ * math-validation computes on. Without a language, so the marks stay `.` and `,`.
+ */
+const comparableLatex = <T>(latex: T): T => (typeof latex === 'string' ? (normalizeResponse(latex) as T) : latex);
+
 const getIsAnswerCorrect = (
   correctResponse: Partial<MathTemplatedResponse>,
   answerItem: MathTemplatedAnswer | undefined,
@@ -95,7 +101,11 @@ const getIsAnswerCorrect = (
 
     try {
       for (const value of acceptedValues) {
-        answerCorrect = mv.latexEqual((answerItem as MathTemplatedAnswer).value, value as string, opts);
+        answerCorrect = mv.latexEqual(
+          comparableLatex((answerItem as MathTemplatedAnswer).value),
+          comparableLatex(value as string),
+          opts,
+        );
         if (answerCorrect) break;
       }
     } catch (e) {

@@ -1,7 +1,7 @@
 import debug from 'debug';
 import { find, isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { decode } from 'he';
-import { partialScoring } from '@pie-element/shared-controller-utils';
+import { contentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 import type { PieEnvironment } from '@pie-element/shared-types';
 import Translator from '@pie-lib/translator';
 import defaults from './defaults.js';
@@ -143,13 +143,15 @@ export async function model(
   );
 
   const { value = {} } = session || {};
+  const language = contentLanguage(normalizedQuestion, env);
   const feedback =
     env.mode === 'evaluate'
       ? reduce<Choice[], Record<string, 'correct' | 'incorrect'>>(
           normalizedQuestion.choices,
           (obj, respArea, key) => {
             const chosenValue = value && value[key];
-            const val = !isEmpty(chosenValue) && find(respArea, (c) => prepareVal(c.label) === prepareVal(chosenValue));
+            const val =
+              !isEmpty(chosenValue) && find(respArea, (c) => matchesLabel(c.label, chosenValue, language));
 
             obj[key] = getFeedback(val);
 
@@ -200,7 +202,7 @@ export async function model(
     playerSpellCheckEnabled: normalizedQuestion.playerSpellCheckEnabled === true,
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : defaults.prompt,
     rationale: defaults.rationale,
-    responseCorrect: env.mode === 'evaluate' ? getScore(normalizedQuestion, session) === 1 : undefined,
+    responseCorrect: env.mode === 'evaluate' ? getScore(normalizedQuestion, session, env) === 1 : undefined,
     showNote,
     teacherInstructions: defaults.teacherInstructions,
     responseAreaInputConfiguration: normalizedQuestion.responseAreaInputConfiguration,
@@ -221,11 +223,17 @@ export const prepareVal = (html: string | undefined) => {
   return decodeHTML(getInnerText(html).trim());
 };
 
+/** Whether a typed value matches an authored label, compared through the shared response normalizer. */
+const matchesLabel = (label: string | undefined, typed: string | undefined, language: string | undefined) =>
+  normalizeResponse(prepareVal(label), { language }) === normalizeResponse(prepareVal(typed), { language });
+
 export const getScore = (
-  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup'>,
+  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup' | 'language'>,
   session: ExplicitConstructedResponseSession | undefined,
+  env?: Partial<PieEnvironment>,
 ) => {
   const { value } = session || {};
+  const language = contentLanguage(config, env);
 
   if (!session || isEmpty(session) || !value) {
     return 0;
@@ -238,7 +246,7 @@ export const getScore = (
     (total, respArea, key) => {
       const chosenValue = value && value[key];
 
-      if (isEmpty(chosenValue) || !find(respArea, (c) => prepareVal(c.label) === prepareVal(chosenValue))) {
+      if (isEmpty(chosenValue) || !find(respArea, (c) => matchesLabel(c.label, chosenValue, language))) {
         return total;
       }
 
@@ -267,6 +275,7 @@ export const getLogTrace = (
   const traceLog: string[] = [];
   const { value } = session || {};
   const { choices, markup } = model || {};
+  const language = contentLanguage(model, env);
   
   const responseAreas = markup ? markup.match(/\{\{(.+?)\}\}/g) : [];
   const totalAreas = responseAreas ? responseAreas.length : 0;
@@ -281,7 +290,7 @@ export const getLogTrace = (
       const studentAnswer = (value && value[areaKey]) || '';
       const correctOptions = (choices as Choices)[areaKey] || [];
       const isCorrect = !isEmpty(studentAnswer.trim()) && 
-        correctOptions.some(option => prepareVal(option.label) === prepareVal(studentAnswer));
+        correctOptions.some((option) => matchesLabel(option.label, studentAnswer, language));
       
       if (studentAnswer.trim()) {
         traceLog.push(`Response area ${parseInt(areaKey) + 1}: ${isCorrect ? 'CORRECT' : 'INCORRECT'}.`);
@@ -310,7 +319,7 @@ export const getLogTrace = (
         const studentAnswer = (value && value[areaKey]) || '';
         const correctOptions = (choices as Choices)[areaKey] || [];
         const isCorrect = !isEmpty(studentAnswer.trim()) && 
-          correctOptions.some(option => prepareVal(option.label) === prepareVal(studentAnswer));
+          correctOptions.some((option) => matchesLabel(option.label, studentAnswer, language));
         if (isCorrect) correctCount++;
       });
       
@@ -321,7 +330,7 @@ export const getLogTrace = (
     traceLog.push(`Student must fill all response areas correctly to receive full credit.`);
   }
 
-  const score = getScore(model, session);
+  const score = getScore(model, session, env);
   traceLog.push(`Score: ${score}.`);
 
   return traceLog;
@@ -353,7 +362,7 @@ export function outcome(
     } else {
       const traceLog = getLogTrace(model, session, env);
       const partialScoringEnabled = partialScoring.enabled(model, env);
-      const score = getScore(model, session);
+      const score = getScore(model, session, env);
 
       resolve({ 
         score: partialScoringEnabled ? score : score === 1 ? 1 : 0, 

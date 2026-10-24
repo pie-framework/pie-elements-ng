@@ -798,6 +798,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
         "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-lodash": "workspace:*",
@@ -1215,6 +1216,7 @@
       "name": "@pie-element/simple-cloze",
       "version": "0.1.11",
       "dependencies": {
+        "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
