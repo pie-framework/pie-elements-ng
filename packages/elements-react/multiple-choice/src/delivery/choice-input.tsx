@@ -356,17 +356,19 @@ export class ChoiceInput extends React.Component {
     };
 
     // By default a choice is named from its label, the renderer labelling its math with speech.
-    // With math kept out of names, which the Player switches on to compare the two patterns, a
-    // lettered choice holding math is named from its key and a note that the answer follows,
-    // "A. Pick the answer below", and the screen reader reads its MathML in the content. A choice
-    // with no key keeps its label as its name (PIE-1244).
+    // With math kept out of names, which the Player switches on to compare the two patterns and
+    // which content in a language other than English always has, a lettered choice holding math is
+    // named from its key and a note that the answer follows, "A. Pick the answer below", and the
+    // screen reader reads its MathML in the content. A choice with no key keeps its label as its
+    // name (PIE-1244).
     const content = labelContent(label);
     const namedByNote = Boolean(displayKey) && mathOutsideNames && (content.math || content.table);
 
-    // The default key text is the one choices carried before this change, read-aloud included.
+    // The default key text is the one choices carried before PIE-1244, in the chrome language;
+    // read-aloud reads it too.
     let keyText = displayKey;
     if (namedByNote) keyText = `${displayKey}.`;
-    else if (content.math || content.image) keyText = `Pick the answer below, ${displayKey}`;
+    else if (content.math || content.image) keyText = `${pickTheAnswerBelow}, ${displayKey}`;
 
     const screenReaderLabel = displayKey ? (
       <SrOnly id={this.descId} className={namedByNote ? 'pie-sr-only' : undefined}>
