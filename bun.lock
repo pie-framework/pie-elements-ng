@@ -971,7 +971,6 @@
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@pie-players/pie-context": "1.0.0-beta.3",
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
