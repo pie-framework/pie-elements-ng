@@ -24,8 +24,13 @@ An element translates in the language its item declares in `model.language` (`en
 so a migrated element renders as it did; the PRD moves interface strings to a locale the host
 publishes, with `en-US` as the default. The browser locale is never consulted.
 
-A tag resolves by RFC 4647 lookup, then by its primary subtag: `es_MX` reads `es-MX`, then `es`. A
-tag nothing ships renders English key by key, unless a host registered messages for it.
+A tag resolves by RFC 4647 lookup, then by its primary subtag: `es_MX` reads `es-MX`, then `es`.
+Both steps stay within the tag's script, explicit or the CLDR likely script from
+`Intl.Locale.maximize()`. Lookup tries the language and script before the bare language, so `zh-TW`
+reads `zh-TW`, `zh-Hant`, then `zh`. A catalog under a bare tag declares its likely script, so `zh`
+is Simplified and `sr` Cyrillic: `zh-TW` passes `zh` by, and `sr-ME`, which is Latin, passes `sr`
+by. A tag nothing ships in its script renders English key by key, unless a host registered messages
+for it.
 
 Each key is looked up in order: host messages for the locale, the shipped catalog for the locale,
 host messages for `en-US`, the shipped `en-US` catalog. A miss on all four returns the key.
@@ -168,6 +173,6 @@ every loader eager. A newly migrated element joins its `migratedElements` list.
 |---|---|
 | `provider.ts` | `SimpleI18n`: lookup, interpolation, plurals, direction, formatting |
 | `catalogs.ts` | `defineCatalogs`, the page registry, `isLocaleReady`, `loadLocale`, `registerMessages` |
-| `language-tags.ts` | Tag normalization and RFC 4647 matching |
+| `language-tags.ts` | Tag normalization and script-aware RFC 4647 matching |
 | `element-language.ts` | `lang` and `dir` for an element's host |
 | `types.ts` | Catalog, key and translator types |
