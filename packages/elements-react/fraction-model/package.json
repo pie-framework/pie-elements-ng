@@ -20,6 +20,7 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
+    "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "react-is": "^18.3.1",

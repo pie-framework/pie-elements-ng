@@ -33,6 +33,14 @@ describe('fraction-model count inputs', () => {
     expect(onAnswerChange).toHaveBeenLastCalledWith({ noOfModel: 4, partsPerModel: '' });
   });
 
+  it('count the decimal digits of other scripts', () => {
+    const { parts, onAnswerChange } = mount();
+
+    // Devanagari three, as a Hindi or Marathi keyboard types it.
+    fireEvent.change(parts, { target: { value: '३' } });
+    expect(onAnswerChange).toHaveBeenLastCalledWith({ noOfModel: '', partsPerModel: 3 });
+  });
+
   it('clamp to the field range and store a cleared field as unanswered', () => {
     const { models, parts, onAnswerChange } = mount({ noOfModel: 2, partsPerModel: 2 });
 
