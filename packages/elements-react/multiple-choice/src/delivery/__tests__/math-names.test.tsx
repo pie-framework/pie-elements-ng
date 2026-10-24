@@ -97,6 +97,14 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(document.getElementById(`${image.id}-desc`)?.textContent).toBe('Pick the answer below, A');
   });
 
+  it('says the key text of an image choice in the item language', async () => {
+    render(item({ language: 'es_ES', choices: [{ value: 'a', label: '<img src="x.png" alt="A circle">' }] }));
+    await screen.findByRole('radiogroup', { name: 'Opciones de respuesta' });
+    const [image] = screen.getAllByRole('radio');
+
+    expect(document.getElementById(`${image.id}-desc`)?.textContent).toBe('Seleccione la respuesta de abajo, A');
+  });
+
   it('keeps the note in the item language', async () => {
     render(item({ language: 'es_ES' }));
     await screen.findByRole('radiogroup', { name: 'Opciones de respuesta' });

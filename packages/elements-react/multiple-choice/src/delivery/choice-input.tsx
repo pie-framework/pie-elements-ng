@@ -367,7 +367,7 @@ export class ChoiceInput extends React.Component {
 
     let keyText = key;
     if (namedByNote) keyText = `${key}.`;
-    else if (content.image) keyText = `Pick the answer below, ${key}`;
+    else if (content.image) keyText = `${pickTheAnswerBelow}, ${key}`;
 
     const screenReaderLabel = key ? (
       <SrOnly id={this.descId} className={namedByNote ? 'pie-sr-only' : undefined}>

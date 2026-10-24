@@ -28,7 +28,7 @@ Screen-reader testing compared those spoken names with names that leave the math
 
 - **Contracts touched**:
   - **Group**: the prompt renders as a block before the `fieldset`, keeping the `prompt` and `legend` classes. The `fieldset` takes a visually hidden native `legend`, "Answer choices" (`answerChoicesA11y` in multiple-choice's catalog). An EBSR part adds its part label, "Part A, answer choices" (`partAnswerChoicesA11y`), so its two groups keep distinct names as their prompts gave them. The Spanish strings await review, and the other locales' are machine-generated, as the rest of those catalogs are.
-  - **Choice names**: a choice whose label holds math or a table is named by `aria-labelledby` from its key and a visually hidden note, "A. Pick the answer below" (`pickTheAnswerBelowA11y`). A choice with no key takes its position as a hidden key, "2. Pick the answer below", so the names in a group stay distinct. Other choices are named from their label, and an image choice keeps its key text, "Pick the answer below, A", before its alt text.
+  - **Choice names**: a choice whose label holds math or a table is named by `aria-labelledby` from its key and a visually hidden note, "A. Pick the answer below" (`pickTheAnswerBelowA11y`). A choice with no key takes its position as a hidden key, "2. Pick the answer below", so the names in a group stay distinct. Other choices are named from their label, and an image choice keeps its key text, "Pick the answer below, A", in the chrome language, before its alt text.
   - **Adapter**: labels math inside a control only when the control's name includes it. A control named by `aria-labelledby` from elements that do not hold the math gets no label, and a label the adapter set before is taken back, so none is left in browse-mode text. The same rule applies after the hand-off to MathJax 3.
   - **Visually hidden text** ("Answer choices", the key and the note) carries the `pie-sr-only` class, which read-aloud skips.
 - **Dependency in pie-players**: the assessment toolkit labels math in controls itself with SRE speech (`observeMathControlNames`), for every item that registers with it, whether or not read-aloud is on. Until it follows the adapter's rule, skipping controls named by `aria-labelledby` from elements that do not hold the math, toolkit hosts put speech back on choice formulas, where browse mode reads it and a braille display shows it as words.
@@ -60,7 +60,7 @@ A text-only choice such as "25 and 200" is named "A 25 and 200".
 
 - [ ] Do JAWS and NVDA with MathCAT show a choice's formula as math braille on a refreshable display?
 - [ ] Math inside the label (the whole label stays clickable) or after it (no risk of the label text being skipped or read twice)?
-- [ ] Should an image choice's key text, "Pick the answer below, A", be translated or dropped? It is English in every locale.
+- [x] Should an image choice's key text, "Pick the answer below, A", be translated or dropped? Translated, in the chrome language (#549).
 
 ## Status log
 

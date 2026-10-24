@@ -54,6 +54,47 @@ import { catalogs } from '../i18n/index.js';
 
 const log = debug('pie-ui:multiple-choice');
 
+/** Input types a choice shortcut leaves alone: the ones a learner types text into. */
+const NON_TEXT_INPUT_TYPES = new Set(['radio', 'checkbox', 'button', 'submit', 'reset', 'image', 'range', 'color', 'file']);
+
+function isEditable(target: EventTarget | null | undefined): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true;
+  return target instanceof HTMLInputElement && !NON_TEXT_INPUT_TYPES.has(target.type);
+}
+
+/** The choice a Latin letter or ASCII digit names: 1–9 then 0, and a–j; -1 for any other. */
+function latinShortcutIndex(character: string): number {
+  if (/^[1-9]$/.test(character)) return Number(character) - 1;
+  if (character === '0') return 9;
+  if (/^[a-j]$/i.test(character)) return character.toLowerCase().charCodeAt(0) - 97;
+  return -1;
+}
+
+/**
+ * The choice a shortcut key selects, or -1. The typed character decides, so AZERTY's A selects the
+ * first choice and its Q none. A layout that types no Latin letter or digit there (Arabic, or
+ * AZERTY's unshifted digit row) falls back to the physical key, whose code names the US position.
+ * Keys that type no character (arrows, Enter, Numpad keys with Num Lock off) are never shortcuts.
+ */
+function shortcutIndex(event: Pick<KeyboardEvent, 'key' | 'code'>): number {
+  const { key = '', code = '' } = event;
+  if ([...key].length !== 1) return -1;
+  if (/^[a-z0-9]$/i.test(key)) return latinShortcutIndex(key);
+  const physical = /^(?:Key([A-J])|Digit(\d)|Numpad(\d))$/.exec(code);
+  return physical ? latinShortcutIndex(physical[1] ?? physical[2] ?? physical[3]) : -1;
+}
+
+/**
+ * Whether a keydown may act as a choice shortcut. A modified key belongs to the browser and the
+ * assistive technology, and a key typed into a text field or an IME composition is text.
+ */
+function isShortcutCandidate(event: Partial<KeyboardEvent>): boolean {
+  if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return false;
+  return !isEditable(event.target);
+}
+
 export const isComplete = (session, model, promptAudio, elementContext) => {
   const { completeAudioEnabled } = model || {};
 
@@ -398,7 +439,8 @@ export default class MultipleChoice extends HTMLElement {
 
   enableKeyboardEvents() {
     if (!this._keyboardEventsEnabled) {
-      window.addEventListener('keydown', this._boundHandleKeyDown);
+      // On the element, so a shortcut acts only while focus is inside this item (WCAG 2.1.4).
+      this.addEventListener('keydown', this._boundHandleKeyDown);
       this._keyboardEventsEnabled = true;
     }
   }
@@ -432,7 +474,7 @@ export default class MultipleChoice extends HTMLElement {
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();
     if (this._keyboardEventsEnabled) {
-      window.removeEventListener('keydown', this._boundHandleKeyDown);
+      this.removeEventListener('keydown', this._boundHandleKeyDown);
       this._keyboardEventsEnabled = false;
     }
 
@@ -446,9 +488,8 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   /**
-   * Handles global keyboard events for selecting or toggling multiple-choice answers.
-   * Maps keys (1-9, 0, a-j, A-J) to choices and updates the session state accordingly.
-   * Ensures valid key presses toggle or select the appropriate choice based on the model.
+   * Selects or toggles a choice by its number (1–9, 0) or letter (a–j) while focus is inside the
+   * element, as `keyboardEventsEnabled` asks.
    */
   handleKeyDown(event) {
     if (!this._model || !this._session) {
@@ -456,19 +497,13 @@ export default class MultipleChoice extends HTMLElement {
     }
 
     const { mode } = this._model;
-    if (mode !== 'gather') {
+    if (mode !== 'gather' || !isShortcutCandidate(event)) {
       return;
     }
 
-    const keyToIndex = (key) => {
-      const numOffset = key >= '1' && key <= '9' ? key - '1' : key === '0' ? 9 : -1;
-      const letterOffset = /^[a-jA-J]$/.test(key) ? key.toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0) : -1;
-      return numOffset >= 0 ? numOffset : letterOffset;
-    };
+    const choiceIndex = shortcutIndex(event);
 
-    const choiceIndex = keyToIndex(event.key);
-
-    if (choiceIndex === undefined || choiceIndex <= -1 || choiceIndex >= this._model.choices?.length) {
+    if (choiceIndex <= -1 || choiceIndex >= (this._model.choices?.length ?? 0)) {
       return;
     }
 

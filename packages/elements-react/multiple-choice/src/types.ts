@@ -158,7 +158,7 @@ export interface MultipleChoiceModel extends PieModel {
   completeAudioEnabled?: boolean;
   /** Indicates if the audio should be replaced with a custom audio button */
   customAudioButton?: CustomAudioButton;
-  /** Lets learners select a choice in gather mode by pressing its number or letter key */
+  /** Lets learners select a choice in gather mode by pressing its number or letter key while focus is in the item */
   keyboardEventsEnabled?: boolean;
   /** Host-supplied CSS scoped to the element */
   extraCSSRules?: ExtraCSSRules;

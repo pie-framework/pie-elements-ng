@@ -96,6 +96,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*"

@@ -1,3 +1,4 @@
+import { contentLanguage, normalizeResponse } from '@pie-element/shared-controller-utils';
 import defaults from './defaults.js';
 import { toPlainText } from './plain-text.js';
 import type { SimpleClozeConfiguration, SimpleClozeModel, SimpleClozeSession } from '../types.js';
@@ -17,10 +18,12 @@ export type SimpleClozeOutcome = {
 };
 
 /**
- * Both sides compare as plain text, case-insensitively: an answer key authored
- * as HTML matches the text a learner types.
+ * Both sides compare as plain text through the shared response normalizer,
+ * case folded in the content language: an answer key authored as HTML matches
+ * the text a learner types, in any digit system.
  */
-const comparable = (value: unknown): string => toPlainText(value).toLowerCase();
+const comparable = (value: unknown, language?: string): string =>
+  normalizeResponse(toPlainText(value), { language, ignoreCase: true });
 
 // Strips tags except img, iframe and source (media counts as content), as
 // multiple-choice's `getContent` does.
@@ -37,14 +40,16 @@ const hasContent = (html: unknown): boolean =>
  */
 export const getCorrectness = (
   question: Partial<SimpleClozeModel> | null | undefined,
-  session: SimpleClozeSession | null | undefined
+  session: SimpleClozeSession | null | undefined,
+  env?: SimpleClozeEnv | null
 ): SimpleClozeCorrectness => {
-  const response = comparable(session?.value);
+  const language = contentLanguage(question, env);
+  const response = comparable(session?.value, language);
   if (!response) {
     return 'unanswered';
   }
 
-  const key = comparable(question?.correctAnswer);
+  const key = comparable(question?.correctAnswer, language);
   if (key && response === key) {
     return 'correct';
   }
@@ -55,8 +60,9 @@ export const getCorrectness = (
 /** Single response, all-or-nothing: 1 when it matches the answer key, else 0. */
 export const getPartialScore = (
   question: Partial<SimpleClozeModel> | null | undefined,
-  session: SimpleClozeSession | null | undefined
-): number => (getCorrectness(question, session) === 'correct' ? 1 : 0);
+  session: SimpleClozeSession | null | undefined,
+  env?: SimpleClozeEnv | null
+): number => (getCorrectness(question, session, env) === 'correct' ? 1 : 0);
 
 const getTraceLog = (
   question: Partial<SimpleClozeModel> | null | undefined,
@@ -64,7 +70,7 @@ const getTraceLog = (
   score: number
 ): string[] => {
   const traceLog = [
-    'Response is compared with the answer key as plain text, ignoring case and extra spaces.',
+    'Response is compared with the answer key as plain text, ignoring case, extra spaces and the digit system.',
   ];
   if (!comparable(question?.correctAnswer)) {
     traceLog.push('No correct answer is defined, so no response can score.');
@@ -82,10 +88,10 @@ const getTraceLog = (
 export const outcome = (
   question: Partial<SimpleClozeModel> | null | undefined,
   session: SimpleClozeSession | null | undefined,
-  _env: SimpleClozeEnv = {}
+  env: SimpleClozeEnv = {}
 ): Promise<SimpleClozeOutcome> =>
   new Promise((resolve) => {
-    const correctness = getCorrectness(question, session);
+    const correctness = getCorrectness(question, session, env);
 
     if (correctness === 'unanswered') {
       resolve({
@@ -130,7 +136,7 @@ export const model = (
     };
 
     if (safeEnv.mode === 'evaluate') {
-      out.correctness = getCorrectness(normalizedQuestion, safeSession);
+      out.correctness = getCorrectness(normalizedQuestion, safeSession, safeEnv);
       // The key is shown in the text input, so it goes out as plain text.
       out.correctAnswer = toPlainText(normalizedQuestion.correctAnswer);
     }

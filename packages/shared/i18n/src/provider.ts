@@ -10,7 +10,12 @@
  * element has no host to opt in for it.
  */
 
-import { findBestLanguageMatch, normalizeLanguageTag, toLanguageTag } from './language-tags.js';
+import {
+  findBestLanguageMatch,
+  languageTagScriptsMatch,
+  normalizeLanguageTag,
+  toLanguageTag,
+} from './language-tags.js';
 import type {
   DynamicMessageKey,
   I18nConfig,
@@ -257,8 +262,9 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
   }
 
   /**
-   * RFC 4647 lookup first, so `es-MX` reaches an `es` catalog; then primary-subtag widening,
-   * so a bare `es` or a POSIX `es_ES` reaches a regional catalog.
+   * Script-aware RFC 4647 lookup first, so `es-MX` reaches an `es` catalog; then primary-subtag
+   * widening, so a bare `es` or a POSIX `es_ES` reaches a regional catalog. Widening stays within
+   * the request's script: `zh` never reaches `zh-TW`, and `sr-Latn` may reach `sr-ME`.
    */
   private resolveLocaleTag(locale: string | null | undefined): string | undefined {
     if (!locale) return undefined;
@@ -269,7 +275,9 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
     const requestedLanguage = normalizeLanguageTag(locale).split('-')[0];
     if (!requestedLanguage) return undefined;
     return available.find(
-      (candidate) => normalizeLanguageTag(candidate).split('-')[0] === requestedLanguage
+      (candidate) =>
+        normalizeLanguageTag(candidate).split('-')[0] === requestedLanguage &&
+        languageTagScriptsMatch(locale, candidate)
     );
   }
 

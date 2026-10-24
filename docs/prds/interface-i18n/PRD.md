@@ -33,7 +33,7 @@ pie-players settled the same question for its own chrome: the interface locale i
 
 `@pie-element/shared-i18n` (`packages/shared/i18n`) ports pie-players' `players-shared/src/i18n`:
 
-- RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`.
+- RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`. Both stay within the request's script, the CLDR likely script for a bare tag: `zh-TW` reads `zh-TW`, `zh-Hant`, and never the Simplified `zh`.
 - Per-key lookup: host messages for the locale, shipped catalog for the locale, host `en-US`, shipped `en-US`, the key itself.
 - `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the resolved locale, so digits and grouping follow CLDR locale defaults (`ar-SA` renders Arabic-Indic digits; current CLDR resolves bare `ar` to Western digits).
 - `catalogs.forLocale(tag)` returns a per-locale view over shared catalogs and host messages, pie-players' `withLocale`, so two players on one page can differ. A locale change re-renders; nothing reloads.
