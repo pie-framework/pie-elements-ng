@@ -85,6 +85,14 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
   });
 
+  it('says the default key text in the item language', async () => {
+    render(item({ language: 'es_ES' }));
+    await screen.findByRole('radiogroup', { name: 'Opciones de respuesta' });
+    const [math] = screen.getAllByRole('radio');
+
+    expect(document.getElementById(`${math.id}-desc`)?.textContent).toBe('Seleccione la respuesta de abajo, A');
+  });
+
   it('names a math choice by its key and a note with math kept out of names', () => {
     render(item({ mathOutsideNames: true }));
     const [math, text] = screen.getAllByRole('radio');
@@ -147,10 +155,10 @@ describe('multiple-choice math kept out of names on request', () => {
     };
   }
 
-  const mount = async (parent: Element) => {
+  const mount = async (parent: Element, model: Record<string, unknown> = {}) => {
     const el = document.createElement('test-mc-math-names') as Host;
     parent.appendChild(el);
-    el.model = { mode: 'gather', choiceMode: 'radio', keyMode: 'letters', prompt: PROMPT, choices: CHOICES };
+    el.model = { mode: 'gather', choiceMode: 'radio', keyMode: 'letters', prompt: PROMPT, choices: CHOICES, ...model };
     el.session = { value: [] };
     await vi.waitFor(() => expect(el.querySelector('input')).not.toBeNull());
     return el;
@@ -160,6 +168,17 @@ describe('multiple-choice math kept out of names on request', () => {
     const el = await mount(document.body);
     await vi.waitFor(() => expect(el.textContent).toContain('Pick the answer below, A'));
     expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(false);
+  });
+
+  it('keeps math out of names for content in a language other than English, with no Player', async () => {
+    const el = await mount(document.body, { language: 'es_ES' });
+    await vi.waitFor(() => expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(true));
+  });
+
+  it('keeps math out of names for non-English content when the Player answers without the support', async () => {
+    const player = provide(['answerMasking']);
+    const el = await mount(player.provider, { language: 'ar' });
+    await vi.waitFor(() => expect(el.querySelector('input')?.hasAttribute('aria-labelledby')).toBe(true));
   });
 
   it('follows the Player switching math out of names and back', async () => {

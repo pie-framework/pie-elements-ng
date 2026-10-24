@@ -30,6 +30,16 @@ const StyledTextField: any = styled(TextField)({
   },
 });
 
+/**
+ * Arabic-Indic (U+0660–0669) and Extended Arabic-Indic (U+06F0–06F9) digits as ASCII, so an Arabic
+ * or Persian keyboard counts. Chromium and WebKit number inputs drop them with no `badInput`, so the
+ * fields are text inputs that fold before parsing.
+ */
+const foldArabicDigits = (value: string): string =>
+  value.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (digit) => String(digit.charCodeAt(0) & 0xf));
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 export class AnswerFraction extends React.Component {
   static propTypes = {
     model: PropTypes.object.isRequired,
@@ -41,28 +51,44 @@ export class AnswerFraction extends React.Component {
 
   idPrefix = createUniqueId('fraction-model');
 
+  max = (key) => (key === 'noOfModel' ? this.props.model.maxModelSelected : 9);
+
+  setAnswer = (key, value) => {
+    const { onAnswerChange, answers } = this.props;
+    onAnswerChange({ ...answers, [key]: value });
+  };
+
   /**
-   * Function to trigger when value change from number selection
-   * @param {string} key contains event change object
-   * @returns updated answer change object
+   * Stores the typed count, clamped to 1 and the field's maximum; a field cleared of digits
+   * stores `''`, the unanswered value.
    */
   onValueChange = (key) => (event) => {
-    let value = parseInt(event?.target?.value);
-    const { model, onAnswerChange, answers } = this.props;
-    const newAnswers = { ...answers };
-    const min = 1;
-    const max = (key === 'noOfModel') ? model.maxModelSelected : 9;
-    if(value > max) {
-      value = max;
-    } else if(value < min) {
-      value = min;
-    }
-    newAnswers[key] = value;
-    onAnswerChange(newAnswers);
+    const value = parseInt(foldArabicDigits(event?.target?.value ?? ''), 10);
+    this.setAnswer(key, Number.isNaN(value) ? '' : clamp(value, 1, this.max(key)));
   };
+
+  /** Up and Down step the count, as they did on the number input these fields replace. */
+  onKeyDown = (key) => (event) => {
+    const step = event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const current = Number(this.props.answers[key]);
+    this.setAnswer(key, current > 0 ? clamp(current + step, 1, this.max(key)) : 1);
+  };
+
+  /** Props a count field shares: a text spinbutton, since a number input drops native digits. */
+  countInputProps = (key, value) => ({
+    inputMode: 'numeric',
+    role: 'spinbutton',
+    'aria-valuemin': 1,
+    'aria-valuemax': this.max(key),
+    'aria-valuenow': Number(value) > 0 ? Number(value) : undefined,
+  });
 
   render() {
     const { model, showCorrect, answers, disabled } = this.props;
+    const noOfModel = showCorrect ? model.maxModelSelected : answers.noOfModel;
+    const partsPerModel = showCorrect ? model.partsPerModel : answers.partsPerModel;
 
     return (
       <div>
@@ -74,13 +100,14 @@ export class AnswerFraction extends React.Component {
               </InputLabel>
               <StyledTextField
                 id={`${this.idPrefix}-number-of-models`}
-                inputProps={{ min: 1, max: model.maxModelSelected }}
+                inputProps={this.countInputProps('noOfModel', noOfModel)}
                 name="preview_number-of-models"
                 onChange={this.onValueChange('noOfModel')}
-                type="number"
+                onKeyDown={this.onKeyDown('noOfModel')}
+                type="text"
                 variant="outlined"
                 disabled={disabled}
-                value={showCorrect ? model.maxModelSelected : answers.noOfModel}
+                value={noOfModel}
               />
             </Group>
             <Group>
@@ -89,13 +116,14 @@ export class AnswerFraction extends React.Component {
               </InputLabel>
               <StyledTextField
                 id={`${this.idPrefix}-parts-per-model`}
-                inputProps={{ min: 1, max: 9 }}
+                inputProps={this.countInputProps('partsPerModel', partsPerModel)}
                 name="preview_parts-per-model"
                 onChange={this.onValueChange('partsPerModel')}
-                type="number"
+                onKeyDown={this.onKeyDown('partsPerModel')}
+                type="text"
                 variant="outlined"
                 disabled={disabled}
-                value={showCorrect ? model.partsPerModel : answers.partsPerModel}
+                value={partsPerModel}
               />
             </Group>
           </GroupInline>
