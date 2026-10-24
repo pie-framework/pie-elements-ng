@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fixturesJson from './i18n-conformance-fixtures.json';
 import { defineCatalogs, loadLocale, registerMessages } from '../src/catalogs.js';
 import { languageTagLookupSequence } from '../src/language-tags.js';
-import { localeDirection } from '../src/provider.js';
+import { localeDirection, SimpleI18n } from '../src/provider.js';
 import type { MessageCatalog } from '../src/types.js';
 
 /**
@@ -18,6 +18,7 @@ import type { MessageCatalog } from '../src/types.js';
 
 interface Fixtures {
   lookupSequence: { tag: string; expected: string[] }[];
+  catalogMatch: { locale: string; available: string[]; expected: string }[];
   direction: { tag: string; expected: 'ltr' | 'rtl' }[];
   plural: {
     catalogs: Record<string, MessageCatalog>;
@@ -70,6 +71,13 @@ describe('i18n conformance', () => {
   it('lookup sequence', () => {
     for (const { tag, expected } of fixtures.lookupSequence) {
       expect(languageTagLookupSequence(tag), tag).toEqual(expected);
+    }
+  });
+
+  it('catalog match: script-aware lookup, then widening within the script', () => {
+    for (const { locale, available, expected } of fixtures.catalogMatch) {
+      const i18n = new SimpleI18n({ source: {}, availableLocales: available, locale });
+      expect(i18n.getLocale(), `${locale} in ${available.join(', ')}`).toBe(expected);
     }
   });
 
