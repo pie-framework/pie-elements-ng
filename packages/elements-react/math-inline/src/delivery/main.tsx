@@ -45,7 +45,7 @@ import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
-import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { isComposingKeyEvent, sanitizeModelHtml } from '@pie-element/shared-utils';
 const { translator } = Translator;
 let registered = false;
 
@@ -392,7 +392,7 @@ export class Main extends React.Component {
           }
         });
       }
-    } else if (event.key === 'Escape') {
+    } else if (event.key === 'Escape' && !isComposingKeyEvent(event)) {
       this.setState({ activeAnswerBlock: '' });
     }
   };

@@ -18,6 +18,7 @@
     "prop-types": "^15.8.1",
     "recharts": "^3.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",

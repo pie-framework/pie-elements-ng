@@ -7,6 +7,7 @@
 export * from './utils.js';
 export * from './sanitize-model-html.js';
 export * from './prompt-audio.js';
+export { isComposingKeyEvent } from './ime.js';
 export {
   AUTHORED_BORDER_ATTR,
   AUTHORED_FILL_ATTR,

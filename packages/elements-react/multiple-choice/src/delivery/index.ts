@@ -13,7 +13,7 @@ import {
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
-import { PromptAudioTracker, PromptAudioWatcher, promptAudioPending } from '@pie-element/shared-utils';
+import { PromptAudioTracker, PromptAudioWatcher, isComposingKeyEvent, promptAudioPending } from '@pie-element/shared-utils';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -91,7 +91,7 @@ function shortcutIndex(event: Pick<KeyboardEvent, 'key' | 'code'>): number {
  * assistive technology, and a key typed into a text field or an IME composition is text.
  */
 function isShortcutCandidate(event: Partial<KeyboardEvent>): boolean {
-  if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return false;
+  if (event.defaultPrevented || isComposingKeyEvent(event) || event.altKey || event.ctrlKey || event.metaKey) return false;
   return !isEditable(event.target);
 }
 

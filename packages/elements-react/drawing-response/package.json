@@ -19,6 +19,7 @@
     "prop-types": "^15.8.1",
     "react-konva": "^18.2.14",
     "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*",
     "debug": "^4.4.3",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

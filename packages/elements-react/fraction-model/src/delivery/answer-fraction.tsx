@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { TextField } from '@mui/material';
 import { createUniqueId } from '@pie-lib/render-ui';
+import { isComposingKeyEvent } from '@pie-element/shared-utils';
 
 const GroupInline: any = styled('div')({
   alignItems: 'center',
@@ -69,6 +70,7 @@ export class AnswerFraction extends React.Component {
 
   /** Up and Down step the count, as they did on the number input these fields replace. */
   onKeyDown = (key) => (event) => {
+    if (isComposingKeyEvent(event)) return;
     const step = event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0;
     if (!step) return;
     event.preventDefault();

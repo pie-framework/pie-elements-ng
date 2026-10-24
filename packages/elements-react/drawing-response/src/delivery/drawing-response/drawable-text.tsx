@@ -24,6 +24,7 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 }
 const Text = unwrapReactInteropSymbol(TextImport, 'Text');
 import Translator from '@pie-lib/translator';
+import { isComposingKeyEvent } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 import Transformer from './drawable-transformer.js';
@@ -169,6 +170,7 @@ export default class TextDrawable {
     textareaNode.focus();
 
     const keyDownHandler = (e) => {
+      if (isComposingKeyEvent(e)) return;
       if (e.key === 'Enter' && !e.shiftKey) {
         this.saveValue(id, textareaNode);
       }
