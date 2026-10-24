@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import React from 'react';
+import { foldDigits } from '@pie-element/shared-controller-utils';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { TextField } from '@mui/material';
@@ -30,14 +31,6 @@ const StyledTextField: any = styled(TextField)({
   },
 });
 
-/**
- * Arabic-Indic (U+0660–0669) and Extended Arabic-Indic (U+06F0–06F9) digits as ASCII, so an Arabic
- * or Persian keyboard counts. Chromium and WebKit number inputs drop them with no `badInput`, so the
- * fields are text inputs that fold before parsing.
- */
-const foldArabicDigits = (value: string): string =>
-  value.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (digit) => String(digit.charCodeAt(0) & 0xf));
-
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 export class AnswerFraction extends React.Component {
@@ -63,7 +56,7 @@ export class AnswerFraction extends React.Component {
    * stores `''`, the unanswered value.
    */
   onValueChange = (key) => (event) => {
-    const value = parseInt(foldArabicDigits(event?.target?.value ?? ''), 10);
+    const value = parseInt(foldDigits(event?.target?.value ?? ''), 10);
     this.setAnswer(key, Number.isNaN(value) ? '' : clamp(value, 1, this.max(key)));
   };
 
