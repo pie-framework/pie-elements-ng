@@ -18,6 +18,7 @@ const { translator } = Translator;
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
+import { normalizeResponse } from '@pie-element/shared-controller-utils';
 
 const log = debug('@pie-element:math-inline:controller');
 
@@ -113,6 +114,12 @@ const getResponseCorrectness = (
   return correctnessObject;
 };
 
+/**
+ * LaTeX with every decimal digit folded to 0–9 and `٫` to `.`, the form
+ * math-validation computes on. Without a language, so the marks stay `.` and `,`.
+ */
+const comparableLatex = <T>(latex: T): T => (typeof latex === 'string' ? (normalizeResponse(latex) as T) : latex);
+
 function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefined, answerItem: string) {
   let answerCorrect = false;
 
@@ -137,7 +144,7 @@ function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefin
 
     for (let i = 0; i < acceptedValues.length; i++) {
       try {
-        if (mv.latexEqual(answerItem, acceptedValues[i], opts)) {
+        if (mv.latexEqual(comparableLatex(answerItem), comparableLatex(acceptedValues[i]), opts)) {
           answerCorrect = true;
           break;
         }

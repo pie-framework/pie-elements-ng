@@ -281,3 +281,29 @@ describe('model', () => {
     expect(out.language).toBe('es_ES');
   });
 });
+
+describe('response normalization', () => {
+  it('scores a response typed in another digit system against an ASCII answer key', async () => {
+    for (const value of ['٤', '۴', '४', '৪']) {
+      const result = await outcome(QUESTION, { id: '1', element: TAG, value });
+      expect(result.score, value).toBe(1);
+    }
+  });
+
+  it('reads the Arabic decimal separator as a point', async () => {
+    const result = await outcome(
+      { ...QUESTION, correctAnswer: '3.5' },
+      { id: '1', element: TAG, value: '٣٫٥' }
+    );
+    expect(result.score).toBe(1);
+  });
+
+  it('folds case in the content language, from the model or the environment', () => {
+    const question = { ...QUESTION, correctAnswer: 'ısparta' };
+    const session = { id: '1', element: TAG, value: 'ISPARTA' };
+
+    expect(getCorrectness(question, session)).toBe('incorrect');
+    expect(getCorrectness({ ...question, language: 'tr_TR' }, session)).toBe('correct');
+    expect(getCorrectness(question, session, { locale: 'tr' })).toBe('correct');
+  });
+});
