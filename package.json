@@ -65,6 +65,7 @@
     "release:label": "node ./scripts/create-release-label.mjs",
     "release:label:push": "node ./scripts/create-release-label.mjs --push",
     "clean": "turbo run clean && rm -rf node_modules",
+    "turbo:prune-cache": "node ./scripts/prune-turbo-cache.mjs",
     "dev:element-demo": "bun run --cwd apps/element-demo dev",
     "dev:element-demo:iife-local": "bun run --cwd apps/element-demo dev:iife:local",
     "dev:element-demo:iife-hosted": "bun run --cwd apps/element-demo dev:iife:hosted",
