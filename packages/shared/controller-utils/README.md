@@ -17,7 +17,11 @@ This package is part of the PIE workspace and should be installed via workspace 
 ## Usage
 
 ```typescript
-import { getShuffledChoices, lockChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import {
+  getShuffledChoices,
+  lockChoices,
+  partialScoring,
+} from '@pie-element/shared-controller-utils';
 ```
 
 ### Response normalization

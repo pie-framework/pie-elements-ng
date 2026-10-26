@@ -1,4 +1,5 @@
 ---
+
 name: pie-controller-reviewer
 description: Reviews a PIE controller implementation for correctness, scoring accuracy, and contract compliance. Use when implementing or reviewing controller.ts files — especially outcome(), model(), and createCorrectResponseSession().
 allowed-tools: Read, Glob, Grep, Bash
@@ -106,7 +107,9 @@ const score = correctCount / totalTiles;
 
 ```typescript
 // Bug: delivery sets completed in a separate effect; controller receives incomplete session
-$effect(() => { session.completed = allPlaced(session); });
+$effect(() => {
+  session.completed = allPlaced(session);
+});
 
 // Fix: set completed in the same update as the last placement (see pie-element-author skill)
 ```

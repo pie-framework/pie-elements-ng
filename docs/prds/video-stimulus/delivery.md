@@ -7,7 +7,6 @@ Delivery facet of [the video stimulus PRD](./PRD.md).
 Delivery is a Svelte 5 custom element exported from `@pie-element/video-stimulus/delivery`. It uses light DOM, exposes imperative Model properties, sets no custom-element tag, and leaves registration to PIE players.
 
 The rendered order is:
-
 1. labelled `<figure>` with visible or visually-hidden `<figcaption>`;
 2. optional visible description;
 3. transcript disclosure and labelled transcript region;

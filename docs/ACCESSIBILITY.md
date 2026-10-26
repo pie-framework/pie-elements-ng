@@ -5,7 +5,6 @@ PIE Elements NG is built with WCAG 2.2 Level AA compliance as a core requirement
 ## Our Commitment
 
 All PIE elements are designed to be:
-
 - ✅ **Keyboard Navigable**: Full functionality without a mouse
 - ✅ **Screen Reader Compatible**: Proper ARIA labels and semantic HTML
 - ✅ **Visually Accessible**: Sufficient color contrast and touch targets
@@ -17,22 +16,21 @@ All PIE elements are designed to be:
 
 PIE elements meet all WCAG 2.2 Level AA success criteria:
 
-| Criterion | Requirement | Implementation |
-|-----------|-------------|----------------|
-| 1.4.3 Contrast (Minimum) | 4.5:1 for normal text | DaisyUI themes tested for compliance |
-| 1.4.11 Non-text Contrast | 3:1 for UI components | All interactive elements meet threshold |
-| 2.1.1 Keyboard | All functionality via keyboard | Tab, Space, Enter, Arrow keys |
-| 2.4.7 Focus Visible | Clear focus indicators | 2px outline on all focusable elements |
-| 2.5.8 Target Size (Minimum) | 24×24px touch targets | 44×44px implemented (exceeds requirement) |
-| 3.2.4 Consistent Identification | Consistent UI patterns | Standardized across all elements |
-| 4.1.2 Name, Role, Value | ARIA for custom controls | All interactive elements labeled |
+| Criterion                       | Requirement                    | Implementation                            |
+| ------------------------------- | ------------------------------ | ----------------------------------------- |
+| 1.4.3 Contrast (Minimum)        | 4.5:1 for normal text          | DaisyUI themes tested for compliance      |
+| 1.4.11 Non-text Contrast        | 3:1 for UI components          | All interactive elements meet threshold   |
+| 2.1.1 Keyboard                  | All functionality via keyboard | Tab, Space, Enter, Arrow keys             |
+| 2.4.7 Focus Visible             | Clear focus indicators         | 2px outline on all focusable elements     |
+| 2.5.8 Target Size (Minimum)     | 24×24px touch targets          | 44×44px implemented (exceeds requirement) |
+| 3.2.4 Consistent Identification | Consistent UI patterns         | Standardized across all elements          |
+| 4.1.2 Name, Role, Value         | ARIA for custom controls       | All interactive elements labeled          |
 
 ## Keyboard Navigation
 
 ### Global Shortcuts
 
 All PIE elements support these keyboard interactions:
-
 - **Tab**: Move focus forward
 - **Shift+Tab**: Move focus backward
 - **Enter/Space**: Activate buttons and controls
@@ -177,7 +175,7 @@ All text meets WCAG AA standards:
 ```css
 /* Normal text: 4.5:1 minimum */
 .prompt {
-  color: rgb(31, 41, 55);      /* #1f2937 */
+  color: rgb(31, 41, 55); /* #1f2937 */
   background: rgb(255, 255, 255); /* #ffffff */
   /* Contrast ratio: 15.85:1 ✅ */
 }
@@ -186,7 +184,7 @@ All text meets WCAG AA standards:
 .heading {
   font-size: 24px;
   font-weight: 600;
-  color: rgb(75, 85, 99);      /* #4b5563 */
+  color: rgb(75, 85, 99); /* #4b5563 */
   background: rgb(255, 255, 255);
   /* Contrast ratio: 9.73:1 ✅ */
 }
@@ -226,7 +224,7 @@ input[type="radio"] {
 
 /* Or use padding on labels */
 input[type="radio"] + label {
-  padding: 12px;  /* Creates 44×44px target */
+  padding: 12px; /* Creates 44×44px target */
   min-width: 44px;
   min-height: 44px;
 }
@@ -313,7 +311,6 @@ Error messages should be:
 ### Consistent Patterns
 
 Use consistent UI patterns across all elements:
-
 - Submit buttons always labeled "Submit"
 - Correct answers shown with ✓ in evaluate mode
 - Incorrect answers shown with ✗ in evaluate mode
@@ -380,7 +377,6 @@ bun run test:a11y:inventory
 #### Color Blind Testing
 
 Use browser extensions to simulate color blindness:
-
 - **Chrome**: Colorblind - Dalton
 - **Firefox**: Let's Get Color Blind
 - **Safari**: Web Developer extension
@@ -393,7 +389,6 @@ Verify:
 ### Accessibility Checklist
 
 Before releasing an element, verify:
-
 - [ ] All functionality works with keyboard only
 - [ ] Focus indicators are clearly visible
 - [ ] Tab order is logical
@@ -431,8 +426,8 @@ Before releasing an element, verify:
 **Problem:**
 ```css
 .text {
-  color: #888888;        /* Gray text */
-  background: #ffffff;   /* White background */
+  color: #888888; /* Gray text */
+  background: #ffffff; /* White background */
   /* Contrast: 2.85:1 ❌ */
 }
 ```
@@ -440,7 +435,7 @@ Before releasing an element, verify:
 **Solution:**
 ```css
 .text {
-  color: #595959;        /* Darker gray */
+  color: #595959; /* Darker gray */
   background: #ffffff;
   /* Contrast: 4.54:1 ✅ */
 }

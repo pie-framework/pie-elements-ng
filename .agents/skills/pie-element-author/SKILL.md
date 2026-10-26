@@ -1,4 +1,5 @@
 ---
+
 name: pie-element-author
 description: "Implements a new PIE element (or non-trivial extension) end-to-end: PRD review → Model/Session/Controller → Svelte delivery component → authoring surface → tests. Use when adding a new @pie-element/* package or extending an existing element with a new mode or config surface."
 ---
@@ -18,7 +19,6 @@ Do **not** invoke for bug fixes, refactors, demo tweaks, or dependency bumps —
 ## Pre-Implementation Checklist
 
 Before writing a line of code:
-
 - [ ] Does a PRD exist at `docs/prds/<slug>/PRD.md`? If not, draft one from `docs/prds/_template.md` first (use the `pie-prd-author` skill). Do not start implementation against an undocumented surface.
 - [ ] Read `PRD.md` fully. Treat the "Proposed surface" as the starting contract. If anything is ambiguous, surface it before coding.
 - [ ] Read `CONTEXT.md` and use its canonical language alongside the relevant PRD and established element examples. Do not introduce new synonyms for model/session concepts without surfacing the contract change.
@@ -60,13 +60,13 @@ The package has no Vite or Vitest config. The build script runs the shared confi
 
 All five methods are **pure functions** — no DOM access, no side effects, no `any`.
 
-| Method | Signature (sketch) | Contract |
-| --- | --- | --- |
-| `model(question, session, env)` | `→ ViewModel` | Derives the view-model; never mutates inputs; strips correctness data when `env.mode !== 'evaluate'`. |
-| `outcome(question, session, env)` | `→ { score: number, empty: boolean }` | Score in `[0, 1]`; `empty: true` iff session has no response; must be deterministic. |
-| `createDefaultModel()` | `→ Model` | Returns a model that passes `validate()` with zero errors, usable as a blank starting point for authoring. |
-| `validate(model)` | `→ Record<string, string>` | Returns `{}` for a valid model; returns error messages keyed by field for invalid model; never throws. |
-| `createCorrectResponseSession(question)` | `→ Session` | Returns a session whose `outcome()` produces `score === 1.0`. |
+| Method                                   | Signature (sketch)                    | Contract                                                                                                   |
+| ---------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `model(question, session, env)`          | `→ ViewModel`                         | Derives the view-model; never mutates inputs; strips correctness data when `env.mode !== 'evaluate'`.      |
+| `outcome(question, session, env)`        | `→ { score: number, empty: boolean }` | Score in `[0, 1]`; `empty: true` iff session has no response; must be deterministic.                       |
+| `createDefaultModel()`                   | `→ Model`                             | Returns a model that passes `validate()` with zero errors, usable as a blank starting point for authoring. |
+| `validate(model)`                        | `→ Record<string, string>`            | Returns `{}` for a valid model; returns error messages keyed by field for invalid model; never throws.     |
+| `createCorrectResponseSession(question)` | `→ Session`                           | Returns a session whose `outcome()` produces `score === 1.0`.                                              |
 
 `model()` must never return `any`. The `disabled` field on the view model must reflect `env.mode !== 'gather'` or `env.disabled === true`.
 
@@ -80,7 +80,7 @@ Pattern:
 // In the delivery component, on tile placement / choice selection / etc.
 function handleInteraction(update: SessionUpdate) {
   const next = applyUpdate(session, update);
-  next.completed = isComplete(model, next);  // computed in the same update
+  next.completed = isComplete(model, next); // computed in the same update
   onSessionChange?.(next);
 }
 ```
@@ -90,7 +90,6 @@ Never derive `completed` lazily in `model()` or a `$derived` — the controller 
 ## Svelte 5 Patterns
 
 Use Svelte 5 runes throughout. Key rules:
-
 - State: `let x = $state(initialValue)` — not `let x`.
 - Props: `let { model, session, mode } = $props()` — not `export let`.
 - Derived: `let foo = $derived(expr)` — not `$: foo = expr`.
@@ -178,7 +177,6 @@ Settings come from `configuration`: each entry's `label` names its field and its
 Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 
 **Controller unit tests** (`src/controller/index.test.ts`):
-
 - [ ] `model()` strips correctness data in `gather` mode; exposes it in `evaluate` mode.
 - [ ] `outcome()` returns `score === 1.0` for a fully correct session.
 - [ ] `outcome()` returns `score === 0.0` for a fully incorrect session.
@@ -189,7 +187,6 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 - [ ] `createCorrectResponseSession()` produces a session whose `outcome()` scores `1.0`.
 
 **Delivery component tests** (Testing Library, happy-dom):
-
 - [ ] Renders in `gather` mode without errors.
 - [ ] Renders in `view` mode (read-only, no interaction).
 - [ ] Renders in `evaluate` mode (shows correctness).
@@ -199,14 +196,12 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 - [ ] Passes axe-core with zero violations in each mode.
 
 **Author element tests** (happy-dom, `tests/author-model-contract.test.ts`):
-
 - [ ] `assertAuthorModelUpdate` from `@pie-element/shared-test-utils` passes for an edit, and the returned event's `detail.update` is the whole edited model.
 - [ ] A second edit builds on the first.
 - [ ] Configured labels name the fields and settings, a `settings: false` entry leaves its setting out, and `settingsPanelDisabled: true` hides the panel.
 - [ ] A placeholder author view runs `assertAuthorElementProperties` instead.
 
 **E2E / accessibility** (Playwright):
-
 - [ ] Full keyboard navigation reachable (Tab / Space / Enter / Esc as appropriate).
 - [ ] axe-core clean.
 - [ ] Focus visible (2.4.7, AA) as a 2 px ring at 3:1 contrast (the 2.4.13 AAA bar).

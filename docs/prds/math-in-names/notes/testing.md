@@ -15,12 +15,12 @@ that label.
 
 ## What it should sound like
 
-| | |
-|---|---|
-| Entering the group | "Answer choices, radio group" ("Part A, answer choices" in EBSR) |
-| Moving to choice A | "A. Pick the answer below, radio button" |
-| Reading mode | the prompt, then each choice's key and note, then its formula as math |
-| Braille | the key and the note, then the formula as math braille |
+|                    |                                                                       |
+| ------------------ | --------------------------------------------------------------------- |
+| Entering the group | "Answer choices, radio group" ("Part A, answer choices" in EBSR)      |
+| Moving to choice A | "A. Pick the answer below, radio button"                              |
+| Reading mode       | the prompt, then each choice's key and note, then its formula as math |
+| Braille            | the key and the note, then the formula as math braille                |
 
 The prompt is read before the group, with its math. Read-aloud reads the prompt and each choice's
 formula, and none of the hidden text.

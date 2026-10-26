@@ -37,7 +37,7 @@
 ### Patch Changes
 
 - [#429](https://github.com/pie-framework/pie-elements-ng/pull/429) [`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf) Thanks [@chillenious](https://github.com/chillenious)! - Each element publishes JSON Schemas for its model and session, and for its authoring configuration when it has one, at `@pie-element/<name>/schemas/<kind>.schema.json`. The root entry exports the `<Name>Model`, `<Name>Session` and `<Name>Configuration` types they are generated from. `@pie-element/shared-types` adds the authoring building blocks those types share.
-  
+
   `docs:generate` in `@pie-element/cli` documents each property from the element's schemas, with its defaults alongside. `@pie-element/shared-types` drops `PieDocsPropertyMetadata`, `PieDocsViewMetadata` and the `description` and `metadata` fields of `PieDocsViewContract`, which no element set.
 - Updated dependencies [[`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf)]:
   - @pie-element/shared-types@0.2.1
@@ -81,14 +81,14 @@
 - [#59](https://github.com/pie-framework/pie-elements-ng/pull/59) [`d0f8d8e`](https://github.com/pie-framework/pie-elements-ng/commit/d0f8d8ead911f8c6256a4898a2f6b6863b7538ac) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - Trigger another prerelease patch for all PIE element packages.
 
 - [#86](https://github.com/pie-framework/pie-elements-ng/pull/86) [`7634975`](https://github.com/pie-framework/pie-elements-ng/commit/763497514babf6377d15b3416f7459fc0c3e5857) Thanks [@chillenious](https://github.com/chillenious)! - Fix: bring the Svelte elements' `--pie-*` reads back inside the pie-players theming contract (PIE-857)
-  
+
   The `--pie-correct-answer-*` family was invented by these packages, so the
   `pie-players` token registry could not see it and no color scheme overrode it.
   The 13 names are retired; `mc-populated-blank` now reads the canonical tokens
   they indirected through (`--pie-correct-secondary`, `--pie-incorrect-icon`,
   `--pie-tertiary-light`, and so on) with the canonical defaults as fallbacks.
   Resolved colors are unchanged under a themed host.
-  
+
   Focus outlines no longer hardcode a blue. `mc-populated-blank` read
   `--pie-focus`, which nothing defines, and `venn-classification` used a literal
   `#2563eb` in four places; both now chain through `--pie-focus-outline`,
@@ -96,9 +96,9 @@
   follows the active color scheme.
 
 - [#147](https://github.com/pie-framework/pie-elements-ng/pull/147) [`ea07637`](https://github.com/pie-framework/pie-elements-ng/commit/ea0763784c4c84bc1b9a0ee7e04a461ff2b5ef76) Thanks [@chillenious](https://github.com/chillenious)! - The Svelte delivery elements write each session update into the object the player handed them, through the new `writeSessionInPlace` in `@pie-lib/delivery-events-svelte` (PIE-1058).
-  
+
   A player reads the learner's response back off that object, so replacing the reference left the player's entry at its load-time value and the forwarded container normalized to `session: null` with `intent: "metadata-only"`. All three elements-svelte packages shared the defect, and `mc-populated-blank`'s audio handlers dropped `audioStartTime`/`audioEndTime` the same way.
-  
+
   The elements-svelte packages do not adopt `createSessionNotifier`: they dispatch synchronously, so installing `commitPendingSession()` would tell a player they had committed when nothing was pending.
 
 - [#168](https://github.com/pie-framework/pie-elements-ng/pull/168) [`85910c0`](https://github.com/pie-framework/pie-elements-ng/commit/85910c0c3681f7e1f063bd680dd0171954a62ce9) Thanks [@chillenious](https://github.com/chillenious)! - The rich-text editor shows its `placeholder` while empty, as the React editor does; the prop was accepted and never displayed (PIE-1075).
@@ -168,23 +168,23 @@
 - Trigger the next prerelease patch for all PIE element packages.
 - Trigger another prerelease patch for all PIE element packages.
 - Fix: bring the Svelte elements' `--pie-*` reads back inside the pie-players theming contract (PIE-857)
-  
+
   The `--pie-correct-answer-*` family was invented by these packages, so the
   `pie-players` token registry could not see it and no color scheme overrode it.
   The 13 names are retired; `mc-populated-blank` now reads the canonical tokens
   they indirected through (`--pie-correct-secondary`, `--pie-incorrect-icon`,
   `--pie-tertiary-light`, and so on) with the canonical defaults as fallbacks.
   Resolved colors are unchanged under a themed host.
-  
+
   Focus outlines no longer hardcode a blue. `mc-populated-blank` read
   `--pie-focus`, which nothing defines, and `venn-classification` used a literal
   `#2563eb` in four places; both now chain through `--pie-focus-outline`,
   `--pie-button-focus-outline`, and `--pie-focus-checked-border`, so the outline
   follows the active color scheme.
 - The Svelte delivery elements write each session update into the object the player handed them, through the new `writeSessionInPlace` in `@pie-lib/delivery-events-svelte` (PIE-1058).
-  
+
   A player reads the learner's response back off that object, so replacing the reference left the player's entry at its load-time value and the forwarded container normalized to `session: null` with `intent: "metadata-only"`. All three elements-svelte packages shared the defect, and `mc-populated-blank`'s audio handlers dropped `audioStartTime`/`audioEndTime` the same way.
-  
+
   The elements-svelte packages do not adopt `createSessionNotifier`: they dispatch synchronously, so installing `commitPendingSession()` would tell a player they had committed when nothing was pending.
 - The rich-text editor shows its `placeholder` while empty, as the React editor does; the prop was accepted and never displayed (PIE-1075).
 - The rich-text editor's Done and alignment buttons take the editor stylesheet's padding, colours and hover states, which hard-coded inline styles overrode (PIE-1075).

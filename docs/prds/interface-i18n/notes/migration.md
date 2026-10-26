@@ -7,26 +7,25 @@ Rollout for the [interface i18n PRD](../PRD.md). An element migrates together wi
 **Phase 1** (done): `@pie-element/shared-i18n`, the catalog gate in `bun run lint`, the artifact assertion, and `@pie-lib/render-ui`, `@pie-lib/correct-answer-toggle` and `@pie-element/multiple-choice`. Multiple-choice is about 79% of production items, and the two libraries sit on nearly every element's render path. Chrome follows `model.language`, as under the translator, except in the IIFE, which ships English.
 
 **Phase 2**: the interface-locale channel and the shared labels.
-
 - pie-players (done, pie-players #808): `interfaceLocaleContext` in `@pie-players/pie-context`, answered by the item and section players from `locale`, released in `@pie-players/pie-context` 1.0.0-beta.6; the subscriber imports it.
 - Here (done): `subscribeInterfaceLocale` in `@pie-element/shared-i18n`, the transitional precedence (published, else `model.language`, else `en-US`) in multiple-choice — which now passes the resolved locale into the React tree, so the region label, SR heading, selection counts and the toggle all follow it — and `lang`/`dir` on the toggle's root from its `language` prop.
 - Still open in Phase 2: `Collapsible` gains teacher-instructions and rationale variants. Multiple-choice keeps those labels in its own catalog until then; the next element would otherwise copy them.
 
 **Phase 3**: elements in usage order. Shares are of production items; the delivery hour sampled ranks the head the same way, with passage second.
 
-| Order | Element (share) | Libraries it brings | Package-specific work |
-|---|---|---|---|
-| 1 | extended-text-entry (9.4%) | `editable-html-tip-tap` | |
-| 2 | rubric (8.9%) | | complex-rubric (2.3%) has no calls of its own and loses i18next once render-ui has |
-| 3 | passage | | hardcoded `'Passage'` region name and tab label |
-| 4 | explicit-constructed-response (3.7%) | `mask-markup` | stored-default note normalization |
-| 5 | inline-dropdown (1.9%) | | |
-| 6 | math-inline (1.8%) | `math-input` | stored-default note normalization |
-| 7 | ebsr (1.1%) | multiple-choice, done | drop the `partA.language` fallback |
-| 8 | drag-in-the-blank (1.0%) | | |
-| 9 | the rest, by share: select-text, match, drawing-response, hotspot, placement-ordering, categorize, graphing, image-cloze-association, charting, match-list, number-line, math-templated, matrix, likert, multi-trait-rubric, fraction-model, graphing-solution-set | `text-select`, `graphing`, `charting`, `graphing-solution-set` | note swap removal (placement-ordering, categorize); plural groups for `count === 1` (number-line) and `reachedLimit_other` (image-cloze-association); hardcoded strings (match, placement-ordering, match-list, multi-trait-rubric, graphing-solution-set) |
-| 10 | simple-cloze, mc-populated-blank, venn-classification | | `src/i18n.ts` shim becomes a `$derived` view; drop mc-populated-blank's `locale` fallback |
-| 11 | video-stimulus | | its own `en`/`es` tables become catalogs; `uiText` becomes `registerMessages` or stays a model override |
+| Order | Element (share)                                                                                                                                                                                                                                                    | Libraries it brings                                            | Package-specific work                                                                                                                                                                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | extended-text-entry (9.4%)                                                                                                                                                                                                                                         | `editable-html-tip-tap`                                        |                                                                                                                                                                                                                                                            |
+| 2     | rubric (8.9%)                                                                                                                                                                                                                                                      |                                                                | complex-rubric (2.3%) has no calls of its own and loses i18next once render-ui has                                                                                                                                                                         |
+| 3     | passage                                                                                                                                                                                                                                                            |                                                                | hardcoded `'Passage'` region name and tab label                                                                                                                                                                                                            |
+| 4     | explicit-constructed-response (3.7%)                                                                                                                                                                                                                               | `mask-markup`                                                  | stored-default note normalization                                                                                                                                                                                                                          |
+| 5     | inline-dropdown (1.9%)                                                                                                                                                                                                                                             |                                                                |                                                                                                                                                                                                                                                            |
+| 6     | math-inline (1.8%)                                                                                                                                                                                                                                                 | `math-input`                                                   | stored-default note normalization                                                                                                                                                                                                                          |
+| 7     | ebsr (1.1%)                                                                                                                                                                                                                                                        | multiple-choice, done                                          | drop the `partA.language` fallback                                                                                                                                                                                                                         |
+| 8     | drag-in-the-blank (1.0%)                                                                                                                                                                                                                                           |                                                                |                                                                                                                                                                                                                                                            |
+| 9     | the rest, by share: select-text, match, drawing-response, hotspot, placement-ordering, categorize, graphing, image-cloze-association, charting, match-list, number-line, math-templated, matrix, likert, multi-trait-rubric, fraction-model, graphing-solution-set | `text-select`, `graphing`, `charting`, `graphing-solution-set` | note swap removal (placement-ordering, categorize); plural groups for `count === 1` (number-line) and `reachedLimit_other` (image-cloze-association); hardcoded strings (match, placement-ordering, match-list, multi-trait-rubric, graphing-solution-set) |
+| 10    | simple-cloze, mc-populated-blank, venn-classification                                                                                                                                                                                                              |                                                                | `src/i18n.ts` shim becomes a `$derived` view; drop mc-populated-blank's `locale` fallback                                                                                                                                                                  |
+| 11    | video-stimulus                                                                                                                                                                                                                                                     |                                                                | its own `en`/`es` tables become catalogs; `uiText` becomes `registerMessages` or stays a model override                                                                                                                                                    |
 
 **Phase 4**: deprecate `@pie-lib/translator` 5.x once nothing here depends on it, and drop the `model.language` fallback (PRD open question). pie-lib publishes 4.x under the same name and the legacy elements pin it, so the deprecation names the 5.x range.
 
@@ -54,20 +53,20 @@ Every IIFE build ships English for the libraries too, so a Spanish item in an un
 
 Per element bundle, IIFE or browser ESM, minified:
 
-| Piece | Bytes | Gzipped |
-|---|---|---|
-| `@pie-lib/translator` today: i18next with every `en` and `es` namespace | 64,304 | 20,106 |
-| of which i18next | 43,577 | 13,928 |
-| `@pie-element/shared-i18n` | 6,210 | 2,410 |
-| a package's `es` chunk, browser ESM only, multiple-choice and its two libraries | 210–751 | |
+| Piece                                                                           | Bytes   | Gzipped |
+| ------------------------------------------------------------------------------- | ------- | ------- |
+| `@pie-lib/translator` today: i18next with every `en` and `es` namespace         | 64,304  | 20,106  |
+| of which i18next                                                                | 43,577  | 13,928  |
+| `@pie-element/shared-i18n`                                                      | 6,210   | 2,410   |
+| a package's `es` chunk, browser ESM only, multiple-choice and its two libraries | 210–751 |         |
 
-An English-only page with *n* elements loads *n* × 64 KB of translator today, and *n* × 6 KB of engine plus each package's English once every element on it has migrated. The shared browser runtime would cut the engine to one copy per page.
+An English-only page with _n_ elements loads _n_ × 64 KB of translator today, and _n_ × 6 KB of engine plus each package's English once every element on it has migrated. The shared browser runtime would cut the engine to one copy per page.
 
 Measured on multiple-choice against `develop`:
 
-| Bundle | Before | After | Change |
-|---|---|---|---|
-| IIFE | 591,110 B (214,821 gz) | 533,449 B (197,594 gz) | −57.7 KB (−17.2 KB gz) |
+| Bundle                   | Before                 | After                  | Change                 |
+| ------------------------ | ---------------------- | ---------------------- | ---------------------- |
+| IIFE                     | 591,110 B (214,821 gz) | 533,449 B (197,594 gz) | −57.7 KB (−17.2 KB gz) |
 | Browser ESM shared chunk | 498,202 B (155,101 gz) | 428,949 B (136,009 gz) | −69.3 KB (−19.1 KB gz) |
 
 Author bundles keep i18next; authoring is out of scope.

@@ -37,7 +37,6 @@ Minimal shape:
 ## Property Rows
 
 Each view page has a Model, a Configuration and a Session section, one per schema the package publishes. Generation builds the schemas in-process from `src/types.ts` with the same generator the package build runs, so docs need no element build first.
-
 - A row carries the property's path, type, whether it is required, and the schema's `description`, `enum`, numeric and length bounds, and `pattern`. Those come from the JSDoc in `src/types.ts`.
 - An inline object type flattens into dot paths, `limits.width`; the properties of inline array items into `rows[].label`.
 - A named object type, such as `Choice` or `EditableHtmlPluginConfigure`, is documented once per section under its name, and each property of that type links to it.
@@ -67,7 +66,6 @@ bun run cli docs:verify
 ## Generated files
 
 Each generated element folder contains:
-
 - `manifest.json` (machine-readable payload for the demo route)
 - `index.html` (overview + metadata + links)
 - `delivery.html` (delivery view docs)
@@ -87,7 +85,6 @@ Docs verification remains available as an explicit diagnostic command. It is not
 publishing because the generated HTML is no longer committed.
 
 Docs generation fails when:
-
 - a publish-targeted element has no valid `docs.contract.json`,
 - a contract references missing source files,
 - an element publishes no model or session schema.

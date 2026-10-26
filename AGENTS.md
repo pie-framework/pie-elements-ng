@@ -9,7 +9,6 @@ This file is the single project guidance entry point for agent tools: the projec
 Use [`CONTEXT.md`](CONTEXT.md) as the canonical domain-language glossary. When naming model/session/controller concepts or writing PRDs, prefer those terms and update `CONTEXT.md` when a durable term is resolved.
 
 **Critical Requirements**:
-
 - **WCAG 2.2 Level AA** for all interaction components.
 - **Bun 1.3.11+** is the primary runtime; Node.js 20+ is supported.
 - **Svelte 5 with runes** for the elements written here, compiled to native custom elements; the React 18 elements ported from pie-elements ship as custom elements too.
@@ -25,7 +24,6 @@ Significant changes get a lightweight PRD (Product Requirements Document) at `do
 [`docs/prds/README.md`](docs/prds/README.md) owns the bar, the layout and facet files, the status vocabulary and status log, what a PRD leaves out, wireframes, open questions and the rules for keeping PRDs short. [`docs/prds/venn-classification/PRD.md`](docs/prds/venn-classification/PRD.md) is the canonical example for length and tone.
 
 **Working with a PRD in this codebase**:
-
 1. If a PRD exists for the task, read `PRD.md` first at the start of the session, and the `delivery.md` / `authoring.md` / `print.md` facet files whose concern the task touches. Treat its "Proposed surface" as the starting contract and do not silently substitute alternatives. A **Proposal**'s surface is not fixed yet: surface disagreement instead of implementing against it.
 2. If you propose changing the contract during implementation, surface it explicitly in the PR description and update the relevant section of the PRD in the same change, inline.
 3. If a task meets the bar and has no PRD, draft one from `docs/prds/_template.md` into `docs/prds/<slug>/PRD.md`; do not start implementation against an undocumented surface.
@@ -62,7 +60,6 @@ bun run lint:all && bun run test
 ## Shared Infra Guardrails
 
 Shared infrastructure stays generic. Do not introduce element-specific or package-specific workarounds in:
-
 - `packages/shared/bundler-shared/**`
 - `packages/element-player/**`
 - shared runtime infrastructure used across elements
@@ -95,7 +92,6 @@ pie-elements-ng/
 ## Code Quality Standards
 
 **After completing each feature or fix**:
-
 1. Run Biome with auto-fix: `bun run lint:fix`.
 2. Type-check each package you changed: `bunx tsc --noEmit -p packages/<group>/<name>`. The root `tsconfig.json` has no inputs, so `bunx tsc --noEmit` at the root checks nothing.
 3. Fix all errors and warnings before marking the task as complete.
@@ -103,7 +99,6 @@ pie-elements-ng/
 No Svelte type check runs in the build, the hooks or CI; the `.ts` files of Svelte packages are type-checked by their build's `tsc` step.
 
 **Before any merge request**:
-
 1. Biome, the Svelte `tag:` check and the element contracts pass: `bun run lint:all`
 2. Dependency integrity holds: `bun run verify:dependency-integrity --fail-on-hoist`
 3. The build passes: `bun run build`. Each package's build runs `tsc`, so this is the type check across all packages.
@@ -116,7 +111,6 @@ The lefthook pre-commit hook runs `lint:fix`, `scripts/type-check-staged.mjs` an
 ### Documentation-only changes
 
 A change made only of documentation gets no Jira ticket and no branch or pull request of its own. `scripts/lib/change-scope.mjs` defines documentation: `docs/` except the files a test reads, Markdown at the root, `.claude/` and `.agents/`. Package READMEs and changesets are not documentation.
-
 - Commit it to `develop` and push. The pre-push gate skips such a push, and CI on `develop` runs only `lint` for it.
 - When a review is wanted, collect the pending documentation in one `docs/` branch and merge it as one pull request. CI runs only `lint` for it.
 - A documentation edit that belongs to a code change stays in that change's branch.
@@ -130,7 +124,6 @@ A change made only of documentation gets no Jira ticket and no branch or pull re
 - **Coverage**: HTML/JSON/text reports via the V8 provider (`bun run test:coverage`)
 
 **Test dimensions**, the coverage checklist the `pie-element-author` skill applies:
-
 1. Rendering accuracy
 2. User interactions
 3. Accessibility compliance
@@ -149,7 +142,6 @@ A change made only of documentation gets no Jira ticket and no branch or pull re
 ### Entry Points per Element
 
 Each element package exports these entry points:
-
 - `.` and `./delivery` - the delivery custom element
 - `./author`, with `./configure` as an alias - the author view custom element
 - `./controller` - the PIE controller, for server and client
@@ -160,7 +152,6 @@ Each element package exports these entry points:
 ### PIE Controller Pattern
 
 Controllers must implement:
-
 - `model()` - Generate view model from question/session/environment
 - `outcome()` - Calculate score and provide feedback
 - `createDefaultModel()` - Default configuration
@@ -170,7 +161,6 @@ Controllers must implement:
 ### Mode-Based Rendering
 
 The environment's mode selects how a delivery element renders:
-
 - `gather` - Student interaction mode (answer collection)
 - `view` - Read-only preview
 - `evaluate` - Scoring and feedback display
@@ -195,7 +185,6 @@ bun run dev            # Watch mode
 ### Web Components and Reactivity
 
 Versioned `pie-*--version-*` tag names are authored content contracts. A `CustomElementRegistry` definition cannot be replaced, so each simultaneously loaded version registers under its own distinct tag. A private child tag an element defines itself carries its owning package version (a `--version-<encoded>` suffix), uses the same scoped name for registration and rendering, and is defined behind a `customElements.get` guard ([Custom Element Runtime](docs/PIE_ELEMENT_CONTRACT.md#custom-element-runtime)).
-
 - Treat custom elements as imperative APIs: set properties, not attributes.
 - Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only. At publish, `scripts/changeset-publish-resolved-workspaces.mjs` refuses a Svelte element whose dist calls `customElements.define(`.
 - Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
@@ -247,7 +236,6 @@ Elements, and the modules they run such as the MathJax adapter, follow pie-playe
 [ADR 0003](https://github.com/pie-framework/pie-players/blob/develop/docs/adr/0003-elements-read-accessibility-settings-from-a-host-neutral-context.md)
 when they read the student's accessibility settings. No element does yet: the accessibility review
 of 2026-10-05 kept `mathml` for every student, and the provider ships with its first consumer.
-
 - An element learns the student's accessibility settings only from the
   `Symbol.for("pie.accessibility")` context, whose key and type `@pie-players/pie-context` exports
   with the first consumer, and never imports `@pie-players/pie-assessment-toolkit`. A setting that
@@ -271,7 +259,6 @@ blur only.
 ### Accessibility Scenario Suite
 
 When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-demo/test/a11y/**`, `apps/element-a11y-demo/src/lib/samples/**`, or `docs/a11y/**`:
-
 - Use `.agents/skills/accessibility-reviewer-assessments/SKILL.md` for the detailed assessment-specific checklist.
 - Prefer dedicated a11y scenarios in `apps/element-a11y-demo/src/lib/a11y/scenarios/catalog.ts` over broad demo inventory coverage.
 - Keep automated scope explicit: document Axe-covered checks, custom Playwright checks, manual-only concerns, and unclear gaps in `docs/a11y/`.
@@ -287,7 +274,6 @@ When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-
 ## CLI Tools
 
 The oclif CLI in `tools/cli` runs as `bun run cli <command>`:
-
 - `dev:demo` - the unified demo app for all elements (`apps/element-demo`); `bun run dev:demo` runs it
 - `dev:test-bundler` - tests the PIE bundler service with local workspace packages
 - `docs:generate`, `docs:verify` - generate, or check the freshness of, the HTML docs artifacts built from per-element docs contracts
@@ -302,7 +288,6 @@ The oclif CLI in `tools/cli` runs as `bun run cli <command>`:
 from `develop` selected per package from npm's `gitHead`, a `.changeset/pr-<n>.md` that CI records
 for every merged PR, and `latest` from `master` through a "Version Packages" PR followed by a
 `master` -> `develop` back-merge. The binding rules:
-
 - **Versions only on `master`** (PIE-1121). Never put prerelease versions or
   `.changeset/pre.json` back on `develop`: a `develop` -> `master` merge would carry them to
   `master`, whose stable publish rejects them.
@@ -333,7 +318,6 @@ Workflows: `ci.yml` (pushes and PRs), `a11y.yml` (PRs), `e2e.yml` and `iife-test
 
 Canonical project skills live in `.agents/skills/`; each `.claude/skills/<name>/SKILL.md` carries only
 the frontmatter Claude Code discovers it by and a pointer to the record:
-
 - `accessibility-reviewer-assessments` — WCAG 2.2 AA and assessment-specific accessibility
   review of test-taking interfaces.
 - `conversation-to-prd` — turns a conversation, feature discussion or implementation plan into
@@ -349,7 +333,6 @@ the frontmatter Claude Code discovers it by and a pointer to the record:
 **Goal**: Achieve feature parity with original pie-elements (21 QTI 2.2 interaction types).
 
 **Progress**:
-
 - Svelte: 4 elements implemented
 - React: 27 elements implemented
 

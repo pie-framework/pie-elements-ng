@@ -36,7 +36,6 @@ No earlier keyboard behaviour exists to restore, so this PRD defines one. The ch
 **Modes**: keyboard operation in `gather` only. In `view` and `evaluate`, and in print, tokens are not operable and the text has no tab stop; selected tokens still expose their pressed state, marked unavailable, and stay reachable in screen-reader browse mode. In `evaluate` each correct, incorrect and missed token carries its marking as its description, from the Legend's translator keys (`correctAnswerSelected`, `incorrectSelection`, `correctAnswerNotSelected`) in the item language.
 
 **Key delivery interactions** (`gather`):
-
 - **Tab** enters the text on one token: the token last focused, else the first selected token, else the first token. **Tab** and **Shift+Tab** leave the text.
 - **Right / Down** move to the next token and **Left / Up** to the previous, in text order, stopping at the ends. **Home** and **End** move to the first and last token. Untokenized text is skipped.
 - **Space / Enter** toggle the focused token, and focus stays on it. The text re-renders from an HTML string on every change, so focus is restored explicitly.
@@ -48,7 +47,7 @@ No earlier keyboard behaviour exists to restore, so this PRD defines one. The ch
 
 ## Worked example
 
-> *Prompt*: Select the two sentences that describe the weather.
+> _Prompt_: Select the two sentences that describe the weather.
 
 Sentence mode, `maxSelections` = 2. Text: "The storm hit at dawn. Mara ran to the barn. Rain flooded the valley road. She found the calf asleep."
 

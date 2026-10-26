@@ -18,7 +18,6 @@ The prompt, teacher instructions, choices, and rationales have accessible names.
 Choice fields and correct-answer controls include the current letter or number,
 so repeated fields can be distinguished. Configured field labels are preserved
 in those names.
-
 - `src/author/__tests__/accessible-names.test.tsx` checks all eight rich-text
   fields and three correct-answer radios in a three-choice author, including a
   configured prompt-label change.

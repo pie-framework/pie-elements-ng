@@ -64,7 +64,7 @@ on:
         type: boolean
         default: false
       version_type:
-        description: 'Version bump type (major/minor/patch)'
+        description: "Version bump type (major/minor/patch)"
         required: false
         type: choice
         options:
@@ -134,7 +134,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       # Trusted publishing needs npm >= 11.5.1, which Node 24 bundles; this step holds the
       # release to it whatever Node .nvmrc pins.
@@ -548,8 +548,8 @@ jobs:
           publish-script: bun run release:publish:checked
           create-github-releases: false
           version-script: bun run version
-          pr-title: 'chore(release): version packages [skip-heavy-ci]'
-          commit-message: 'chore(release): version packages'
+          pr-title: "chore(release): version packages [skip-heavy-ci]"
+          commit-message: "chore(release): version packages"
           # v2 pushes through the GitHub API by default, which re-attributes the version commit
           # to the token's owner. Keep the Git CLI push v1 used.
           push-with-git-cli: true

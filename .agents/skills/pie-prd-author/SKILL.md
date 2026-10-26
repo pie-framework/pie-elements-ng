@@ -1,4 +1,5 @@
 ---
+
 name: pie-prd-author
 description: Drafts or updates a PIE element PRD following the project conventions in docs/prds/README.md. Use when starting a new element that meets the PRD bar, or when a substantial change requires updating an existing PRD.
 allowed-tools: Read, Write, Edit, Glob, Grep
@@ -43,7 +44,6 @@ The bar is set in `docs/prds/README.md` (When to write a PRD, Retroactive PRDs f
 ## Length Discipline
 
 Target: one screen (~60 lines of markdown). Red flags that indicate over-expansion:
-
 - Full TypeScript interface definitions in the PRD body.
 - Generic "Performance", "Security", or "Observability" sections with no element-specific content — omit them entirely.
 - A dated "Decision log" section — inline rationale next to the Non-goal or field it applies to.

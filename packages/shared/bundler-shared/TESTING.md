@@ -24,12 +24,10 @@ bun run test:iife:bundle
 This suite verifies, per element, that requested IIFE bundles are created and include expected runtime contract markers (`window.pie`, package keys, `Element`, `controller`, and `Configure` where applicable).
 
 Expected runtime:
-
 - Warm cache: ~5-10 minutes.
 - Cold cache: ~15-25 minutes.
 
 Failure triage:
-
 1. Run a single element contract check:
    `IIFE_ELEMENTS=multiple-choice bun run --cwd apps/element-demo test:iife:bundle`
 2. Inspect logs for stage transitions (`queued`, `installing`, `bundling`, `completed/failed`) and bundle hash.
@@ -62,7 +60,6 @@ bun cli dev:test-bundler --element hotspot
 ## How It Works
 
 The test command:
-
 1. **Builds Local Packages**
    - Builds the target element package
 
@@ -125,15 +122,19 @@ The bundler produces bundles compatible with the production `pie-api-aws` bundle
 
 ```javascript
 // Webpack IIFE wrapper
-(()=>{
+(() => {
   // Module system
-  var modules = { /* ... */ };
-  function require(id) { /* ... */ }
+  var modules = {
+    /* ... */
+  };
+  function require(id) {
+    /* ... */
+  }
 
   // Exports
   var exports = {
     '@pie-element/multiple-choice': { Element: MultipleChoice, controller: Controller },
-    '@pie-element/multiple-choice@0.1.0': { Element: MultipleChoice, controller: Controller }
+    '@pie-element/multiple-choice@0.1.0': { Element: MultipleChoice, controller: Controller },
   };
 
   // Global assignment
@@ -155,7 +156,6 @@ bun run build
 ### Build Failures
 
 If the element build fails, check:
-
 1. Element has a build script in package.json
 2. Element dependencies are installed
 3. Run `bun install` in the element directory
@@ -163,7 +163,6 @@ If the element build fails, check:
 ### Webpack Errors
 
 If webpack fails to resolve modules:
-
 1. Check that `node_modules/@pie-element/` contains the symlinked packages
 2. Verify the element's built `dist/` directory exists
 3. Use `--verbose` to see detailed webpack output
@@ -172,7 +171,6 @@ If webpack fails to resolve modules:
 ### Missing Packages
 
 If webpack can't find `@pie-element/*` packages:
-
 1. Make sure the repo's root `node_modules` is populated (`bun install` at root)
 2. The test automatically adds root node_modules to webpack's resolve paths
 3. Check that the missing package has been built (`turbo run build`)
@@ -180,7 +178,6 @@ If webpack can't find `@pie-element/*` packages:
 ## Next Steps
 
 To fully test the bundler:
-
 1. **Fix Transitive Dependencies**: Automatically discover and link all `@pie-element/*` deps
 2. **Integration Tests**: Test bundles with actual `pie-player-components`
 3. **Multiple Elements**: Test bundling multiple elements in one bundle

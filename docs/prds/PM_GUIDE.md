@@ -4,12 +4,12 @@ This repo can be used directly from Cursor or Claude Code for product drafting, 
 
 ## What To Edit Where
 
-| Work | Primary location | Notes |
-| --- | --- | --- |
+| Work                                                              | Primary location          | Notes                                                                                |
+| ----------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
 | Product contract for a new element or substantial behavior change | `docs/prds/<slug>/PRD.md` | Start from `_template.md`; keep it short and mark `Status: Proposal` until reviewed. |
-| A11y audit, coverage, and remediation scope | `docs/a11y` | Use `docs/a11y/_audit-template.md` and link to Jira/Confluence. |
-| Ticket status, owner, sprint, release | Jira | Ask the agent to update Jira only when you explicitly want it to write. |
-| Stakeholder rollup and initiative status | Confluence | Repo-managed sections are synced; PM status sections are edited in Confluence. |
+| A11y audit, coverage, and remediation scope                       | `docs/a11y`               | Use `docs/a11y/_audit-template.md` and link to Jira/Confluence.                      |
+| Ticket status, owner, sprint, release                             | Jira                      | Ask the agent to update Jira only when you explicitly want it to write.              |
+| Stakeholder rollup and initiative status                          | Confluence                | Repo-managed sections are synced; PM status sections are edited in Confluence.       |
 
 ## Drafting A PRD With An Agent
 
@@ -38,7 +38,6 @@ Do not implement code.
 ## Review Expectations
 
 Before moving a PRD from `Proposal` to `Accepted`:
-
 - Product agrees the goals and non-goals are right.
 - Engineering agrees the proposed model/session surface is implementable.
 - Accessibility concerns are covered or explicitly tracked as open questions.

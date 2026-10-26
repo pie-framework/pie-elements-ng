@@ -43,11 +43,13 @@ bun run test:coverage
 ## Test Performance
 
 ### Unit Tests
+
 - **Duration**: ~10-20ms
 - **Network**: Not required
 - **Cache**: Not applicable
 
 ### Integration Tests
+
 - **First Run**: 2-3 minutes per test (downloads packages from NPM)
 - **Cached Run**: 30-60 seconds per test (packages already downloaded)
 - **Network**: Required for package downloads
@@ -63,7 +65,6 @@ These directories are cleaned up automatically after tests complete.
 ### ⚠️ Current Limitation - Upstream Broken Dependencies
 
 **The integration tests currently cannot run successfully** because the older PIE element versions on NPM have broken dependencies:
-
 1. Versions like `@pie-element/multiple-choice@2.0.0` depend on: `mathquill@git+https://github.com/pie-framework/mathquill-webpack.git`
 2. This GitHub repository no longer exists (returns 404)
 3. Bun install fails when trying to resolve this missing git dependency
@@ -125,7 +126,6 @@ See [TESTING_WITH_WORKSPACE.md](./TESTING_WITH_WORKSPACE.md) for complete docume
 ## CI/CD Integration
 
 For CI environments, consider:
-
 1. **Caching NPM packages** between test runs
 2. **Parallel test execution** (tests are independent)
 3. **Timeout configuration** (increase for first runs)
@@ -143,12 +143,12 @@ Example GitHub Actions:
 ## Debugging Failed Tests
 
 If integration tests fail:
-
 1. Check network connectivity (NPM registry access)
 2. Verify Bun is installed and working
 3. Check disk space (bundles can be large)
 4. Review console output for webpack errors
 5. Manually inspect temp directories:
+
    ```bash
    ls -la /tmp/pie-bundler-test-output/
    ls -la /tmp/pie-bundler-test-cache/
@@ -157,7 +157,6 @@ If integration tests fail:
 ## Writing New Tests
 
 When adding new tests:
-
 1. Use descriptive test names
 2. Set appropriate timeouts (120s for builds, 60s for errors)
 3. Clean up resources in `afterAll`
@@ -169,7 +168,9 @@ Example:
 ```typescript
 it('should handle edge case', async () => {
   const result = await bundler.build({
-    dependencies: [/* ... */],
+    dependencies: [
+      /* ... */
+    ],
   });
 
   expect(result.success).toBe(true);

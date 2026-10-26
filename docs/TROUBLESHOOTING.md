@@ -22,11 +22,13 @@ Common issues and solutions for PIE Elements NG.
 1. Check package name spelling
 2. Verify package is published to npm registry
 3. Check npm registry configuration:
+
    ```bash
    npm config get registry
    # Should be https://registry.npmjs.org/
    ```
 4. Try with full scoped package name:
+
    ```bash
    npm install @pie-element/multiple-choice@latest
    ```
@@ -53,10 +55,12 @@ bun install
 
 **Solution:**
 1. Ensure TypeScript is installed:
+
    ```bash
    npm install -D typescript
    ```
 2. Check `tsconfig.json` includes node_modules:
+
    ```json
    {
      "compilerOptions": {
@@ -75,11 +79,13 @@ bun install
 
 **Solution:**
 1. Clear node_modules and reinstall:
+
    ```bash
    rm -rf node_modules package-lock.json
    npm install
    ```
 2. Check import paths are correct:
+
    ```typescript
    // ✅ Correct
    import MultipleChoice from '@pie-element/multiple-choice/delivery';
@@ -106,6 +112,7 @@ const { default: MultipleChoice } = await import('@pie-element/multiple-choice/d
 1. These are often false positives from monorepo structure
 2. If real, refactor shared code to break cycles
 3. Suppress warnings if unavoidable:
+
    ```typescript
    // vite.config.ts
    export default {
@@ -149,6 +156,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Importing a package does not register its element. Define each tag once, and guard against a second registration:
+
    ```javascript
    import MultipleChoice from '@pie-element/multiple-choice/delivery';
 
@@ -157,6 +165,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    }
    ```
 2. Avoid hot module replacement issues in dev:
+
    ```javascript
    if (import.meta.hot) {
      import.meta.hot.accept(() => {
@@ -171,6 +180,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Check event name spelling:
+
    ```javascript
    // ✅ Correct
    element.addEventListener('session-changed', handler);
@@ -180,6 +190,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    element.addEventListener('sessionChange', handler);
    ```
 2. Ensure element is mounted:
+
    ```javascript
    window.addEventListener('DOMContentLoaded', () => {
      const element = document.querySelector('pie-multiple-choice');
@@ -187,6 +198,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    });
    ```
 3. Read the response off the session object you set. The event bubbles, and its `detail` is `{ complete, component }` with no session ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)):
+
    ```javascript
    element.session = session;
 
@@ -196,6 +208,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
      }
    });
    ```
+
    Inside `<pie-element-player>`, the element's event stops at the element and the document hears the player's copy: the same detail plus `session`, with `target` the player.
 
 ### Props Not Updating
@@ -204,6 +217,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. For objects, create new reference:
+
    ```javascript
    // ✅ Correct - new object
    element.model = { ...element.model, prompt: 'New prompt' };
@@ -212,11 +226,13 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    element.model.prompt = 'New prompt';
    ```
 2. Check prop is reactive in framework:
+
    ```svelte
    <!-- Svelte sets `model` as a property on a defined custom element -->
    <pie-multiple-choice {model}></pie-multiple-choice>
    ```
 3. Force re-render if needed:
+
    ```javascript
    element.model = null;
    setTimeout(() => {
@@ -232,6 +248,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Use Vitest with happy-dom environment:
+
    ```typescript
    // vitest.config.ts
    export default {
@@ -241,6 +258,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    };
    ```
 2. Don't use Bun's test runner for component tests:
+
    ```bash
    # ✅ Correct
    bun run test  # Uses Vitest
@@ -255,6 +273,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Increase timeout:
+
    ```typescript
    test('my test', async ({ page }) => {
      await page.waitForSelector('pie-multiple-choice', {
@@ -263,10 +282,12 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    });
    ```
 2. Wait for network idle:
+
    ```typescript
    await page.goto('/question', { waitUntil: 'networkidle' });
    ```
 3. Use explicit waits:
+
    ```typescript
    await page.waitForFunction(() => {
      const el = document.querySelector('pie-multiple-choice');
@@ -280,11 +301,13 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Ensure all imports are correct:
+
    ```typescript
    import { render } from '@testing-library/svelte';
    import MultipleChoice from './MultipleChoice.svelte';
    ```
 2. Provide all required props:
+
    ```typescript
    const { getByRole } = render(MultipleChoice, {
      props: {
@@ -305,6 +328,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Solution:**
 1. Elements are custom elements with no callback props. React 18 passes JSX props to them as attributes, so set `model` and `session` through a ref and listen for `session-changed`, as in [React Components](API_REFERENCE.md#react-components).
 2. Check prop types match:
+
    ```tsx
    // Ensure session is object, not null initially
    const [session, setSession] = useState<Session>({ value: null });
@@ -316,6 +340,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Use v-bind for objects:
+
    ```vue
    <pie-multiple-choice
      :model="model"
@@ -323,6 +348,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    />
    ```
 2. Make data reactive:
+
    ```vue
    <script setup>
    import { ref, reactive } from 'vue';
@@ -338,6 +364,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Add to schemas:
+
    ```typescript
    import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
@@ -348,6 +375,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    })
    ```
 2. Import and define the element before use:
+
    ```typescript
    import MultipleChoice from '@pie-element/multiple-choice/delivery';
 
@@ -364,6 +392,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Lazy load elements:
+
    ```typescript
    // Load only when needed
    const loadElement = async () => {
@@ -374,6 +403,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    };
    ```
 2. Preload critical elements:
+
    ```html
    <link rel="modulepreload" href="/@pie-element/multiple-choice" />
    ```
@@ -385,6 +415,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Clean up event listeners:
+
    ```javascript
    // Svelte: automatic cleanup
    onDestroy(() => {
@@ -392,10 +423,12 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    });
    ```
 2. Destroy rich text editors:
+
    ```javascript
    // TipTap editor cleanup happens automatically in Svelte
    ```
 3. Clear large data when unmounting:
+
    ```javascript
    onDestroy(() => {
      model = null;
@@ -409,6 +442,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Debounce session updates:
+
    ```typescript
    import { debounce } from 'lodash-es';
 
@@ -418,6 +452,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    ```
 2. Use virtual scrolling for long lists
 3. Optimize re-renders:
+
    ```svelte
    <!-- Svelte: Use $derived for computed values -->
    const filteredChoices = $derived(
@@ -433,10 +468,12 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Check DaisyUI theme is set:
+
    ```html
    <html data-theme="light">
    ```
 2. Verify CSS variables are defined:
+
    ```css
    :root {
      --color-primary: #3b82f6;
@@ -444,6 +481,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    }
    ```
 3. Check specificity isn't too low:
+
    ```css
    /* ✅ Specific enough */
    pie-multiple-choice .choice {
@@ -462,6 +500,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Scope your global styles:
+
    ```css
    /* Don't affect PIE elements */
    :not(pie-multiple-choice) button {
@@ -469,6 +508,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    }
    ```
 2. Use CSS layers:
+
    ```css
    @layer base, components, pie-elements;
 
@@ -477,6 +517,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
    }
    ```
 3. Increase specificity for overrides:
+
    ```css
    pie-multiple-choice button.submit {
      /* Override PIE defaults */
@@ -489,10 +530,12 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 
 **Solution:**
 1. Set data-theme dynamically:
+
    ```javascript
    document.documentElement.setAttribute('data-theme', 'dark');
    ```
 2. Check theme attribute inheritance:
+
    ```html
    <!-- Theme should be on root -->
    <html data-theme="dark">
@@ -525,7 +568,6 @@ localStorage.setItem('debug', '*');
 ### Reporting Issues
 
 When reporting issues, include:
-
 1. **Environment**:
    - Browser and version
    - Framework and version

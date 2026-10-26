@@ -32,7 +32,7 @@ This PRD adds an item-level setting that makes the response paste plain text. Se
 
 ## Worked example
 
-> *Prompt*: Summarise the passage in two paragraphs.
+> _Prompt_: Summarise the passage in two paragraphs.
 
 A student drafts in Word, with the first sentence in bold and three points as a bulleted list, then pastes the draft into the response. With the setting off, the first sentence stays bold and each point becomes a paragraph of its own. With the setting on, the same paste arrives as plain paragraphs, the first sentence included, and `session.value` holds no `<strong>`.
 

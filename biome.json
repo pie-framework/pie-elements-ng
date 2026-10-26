@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -67,9 +67,42 @@
   },
   "overrides": [
     {
-      "includes": ["packages/shared/i18n/tests/i18n-conformance-fixtures.json"],
+      "includes": [
+        "packages/shared/i18n/tests/i18n-conformance-fixtures.json",
+        "docs/a11y/theme-gap-inventory.md"
+      ],
       "formatter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "usePlaywrightValidDescribeCallback": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.spec.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "useDomNodeTextContent": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["scripts/**", "**/vitest.config.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUndeclaredEnvVars": "off"
+          }
+        }
       }
     },
     {

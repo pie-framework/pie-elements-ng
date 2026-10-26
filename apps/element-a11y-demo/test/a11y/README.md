@@ -31,7 +31,6 @@ The Playwright config starts the demo app automatically. If you already have the
 ## Reports
 
 Reports are written to `apps/element-a11y-demo/test-results/a11y/`:
-
 - `axe-a11y-scenarios-report.json`: machine-readable scenario coverage and findings.
 - `axe-a11y-scenarios-report.md`: human-readable scenario summary grouped by element and concern.
 - `axe-a11y-report.json`: stable machine-readable inventory and findings.
@@ -49,7 +48,6 @@ Set `A11Y_ENFORCE=1` to make curated scenario findings fail locally when experim
 with future gating.
 
 Each finding includes:
-
 - Element, scenario, purpose, WCAG criteria, concern tags, mode, role, and repro route.
 - Axe rule ID, impact, help URL, tags, selector target, and HTML context.
 - Scenario check failures for keyboard reachability, accessible names, target sizing, or
@@ -113,7 +111,6 @@ above. They are intentionally unavailable outside local dev mode.
 The `A11y Scenarios` GitHub workflow is **non-blocking**: the job uses
 `continue-on-error: true`, so Axe findings never fail a check. What runs depends on the
 trigger:
-
 - **Every pull request** to `master`/`develop` runs the curated **scenarios only**
   (fast per-PR feedback).
 - **Release PRs into `master`** (e.g. a `develop` -> `master` PR) and **manual
@@ -121,7 +118,6 @@ trigger:
   release-boundary sweep. The inventory step is skipped on regular PRs into `develop`.
 
 In every case it then:
-
 - writes the Markdown summary to the GitHub Actions **job step summary**, so violations
   are readable directly on the workflow run page without downloading anything, and
 - uploads the JSON, Markdown, and Playwright HTML reports as the `axe-a11y-reports`

@@ -3,7 +3,6 @@
 Status: **Accepted** · Tier: 2 · Impl. path: New `@pie-element/video-stimulus`
 
 Detailed facets:
-
 - [Delivery interface](./delivery.md)
 - [Authoring interface](./authoring.md)
 - [Delivery HTML mockup](./wireframes/delivery.html)
@@ -36,7 +35,6 @@ This PRD consumes the accepted [media asset](https://github.com/pie-framework/pi
 ## Proposed surface
 
 **Model**:
-
 - `id` / `element` — normal PIE Model identity.
 - `media` — nested `MediaAssetRef` with `version: 1` and `kind: "video"`; nesting prevents collision between element and asset IDs.
 - `language` — BCP 47 locale for element-owned learner UI, distinct from `media.lang`.
@@ -51,7 +49,6 @@ This PRD consumes the accepted [media asset](https://github.com/pie-framework/pi
 **Modes**: `gather`, `view`, and `evaluate` use the same playable surface. `configure` is the package author export. Read-only response mode does not disable stimulus playback.
 
 **Controller responsibilities**:
-
 - `createDefaultModel()` returns a structurally valid source-less authoring draft; `validateDraft()` accepts missing content but rejects malformed supplied values.
 - `validate()` is strict publish validation: correct version/kind, asset ID/label/language, at least one safe source, durable URLs, valid numeric metadata, complete tracks, one default track, valid transcript, and resolved accessibility declarations.
 - `model()` returns a typed safe ViewModel, preserves source order, applies presentation/i18n defaults, and ignores the generic Session argument.
@@ -64,14 +61,13 @@ This PRD consumes the accepted [media asset](https://github.com/pie-framework/pi
 
 ## Worked example
 
-> *Prompt*: Watch the lab safety demonstration. Questions appear when the video reaches relevant steps.
+> _Prompt_: Watch the lab safety demonstration. Questions appear when the video reaches relevant steps.
 
 The element renders local demo video, captions, and transcript in the passage selected by `TimedMediaSectionData.stimulusRef`. At cue 1, the section controller reveals a safety-equipment question. At a later required cue, it pauses through `MediaTimeSource`, reveals a handling-procedure question, and persists timed-media state. The element knows neither question identity nor completion state.
 
 ## Accessibility
 
 WCAG 2.2 AA is the baseline; element-specific details are in the facet files.
-
 - Meaningful synchronized audio requires captions; subtitles do not automatically count.
 - Important visual information must be described in main/integrated audio in v1. A native `descriptions` text track is rendered but does not count as verified spoken audio description without browser/AT evidence.
 - Transcript is strongly recommended and remains available on playback failure, but does not universally replace captions or audio description.
@@ -82,7 +78,6 @@ WCAG 2.2 AA is the baseline; element-specific details are in the facet files.
 ## Architecture proof
 
 Release evidence must cover both sides of the seam:
-
 - `pie-elements-ng`: packed browser exports load a versioned element whose light-DOM video, tracks, transcript, authoring, and error states work without a Session.
 - `pie-players`: a package-backed timed-media section has two linked question cues; real muted playback reveals them separately, reports an attached media source, and does not fall through the missing-source degradation path.
 
@@ -90,7 +85,7 @@ The integration uses an extracted `npm pack` artifact routed through the existin
 
 ## Open questions
 
-*(none at this time)*
+_(none at this time)_
 
 ## Status log
 
