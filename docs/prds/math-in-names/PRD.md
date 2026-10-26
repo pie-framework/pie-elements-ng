@@ -36,15 +36,15 @@ Screen-reader testing compared those spoken names with names that leave the math
 
 ## Worked example
 
-> *Prompt*: "Which of the following is the correct quadratic formula for solving \(ax^2 + bx + c = 0\)?" Choice A: \(x = \frac{-b \pm \sqrt{b^2+4ac}}{2a}\)
+> _Prompt_: "Which of the following is the correct quadratic formula for solving \(ax^2 + bx + c = 0\)?" Choice A: \(x = \frac{-b \pm \sqrt{b^2+4ac}}{2a}\)
 
-| | |
-|---|---|
-| Group name | "Answer choices" |
-| Choice A name | "A. Pick the answer below" |
-| Reading mode | the prompt as MathML; "A. Pick the answer below, radio button"; the formula as MathML |
-| Braille | "A. Pick the answer below", then the formula as math braille |
-| Read-aloud | the prompt, then each choice's formula, from MathML |
+|               |                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------- |
+| Group name    | "Answer choices"                                                                      |
+| Choice A name | "A. Pick the answer below"                                                            |
+| Reading mode  | the prompt as MathML; "A. Pick the answer below, radio button"; the formula as MathML |
+| Braille       | "A. Pick the answer below", then the formula as math braille                          |
+| Read-aloud    | the prompt, then each choice's formula, from MathML                                   |
 
 A text-only choice such as "25 and 200" is named "A 25 and 200".
 

@@ -1,4 +1,5 @@
 ---
+
 name: accessibility-reviewer-assessments
 description: Reviews educational assessment interfaces for WCAG 2.2 Level AA compliance and assessment-specific accessibility needs. Use when implementing new interactions, reviewing UI changes, or conducting accessibility audits of test-taking interfaces.
 allowed-tools: Read, Glob, Grep, Bash
@@ -12,7 +13,6 @@ This skill helps review educational assessment component libraries for accessibi
 ## When to Use This Skill
 
 Invoke this skill when:
-
 - Implementing new interaction types or question formats as reusable components
 - Reviewing web components or HTML custom elements
 - Conducting accessibility audits of UI component libraries
@@ -164,7 +164,6 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Focus management works correctly with shadow DOM boundaries
 
 **Educational interaction keyboard patterns:**
-
 - [ ] Tab/Shift+Tab: Navigate between interactive elements
 - [ ] Arrow keys: Navigate within choice lists, drag-and-drop zones
 - [ ] Space/Enter: Select choices, activate buttons
@@ -531,7 +530,6 @@ class ChoiceInteraction extends HTMLElement {
 ## Review Process
 
 When conducting an accessibility review:
-
 1. **Keyboard Navigation Test**
    - Tab through entire interface without mouse
    - Verify all interactions work with keyboard
@@ -568,10 +566,12 @@ When conducting an accessibility review:
 Provide feedback in this structure:
 
 ### ✅ Accessibility Strengths
+
 - What's working well
 - Good patterns to reinforce
 
 ### 🚨 Critical Issues (WCAG Violations)
+
 For each violation:
 - **WCAG Criterion**: e.g., 1.4.3 Contrast (Level AA)
 - **Severity**: Blocker / High / Medium
@@ -581,11 +581,13 @@ For each violation:
 - **Fix**: Specific solution with code
 
 ### ⚠️ Assessment-Specific Concerns
+
 - Test-taking context issues
 - K-12 learner considerations
 - Interaction type accessibility
 
 ### 💡 Enhancements
+
 - Optional improvements beyond WCAG AA
 - Level AAA considerations
 - UX improvements for accessibility

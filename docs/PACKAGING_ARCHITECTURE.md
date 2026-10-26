@@ -14,11 +14,11 @@ enforce the contract.
 Each element package can produce three related, but intentionally different,
 artifact families.
 
-| Family | Typical output | Package surface | Dependency policy | Primary consumers |
-| --- | --- | --- | --- | --- |
-| Node and builder ESM | `dist/<view>/index.js` | `.`, `./delivery`, `./author`, `./print`, `./controller` | Most runtime dependencies are externalized for the host bundler | Node tools, package builders, in-repo ESM player mode |
-| Browser player ESM | `dist/browser/<view>/index.js` | `./browser/delivery`, `./browser/author`, `./browser/print`, `./browser/controller` | React and React DOM are shared singletons; other UI/runtime leaf dependencies stay bundled | Static browser players such as `pie-players` |
-| IIFE | `dist/index.iife.js` or generated `player.js`, `client-player.js`, `editor.js` bundles | Script/global output, not package subpath imports at runtime | Per-element IIFE bundles everything; multi-element bundler externalizes selected shared PIE libs | `@pie-framework/pie-player-components`, legacy players, and demo IIFE strategy |
+| Family               | Typical output                                                                         | Package surface                                                                     | Dependency policy                                                                                | Primary consumers                                                              |
+| -------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Node and builder ESM | `dist/<view>/index.js`                                                                 | `.`, `./delivery`, `./author`, `./print`, `./controller`                            | Most runtime dependencies are externalized for the host bundler                                  | Node tools, package builders, in-repo ESM player mode                          |
+| Browser player ESM   | `dist/browser/<view>/index.js`                                                         | `./browser/delivery`, `./browser/author`, `./browser/print`, `./browser/controller` | React and React DOM are shared singletons; other UI/runtime leaf dependencies stay bundled       | Static browser players such as `pie-players`                                   |
+| IIFE                 | `dist/index.iife.js` or generated `player.js`, `client-player.js`, `editor.js` bundles | Script/global output, not package subpath imports at runtime                        | Per-element IIFE bundles everything; multi-element bundler externalizes selected shared PIE libs | `@pie-framework/pie-player-components`, legacy players, and demo IIFE strategy |
 
 The in-repo `@pie-element/element-player` ESM path loads the standard package
 subpaths such as `@pie-element/multiple-choice/author` and
@@ -180,14 +180,15 @@ Rolldown represents those cases with a generated helper that tries to call
 `require` if the environment provides it and otherwise throws an error like:
 
 ```js
-var req = /* @__PURE__ */ ((fallback) =>
-  typeof require < "u" ? require : fallback)(function (id) {
-  throw Error(
-    'Calling `require` for "' +
-      id +
-      "\" in an environment that doesn't expose the `require` function."
-  );
-});
+var req = /* @__PURE__ */ ((fallback) => (typeof require < 'u' ? require : fallback))(
+  function (id) {
+    throw Error(
+      'Calling `require` for "' +
+        id +
+        '" in an environment that doesn\'t expose the `require` function.'
+    );
+  }
+);
 ```
 
 That helper is not browser-safe. The browser build therefore uses
@@ -201,7 +202,6 @@ var req = __pieBrowserCjsRequire;
 ```
 
 The dispatcher is intentionally small and allow-listed:
-
 - `react`, `react-dom`, and `react-dom/client` are mapped to real ESM imports.
   They remain browser shared singletons owned by the player import map.
 - `classnames` is mapped to a tiny inline implementation that handles strings,
@@ -215,7 +215,7 @@ The dispatcher is intentionally small and allow-listed:
 For example, a dependency chunk that contains:
 
 ```js
-var PropTypes = req("prop-types");
+var PropTypes = req('prop-types');
 Icon.propTypes = {
   title: PropTypes.string,
   size: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -231,7 +231,6 @@ The shim is a compatibility boundary for browser packaging, not a new dependency
 policy. If a generated browser chunk calls the helper with any unsupported
 package-shaped target, the plugin fails the build instead of silently shipping a
 runtime error. Add a new target only when all of the following are true:
-
 - Upgrading, replacing, or removing the dependency is not currently viable.
 - The dependency is browser-reachable and required for an element we need to
   ship.
@@ -318,14 +317,14 @@ bundle manifest.
 
 Dependency handling is different for each runtime surface:
 
-| Layer | Where dependencies come from | Singleton or external policy |
-| --- | --- | --- |
-| Node/builder ESM | Host package manager and host bundler | Generated Vite configs externalize common runtime libraries and workspace packages |
-| Browser player ESM | Static `dist/browser` files plus player import map | Only `allowedBareImports` are external; currently React, JSX runtimes, React DOM, and React DOM client |
+| Layer                                      | Where dependencies come from                                                                   | Singleton or external policy                                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Node/builder ESM                           | Host package manager and host bundler                                                          | Generated Vite configs externalize common runtime libraries and workspace packages                                  |
+| Browser player ESM                         | Static `dist/browser` files plus player import map                                             | Only `allowedBareImports` are external; currently React, JSX runtimes, React DOM, and React DOM client              |
 | Browser player ESM, editor-runtime variant | Static `dist/browser/editor-runtime` files plus the runtime's modules in the player import map | `allowedBareImports` and the specifiers in `@pie-element/shared-editor-runtime`'s `pie.browserModules` are external |
-| Per-element IIFE | The element's IIFE build output | Everything is bundled into that element's IIFE |
-| Multi-element IIFE bundler | Temporary install workspace created by `@pie-element/element-bundler` | `@pie-lib/pie-toolbox` and `@pie-lib/math-rendering` are externalized shared PIE libs |
-| Demo dev server | Workspace files and optimized dependencies | Additional ProseMirror aliases pin editor packages to one physical Bun store copy |
+| Per-element IIFE                           | The element's IIFE build output                                                                | Everything is bundled into that element's IIFE                                                                      |
+| Multi-element IIFE bundler                 | Temporary install workspace created by `@pie-element/element-bundler`                          | `@pie-lib/pie-toolbox` and `@pie-lib/math-rendering` are externalized shared PIE libs                               |
+| Demo dev server                            | Workspace files and optimized dependencies                                                     | Additional ProseMirror aliases pin editor packages to one physical Bun store copy                                   |
 
 The browser singleton contract is intentionally not inferred from
 `dependencies` or `peerDependencies`. Those fields describe installation.
@@ -342,7 +341,6 @@ for browser ESM consumers.
 ## Runtime Consumption
 
 `packages/element-player` supports three strategies:
-
 - `esm` dynamically imports package subpaths such as
   `@pie-element/<name>`, `@pie-element/<name>/author`,
   `@pie-element/<name>/print`, and `@pie-element/<name>/controller`.
@@ -367,7 +365,6 @@ they ask the PIE build service for script bundles and then read constructors fro
 `window.pie.default`.
 
 The important bundle shapes are:
-
 - `pie-player` requests `player.js` for hosted item delivery. It requires
   `Element` only.
 - `pie-player` requests `client-player.js` for client-side item preview and
@@ -385,7 +382,6 @@ The production `pie-api-aws` bundler at `../../kds/pie-api-aws/packages/bundler`
 is older than `packages/shared/bundler-shared` and has a stricter compatibility
 requirement. It reads `pkg.pie.controller` and `pkg.pie.configure` from the
 installed element package, then generates:
-
 - `player.js` from `pkg.pie.element`,
 - `client-player.js` from `pkg.pie.element` plus `pkg.pie.controller`,
 - `editor.js` from `pkg.pie.element`, `pkg.pie.controller`, and
@@ -406,7 +402,6 @@ bun run verify:element-contracts
 ```
 
 That command orchestrates the contract-relevant checks:
-
 - `scripts/check-publish-surface.mjs` verifies dist-only exports, rejects
   forbidden export conditions such as `development` and `svelte`, rejects a
   `svelte` dependency or a runtime `svelte` import in any publishable package,

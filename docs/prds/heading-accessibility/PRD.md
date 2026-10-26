@@ -15,7 +15,6 @@ This PRD defines the intended end-state contract: a host supplies the base headi
 ## Implementation snapshot
 
 Verified in this repo:
-
 - `@pie-lib/editable-html-tip-tap` registers `HeadingParagraph`; the existing Heading toolbar button writes and preserves `<p data-heading="heading1">` instead of a literal heading.
 - `@pie-lib/render-ui` exports `transformDataHeadings(html, baseLevel)`, which promotes `data-heading="headingN"` nodes to clamped native headings and preserves their other attributes.
 - React passage renders its title at the supplied base and transforms passage body markers starting at `base + 1`.
@@ -24,7 +23,6 @@ Verified in this repo:
 - Passage, multiple-choice, and EBSR observe heading-related attributes on their nearest `pie-player` or `pie-item-player` and rerender when those attributes change.
 
 Not yet present or not verified in this repo:
-
 - no Svelte `RichText` wrapper or Svelte `transformDataHeadings` implementation;
 - no broad adoption across the remaining React rich-HTML render paths;
 - no three-level authoring picker, heading keyboard shortcuts, paste normalization, or preview base-level toggle;
@@ -34,7 +32,6 @@ Not yet present or not verified in this repo:
 ### Contract conflicts to resolve
 
 The shipped slice does **not** implement the proposed player contract below:
-
 - Current elements read top-level `baseHeadingLevel` / `base-heading-level`; the proposal uses `accessibility.baseHeadingLevel` with attribute sugar and inheritance across item, section, and element players.
 - Current multiple-choice and EBSR use `includeSrHeading` / `include-sr-heading`, defaulting to `true`; the proposal uses `accessibility.showFramingHeading`, defaulting to false. These are not simple renames: one controls whether an existing screen-reader heading is included, while the proposal describes opt-in promotion of a framing wrapper.
 - Current elements discover only the nearest `pie-player` or `pie-item-player`; section/element-player propagation and nearest-ancestor inheritance are not implemented here.
@@ -43,7 +40,7 @@ The shipped slice does **not** implement the proposed player contract below:
 
 ## Goals
 
-- Authors mark headings inside rich content at *relative* importance ("heading 1", "heading 2", "heading 3") and never name an absolute `<hX>` level.
+- Authors mark headings inside rich content at _relative_ importance ("heading 1", "heading 2", "heading 3") and never name an absolute `<hX>` level.
 - Hosts declare where a player sits in their page outline via a single property, and every element inside that player picks the right `<hX>` tag automatically for both authored content and element-owned framing.
 - Hosts that do nothing see byte-identical output on upgrade — no tag changes, no landmarks appearing or disappearing.
 - Screen-reader users get a heading outline whose nesting matches the host's own outline, without skipped levels within a single element's output.
@@ -70,7 +67,6 @@ This section is the **target contract**, not a description of the currently ship
 The same `accessibility` object shape lives on every player; children inherit from the nearest ancestor player when unset. Elements consume the object but never emit `<hX>` tags directly — every semantic heading in output comes either from promoting a framing wrapper or from the shared transform, so enforcement (below) has a single surface to police.
 
 **Player contract.** `pie-item-player`, `pie-section-player`, `pie-element-player` (in both `pie-players` and `pie-elements-ng`) expose an `accessibility` property:
-
 - `accessibility.baseHeadingLevel?: 1 | 2 | 3 | 4 | 5 | 6` — the level of the first heading emitted inside this player. Undefined means the transform does not run and framing headings are not promoted. Precedent: `pie-section-player` already carries `accessibility: Object` ([`PieSectionPlayerBaseElement.svelte:16`](https://github.com/RenaissancePlace/pie-players/blob/main/packages/section-player/src/components/PieSectionPlayerBaseElement.svelte)); this PRD extends that shape and mirrors it onto every player.
 - `accessibility.showFramingHeading?: boolean` — whether the element's own framing wrapper (passage title, "Multiple Choice Question" landmark, EBSR "Two-Part Question" and part labels) is promoted to a semantic `<hX>` at `baseHeadingLevel`. Undefined or false keeps the wrapper as today's non-heading node (styled div or screen-reader-only span), so visible layout and existing framing landmarks are preserved.
 
@@ -126,7 +122,6 @@ Host C sets nothing on upgrade. Output is byte-identical to today: passage title
 ## Accessibility
 
 WCAG 2.2 AA baseline applies (see [`docs/ACCESSIBILITY.md`](../../ACCESSIBILITY.md)). The element-specific requirements this PRD codifies:
-
 - **1.3.1 Info and Relationships / 2.4.6 Headings and Labels / 2.4.10 Section Headings**: every heading emitted by a PIE element appears in the document heading outline at a level that slots correctly under the host's own outline when the host opts in.
 - **No skipped levels within an element's output.** Inline markers render at exactly `base + (N - 1)` (clamped to `h6`); the transform never inserts or omits levels the author did not express.
 - **Host opt-out preserves existing assistive-tech landmarks.** Current framing headings (passage `<h2>` title, EBSR `<h2 class="srOnly">Two-Part Question</h2>`, multiple-choice `<h3 class="srOnly">Multiple Choice Question</h3>`) continue to render for hosts that do not opt in, so screen-reader users of un-upgraded hosts do not lose navigation landmarks on ship day.

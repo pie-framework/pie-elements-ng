@@ -11,17 +11,14 @@ The element player is a **standalone web component bundle** (`pie-element-player
 ## Recommendation
 
 Use the player as a **Node package dependency** in modern applications.
-
 - Recommended: install/import via package manager and bundle with your app.
 - Secondary/fallback: dynamic script/import-map loading for environments that cannot bundle.
 
 Positioning note:
-
 - In normal production integrations, use the standard production player stacks from the `pie-elements` and `pie-players` projects.
 - Treat `@pie-element/element-player` as a flexible element-level host for development, testing, and composable/advanced embedding scenarios.
 
 Why this is preferred:
-
 - Better build-time optimization and dependency deduplication
 - More reliable versioning through lockfiles
 - Better TypeScript/IDE support and compile-time validation
@@ -80,21 +77,18 @@ For elements with import maps:
 ### Unified Player
 
 **Delivery view (`<pie-element-player view="delivery">`):**
-
 - Loads elements via dynamic ESM imports: `import('@pie-element/hotspot')`
 - Handles session state and user interactions
 - Emits `session-changed` events
 - Works with both React and Svelte elements
 
 **Print view (`<pie-element-player view="print">`):**
-
 - Loads print exports: `import('@pie-element/hotspot/print')`
 - Stateless (no session management)
 - Optimized for print layouts
 - Role-based rendering (student/instructor)
 
 **All views:**
-
 - Use import maps for module resolution
 - Self-contained (no external setup needed)
 - Support for both React and Svelte elements
@@ -107,18 +101,18 @@ The player typesets math through `window['@pie-lib/math-rendering'].renderMath`,
 
 The player dispatches each event from `<pie-element-player>`, bubbling and composed. A bubble-phase listener on the player, on an ancestor or on `document` hears each event once, with `event.target` the player; a listener outside a shadow root that contains the player sees that root's host instead. The element's own `session-changed` stops at the element, and the player dispatches its copy in its place. A capture-phase listener on the player or above it also hears every `session-changed` the element dispatches, ahead of the player's copy, and should ignore events whose `event.composedPath()[0]` is not the player. That equals `event.target` when no shadow root lies between listener and player. A closed shadow root hides the player from both, so listen in the bubble phase there.
 
-| Event | When | `detail` |
-|---|---|---|
-| `session-changed` | delivery: the learner changes the session, or the element re-reports a session the player set (below) | the element's detail, with `session` the new session |
-| `model-changed` | author: the author edits the model | the whole model |
-| `load-complete` | the element is mounted | `strategy`, `view`, `tagName` |
-| `load-cancelled` | a newer load supersedes this one, or the load fails with an abort error (below) | `reason`, `strategy`, `view` |
-| `player-error` | the load fails | `error`, `strategy`, `view`, `retry` |
-| `build-state` | the load changes stage | `loading`, `error`, `stage`, and `strategy`, `view`, `retry` where known |
-| `bundle-retry-status` | IIFE: a bundle build is polled; any strategy: the load fails with an abort error | the retry state |
-| `bundle-meta` | IIFE: the bundle loads | the bundle's metadata |
-| `controller-load` | a load completes, except a `preloaded` one that finds its tag defined (below) | `status`, `source`, `packageName`, `strategy`, `view`, `message` |
-| `controller-changed` | IIFE delivery: the bundle's controller loads | the controller |
+| Event                 | When                                                                                                  | `detail`                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `session-changed`     | delivery: the learner changes the session, or the element re-reports a session the player set (below) | the element's detail, with `session` the new session                     |
+| `model-changed`       | author: the author edits the model                                                                    | the whole model                                                          |
+| `load-complete`       | the element is mounted                                                                                | `strategy`, `view`, `tagName`                                            |
+| `load-cancelled`      | a newer load supersedes this one, or the load fails with an abort error (below)                       | `reason`, `strategy`, `view`                                             |
+| `player-error`        | the load fails                                                                                        | `error`, `strategy`, `view`, `retry`                                     |
+| `build-state`         | the load changes stage                                                                                | `loading`, `error`, `stage`, and `strategy`, `view`, `retry` where known |
+| `bundle-retry-status` | IIFE: a bundle build is polled; any strategy: the load fails with an abort error                      | the retry state                                                          |
+| `bundle-meta`         | IIFE: the bundle loads                                                                                | the bundle's metadata                                                    |
+| `controller-load`     | a load completes, except a `preloaded` one that finds its tag defined (below)                         | `status`, `source`, `packageName`, `strategy`, `view`, `message`         |
+| `controller-changed`  | IIFE delivery: the bundle's controller loads                                                          | the controller                                                           |
 
 `session-changed` also fires with no learner action. Once the element has a model, the player sets `session` on it, and sets it again whenever the host assigns a different session. A report the element dispatches while that setter runs is dropped; one it dispatches after the setter returns is forwarded.
 
@@ -138,7 +132,6 @@ bun cli dev:demo
 ```
 
 **Prerequisites:**
-
 - Element must be built: `bun run turbo build --filter @pie-element/hotspot`
 - Element player must be built: `bun run turbo build --filter @pie-element/element-player`
 

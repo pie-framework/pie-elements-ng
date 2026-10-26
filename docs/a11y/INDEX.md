@@ -4,17 +4,16 @@ This directory is the repo-side workspace for PIE accessibility audit and remedi
 
 ## Source Of Truth
 
-| Surface | Owns | Does not own |
-| --- | --- | --- |
+| Surface                  | Owns                                                                                   | Does not own                                  |
+| ------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------- |
 | Repo docs in `docs/a11y` | Element coverage, scenario IDs, automated/manual boundaries, code-adjacent audit notes | Sprint status, ownership, release commitments |
-| Repo PRDs in `docs/prds` | Proposed or accepted product contracts for element changes | Retroactive docs for stable behavior |
-| Jira | Work state, assignee, sprint/release tracking, canonical ticket discussion | Detailed model/session contracts |
-| Confluence | Program rollups, stakeholder-facing group status, links to repo/Jira | Canonical code-adjacent behavior |
+| Repo PRDs in `docs/prds` | Proposed or accepted product contracts for element changes                             | Retroactive docs for stable behavior          |
+| Jira                     | Work state, assignee, sprint/release tracking, canonical ticket discussion             | Detailed model/session contracts              |
+| Confluence               | Program rollups, stakeholder-facing group status, links to repo/Jira                   | Canonical code-adjacent behavior              |
 
 ## Sync Model
 
 Confluence pages use managed sections generated from this repo and PM-editable sections maintained in Confluence.
-
 - Repo-to-Confluence sync updates only managed summary blocks.
 - Confluence-to-repo sync pulls only explicit status fields into structured local metadata.
 - The sync tool must not overwrite freeform PM notes or stakeholder discussion.

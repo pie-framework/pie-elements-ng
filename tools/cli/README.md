@@ -145,7 +145,6 @@ bun run lint
 ## Architecture
 
 The CLI is built with [oclif](https://oclif.io/), following the same architecture as the pie-qti CLI.
-
 - **Commands**: Located in `src/commands/` organized by topic
 - **Utilities**: Shared utilities in `src/utils/`
 - **Topics**: Commands are grouped into topics (dev, packages, docs, verify)

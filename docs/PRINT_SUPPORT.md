@@ -135,12 +135,12 @@ export default class MultipleChoicePrint extends HTMLElement {
 Print is bundled by **Vite**, per element package, from the single
 `src/print/index.tsx` entry. Up to four artifacts are produced:
 
-| Artifact | Built by | Purpose |
-| --- | --- | --- |
-| `dist/print/index.js` | the package's `vite.config.ts` | Node / bundler ESM. Keeps **bare imports** (`@pie-element/*`, `@pie-lib/*`, …). Loads in a browser **only when the host resolves them** — via a full import map or a bundler. Not self-contained. |
-| `dist/browser/print/index.js` | `tools/vite/element-browser.config.ts` | Browser ESM. **This is what the item-level `@pie-players/pie-print-player` loads.** Self-contained except for React (only `react` / `react-dom` stay external, resolved via an import map the player injects). |
-| `dist/browser/editor-runtime/print/index.js` | `tools/vite/element-browser-editor-runtime.config.ts` (React) / `tools/vite/svelte-element-browser-editor-runtime.config.ts` (Svelte) | Browser ESM, the editor-runtime variant of `dist/browser/print/index.js`, with the `@pie-element/shared-editor-runtime` specifiers external. Players load it from the path in `pie.browserEditorRuntime.views.print`. Built by the 11 print elements that bundle the editor engine; mc-populated-blank has none. See [Shared Editor Runtime](./PIE_ELEMENT_CONTRACT.md#shared-editor-runtime). |
-| `module/print.js` | `tools/vite/element-legacy-print.config.ts` (React) / `tools/vite/svelte-element-legacy-print.config.ts` (Svelte) | Browser ESM. **This is what the legacy `@pie-framework/pie-print` client loader requests** (`https://cdn.jsdelivr.net/npm/<pkg>/module/print.js`, loaded with a bare `import(url)` and **no import map at all**). Fully self-contained — React included, zero bare specifiers. It installs its stylesheets itself; fonts and images they reference ship in `module/assets/`. See [`docs/prds/legacy-print-compatibility/PRD.md`](./prds/legacy-print-compatibility/PRD.md). |
+| Artifact                                     | Built by                                                                                                                              | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dist/print/index.js`                        | the package's `vite.config.ts`                                                                                                        | Node / bundler ESM. Keeps **bare imports** (`@pie-element/*`, `@pie-lib/*`, …). Loads in a browser **only when the host resolves them** — via a full import map or a bundler. Not self-contained.                                                                                                                                                                                                                                                                           |
+| `dist/browser/print/index.js`                | `tools/vite/element-browser.config.ts`                                                                                                | Browser ESM. **This is what the item-level `@pie-players/pie-print-player` loads.** Self-contained except for React (only `react` / `react-dom` stay external, resolved via an import map the player injects).                                                                                                                                                                                                                                                              |
+| `dist/browser/editor-runtime/print/index.js` | `tools/vite/element-browser-editor-runtime.config.ts` (React) / `tools/vite/svelte-element-browser-editor-runtime.config.ts` (Svelte) | Browser ESM, the editor-runtime variant of `dist/browser/print/index.js`, with the `@pie-element/shared-editor-runtime` specifiers external. Players load it from the path in `pie.browserEditorRuntime.views.print`. Built by the 11 print elements that bundle the editor engine; mc-populated-blank has none. See [Shared Editor Runtime](./PIE_ELEMENT_CONTRACT.md#shared-editor-runtime).                                                                              |
+| `module/print.js`                            | `tools/vite/element-legacy-print.config.ts` (React) / `tools/vite/svelte-element-legacy-print.config.ts` (Svelte)                     | Browser ESM. **This is what the legacy `@pie-framework/pie-print` client loader requests** (`https://cdn.jsdelivr.net/npm/<pkg>/module/print.js`, loaded with a bare `import(url)` and **no import map at all**). Fully self-contained — React included, zero bare specifiers. It installs its stylesheets itself; fonts and images they reference ship in `module/assets/`. See [`docs/prds/legacy-print-compatibility/PRD.md`](./prds/legacy-print-compatibility/PRD.md). |
 
 Only packages that already have `src/print/index.ts(x)` produce the `module/print.js` artifact; the build config is a no-op (exit 0, nothing emitted) for every other package, so the same build invocation runs safely across all packages without per-package special-casing.
 
@@ -152,8 +152,11 @@ The browser build externalizes **only** React, per
 ```json
 {
   "allowedBareImports": [
-    "react", "react/jsx-runtime", "react/jsx-dev-runtime",
-    "react-dom", "react-dom/client"
+    "react",
+    "react/jsx-runtime",
+    "react/jsx-dev-runtime",
+    "react-dom",
+    "react-dom/client"
   ],
   "sharedDependencyVersions": { "react": "18.2.0", "react-dom": "18.2.0" }
 }
@@ -171,20 +174,21 @@ map** that resolves `react` / `react-dom` to one pinned singleton
 
 ### Classic `pie-elements` vs `pie-elements-ng`
 
-|  | classic `pie-elements` | `pie-elements-ng` (`dist/browser/print`) | `pie-elements-ng` (`module/print.js`) |
-| --- | --- | --- | --- |
-| Bundler | `pslb` | Vite | Vite |
-| Print artifact | `module/print.js` | `dist/browser/print/index.js` | `module/print.js` |
-| Shared at runtime | React **and** a broad set of libs (MUI, render-ui, correct-answer-toggle, math-rendering) via shared DLL modules (`@pie-lib/shared-module`, `@pie-lib/math-rendering-module`) | **Only React** (`react` / `react-dom` / JSX runtimes) | **Nothing** |
-| Everything else | provided by the shared modules at runtime | inlined into the element's own print bundle | inlined, including React |
-| React provided by | shared DLL modules | an import map injected by the player | inlined into the bundle |
-| Loaded by | `@pie-framework/pie-print` (bare `import()`, no import map) | `@pie-players/pie-print-player` (injects a React import map) | `@pie-framework/pie-print` (bare `import()`, no import map) |
+|                   | classic `pie-elements`                                                                                                                                                        | `pie-elements-ng` (`dist/browser/print`)                     | `pie-elements-ng` (`module/print.js`)                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
+| Bundler           | `pslb`                                                                                                                                                                        | Vite                                                         | Vite                                                        |
+| Print artifact    | `module/print.js`                                                                                                                                                             | `dist/browser/print/index.js`                                | `module/print.js`                                           |
+| Shared at runtime | React **and** a broad set of libs (MUI, render-ui, correct-answer-toggle, math-rendering) via shared DLL modules (`@pie-lib/shared-module`, `@pie-lib/math-rendering-module`) | **Only React** (`react` / `react-dom` / JSX runtimes)        | **Nothing**                                                 |
+| Everything else   | provided by the shared modules at runtime                                                                                                                                     | inlined into the element's own print bundle                  | inlined, including React                                    |
+| React provided by | shared DLL modules                                                                                                                                                            | an import map injected by the player                         | inlined into the bundle                                     |
+| Loaded by         | `@pie-framework/pie-print` (bare `import()`, no import map)                                                                                                                   | `@pie-players/pie-print-player` (injects a React import map) | `@pie-framework/pie-print` (bare `import()`, no import map) |
 
 `module/print.js` exists specifically so the **unmodified, currently-deployed** `@pie-framework/pie-print` client loader — which never injects an import map — can load `pie-elements-ng` print bundles at the same CDN path convention it already uses for classic elements. It ships **alongside**, not instead of, `dist/browser/print/index.js`.
 
 ## When to Use Which Approach
 
 ### Use Interactive Player (No Print Player Needed)
+
 ✅ Single element rendering
 ✅ Have direct component access
 ✅ Simple use cases
@@ -201,6 +205,7 @@ Example:
 ```
 
 ### Use Element-Level Print Player
+
 ✅ Explicit print intent in code
 ✅ Cleaner API (role vs complex env)
 ✅ Element development/testing
@@ -217,6 +222,7 @@ Example:
 ```
 
 ### Use Item-Level Print Player (Required For)
+
 ✅ **Multi-element items** (passage + questions + rubrics)
 ✅ **Markup strings** from CMS/database
 ✅ **Production applications** (pieoneer pattern)
@@ -230,16 +236,16 @@ Example:
 
 ## API Comparison
 
-| Feature | Element-Level | Item-Level |
-|---------|---------------|------------|
-| **Package** | `@pie-element/element-player` | `@pie-players/pie-print-player` |
-| **Tag** | `<pie-element-player view="print">` | `<pie-print>` |
-| **Input** | Element name + model | Full item config |
-| **Markup** | Not used | HTML string with elements |
-| **Elements** | Single | Multiple |
-| **Loading** | Import maps | Dynamic CDN imports |
-| **Registration** | Fixed tag names | Hash-based unique names |
-| **Use Case** | Development | Production |
+| Feature          | Element-Level                       | Item-Level                      |
+| ---------------- | ----------------------------------- | ------------------------------- |
+| **Package**      | `@pie-element/element-player`       | `@pie-players/pie-print-player` |
+| **Tag**          | `<pie-element-player view="print">` | `<pie-print>`                   |
+| **Input**        | Element name + model                | Full item config                |
+| **Markup**       | Not used                            | HTML string with elements       |
+| **Elements**     | Single                              | Multiple                        |
+| **Loading**      | Import maps                         | Dynamic CDN imports             |
+| **Registration** | Fixed tag names                     | Hash-based unique names         |
+| **Use Case**     | Development                         | Production                      |
 
 ## Demo Integration
 
@@ -292,7 +298,7 @@ player.resolve = (tagName, pkg) => {
 };
 ```
 
-> Note: `dist/print/index.js` also exists and *can* be loaded in a browser, but
+> Note: `dist/print/index.js` also exists and _can_ be loaded in a browser, but
 > it is **not self-contained** — its bare `@pie-element/*` / `@pie-lib/*` imports
 > must be resolved by a full import map or a bundler, and loading the `@pie-lib`
 > graph at runtime exposes it to transitive version mismatches. The player uses
@@ -308,11 +314,13 @@ player.resolve = (tagName, pkg) => {
 ### Testing Print Views Locally
 
 1. **Start the demo server:**
+
    ```bash
    bun cli dev:demo
    ```
 
 2. **Navigate to print route:**
+
    ```
    http://localhost:5222/multiple-choice/print
    ```
@@ -347,8 +355,8 @@ loads) and, for packages that already have print support, `module/print.js`
 `@pie-framework/pie-print` client loader does a bare `import(url)` with **no
 import map**. Testing it means reproducing exactly that — not the item-level
 or element-level player.
-
 1. **Build the artifact for one package:**
+
    ```bash
    cd packages/elements-react/multiple-choice   # or any of the 12 print-enabled packages
    rm -rf module
@@ -358,12 +366,14 @@ or element-level player.
 
 2. **Confirm it's self-contained** — a real match here means something is
    still an external bare specifier and will break the legacy loader:
+
    ```bash
    grep -nE '^\s*(import\s|export\s.*from\s)' module/print.js
    ```
 
 3. **Load it the way the legacy client actually does** — a bare `import()`,
    zero import map. Create `module/smoke.html`:
+
    ```html
    <!doctype html>
    <html><body>
@@ -383,20 +393,24 @@ or element-level player.
    </script>
    </body></html>
    ```
+
    (Adjust the tag name and `model` shape to match the target package's
    `src/print/index.ts(x)`.)
 
 4. **Serve and open it in a real browser:**
+
    ```bash
    bun x http-server -p 8931
    # open http://localhost:8931/smoke.html
    ```
+
    Check DevTools console — zero errors expected. `smoke.html` is a
    throwaway fixture; delete it once you're done, it isn't part of the
    published artifact.
 
 5. **Confirm the self-skip guard** on a package with no print component —
    the same invocation must exit `0` and write nothing:
+
    ```bash
    cd packages/elements-react/hotspot   # any package without src/print/
    bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts

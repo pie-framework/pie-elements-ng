@@ -64,12 +64,10 @@ That's it! All packages are in the repository, so you can get started immediatel
 ### Controller And Configure Shim Compatibility
 
 Some external PIE builders (including `pie-api-aws`) resolve `@pie-element/<name>/controller` and `@pie-element/<name>/configure` through filesystem aliases instead of package subpath exports. For packages that declare:
-
 - `package.json` `pie.controller`: `@pie-element/<name>/controller`
 - `package.json` `pie.configure`: `@pie-element/<name>/configure`
 
 also expose the controller/configure entries through ESM subpaths, ship root shims, and publish them via `files`:
-
 - `exports["./controller"]`: `./dist/controller/index.js`
 - `exports["./controller.js"]`: `./dist/controller/index.js`
 - `exports["./configure"]`: usually `./dist/author/index.js`
@@ -95,7 +93,6 @@ The canonical JavaScript and npm packaging contract is
 calls out the browser ESM package surface.
 
 Player-facing ESM does not use CDN package transforms for element packages such as jsDelivr `+esm`. React packages that support browser ESM publish static files under:
-
 - `dist/browser/delivery/index.js`
 - `dist/browser/author/index.js`
 - `dist/browser/print/index.js`
@@ -122,7 +119,6 @@ Use release labels to tag a coordinated release wave across packages while keepi
 `@pie-element/*` and `@pie-lib/*` packages are configured as publishable and are released through this workflow.
 
 If a publish fails after the version PR was already merged, rerun the Release workflow manually:
-
 1. Actions → **Release** → **Run workflow**
 2. Branch: `master` for stable (`latest`) or `develop` for prerelease (`next`)
 3. `release_intent`: `publish`

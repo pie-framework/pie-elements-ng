@@ -7,7 +7,6 @@ The project exists because the older PIE development model required developers t
 ## What the Project Covers
 
 PIE Elements NG covers the code and workflows needed to build, test, preview, and release PIE question types:
-
 - **Element packages**: student delivery views, authoring views, controllers, and print views for individual assessment interactions.
 - **Shared PIE libraries**: reusable rendering, authoring, math, feedback, styling, and utility packages used across elements.
 - **Core contracts**: the common model, session, environment, controller, and event shapes that let players and elements communicate consistently.
@@ -20,19 +19,18 @@ PIE Elements NG covers the code and workflows needed to build, test, preview, an
 
 ## How It Differs From the Legacy Model
 
-| Area | Legacy model | PIE Elements NG model |
-| --- | --- | --- |
-| Daily development | Developers often had to reason across separate element and library projects. | Most work happens from one monorepo with workspace-linked packages. |
-| Module format | CommonJS and bespoke bundling patterns were common. | Packages are ESM-first and built with standard modern tooling. |
-| Build tools | Custom scripts and specialized PIE build conventions. | Vite for package builds, Bun for package management, Turbo for workspace orchestration, Biome for formatting/linting. |
-| Demos | Per-element generated demo folders. | One shared demo app can load any supported element. |
-| Framework direction | Primarily React-oriented. | React-backed packages are maintained in this repository, and new NG implementations can be built natively with Svelte or other web-component-friendly approaches. |
-| Package shape | Student, authoring, controller, and print concerns were not always peers. | Element packages use a more predictable shape: delivery, authoring, controller, and print are treated as peer surfaces. |
+| Area                | Legacy model                                                                 | PIE Elements NG model                                                                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Daily development   | Developers often had to reason across separate element and library projects. | Most work happens from one monorepo with workspace-linked packages.                                                                                               |
+| Module format       | CommonJS and bespoke bundling patterns were common.                          | Packages are ESM-first and built with standard modern tooling.                                                                                                    |
+| Build tools         | Custom scripts and specialized PIE build conventions.                        | Vite for package builds, Bun for package management, Turbo for workspace orchestration, Biome for formatting/linting.                                             |
+| Demos               | Per-element generated demo folders.                                          | One shared demo app can load any supported element.                                                                                                               |
+| Framework direction | Primarily React-oriented.                                                    | React-backed packages are maintained in this repository, and new NG implementations can be built natively with Svelte or other web-component-friendly approaches. |
+| Package shape       | Student, authoring, controller, and print concerns were not always peers.    | Element packages use a more predictable shape: delivery, authoring, controller, and print are treated as peer surfaces.                                           |
 
 ## Package Families
 
 You do not need to memorize the repository layout to understand the project. Conceptually, it has these package families:
-
 - **React-backed elements**: existing production-oriented element implementations brought forward into the modern packaging and tooling model.
 - **Svelte-native elements**: new NG element implementations that use Svelte 5 and web components directly.
 - **PIE libraries**: shared UI, authoring, math, graphing, feedback, and utility packages that used to be thought of as a separate layer.
@@ -76,7 +74,6 @@ Print support follows the same principle: each element owns its print-specific t
 ## Product and Accessibility Work
 
 PIE Elements NG is not only an engineering packaging project. It also gives product, accessibility, QA, and engineering a shared place to coordinate element behavior:
-
 - **Product requirements** describe proposed or accepted behavior changes before implementation when a change affects an element contract or authoring surface.
 - **Accessibility planning** tracks WCAG 2.2 AA expectations, automated versus manual validation boundaries, and element-level remediation notes.
 - **Jira** owns sprint state, assignments, and delivery tracking.
@@ -94,11 +91,11 @@ PIE Elements NG is an active modernization project. The current baseline include
 
 ## Quick Reference
 
-| Need | Use |
-| --- | --- |
-| Install dependencies | `bun install` |
-| Build packages | `bun run build` |
-| Open an element demo | `bun run dev:demo`, then `http://localhost:5222/<element-name>` |
-| Run unit tests | `bun run test` |
-| Run lint checks | `bun run lint` |
+| Need                       | Use                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| Install dependencies       | `bun install`                                                                 |
+| Build packages             | `bun run build`                                                               |
+| Open an element demo       | `bun run dev:demo`, then `http://localhost:5222/<element-name>`               |
+| Run unit tests             | `bun run test`                                                                |
+| Run lint checks            | `bun run lint`                                                                |
 | Create a package changeset | `bun run changeset:plan -- --packages <package> --type patch --summary "..."` |

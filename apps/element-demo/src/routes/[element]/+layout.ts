@@ -105,7 +105,7 @@ export const load: LayoutLoad = async ({
 
       // Find the requested demo or use the first one
       const demoIndex = demos.findIndex((d) => d.id === requestedDemoId);
-      const activeDemo = demos[demoIndex >= 0 ? demoIndex : 0];
+      const activeDemo = demos[Math.max(demoIndex, 0)];
 
       if (activeDemo) {
         activeDemoId = activeDemo.id;

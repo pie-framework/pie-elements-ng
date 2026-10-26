@@ -32,7 +32,6 @@ pie-players settled the same question for its own chrome: the interface locale i
 ### Engine
 
 `@pie-element/shared-i18n` (`packages/shared/i18n`) ports pie-players' `players-shared/src/i18n`:
-
 - RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`. Both stay within the request's script, the CLDR likely script for a bare tag: `zh-TW` reads `zh-TW`, `zh-Hant`, and never the Simplified `zh`.
 - Per-key lookup: host messages for the locale, shipped catalog for the locale, host `en-US`, shipped `en-US`, the key itself.
 - `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the resolved locale, so digits and grouping follow CLDR locale defaults (`ar-SA` renders Arabic-Indic digits; current CLDR resolves bare `ar` to Western digits).
@@ -49,7 +48,6 @@ Every bundled copy of the engine shares one page registry at `Symbol.for('pie-el
 End-state precedence: the locale the player publishes, else `en-US`. `model.language` stops selecting chrome and describes content only ([lang and dir](#lang-and-dir)).
 
 The channel is a composition context in `@pie-players/pie-context` at `Symbol.for('pie.interfaceLocale')`, published by the item and section players from their `locale` attribute. Elements already consume `sessionCommitContext` the same way for the idle-save delay (`packages/shared/player-events/src/idle-save-delay.ts`). The custom element subscribes in `connectedCallback`, re-renders on republish, and passes the locale into the `language` prop its libraries already take. Two alternatives lose:
-
 - An `env` field: pie-players reserves `Env.locale` for content language, an input to filtering authored data.
 - A custom-element attribute: the player would have to enumerate its elements, and a library nested inside one cannot see it.
 
@@ -59,11 +57,11 @@ While `@pie-lib/translator` has dependents, a migrated element resolves the publ
 
 Each package keeps its strings in `src/i18n/`: `en-US.ts` (the source, whose shape types the keys), one file per shipped locale, `index.ts` calling `defineCatalogs({ packageName, source, loaders })`, and `catalog-manifest.json`. `en-US` is a static import; every other locale is a dynamic `import()` carrying a `webpackMode: "eager"` comment.
 
-| Output shape | Non-default locales |
-|---|---|
-| Browser ESM (`dist/browser`), served by pie-players' `local-esm-cdn` | one chunk per locale, fetched on first use |
-| React `./delivery`, built by the consumer | webpack inlines them through the eager comment, since a webpack bundle built from npm fetches chunks relative to the host page; other bundlers split them |
-| IIFE | none; a host registers them ([IIFE](#iife)) |
+| Output shape                                                         | Non-default locales                                                                                                                                       |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Browser ESM (`dist/browser`), served by pie-players' `local-esm-cdn` | one chunk per locale, fetched on first use                                                                                                                |
+| React `./delivery`, built by the consumer                            | webpack inlines them through the eager comment, since a webpack bundle built from npm fetches chunks relative to the host page; other bundlers split them |
+| IIFE                                                                 | none; a host registers them ([IIFE](#iife))                                                                                                               |
 
 An element holds its first render until the locale is resident: `_rerender` calls `loadLocale` while `isLocaleReady` is false, so no English frame precedes Spanish. A library rendered by an unmigrated element passes a re-render to `catalogs.forLocale(tag, onLoad)` and shows one English frame first. A deliberate trade: libraries migrate ahead of their elements, at the cost of that frame.
 
@@ -74,7 +72,6 @@ A string lives in the package that renders it. A phrase several elements pass in
 IIFE ships English only, and a host that needs another locale registers its messages with `registerMessages` before mounting. `tools/vite/iife-english-only-catalogs.ts` drops the loaders from every workspace catalog an IIFE build inlines, and fails the build on a loader it cannot strip. Every IIFE configuration runs it, so an unmigrated element's IIFE renders its migrated libraries in English.
 
 No current content needs another locale there. No live installation serves elements from this repository through IIFE, and the installation whose models declare Spanish delivers them as single-select items in gather mode, where the multiple-choice it runs today renders no translated string to a learner. This repository's multiple-choice would translate one string on such an item, its region name, for assistive technology alone. Inlining every shipped locale is the alternative; it loads locale data on every English IIFE page, which the [goals](#goals) rule out, and no content today would use it.
-
 - **Runtime injection** (chosen) works in every build shape and doubles as the host's custom-strings seam.
 - **Per-locale IIFE artifacts** multiply the publish matrix by the locale count.
 - **JSON over fetch** adds a serving contract IIFE hosts do not have.
@@ -104,7 +101,6 @@ The engine has no framework dependency. React gets no context or hook: libraries
 ### Default notes
 
 categorize and placement-ordering rewrite `model.note` in `UNSAFE_componentWillReceiveProps` when it equals the previous language's translated default. Their controllers, and ECR's and math-inline's, write the translated default into the model when the note is absent. Both behaviours go as these elements migrate:
-
 - The controller leaves `note` as authored.
 - Delivery renders `model.note`, or the alternates default in the interface locale when the note is absent.
 - A stored note equal to a shipped default, in any locale or in its unprefixed historical English form, counts as absent.
@@ -129,7 +125,7 @@ Phase 1 ships the engine, the catalog gate, the artifact assertion, and `@pie-li
 
 ## Worked example
 
-> *Deployment*: a district delivers English lessons in pie-section-player with no `locale`. One item's multiple-choice model declares `es_ES`.
+> _Deployment_: a district delivers English lessons in pie-section-player with no `locale`. One item's multiple-choice model declares `es_ES`.
 
 End state: the toggle reads "Show correct answer", because nothing publishes a locale. The element's host carries `lang="es-ES"` over the Spanish choices; the toggle's root carries `lang="en-US"`. When the district enables its Spanish program and sets `locale="es-MX"`, the player republishes; the element calls `loadLocale('es-MX')`, which fetches each package's `es` chunk once, and re-renders "Mostrar respuesta correcta" without a remount. A host needing French registers `fr-CA` messages for each package before mounting and publishes `fr-CA`.
 

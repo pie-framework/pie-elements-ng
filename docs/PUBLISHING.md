@@ -9,13 +9,11 @@ process and the checks that enforce that contract.
 ## Dist-Tag Policy
 
 `pie-elements-ng` follows the same channel intent as the legacy `pie-elements`:
-
 - `master` publishes stable releases to npm `latest`
 - `develop` publishes prerelease versions to npm `next`
 - beta releases publish to npm `beta` when explicitly requested
 
 Tag assignment is explicit at publish time (`npm publish --tag ...`) and validated against version format:
-
 - stable version (`x.y.z`) -> `latest`
 - prerelease `*-next.*` -> `next`
 - prerelease `*-beta.*` -> `beta`
@@ -23,7 +21,6 @@ Tag assignment is explicit at publish time (`npm publish --tag ...`) and validat
 ## CI/CD Branch Routing
 
 Release workflow: `.github/workflows/release.yml`
-
 - Push to `master` -> release channel resolves to `stable` -> publish tag `latest`
 - Push to `develop` -> release channel resolves to `next` -> publish tag `next`
 - Manual dispatch can choose a `release_channel`, but branch-policy checks still apply:
@@ -46,7 +43,6 @@ Version Packages PR merged ──► latest published ──► master -> develo
 ### `next` from `develop`
 
 Each merge into `develop` publishes the packages it changed as `<version>-next.<datetime>` under the `next` dist-tag (`scripts/release-version-snapshot.mjs`):
-
 1. **Select.** A package is selected when its shipping files changed after the commit its latest snapshot was built from, which npm records as `gitHead`. With no snapshot on npm, the package's last `version` bump in git is the baseline instead, and when npm doesn't hold the committed version either, as for a new package, there is no baseline and the whole package is selected. A bump newer than the snapshot doesn't count as a release: a version edited by hand on `develop` would otherwise hide the package's unreleased code. After a stable release that means the released packages publish to `next` once more, which puts `next` back above `latest`.
 
    The snapshot is found through the `next` tag when the tag points at one of this repo's snapshots (`-next.<14-digit datetime>`). The legacy `pie-elements` and `pie-lib` pipelines publish the same names and can move that tag, so when it points elsewhere, the package's versions are searched for this repo's newest snapshot instead. Once the legacy repos no longer publish to `next`, that search can be removed and the tag trusted alone (`fetchPublishedGitHeads` in `scripts/release-synthesize-changesets.mjs`). Everything in a package except tests, specs, snapshots and Vitest or Playwright config counts as shipping, READMEs included, and so does every `package.json` edit except one confined to `@types/*` devDependencies, which hold only declarations no build bundles. Other devDependencies ship, since a package can bundle them into `dist` or build with them. Private packages and packages in the Changesets `ignore` list are never selected.
@@ -152,7 +148,6 @@ bun run version        # consumes changesets, bumps package.json + CHANGELOG.md,
 **Gotcha — pending changesets**: `develop` and `master` carry every changeset recorded since the last stable release (`.changeset/*.md`, plus the `.changeset/pre/` archive until the first stable release). Running `bun run version` will consume **every** pending changeset, bumping unrelated packages too. It also needs `GITHUB_TOKEN` for the changelog generator.
 
 To cut a clean, isolated release for just your target package in that situation, bypass the changeset version step entirely:
-
 - Hand-edit the target package's `package.json` — bump `"version"` directly (default to a `patch` bump unless told otherwise).
 - Add a matching entry at the top of that package's `CHANGELOG.md`, following the existing format (`## <version>` / `### Patch Changes` / bullet).
 
@@ -192,7 +187,6 @@ sh scripts/publish-with-env-token.sh --packages @pie-element/extended-text-entry
 ```
 
 Supported channel values:
-
 - `auto` (default)
 - `stable`
 - `next`
@@ -216,7 +210,6 @@ git push origin <branch>
 The shared publish command used by CI and local targeted publishes checks the runtime workspace dependency closure before it runs `npm publish`.
 
 For each selected package, any local workspace dependency from `dependencies` or `optionalDependencies` must either:
-
 - be included in the same selected publish set, or
 - already exist on npm at the exact local version that will replace the `workspace:*` range.
 
@@ -239,7 +232,6 @@ Print-capable packages (those with `exports["./print"]`) also publish a root `mo
 Debuggability comes from generated sourcemaps, not from importable source files. TypeScript builds must emit sourcemaps with inline source content, and package validation rejects `.js.map` files that require unpacked source files to be present in the npm tarball.
 
 The shared publish command used by CI and local targeted publishes runs the aggregate contract gate:
-
 - `bun run verify:element-contracts`
 
 This runs publish-surface, controller, runtime-support export, and sourcemap checks. It rejects source-path exports, `src` in packed tarballs, raw Svelte/TypeScript package surfaces, missing browser ESM contract metadata, missing runtime-support metadata for non-browser-ESM packages, missing sourcemap source content, and stale generated maps.

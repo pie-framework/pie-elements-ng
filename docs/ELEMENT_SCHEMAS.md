@@ -6,11 +6,11 @@ The decision record is the [Element JSON Schemas PRD](prds/element-json-schemas/
 
 ## Contracts
 
-| Contract | Holds | Interface | Export | Root |
-| --- | --- | --- | --- | --- |
-| Model | The authored data for one element in an item: stored in the item config, read by the controller and both views | `<Name>Model`, extending `PieModel` | `./schemas/model.schema.json` | closed |
-| Configuration | What the author view offers an author: settings-panel switches, editor toolbars, limits. The authoring host sets it | `<Name>Configuration` | `./schemas/configuration.schema.json` | closed |
-| Session | The learner's response. The player owns the object and the element writes into it | `<Name>Session` | `./schemas/session.schema.json` | open |
+| Contract      | Holds                                                                                                               | Interface                           | Export                                | Root   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------- | ------ |
+| Model         | The authored data for one element in an item: stored in the item config, read by the controller and both views      | `<Name>Model`, extending `PieModel` | `./schemas/model.schema.json`         | closed |
+| Configuration | What the author view offers an author: settings-panel switches, editor toolbars, limits. The authoring host sets it | `<Name>Configuration`               | `./schemas/configuration.schema.json` | closed |
+| Session       | The learner's response. The player owns the object and the element writes into it                                   | `<Name>Session`                     | `./schemas/session.schema.json`       | open   |
 
 `<Name>` is the PascalCase package name: `@pie-element/multiple-choice` declares `MultipleChoiceModel`, `MultipleChoiceConfiguration` and `MultipleChoiceSession`. 31 element packages publish model and session schemas. 30 also publish configuration; `match-list` has no authoring view.
 
@@ -26,13 +26,13 @@ A closed root reports an undeclared top-level key, so validating a model that ca
 
 `src/types.ts` exports the three interfaces. The model extends `PieModel` from `@pie-element/shared-types`, which supplies `id`, `element` and `accessibilityCatalogs`. Configuration shapes compose the shared authoring types in the same package, so every element describes a settings switch or an editor toolbar the same way:
 
-| Type | Describes |
-| --- | --- |
-| `ConfigureProp`, `ConfigurePropWithEnabled` | A settings-panel control: `settings` and `label`, plus `enabled` for a switch whose value changes the author view |
-| `EditableHtmlConfigureProp` | The toolbar plugins of one rich-text field, including custom plugins |
-| `EditableHtmlPluginConfigure`, `EditableHtmlPluginConfigureRequired` | A rich-text field's settings control and `inputConfiguration`, plus `required` |
-| `ConfigureMaxImageDimensionsProp`, `ConfigureMathMLProp`, `ConfigureLanguageOptions`, `ContentDimensions` | Image limits per field, MathML output and editing, language choices, and the author container's size |
-| `CommonConfigSettings` | The settings every configuration may carry, which `validate()` also receives |
+| Type                                                                                                      | Describes                                                                                                         |
+| --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `ConfigureProp`, `ConfigurePropWithEnabled`                                                               | A settings-panel control: `settings` and `label`, plus `enabled` for a switch whose value changes the author view |
+| `EditableHtmlConfigureProp`                                                                               | The toolbar plugins of one rich-text field, including custom plugins                                              |
+| `EditableHtmlPluginConfigure`, `EditableHtmlPluginConfigureRequired`                                      | A rich-text field's settings control and `inputConfiguration`, plus `required`                                    |
+| `ConfigureMaxImageDimensionsProp`, `ConfigureMathMLProp`, `ConfigureLanguageOptions`, `ContentDimensions` | Image limits per field, MathML output and editing, language choices, and the author container's size              |
+| `CommonConfigSettings`                                                                                    | The settings every configuration may carry, which `validate()` also receives                                      |
 
 The package root re-exports the types with `export type * from './types.js'`.
 
@@ -73,14 +73,14 @@ with `choices`, `id` and `element` in the root's `required`.
 
 ### JSDoc
 
-| In `types.ts` | In the schema |
-| --- | --- |
-| Comment text | `description` |
-| `@default <json>` | `default`: write it as JSON, `"letters"`, `2` or `true` |
-| `@minimum`, `@maximum` and the other JSON Schema keywords ts-json-schema-generator reads | The same keyword |
-| `@deprecated <reason>` | `deprecated: true`, with `Deprecated: <reason>` appended to the description |
-| A property without `?` | An entry in `required` |
-| A string-literal union | `enum` |
+| In `types.ts`                                                                            | In the schema                                                               |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Comment text                                                                             | `description`                                                               |
+| `@default <json>`                                                                        | `default`: write it as JSON, `"letters"`, `2` or `true`                     |
+| `@minimum`, `@maximum` and the other JSON Schema keywords ts-json-schema-generator reads | The same keyword                                                            |
+| `@deprecated <reason>`                                                                   | `deprecated: true`, with `Deprecated: <reason>` appended to the description |
+| A property without `?`                                                                   | An entry in `required`                                                      |
+| A string-literal union                                                                   | `enum`                                                                      |
 
 Hosts, authoring tools and documentation show the description, so it states what the key does, its units, and what an absent key means. `@default` is the value the element's defaults supply. A package name in a comment sits in backticks: TypeScript reads a bare `@scope/name` as a tag and drops the rest of the description, so generation fails on one.
 
@@ -122,14 +122,13 @@ Element-specific fields are public once published and follow semver. Adding an o
 
 ## Gates
 
-| Gate | Fails on | Runs in |
-| --- | --- | --- |
-| `tsc`, in each package build | Element code or defaults using a key the interface does not declare | CI and the pre-push gate |
-| `tools/schemas/element-schemas.test.ts` | A schema that does not compile under strict Ajv; a value the element produces that its schema rejects; a declared schema no value exercises | `bun run test`, in CI and the pre-push gate |
-| `scripts/check-publish-surface.mjs` | An element package without its schema exports | `bun run verify:element-contracts`, before every release publish |
+| Gate                                    | Fails on                                                                                                                                    | Runs in                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `tsc`, in each package build            | Element code or defaults using a key the interface does not declare                                                                         | CI and the pre-push gate                                         |
+| `tools/schemas/element-schemas.test.ts` | A schema that does not compile under strict Ajv; a value the element produces that its schema rejects; a declared schema no value exercises | `bun run test`, in CI and the pre-push gate                      |
+| `scripts/check-publish-surface.mjs`     | An element package without its schema exports                                                                                               | `bun run verify:element-contracts`, before every release publish |
 
 The schema test validates the values each element ships:
-
 - the controller defaults and `createDefaultModel()`;
 - the author defaults;
 - the demo models and sessions in `docs/demo/config.mjs` and `docs/demo/session.mjs`;
@@ -149,7 +148,6 @@ bun run test tools/schemas -t multiple-choice
 ### Resolving
 
 Each schema ships in its npm package and resolves from jsDelivr at its `$id`:
-
 - npm: `@pie-element/multiple-choice/schemas/model.schema.json`
 - jsDelivr: `https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice@<version>/dist/schemas/model.schema.json`
 

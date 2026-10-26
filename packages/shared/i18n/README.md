@@ -42,7 +42,9 @@ import { loadLocale, registerMessages } from '@pie-element/shared-i18n';
 
 // Rename one label, or serve a locale no package ships.
 registerMessages('@pie-lib/correct-answer-toggle', 'en-US', { showCorrectAnswer: 'Reveal answer' });
-registerMessages('@pie-lib/correct-answer-toggle', 'fr-CA', { showCorrectAnswer: 'Afficher la réponse' });
+registerMessages('@pie-lib/correct-answer-toggle', 'fr-CA', {
+  showCorrectAnswer: 'Afficher la réponse',
+});
 
 // Optional: load a locale before mounting, so nothing renders while it loads.
 await loadLocale('es-MX');
@@ -102,12 +104,12 @@ wins over the catalog.
 
 Each package keeps its strings in `src/i18n/`:
 
-| File | Holds |
-|---|---|
-| `en-US.ts` | The source catalog, imported statically. Its shape types every key. |
-| `<tag>.ts` | One file per shipped locale, `satisfies MessageCatalog`. |
-| `index.ts` | `defineCatalogs({ packageName, source, loaders })`. |
-| `catalog-manifest.json` | Each locale's status and provenance. |
+| File                    | Holds                                                               |
+| ----------------------- | ------------------------------------------------------------------- |
+| `en-US.ts`              | The source catalog, imported statically. Its shape types every key. |
+| `<tag>.ts`              | One file per shipped locale, `satisfies MessageCatalog`.            |
+| `index.ts`              | `defineCatalogs({ packageName, source, loaders })`.                 |
+| `catalog-manifest.json` | Each locale's status and provenance.                                |
 
 ```ts
 export const catalogs = defineCatalogs({
@@ -127,7 +129,6 @@ A key missing from `en-US.ts` is a compile error. A key assembled at runtime fro
 cannot enumerate goes through `dynamicMessageKey(key)`.
 
 Conventions:
-
 - `{placeholder}` slots interpolate, with the same names in every locale. i18next's `{{name}}`
   renders literally and fails the gate.
 - A plural group is an object of CLDR categories with `other` required. `Intl.PluralRules` selects,
@@ -155,10 +156,10 @@ reviewed against, and only the keys whose English moved fail.
 
 ## Locales
 
-| Tag | Status | Serves |
-|---|---|---|
-| `en-US` | source | every tag nothing else matches |
-| `es` | reviewed, carried from `@pie-lib/translator` | every `es-*` tag; Latin American wording |
+| Tag     | Status                                       | Serves                                   |
+| ------- | -------------------------------------------- | ---------------------------------------- |
+| `en-US` | source                                       | every tag nothing else matches           |
+| `es`    | reviewed, carried from `@pie-lib/translator` | every `es-*` tag; Latin American wording |
 
 ## Build artifacts
 
@@ -169,10 +170,10 @@ every loader eager. A newly migrated element joins its `migratedElements` list.
 
 ## Module layout
 
-| Module | Owns |
-|---|---|
-| `provider.ts` | `SimpleI18n`: lookup, interpolation, plurals, direction, formatting |
-| `catalogs.ts` | `defineCatalogs`, the page registry, `isLocaleReady`, `loadLocale`, `registerMessages` |
-| `language-tags.ts` | Tag normalization and script-aware RFC 4647 matching |
-| `element-language.ts` | `lang` and `dir` for an element's host |
-| `types.ts` | Catalog, key and translator types |
+| Module                | Owns                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `provider.ts`         | `SimpleI18n`: lookup, interpolation, plurals, direction, formatting                    |
+| `catalogs.ts`         | `defineCatalogs`, the page registry, `isLocaleReady`, `loadLocale`, `registerMessages` |
+| `language-tags.ts`    | Tag normalization and script-aware RFC 4647 matching                                   |
+| `element-language.ts` | `lang` and `dir` for an element's host                                                 |
+| `types.ts`            | Catalog, key and translator types                                                      |

@@ -2,10 +2,10 @@
 
 Demo and test apps for the elements in this workspace. Run the commands from the repository root.
 
-| App | Start | Port | Purpose |
-| --- | --- | --- | --- |
-| `element-demo/` | `bun run dev:demo` or `bun run dev:element-demo` | 5222 | Deliver, author, print, docs and source views for every element |
-| `element-a11y-demo/` | `bun run dev:a11y` | 5223 | Accessibility scenario demos |
+| App                  | Start                                            | Port | Purpose                                                         |
+| -------------------- | ------------------------------------------------ | ---- | --------------------------------------------------------------- |
+| `element-demo/`      | `bun run dev:demo` or `bun run dev:element-demo` | 5222 | Deliver, author, print, docs and source views for every element |
+| `element-a11y-demo/` | `bun run dev:a11y`                               | 5223 | Accessibility scenario demos                                    |
 
 `dev:element-demo` and `dev:a11y` read a port override from `PORT`.
 

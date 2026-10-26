@@ -33,7 +33,7 @@ This PRD adds that choice to both elements. Sessions, delivery and the learner's
 
 ## Worked example
 
-> *Markup*: الطالب في {{0}} اسمها {{1}}.
+> _Markup_: الطالب في {{0}} اسمها {{1}}.
 
 The author keys area 0 as مدرسة with the setting on, and area 1 as أحمد with it off, so `foldLetterVariantsPerChoice` is `[true, false]`. The learner submits `{ "value": { "0": "مدرسه", "1": "احمد" } }`. Area 0 matches through ة → ه and area 1 does not, because its fold is off: the score is 0.5. With both entries `true` the score is 1; with the field absent it is 0.
 

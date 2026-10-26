@@ -6,19 +6,21 @@ The production PIE bundles from `pie-api-aws` follow this structure:
 
 ```javascript
 // IIFE wrapper
-(()=>{
+(() => {
   // Webpack module system
   var modules = {
     // ... module definitions
   };
 
   // Module loader
-  function require(id) { /* ... */ }
+  function require(id) {
+    /* ... */
+  }
 
   // Export structure
   var exports = {
-    "@pie-element/passage": { Element: PassageComponent },
-    "@pie-element/passage@1.12.2": { Element: PassageComponent }
+    '@pie-element/passage': { Element: PassageComponent },
+    '@pie-element/passage@1.12.2': { Element: PassageComponent },
   };
 
   // Global assignment

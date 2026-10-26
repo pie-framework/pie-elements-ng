@@ -48,7 +48,7 @@ let lastRef = $state(null);
 
 $effect(() => {
   if (something !== lastRef) {
-    lastRef = something;  // ← Triggers the effect again!
+    lastRef = something; // ← Triggers the effect again!
     doSomething();
   }
 });
@@ -105,7 +105,7 @@ $effect(() => {
   if (updatingFromElement) return;
 
   if (session !== lastRef) {
-    lastRef = session;  // ← Doesn't trigger effect
+    lastRef = session; // ← Doesn't trigger effect
     doSomething();
   }
 });
@@ -144,7 +144,6 @@ let lastValue: any = null;
 ## Web Components Considerations
 
 Web components do their own DOM manipulation and don't integrate well with reactive frameworks:
-
 1. **Prefer page refreshes for mode/role changes** - Instead of complex reactive updates, use full page navigation
 2. **Pass data once at mount** - Don't try to reactively update web component props
 3. **Use events, not reactivity** - Web components communicate via events, not reactive bindings

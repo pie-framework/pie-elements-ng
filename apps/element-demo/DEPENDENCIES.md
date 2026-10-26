@@ -7,7 +7,6 @@ The demo app is designed to work with PIE elements loaded as ESM web components.
 ## Runtime Dependencies
 
 Only two packages are needed at runtime:
-
 - `@pie-element/element-bundler` - Bundler infrastructure for IIFE operation
 - `@pie-element/element-player` - Web component that loads and renders elements
 
@@ -33,7 +32,6 @@ This means the demo app doesn't need to know about element dependencies like Rea
 ## Development Dependencies
 
 Development-only packages needed for local dev mode:
-
 - `@pie-element/multiple-choice` - Example element for testing
 - `@pie-element/shared-math-rendering-*` - Math rendering packages
 
@@ -64,6 +62,7 @@ These packages are marked as devDependencies because:
 These were incorrectly listed as runtime dependencies and have been removed:
 
 ### UI Libraries (already in elements)
+
 - `@tiptap/core`, `@tiptap/extension-*` - In element-player
 - `highlight.js`, `lowlight` - In element-player
 - `katex` - In math rendering packages
@@ -79,7 +78,6 @@ These were incorrectly listed as runtime dependencies and have been removed:
 ## Migration Path
 
 Currently the demo only supports local development mode. To support production CDN mode:
-
 1. Update demo to accept and use `cdn-url` prop
 2. Deploy elements to npm
 3. Configure CDN URL (e.g., `https://esm.sh` or `https://unpkg.com`)

@@ -5,7 +5,6 @@ Differences between each ng element's generated schemas and the legacy `pie-elem
 ## Shared changes
 
 These apply to every element that has the key, and are not repeated below.
-
 - Session schemas are new: legacy publishes none. Each declares `id`, `element` and what the element writes into the session.
 - Every model accepts `accessibilityCatalogs`, from the shared `PieModel`.
 - Model `required` holds the identity keys and the content the element cannot render without. The feature toggles legacy requires (`feedbackEnabled`, `rationaleEnabled`, `rubricEnabled`, `spellCheckEnabled`, `studentInstructionsEnabled`, `teacherInstructionsEnabled` and the like) are optional, and the controller's defaults apply. Entries below name any other key legacy requires.
@@ -252,7 +251,6 @@ These apply to every element that has the key, and are not repeated below.
 ## matrix
 
 Legacy publishes an empty `pie-schema.json`, so these changes compare against the legacy `MatrixPie` interface.
-
 - `matrixValue: Object[]` is renamed `matrixValues: Record<string, number>`, keyed `<row>-<column>` with 0-based indices. A cell without a value scores 0.
 - `labelType` gains `custom`, which the author sets when the row or column count changes.
 - New model keys `prompt`, `teacherInstructions`, `scoringType`, `language` and `extraCSSRules`. `promptEnabled` is declared and not read: the prompt always shows.
