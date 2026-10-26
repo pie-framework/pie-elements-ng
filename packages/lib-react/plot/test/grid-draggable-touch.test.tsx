@@ -277,3 +277,84 @@ describe('gridDraggable parity between mouse and touch', () => {
     expect(withTouch).toEqual(withMouse);
   });
 });
+
+/**
+ * react-draggable reports `deltaY` since the *previous* event, and the owner
+ * re-anchors on the value it was just handed. A dragged event that is dropped
+ * (a fast flick, a pointer outside the axes) therefore loses its movement for
+ * good, and the handle trails the cursor by that amount for the rest of the
+ * gesture. The handle must end up where the cursor says, however it got there.
+ */
+describe('gridDraggable keeps the handle under the pointer', () => {
+  function run(moves: Array<{ x: number; y: number }>, range = RANGE) {
+    const onDrag = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const { getByTestId, unmount } = render(
+      <ControlledHandle
+        initialY={5}
+        graphProps={graphProps.create(DOMAIN, range, SIZE, () => root)}
+        onDrag={onDrag}
+      />
+    );
+    const handle = getByTestId(HANDLE_TEST_ID);
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    moves.forEach(({ x, y }) => fireEvent.mouseMove(handle, { clientX: x, clientY: y, button: 0 }));
+    const last = moves[moves.length - 1];
+    fireEvent.mouseUp(handle, { clientX: last.x, clientY: last.y, button: 0 });
+    unmount();
+    root.remove();
+    return onDrag.mock.calls.map(([value]) => value);
+  }
+
+  it('does not lose movement when the pointer flicks past the bounds in one event', () => {
+    // 7 steps up in one event, then back down to 3 steps up overall.
+    const values = run([
+      { x: 100, y: 250 - 7 * PX_PER_STEP },
+      { x: 100, y: 250 - 3 * PX_PER_STEP },
+    ]);
+
+    expect(values[values.length - 1]).toBe(8);
+  });
+
+  it('does not lose movement while the pointer is outside the axes', () => {
+    // up past the top of the graph, then back down to 3 steps up overall
+    const values = run([
+      { x: 100, y: 150 },
+      { x: 100, y: 50 },
+      { x: 100, y: -50 },
+      { x: 100, y: -150 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ]);
+
+    expect(Math.max(...values)).toBeLessThanOrEqual(RANGE.max);
+    expect(values[values.length - 1]).toBe(8);
+  });
+
+  it('reaches the top and the bottom of the range', () => {
+    const up = run([{ x: 100, y: 250 - 400 }]);
+    const down = run([{ x: 100, y: 250 + 400 }]);
+
+    expect(up[up.length - 1]).toBe(RANGE.max);
+    expect(down[down.length - 1]).toBe(RANGE.min);
+  });
+
+  it('reaches the ends of a range whose step is not 1', () => {
+    const range = { min: 0, max: 10, step: 0.5 };
+    const up = run([{ x: 100, y: 250 - 400 }], range);
+    const down = run([{ x: 100, y: 250 + 400 }], range);
+
+    expect(up[up.length - 1]).toBe(10);
+    expect(down[down.length - 1]).toBe(0);
+  });
+
+  it('reaches the ends of a range whose step is larger than 1', () => {
+    const range = { min: 0, max: 100, step: 10 };
+    const up = run([{ x: 100, y: 250 - 800 }], range);
+    const down = run([{ x: 100, y: 250 + 800 }], range);
+
+    expect(up[up.length - 1]).toBe(100);
+    expect(down[down.length - 1]).toBe(0);
+  });
+});
