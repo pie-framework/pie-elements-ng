@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -55,7 +56,19 @@ describe('./assets', () => {
     mkdirSync(cache, { recursive: true });
     outDir = mkdtempSync(join(cache, 'assets-'));
     writeAssets(PACKAGE_DIR, outDir);
-    ({ assetUrls } = await import(pathToFileURL(join(outDir, 'index.js')).href));
+    // Node loads it: Vite rewrites a module's `new URL(…, import.meta.url)` to dev-server URLs.
+    const index = pathToFileURL(join(outDir, 'index.js')).href;
+    assetUrls = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          `import(${JSON.stringify(index)}).then((m) => console.log(JSON.stringify(m.assetUrls)))`,
+        ],
+        { encoding: 'utf8' }
+      )
+    );
   });
 
   afterAll(() => {
