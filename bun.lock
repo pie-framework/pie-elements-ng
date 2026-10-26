@@ -2132,7 +2132,7 @@
       "name": "@pie-element/shared-i18n",
       "version": "0.1.2",
       "dependencies": {
-        "@pie-players/pie-context": "1.0.0-beta.3",
+        "@pie-players/pie-context": "1.0.0-beta.6",
       },
       "devDependencies": {
         "@types/bun": "^1.4.3",
@@ -2171,7 +2171,7 @@
       "name": "@pie-element/shared-player-events",
       "version": "0.2.1",
       "devDependencies": {
-        "@pie-players/pie-context": "1.0.0-beta.3",
+        "@pie-players/pie-context": "1.0.0-beta.6",
         "@types/bun": "^1.4.3",
         "typescript": "^5.9.3",
         "vite": "^8.3.5",
@@ -2746,7 +2746,7 @@
 
     "@pie-lib/translator": ["@pie-lib/translator@workspace:packages/shared/translator"],
 
-    "@pie-players/pie-context": ["@pie-players/pie-context@1.0.0-beta.3", "", {}, "sha512-VRDbdmghIIrJkUlP9XJi00Y6UdbofIpjQnZhNU27/SKdPGbmnRi0Dt6kD7kot0WL5Ksm68V0nDpvgX77XlzfXA=="],
+    "@pie-players/pie-context": ["@pie-players/pie-context@1.0.0-beta.6", "", {}, "sha512-axaZzByIgaoYbtIGMLhd78bnVMFvZzhwEvRxd9bVGbCDlqnI2kB/ig6uy91xJ7zgF8nNDzcmkx0dmGdeFCWinA=="],
 
     "@playwright/test": ["@playwright/test@1.64.1", "", { "dependencies": { "playwright": "1.64.1" }, "bin": { "playwright": "cli.js" } }, "sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg=="],
 
