@@ -11,6 +11,7 @@ import { color } from '@pie-lib/render-ui';
 import { types } from '@pie-lib/plot';
 import { bandKey } from '../../utils.js';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import { beginDrag, endDrag, hoverBlocked } from '../../common/drag-hover.js';
 import MarkSlider from '../../common/mark-slider.js';
 import { CorrectCheckIcon } from './correct-check-icon.js';
 
@@ -86,6 +87,7 @@ export class RawBar extends React.Component {
     this.state = {
       dragValue: undefined,
       isHovered: false,
+      isDragging: false,
     };
     this.mouseX = 0;
     this.mouseY = 0;
@@ -97,13 +99,19 @@ export class RawBar extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener('mousemove', this.handleMouseMove);
+    endDrag(this);
   }
 
   handleMouseMove: any = (e) => {
     this.mouseX = e.clientX;
     this.mouseY = e.clientY;
-    const isMouseInside = this.isMouseInsideSvgElement();
-    this.setState({ isHovered: isMouseInside });
+
+    // a dragged bar stays hovered wherever the pointer goes, and no other bar is while it is
+    if (this.state.isDragging) {
+      return;
+    }
+
+    this.setState({ isHovered: !hoverBlocked(this) && this.isMouseInsideSvgElement() });
   };
 
   isMouseInsideSvgElement: any = () => {
@@ -116,8 +124,22 @@ export class RawBar extends React.Component {
     );
   };
 
-  handleMouseEnter = () => this.setState({ isHovered: true });
-  handleMouseLeave = () => this.setState({ isHovered: false });
+  handleMouseEnter = () => {
+    if (!this.state.isDragging && !hoverBlocked(this)) {
+      this.setState({ isHovered: true });
+    }
+  };
+
+  handleMouseLeave = () => {
+    if (!this.state.isDragging) {
+      this.setState({ isHovered: false });
+    }
+  };
+
+  dragStart: any = () => {
+    beginDrag(this);
+    this.setState({ isDragging: true, isHovered: true });
+  };
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
@@ -137,6 +159,8 @@ export class RawBar extends React.Component {
     }
 
     this.setDragValue(undefined);
+    endDrag(this);
+    this.setState({ isDragging: false, isHovered: !!this.gRef && this.isMouseInsideSvgElement() });
   };
 
   dragValue: any = (existing, next) => {
@@ -232,6 +256,7 @@ export class RawBar extends React.Component {
           interactive={interactive}
           disabled={disabled}
           width={barWidth}
+          onDragStart={this.dragStart}
           onDrag={(v) => this.dragValue(value, v)}
           onDragStop={this.dragStop}
           graphProps={graphProps}

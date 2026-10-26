@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { LinePath } from '@visx/shape';
 import { Group } from '@visx/group';
@@ -11,6 +11,7 @@ import { dataToXBand } from '../utils.js';
 import { types } from '@pie-lib/plot';
 import RawLine from './common/line.js';
 import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
+import { useDragHover } from '../common/drag-hover.js';
 
 const StyledLinePath: any = styled(LinePath)(() => ({
   stroke: color.defaults.TEXT,
@@ -40,8 +41,8 @@ const StyledTransparentHandle: any = styled('circle')(() => ({
 }));
 
 const DraggableComponent = (props) => {
-  const { className, scale, x, y, r, correctness, interactive, correctData, label, ...rest } = props;
-  const [hover, setHover] = useState(false);
+  const { className, scale, x, y, r, correctness, interactive, correctData, label, isDragging, ...rest } = props;
+  const { hovered: hover, onEnter, onLeave } = useDragHover(!!isDragging);
 
   const squareSize = r * 4;
   const squareHalf = squareSize / 2;
@@ -88,8 +89,8 @@ const DraggableComponent = (props) => {
         cx={cx}
         cy={cy}
         r={r * 2}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
         {...rest}
       />
       {/* show correctness indicators */}

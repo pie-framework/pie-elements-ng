@@ -9,6 +9,7 @@ import debug from 'debug';
 
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import { beginDrag, endDrag, hoverBlocked } from '../../common/drag-hover.js';
 import MarkSlider from '../../common/mark-slider.js';
 import { color } from '@pie-lib/render-ui';
 import { bandKey } from '../../utils.js';
@@ -50,15 +51,35 @@ export class RawPlot extends React.Component {
     this.state = {
       dragValue: undefined,
       isHovered: false,
+      isDragging: false,
     };
+    this.pointerInside = false;
   }
 
+  componentWillUnmount() {
+    endDrag(this);
+  }
+
+  // a dragged plot stays hovered wherever the pointer goes, and no other one is while it is
   handleMouseEnter: any = () => {
-    this.setState({ isHovered: true });
+    this.pointerInside = true;
+
+    if (!this.state.isDragging && !hoverBlocked(this)) {
+      this.setState({ isHovered: true });
+    }
   };
 
   handleMouseLeave: any = () => {
-    this.setState({ isHovered: false });
+    this.pointerInside = false;
+
+    if (!this.state.isDragging) {
+      this.setState({ isHovered: false });
+    }
+  };
+
+  dragStart: any = () => {
+    beginDrag(this);
+    this.setState({ isDragging: true, isHovered: true });
   };
 
   setDragValue = (dragValue) => this.setState({ dragValue });
@@ -79,6 +100,8 @@ export class RawPlot extends React.Component {
     }
 
     this.setDragValue(undefined);
+    endDrag(this);
+    this.setState({ isDragging: false, isHovered: this.pointerInside });
   };
 
   dragValue: any = (existing, next) => {
@@ -285,6 +308,7 @@ export class RawPlot extends React.Component {
             interactive={interactive}
             disabled={disabled}
             width={barWidth}
+            onDragStart={this.dragStart}
             onDrag={(v) => this.dragValue(value, v)}
             onDragStop={this.dragStop}
             graphProps={graphProps}

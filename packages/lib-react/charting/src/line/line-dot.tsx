@@ -8,6 +8,7 @@ import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { dataToXBand } from '../utils.js';
 import RawLine from './common/line.js';
+import { useDragHover } from '../common/drag-hover.js';
 import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
 
 const StyledHandle: any = styled('circle')(() => ({}));
@@ -19,23 +20,23 @@ const StyledTransparentHandle: any = styled('circle')(() => ({
   pointerEvents: 'auto', // allow drag events
 }));
 
-const DraggableComponent = ({ scale, x, y, r, correctness, interactive, correctData, label, ...rest }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
+const DraggableComponent = ({ scale, x, y, r, correctness, interactive, correctData, label, isDragging, ...rest }) => {
+  const { hovered: isHovered, onEnter, onLeave } = useDragHover(!!isDragging);
   const allowRolloverEvent = !correctness && interactive;
 
   return (
     <g
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onTouchStart={() => setIsHovered(true)}
-      onTouchEnd={() => setIsHovered(false)}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onTouchStart={onEnter}
+      onTouchEnd={onLeave}
     >
       <StyledTransparentHandle
         cx={scale.x(x)}
         cy={scale.y(y)}
         r={r * 3}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
         {...rest}
       />
       <StyledHandle
