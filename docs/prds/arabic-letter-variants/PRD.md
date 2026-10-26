@@ -31,6 +31,11 @@ This PRD adds that choice to both elements. Sessions, delivery and the learner's
 - **Controller**: passes `foldLetterVariants` to `normalizeResponse` on both sides of the comparison: simple-cloze in `getCorrectness`, explicit-constructed-response per area in `getScore` and `getLogTrace`, so `outcome()`, evaluate-mode correctness and the trace log agree. `validate()` and `createCorrectResponseSession()` are unchanged. The fields are not passed to the delivery model.
 - **Authoring surface**: both elements add the toggle to the settings panel's Settings group, off by default; in simple-cloze it sets `foldLetterVariants`, in explicit-constructed-response `foldLetterVariantsEnabled`. Turning it on in explicit-constructed-response shows an "Accept Arabic spelling variants" toggle in each response area's section beside "Maximum length (characters)", off until the author turns it on, and lists every area in that section, as `maxLengthPerChoiceEnabled` already does. Under each toggle, help text names the four variants: "Accepts أ إ آ ٱ as ا, ignores tashkeel, accepts ه for ة and ي for ى." The help text is fixed; hosts reword the label through configuration.
 
+Authoring wireframes; highlighted rows are new:
+
+- Explicit-constructed-response: ![Explicit-constructed-response authoring wireframe in two states. Top, the default: the settings panel lists Maximum Length Per Choice and Disable Spanish Characters, both on, then a new Accept Arabic Spelling Variants switch, off; the response area for "cow" shows only its maximum length and alternates, with no per-area control. Bottom, with the panel switch on: an Arabic template with two blanks, مدرسة and أحمد; each response area shows an "Accept Arabic spelling variants" toggle below its maximum length, on for مدرسة and off for أحمد, each with help text listing the four variants.](./wireframes/authoring-ecr.jpg)
+- Simple-cloze: ![Simple-cloze authoring wireframe: an Arabic prompt and the correct answer مدرسة on the left; the settings panel on the right lists Prompt, then a new Accept Arabic Spelling Variants switch, on, with the same help text listing the four variants, then Teacher Instructions under Properties.](./wireframes/authoring-simple-cloze.jpg)
+
 ## Worked example
 
 > *Markup*: الطالب في {{0}} اسمها {{1}}.
