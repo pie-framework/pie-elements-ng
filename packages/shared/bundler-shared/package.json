@@ -27,7 +27,7 @@
   "dependencies": {
     "css-loader": "^7.1.5",
     "esbuild-loader": "^4.5.0",
-    "pacote": "^22.0.0",
+    "pacote": "^22.0.1",
     "react": "^18.2.0",
     "string-hash": "^1.1.3",
     "style-loader": "^4.0.0",
