@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'clsx';
 import { styled, useTheme } from '@mui/material/styles';
 import { NodeSelection } from 'prosemirror-state';
@@ -103,7 +103,14 @@ function MenuBar({
   language,
 }) {
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerTrigger, setPickerTrigger] = useState({ el: null, keyboard: false });
+  const [dismissed, setDismissed] = useState(false);
   const toolbarRef = useRef(null);
+  // `detail === 0` means the click was synthesized by the keyboard (Enter/Space)
+  const openPicker = (config, e) => {
+    setPickerTrigger({ el: e?.currentTarget ?? null, keyboard: e?.detail === 0 });
+    setShowPicker(config);
+  };
   const toolbarOpts = toolOpts ?? {};
 
   const editorState = useEditorState({
@@ -175,7 +182,33 @@ function MenuBar({
     editorState.hideDefaultToolbar && editorState.currentNode?.type?.name === 'drag_in_the_blank';
   const shown =
     toolbarOpts.alwaysVisible ||
-    (hasFocus && !editorState.toolbarOpened && (!editorState.hideDefaultToolbar || isDragInTheBlankSelected));
+    (hasFocus &&
+      !dismissed &&
+      !editorState.toolbarOpened &&
+      (!editorState.hideDefaultToolbar || isDragInTheBlankSelected));
+
+  // Done from the keyboard closes the toolbar but leaves focus in the text. Editing, moving the
+  // cursor or clicking the text opens it again, as does focus coming back after leaving the editor.
+  useEffect(() => {
+    if (!hasFocus) setDismissed(false);
+  }, [hasFocus]);
+
+  useEffect(() => {
+    if (!dismissed || !editor) return;
+
+    const reopen = () => setDismissed(false);
+    const dom = editor.view.dom;
+
+    editor.on('update', reopen);
+    editor.on('selectionUpdate', reopen);
+    dom.addEventListener('mousedown', reopen);
+
+    return () => {
+      editor.off('update', reopen);
+      editor.off('selectionUpdate', reopen);
+      dom.removeEventListener('mousedown', reopen);
+    };
+  }, [dismissed, editor]);
 
   // Hidden, the toolbar is `inert`, which takes its buttons out of the tab order. Set on the node:
   // React 18 drops a boolean `inert` prop, and React 19 reads the empty-string workaround as false.
@@ -379,13 +412,13 @@ function MenuBar({
         icon: <CharacterIcon letter="ñ" />,
         label: buttonLabel('spanishCharacters'),
         hidden: () => !activePlugins?.includes('languageCharacters'),
-        onClick: () => setShowPicker(spanishConfig),
+        onClick: (_editor, e) => openPicker(spanishConfig, e),
       },
       {
         icon: <CharacterIcon letter="€" />,
         label: buttonLabel('specialCharacters'),
         hidden: () => activePlugins?.filter((p) => p === 'languageCharacters').length !== 2,
-        onClick: () => setShowPicker(specialConfig),
+        onClick: (_editor, e) => openPicker(specialConfig, e),
       },
       {
         icon: <TextAlignIcon editor={editor} />,
@@ -477,7 +510,7 @@ function MenuBar({
                     aria-pressed={btn.toggle ? !!active : undefined}
                     onClick={(e) => {
                       e.preventDefault();
-                      btn.onClick(editor);
+                      btn.onClick(editor, e);
                     }}
                     className={classNames(classes.button, { [classes.active]: active })}
                   >
@@ -503,9 +536,20 @@ function MenuBar({
           {toolbarOpts.showDone && (
             <DoneButton
               language={language}
-              onClick={() => {
+              onClick={(e) => {
                 onChange?.(editor.getHTML());
-                editor.commands.blur();
+
+                // A pointer click leaves focus in the text (see handleMouseDown), so blurring the
+                // editor closes the toolbar. From the keyboard focus is on this button: close the
+                // toolbar and put focus back in the text, with the cursor at the end. Focus moves
+                // first, synchronously, so hiding the toolbar never strands it on the button.
+                if (e.detail === 0) {
+                  editor.view.focus();
+                  editor.commands.focus('end');
+                  setDismissed(true);
+                } else {
+                  editor.commands.blur();
+                }
               }}
             />
           )}
@@ -514,6 +558,8 @@ function MenuBar({
       {showPicker && (
         <CharacterPicker
           editor={editor}
+          triggerEl={pickerTrigger.el}
+          focusOnOpen={pickerTrigger.keyboard}
           opts={{
             ...showPicker,
             renderPopOver: (ev, ch) => console.log('Show popover', ch),

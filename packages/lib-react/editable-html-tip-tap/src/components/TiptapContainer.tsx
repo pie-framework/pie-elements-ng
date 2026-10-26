@@ -218,8 +218,14 @@ function TiptapContainer(props) {
     }
   };
 
+  // Moving into this editor's character picker keeps the toolbar up (and not `inert`), so focus
+  // can return to the toolbar button that opened the picker when it closes.
   const handleBlur = (e) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
+    const intoOwnPicker = e.relatedTarget?.closest?.(
+      `.insert-character-dialog[data-toolbar-for="${editor?.instanceId}"]`,
+    );
+
+    if (!e.currentTarget.contains(e.relatedTarget) && !intoOwnPicker) {
       setHasFocus(false);
     }
   };
