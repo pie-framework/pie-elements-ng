@@ -2,6 +2,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { getScore, outcome } from '../src/controller/index.js';
+import { DIGIT_ZEROS, inSystem, systemName } from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 const model = (label: string, language?: string) => ({
   markup: '<p>{{0}}</p>',
@@ -33,5 +34,18 @@ describe('response normalization', () => {
   it('scores the outcome with the normalized comparison', async () => {
     const result = await outcome(model('12') as any, session('١٢') as any, { mode: 'evaluate' });
     expect(result.score).toBe(1);
+  });
+});
+
+describe('every Unicode digit system', () => {
+  it('scores whole, decimal and grouped numbers against their ASCII label', () => {
+    for (const zero of DIGIT_ZEROS) {
+      const name = systemName(zero);
+      expect(getScore(model('2024'), session(inSystem(zero, '2024'))), name).toBe(1);
+      expect(getScore(model('3.5'), session(inSystem(zero, '3٫5'))), name).toBe(1);
+      expect(getScore(model('1,234.5'), session(inSystem(zero, '1٬234٫5'))), name).toBe(1);
+      expect(getScore(model('1.234,5', 'ar-MA'), session(inSystem(zero, '1٬234٫5'))), name).toBe(1);
+      expect(getScore(model('2024'), session(inSystem(zero, '2025'))), name).toBe(0);
+    }
   });
 });

@@ -9,6 +9,11 @@ import {
   outcome,
   validate,
 } from '../src/controller/index.js';
+import {
+  DIGIT_ZEROS,
+  inSystem,
+  systemName,
+} from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 // A player creates every session entry with `id` and its versioned tag before
 // the learner types anything.
@@ -305,5 +310,23 @@ describe('response normalization', () => {
     expect(getCorrectness(question, session)).toBe('incorrect');
     expect(getCorrectness({ ...question, language: 'tr_TR' }, session)).toBe('correct');
     expect(getCorrectness(question, session, { locale: 'tr' })).toBe('correct');
+  });
+});
+
+describe('every Unicode digit system', () => {
+  it('scores whole, decimal and grouped numbers against their ASCII answer key', () => {
+    const correctness = (correctAnswer: string, value: string, language?: string) =>
+      getCorrectness(
+        { ...QUESTION, correctAnswer, ...(language ? { language } : {}) },
+        { id: '1', element: TAG, value }
+      );
+    for (const zero of DIGIT_ZEROS) {
+      const name = systemName(zero);
+      expect(correctness('2024', inSystem(zero, '2024')), name).toBe('correct');
+      expect(correctness('3.5', inSystem(zero, '3٫5')), name).toBe('correct');
+      expect(correctness('1,234.5', inSystem(zero, '1٬234٫5')), name).toBe('correct');
+      expect(correctness('1.234,5', inSystem(zero, '1٬234٫5'), 'ar-MA'), name).toBe('correct');
+      expect(correctness('2024', inSystem(zero, '2025')), name).toBe('incorrect');
+    }
   });
 });
