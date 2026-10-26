@@ -72,6 +72,25 @@
         font: inherit;
       }
 
+      input[type="text"],
+      input[type="url"],
+      select,
+      textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 8px;
+        background: var(--pie-white);
+        color: var(--pie-text);
+        padding: 9px 10px;
+      }
+
+      textarea {
+        min-height: 118px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
       button:focus-visible,
       input:focus-visible,
       select:focus-visible,
@@ -315,25 +334,6 @@
       .required::after {
         content: " *";
         color: var(--pie-incorrect-icon);
-      }
-
-      input[type="text"],
-      input[type="url"],
-      select,
-      textarea {
-        width: 100%;
-        min-height: 42px;
-        border: 1px solid var(--pie-border-light);
-        border-radius: 8px;
-        background: var(--pie-white);
-        color: var(--pie-text);
-        padding: 9px 10px;
-      }
-
-      textarea {
-        min-height: 118px;
-        resize: vertical;
-        line-height: 1.5;
       }
 
       .hint,
