@@ -1,23 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldCase, foldDigits, normalizeResponse } from '../src/response-normalizer.js';
-
-// Every run of Unicode decimal digits, as the code point of its zero.
-const DIGIT_ZEROS: number[] = [];
-for (let codePoint = 0, inRun = false; codePoint <= 0x10ffff; codePoint++) {
-  const isDigit = /\p{Nd}/u.test(String.fromCodePoint(codePoint));
-  if (isDigit && !inRun) DIGIT_ZEROS.push(codePoint);
-  inRun = isDigit;
-}
-// Abutting runs (the mathematical digits) start a new zero every ten.
-const ZEROS = DIGIT_ZEROS.flatMap((zero) => {
-  const zeros = [zero];
-  for (let next = zero + 10; /\p{Nd}/u.test(String.fromCodePoint(next)); next += 10)
-    zeros.push(next);
-  return zeros;
-});
-
-const inSystem = (zero: number, ascii: string) =>
-  ascii.replace(/[0-9]/g, (digit) => String.fromCodePoint(zero + Number(digit)));
+import { DIGIT_ZEROS as ZEROS, inSystem } from './digit-systems.js';
 
 // A fixed-seed generator, so a failure reproduces.
 const random = (() => {

@@ -2,6 +2,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { checkLabelsEquality, getScore } from '../src/controller/index.js';
+import { DIGIT_ZEROS, inSystem, systemName } from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 describe('label comparison', () => {
   it('folds case in the content language', () => {
@@ -27,5 +28,18 @@ describe('label comparison', () => {
     expect(getScore(question, session).score).toBe(0);
     expect(getScore({ ...question, language: 'tr_TR' }, session).score).toBe(1);
     expect(getScore(question, session, { locale: 'tr' } as any).score).toBe(1);
+  });
+});
+
+describe('every Unicode digit system', () => {
+  it('matches whole, decimal and grouped numbers against their ASCII label', () => {
+    for (const zero of DIGIT_ZEROS) {
+      const name = systemName(zero);
+      expect(checkLabelsEquality('2024', inSystem(zero, '2024')), name).toBe(true);
+      expect(checkLabelsEquality('3.5', inSystem(zero, '3٫5')), name).toBe(true);
+      expect(checkLabelsEquality('1,234.5', inSystem(zero, '1٬234٫5')), name).toBe(true);
+      expect(checkLabelsEquality('1.234,5', inSystem(zero, '1٬234٫5'), 'ar-MA'), name).toBe(true);
+      expect(checkLabelsEquality('2024', inSystem(zero, '2025')), name).toBe(false);
+    }
   });
 });
