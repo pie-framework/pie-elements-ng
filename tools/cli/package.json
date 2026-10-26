@@ -24,7 +24,7 @@
     "@oclif/core": "^5.1.9",
     "@oclif/plugin-help": "^7.0.4",
     "@pie-element/element-bundler": "workspace:*",
-    "es-module-lexer": "^3.0.3",
+    "es-module-lexer": "^3.0.4",
     "glob": "^13.0.0",
     "open": "^11.0.4",
     "ts-json-schema-generator": "^2.9.0",
