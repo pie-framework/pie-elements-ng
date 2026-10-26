@@ -100,7 +100,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "@vitest/ui": "^5.0.5",
     "ajv": "^8.20.0",
-    "bun-types": "^1.4.2",
+    "bun-types": "^1.4.4",
     "glob": "^13.0.0",
     "happy-dom": "^20.14.5",
     "import-meta-resolve": "^4.2.0",
