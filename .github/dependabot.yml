@@ -54,6 +54,14 @@ updates:
       # Number Line never renders. Hold the major until PIE-1006 raises the bundler target.
       - dependency-name: "mathjs"
         update-types: ["version-update:semver-major"]
+      # Material UI majors are a planned migration (PIE-974): MUI 9 raises the browser floor, which
+      # needs product sign-off, and every @mui/* manifest moves in one change because two copies in
+      # one bundle share emotion's theme context.
+      - dependency-name: "@mui/*"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 is a planned migration, held until it is scheduled.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       # react and react-dom must be the same exact version and react-konva's minor tracks React's, so
       # minors and patches land together.
