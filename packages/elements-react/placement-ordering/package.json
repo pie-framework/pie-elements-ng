@@ -30,7 +30,7 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "js-combinatorics": "^2.1.2",
+    "js-combinatorics": "^2.1.4",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "react": "^18.2.0",
