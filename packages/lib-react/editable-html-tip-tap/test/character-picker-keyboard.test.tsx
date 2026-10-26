@@ -141,4 +141,17 @@ describe('Insert Spanish/Special Character panel keyboard access', () => {
     expect(document.activeElement).toBe(first);
     expect(dialog()).not.toBeNull();
   });
+
+  it('puts the cursor back in the text when a character is clicked with the pointer', async () => {
+    const { tiptap } = await openPanel({ keyboard: false });
+    const first = panelButtons()[0];
+
+    act(() => {
+      fireEvent.pointerDown(first);
+      fireEvent.click(first, { detail: 1 });
+    });
+
+    await waitFor(() => expect(tiptap.getText()).toContain('á'));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('textbox')));
+  });
 });
