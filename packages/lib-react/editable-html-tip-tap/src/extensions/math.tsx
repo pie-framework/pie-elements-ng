@@ -8,6 +8,7 @@ import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-sta
 import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
 import { latexToMml, mmlToLatex, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { inlineSideOfArrow, isRightToLeft } from '@pie-element/shared-utils';
 import { setToolbarOpened } from '../utils/toolbar.js';
 import { TOOLBAR_BACKGROUND } from '../constants.js';
 
@@ -218,6 +219,12 @@ const nodeBeforeZeroWidthSpace = (doc, from) => {
   return i;
 };
 
+/** The element holding the text at `pos`, whose direction decides which arrow key steps back there. */
+const elementAt = (view, pos) => {
+  const { node } = view.domAtPos(pos);
+  return node.nodeType === 1 ? node : node.parentElement;
+};
+
 export const ZeroWidthSpaceHandlingPlugin = new Plugin({
   key: new PluginKey('zeroWidthSpaceHandling'),
   props: {
@@ -238,7 +245,7 @@ export const ZeroWidthSpaceHandlingPlugin = new Plugin({
         return true; // handled
       }
 
-      if (empty && event.key === 'ArrowLeft' && from > 0) {
+      if (empty && from > 0 && inlineSideOfArrow(event.key, elementAt(view, from)) === 'inline-start') {
         const start = nodeBeforeZeroWidthSpace(doc, from);
 
         if (start === -1) {
@@ -483,7 +490,7 @@ export const MathNodeView = (props) => {
       const nodeRect = nodeRef.current?.getBoundingClientRect?.();
 
       // Anchor to the math node element when available; fall back to selection coords.
-      const rtl = getComputedStyle(nodeRef.current ?? editor.view.dom).direction === 'rtl';
+      const rtl = isRightToLeft(nodeRef.current ?? editor.view.dom);
       const anchorTop = nodeRect?.height ? nodeRect.top : start.top;
       const anchorBottom = nodeRect?.height ? nodeRect.bottom : (start.bottom ?? start.top);
 
