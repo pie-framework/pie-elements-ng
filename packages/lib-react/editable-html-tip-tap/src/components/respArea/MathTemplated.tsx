@@ -30,7 +30,7 @@ const StyledResponseBox: any = styled('div')(() => ({
   background: color.backgroundDark(),
   color: color.text(),
   display: 'inline-flex',
-  borderRight: `2px solid ${color.borderDark()}`,
+  borderInlineEnd: `2px solid ${color.borderDark()}`,
   boxSizing: 'border-box',
   overflow: 'hidden',
   fontSize: '12px',
