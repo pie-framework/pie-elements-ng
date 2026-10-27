@@ -179,7 +179,7 @@ const InlineDropdown = (props) => {
           style={{
             flex: 1,
             overflow: 'hidden',
-            padding: '0 25px 0 8px',
+            paddingInline: '8px 25px',
             whiteSpace: 'nowrap',
             textOverflow: 'ellipsis',
           }}
@@ -192,7 +192,7 @@ const InlineDropdown = (props) => {
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
-        <Chevron direction="down" style={{ position: 'absolute', top: '5px', right: '5px' }} />
+        <Chevron direction="down" style={{ position: 'absolute', top: '5px', insetInlineEnd: '5px' }} />
       </div>
       {showToolbar && (
         <React.Fragment>
