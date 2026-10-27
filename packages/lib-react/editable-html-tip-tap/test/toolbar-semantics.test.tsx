@@ -158,6 +158,31 @@ describe('EditableHtml toolbar', () => {
     });
   });
 
+  it('moves focus to the next and previous button with the arrow keys', async () => {
+    render(editor({ activePlugins: ['bold', 'italic', 'bulleted-list', 'undo', 'redo'] }));
+    const box = await textbox();
+    act(() => box.focus());
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const buttons = [...toolbar().querySelectorAll('button')];
+    expect(buttons.length).toBeGreaterThan(3);
+
+    act(() => buttons[0].focus());
+    fireEvent.keyDown(buttons[0], { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(buttons[1]);
+
+    fireEvent.keyDown(buttons[1], { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(buttons[2]);
+
+    fireEvent.keyDown(buttons[2], { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(buttons[1]);
+
+    // No wrapping: the first button stays focused on ArrowLeft.
+    act(() => buttons[0].focus());
+    fireEvent.keyDown(buttons[0], { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
   it('stays open when the caller keeps it always visible', async () => {
     render(editor({ toolbarOpts: { alwaysVisible: true } }));
     await textbox();
@@ -243,4 +268,5 @@ describe('EditableHtml response-area toolbar', () => {
     expect(bar).not.toHaveClass('focused');
     expect(inert(bar)).toBe(true);
   });
+
 });

@@ -228,6 +228,23 @@ function MenuBar({
 
   const customStyles = toolbarOpts.minWidth !== undefined ? { minWidth: toolbarOpts.minWidth } : {};
 
+  const handleToolbarKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    const target = e.target as HTMLElement;
+
+    if (target.tagName !== 'BUTTON') return;
+
+    const buttons = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+    const next = buttons[buttons.indexOf(target as HTMLButtonElement) + (e.key === 'ArrowRight' ? 1 : -1)];
+
+    if (next) {
+      e.preventDefault();
+      next.focus();
+    }
+  };
+
   const handleMouseDown = (e) => {
     e.preventDefault();
   };
@@ -492,6 +509,7 @@ function MenuBar({
           role="toolbar"
           tabIndex={-1}
           aria-label={translator.t('editableHtml.toolbar', { lng: language })}
+          onKeyDown={handleToolbarKeyDown}
         >
           <div className={classes.buttonsContainer}>
             {toolbarButtons
