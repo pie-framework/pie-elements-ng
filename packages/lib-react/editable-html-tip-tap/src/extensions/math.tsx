@@ -8,6 +8,7 @@ import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-sta
 import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
 import { latexToMml, mmlToLatex, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { inlineSideOfArrow, isRightToLeft } from '@pie-element/shared-utils';
 import { setToolbarOpened } from '../utils/toolbar.js';
 import { TOOLBAR_BACKGROUND } from '../constants.js';
 
@@ -218,6 +219,12 @@ const nodeBeforeZeroWidthSpace = (doc, from) => {
   return i;
 };
 
+/** The element holding the text at `pos`, whose direction decides which arrow key steps back there. */
+const elementAt = (view, pos) => {
+  const { node } = view.domAtPos(pos);
+  return node.nodeType === 1 ? node : node.parentElement;
+};
+
 export const ZeroWidthSpaceHandlingPlugin = new Plugin({
   key: new PluginKey('zeroWidthSpaceHandling'),
   props: {
@@ -238,7 +245,7 @@ export const ZeroWidthSpaceHandlingPlugin = new Plugin({
         return true; // handled
       }
 
-      if (empty && event.key === 'ArrowLeft' && from > 0) {
+      if (empty && from > 0 && inlineSideOfArrow(event.key, elementAt(view, from)) === 'inline-start') {
         const start = nodeBeforeZeroWidthSpace(doc, from);
 
         if (start === -1) {
@@ -384,6 +391,21 @@ export const MathNode = Node.create({
   },
 });
 
+/**
+ * The math toolbar's viewport left edge. Its inline-start edge meets the anchor's, so it opens
+ * rightwards in LTR text and leftwards in RTL, and it stays `margin` inside the viewport.
+ */
+export const mathToolbarLeft = (
+  anchor: { left: number; right: number },
+  toolbarWidth: number,
+  rtl: boolean,
+  viewportWidth: number,
+  margin: number,
+): number => {
+  const left = rtl ? anchor.right - toolbarWidth : anchor.left;
+  return Math.max(margin, Math.min(left, viewportWidth - toolbarWidth - margin));
+};
+
 export const MathNodeView = (props) => {
   const { node, updateAttributes, editor, selected, options, getPos } = props;
   const [showToolbar, setShowToolbar] = useState(selected);
@@ -468,8 +490,8 @@ export const MathNodeView = (props) => {
       const nodeRect = nodeRef.current?.getBoundingClientRect?.();
 
       // Anchor to the math node element when available; fall back to selection coords.
+      const rtl = isRightToLeft(nodeRef.current ?? editor.view.dom);
       const anchorTop = nodeRect?.height ? nodeRect.top : start.top;
-      const anchorLeft = nodeRect?.width ? nodeRect.left : start.left;
       const anchorBottom = nodeRect?.height ? nodeRect.bottom : (start.bottom ?? start.top);
 
       const toolbarHeight = toolbarRef.current.offsetHeight;
@@ -478,13 +500,18 @@ export const MathNodeView = (props) => {
       const gap = 0;
       const spaceBelow = window.innerHeight - (anchorBottom + gap);
 
-      // Place the toolbar's top-left corner directly below the anchor; flip above when needed.
+      // Place the toolbar directly below the anchor; flip above when needed.
       let top = spaceBelow >= toolbarHeight ? anchorBottom + gap : anchorTop - toolbarHeight - gap;
-      let left = anchorLeft;
 
       const margin = 8;
       top = Math.max(margin, Math.min(top, window.innerHeight - toolbarHeight - margin));
-      left = Math.max(margin, Math.min(left, window.innerWidth - toolbarWidth - margin));
+      const left = mathToolbarLeft(
+        nodeRect?.width ? nodeRect : start,
+        toolbarWidth,
+        rtl,
+        window.innerWidth,
+        margin,
+      );
 
       const portalEl = editor._tiptapContainerEl || document.body;
       const containerRect = portalEl.getBoundingClientRect();

@@ -79,7 +79,8 @@ export function BlankContent({ n, children, isDragging, isOver, dragItem, value,
         borderRadius: '3px',
         overflow: 'hidden',
         position: 'relative',
-        padding: '8px 8px 8px 35px',
+        paddingBlock: '8px',
+        paddingInline: '35px 8px',
         width: hoveredElementSize ? hoveredElementSize.width : undefined,
         height: hoveredElementSize ? hoveredElementSize.height : undefined,
         touchAction: 'none',
@@ -92,7 +93,7 @@ export function BlankContent({ n, children, isDragging, isOver, dragItem, value,
           style={{
             position: 'absolute',
             top: '6px',
-            left: '15px',
+            insetInlineStart: '15px',
             color: '#9B9B9B',
           }}
           contentEditable={false}

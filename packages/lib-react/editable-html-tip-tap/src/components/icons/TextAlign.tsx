@@ -1,9 +1,7 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
-import Collapse from '@mui/material/Collapse';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import React from 'react';
+import ToolbarDisclosure from '../ToolbarDisclosure.js';
 
 export const AlignLeft = () => (
   <svg
@@ -73,78 +71,38 @@ export const AlignJustify = () => (
   </svg>
 );
 
-export default ({ editor, onChange }) => {
-  const [open, setOpen] = useState(false);
+export const ALIGNMENTS = ['start', 'center', 'end', 'justify'];
 
-  let icon;
-
-  switch (true) {
-    case editor.isActive({ textAlign: 'right' }):
-      icon = <AlignRight />;
-      break;
-    case editor.isActive({ textAlign: 'center' }):
-      icon = <AlignCenter />;
-      break;
-    case editor.isActive({ textAlign: 'justify' }):
-      icon = <AlignJustify />;
-      break;
+/** The icon for an alignment, drawn for the block's direction: start is the right edge in RTL. */
+const alignmentIcon = (alignment, direction) => {
+  const rtl = direction === 'rtl';
+  switch (alignment) {
+    case 'center':
+      return <AlignCenter />;
+    case 'justify':
+      return <AlignJustify />;
+    case 'end':
+      return rtl ? <AlignLeft /> : <AlignRight />;
     default:
-      icon = <AlignLeft />;
-      break;
+      return rtl ? <AlignRight /> : <AlignLeft />;
   }
-
-  const applyAlignment = (event) => {
-    const alignType = event.currentTarget?.getAttribute('value');
-
-    if (alignType) {
-      editor.commands.setTextAlign(alignType);
-    }
-
-    setOpen(false);
-  };
-
-  const onMouseDown = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setOpen(!open);
-  };
-
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center' }} onClick={onMouseDown}>
-        {icon}
-        <span style={{ marginLeft: '5px', fontSize: '8px' }} aria-hidden="true">
-          &#9660;
-        </span>
-      </div>
-      <Collapse in={open} timeout="auto" unmountOnExit style={{ position: 'absolute' }}>
-        <List
-          component="div"
-          disablePadding
-          style={{
-            background: '#fff',
-            display: 'flex',
-            flexDirection: 'row',
-            padding: 0,
-          }}
-        >
-          <ListItem button type="submit" value="left" aria-label="Align text left" onClick={applyAlignment}>
-            <AlignLeft />
-          </ListItem>
-
-          <ListItem button type="submit" value="center" aria-label="Align text center" onClick={applyAlignment}>
-            <AlignCenter />
-          </ListItem>
-
-          <ListItem button type="submit" value="right" aria-label="Align text right" onClick={applyAlignment}>
-            <AlignRight />
-          </ListItem>
-
-          <ListItem button type="submit" value="justify" aria-label="Justify text" onClick={applyAlignment}>
-            <AlignJustify />
-          </ListItem>
-        </List>
-      </Collapse>
-    </div>
-  );
 };
+
+/** Text alignment as a disclosure: the block's alignment, opening the four alignments. */
+export default function TextAlignControl({ editor, alignment, direction, label, alignmentLabel, className }) {
+  return (
+    <ToolbarDisclosure
+      editor={editor}
+      label={label}
+      trigger={alignmentIcon(alignment, direction)}
+      options={ALIGNMENTS.map((value) => ({
+        key: value,
+        label: alignmentLabel(value),
+        content: alignmentIcon(value, direction),
+        pressed: alignment === value,
+      }))}
+      onSelect={(value) => editor.chain().focus().setTextAlign(value).run()}
+      className={className}
+    />
+  );
+}

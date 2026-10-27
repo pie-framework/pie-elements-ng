@@ -8,7 +8,7 @@ import { get } from '@pie-element/shared-lodash';
 import { PureToolbar } from '@pie-lib/math-toolbar';
 
 import CustomPopper from './characters/custom-popper.js';
-import { spanishConfig, specialConfig } from './characters/characterUtils.js';
+import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
 
 const CharacterIcon = ({ letter }) => (
   <div
@@ -78,6 +78,8 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
         return spanishConfig;
       case opts.language === 'special':
         return specialConfig;
+      case opts.language === 'arabic':
+        return arabicConfig;
       default:
         return opts;
     }
@@ -338,7 +340,8 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
                 arr = [
                   ...arr,
                   ...n.map((k) => ({
-                    name: get(k, 'name') || k,
+                    // The keypad names a key by `name`; a described character is named by its label.
+                    name: get(k, 'name') || get(k, 'label') || k,
                     write: get(k, 'write') || k,
                     label: get(k, 'label') || k,
                     category: 'character',

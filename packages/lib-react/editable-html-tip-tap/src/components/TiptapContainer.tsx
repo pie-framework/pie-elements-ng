@@ -76,7 +76,7 @@ const StyledRoot: any = styled('div', {
   },
   '& blockquote': {
     background: '#f9f9f9',
-    borderLeft: '5px solid #ccc',
+    borderInlineStart: '5px solid #ccc',
     margin: '1.5em 10px',
     padding: '.5em 10px',
   },
