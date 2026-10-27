@@ -12,6 +12,9 @@ import { MathNode, ZeroWidthSpaceHandlingPlugin } from '../src/extensions/math';
 const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
 const schema = getSchema([StarterKit, MathNode]);
 
+// A live view's DOM observer flushes on a timer, which would otherwise outlive the test environment.
+const views: EditorView[] = [];
+
 /** A paragraph of `ab`, a math node at position 3, and the zero-width space after it, with the caret last. */
 const mountAfterMath = (direction: 'ltr' | 'rtl') => {
   const doc = schema.node('doc', null, [
@@ -29,6 +32,7 @@ const mountAfterMath = (direction: 'ltr' | 'rtl') => {
     state: state.apply(state.tr.setSelection(TextSelection.atEnd(doc))),
   });
   view.dom.querySelector('p')?.style.setProperty('direction', direction);
+  views.push(view);
   return view;
 };
 
@@ -36,6 +40,7 @@ const press = (view: EditorView, key: string) =>
   view.someProp('handleKeyDown', (handle) => handle(view, new KeyboardEvent('keydown', { key })));
 
 afterEach(() => {
+  for (const view of views.splice(0)) view.destroy();
   document.body.replaceChildren();
 });
 
