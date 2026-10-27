@@ -183,6 +183,36 @@ describe('EditableHtml toolbar', () => {
     expect(document.activeElement).toBe(buttons[0]);
   });
 
+  it('moves focus along the inline axis in a right-to-left toolbar', async () => {
+    render(<div style={{ direction: 'rtl' }}>{editor({ activePlugins: ['bold', 'italic', 'underline'] })}</div>);
+    const box = await textbox();
+    act(() => box.focus());
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const buttons = [...toolbar().querySelectorAll('button')];
+
+    act(() => buttons[1].focus());
+    fireEvent.keyDown(buttons[1], { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(buttons[2]);
+
+    fireEvent.keyDown(buttons[2], { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(buttons[1]);
+  });
+
+  it('steps past the options of a closed disclosure', async () => {
+    render(editor({ activePlugins: ['text-align', 'bulleted-list'] }));
+    const box = await textbox();
+    act(() => box.focus());
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const trigger = toolbar().querySelector('[aria-expanded="false"]') as HTMLButtonElement;
+    const after = toolbar().querySelector('[aria-label="Bulleted list"]');
+
+    act(() => trigger.focus());
+    fireEvent.keyDown(trigger, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(after);
+  });
+
   it('stays open when the caller keeps it always visible', async () => {
     render(editor({ toolbarOpts: { alwaysVisible: true } }));
     await textbox();
@@ -268,5 +298,4 @@ describe('EditableHtml response-area toolbar', () => {
     expect(bar).not.toHaveClass('focused');
     expect(inert(bar)).toBe(true);
   });
-
 });
