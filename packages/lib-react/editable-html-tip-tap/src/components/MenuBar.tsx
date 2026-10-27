@@ -29,6 +29,7 @@ import RightToLeft from '@mui/icons-material/FormatTextdirectionRToL';
 import TranslateIcon from '@mui/icons-material/Translate';
 
 import { useEditorState } from '@tiptap/react';
+import { inlineSideOfArrow } from '@pie-element/shared-utils';
 
 import { PIE_TOOLBAR__CLASS, TOOLBAR_BACKGROUND } from '../constants.js';
 import { ToolbarIcon } from './respArea/ToolbarIcon.js';
@@ -242,6 +243,29 @@ function MenuBar({
   });
 
   const customStyles = toolbarOpts.minWidth !== undefined ? { minWidth: toolbarOpts.minWidth } : {};
+
+  // Arrows move along the toolbar's inline axis, so ArrowRight steps back in a right-to-left one.
+  const handleToolbarKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const side = inlineSideOfArrow(e.key, e.currentTarget);
+
+    if (!side) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    const target = e.target as HTMLElement;
+
+    if (target.tagName !== 'BUTTON') return;
+
+    // A closed disclosure keeps its options in the DOM, hidden.
+    const buttons = Array.from(
+      e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'),
+    ).filter((button) => !button.closest('[hidden]'));
+    const next = buttons[buttons.indexOf(target as HTMLButtonElement) + (side === 'inline-end' ? 1 : -1)];
+
+    if (next) {
+      e.preventDefault();
+      next.focus();
+    }
+  };
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -563,6 +587,7 @@ function MenuBar({
           role="toolbar"
           tabIndex={-1}
           aria-label={translator.t('editableHtml.toolbar', { lng: language })}
+          onKeyDown={handleToolbarKeyDown}
         >
           <div className={classes.buttonsContainer}>
             {toolbarButtons
