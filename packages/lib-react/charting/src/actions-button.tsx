@@ -1,13 +1,16 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import { color, createUniqueId } from '@pie-lib/render-ui';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
+
+import { getLabelMathFormat } from './mark-label.js';
 
 const { translator } = Translator;
 
@@ -40,6 +43,22 @@ const StyledMenuItem: any = styled(MenuItem)(({ theme }) => ({
   // theming does not apply in charting
   color: color.defaults.TEXT,
 }));
+
+// a numeric label, typeset as the chart shows it; `math` is built from a validated number, never from free text
+const MathLabel = ({ math }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+
+    if (el) {
+      el.textContent = math;
+      renderMath(el);
+    }
+  }, [math]);
+
+  return <span ref={ref} />;
+};
 
 export class ActionsButton extends React.Component {
   constructor(props) {
@@ -119,12 +138,31 @@ export class ActionsButton extends React.Component {
           <StyledMenuItem onClick={() => this.handleAddCategory()}>
             + {translator.t('charting.add', { lng: language })}
           </StyledMenuItem>
-          {deletable.map(({ category, index }) => (
-            <StyledMenuItem key={index} onClick={() => this.handleDeleteCategory(index)}>
-              {`${translator.t('charting.delete', { lng: language })} <${category.label ||
-                translator.t('charting.newLabel', { lng: language })}>`}
-            </StyledMenuItem>
-          ))}
+          {deletable.map(({ category, index }) => {
+            const action = translator.t('charting.delete', { lng: language });
+            // a numeric label is typeset, as it is on the chart, and any other is shown as it is
+            const math = getLabelMathFormat(category.label);
+            const name = category.label || translator.t('charting.newLabel', { lng: language });
+
+            return (
+              <StyledMenuItem
+                key={index}
+                // the typeset label has no text of its own to name the item by
+                aria-label={math ? `${action} <${category.label.trim()}>` : undefined}
+                onClick={() => this.handleDeleteCategory(index)}
+              >
+                {math ? (
+                  <>
+                    {`${action} <`}
+                    <MathLabel math={math} />
+                    {'>'}
+                  </>
+                ) : (
+                  `${action} <${name}>`
+                )}
+              </StyledMenuItem>
+            );
+          })}
         </Menu>
       </StyledActions>
     );
