@@ -24,7 +24,7 @@ import React from 'react';
 import { fireEvent, render, touchDrag, touchEnd, touchStart } from '@pie-lib/test-utils';
 
 import * as graphProps from '../src/graph-props.js';
-import { gridDraggable } from '../src/grid-draggable.js';
+import { DragLockContext, gridDraggable } from '../src/grid-draggable.js';
 import * as utils from '../src/utils.js';
 
 const SIZE = { width: 500, height: 500 };
@@ -423,5 +423,51 @@ describe('gridDraggable when disabled', () => {
 
     expect(onDragStart).not.toHaveBeenCalled();
     expect(onDragStop).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * A graph that is read-only (view and evaluate mode) locks its marks from above, so they stop moving
+ * without being given `disabled`, which would also restyle them.
+ */
+describe('gridDraggable inside a DragLockContext', () => {
+  it('does not drag, and does not restyle the handle', () => {
+    const onDragStart = vi.fn();
+    const onDrag = vi.fn();
+    const onDragStop = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const { getByTestId } = render(
+      <DragLockContext.Provider value={true}>
+        <DraggableHandle
+          x={0}
+          y={5}
+          graphProps={graphProps.create(DOMAIN, RANGE, SIZE, () => root)}
+          onDragStart={onDragStart}
+          onDrag={onDrag}
+          onDragStop={onDragStop}
+        />
+      </DragLockContext.Provider>
+    );
+    const handle = getByTestId(HANDLE_TEST_ID);
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    fireEvent.mouseMove(handle, { clientX: 100, clientY: 100, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 100, button: 0 });
+
+    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onDrag).not.toHaveBeenCalled();
+    expect(onDragStop).not.toHaveBeenCalled();
+    expect(handle).not.toHaveAttribute('disabled');
+  });
+
+  it('drags as usual outside of one', () => {
+    const { handle, onDrag } = renderHandle();
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    fireEvent.mouseMove(handle, { clientX: 100, clientY: 150, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 150, button: 0 });
+
+    expect(onDrag).toHaveBeenCalled();
   });
 });

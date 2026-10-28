@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
-import { createGraphProps, Root, types, utils as plotUtils } from '@pie-lib/plot';
+import { createGraphProps, DragLockContext, Root, types, utils as plotUtils } from '@pie-lib/plot';
 import { createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import debug from 'debug';
@@ -24,6 +24,7 @@ export const graphPropTypes = {
   className: PropTypes.string,
   collapsibleToolbar: PropTypes.bool,
   collapsibleToolbarTitle: PropTypes.string,
+  disabled: PropTypes.bool,
   disabledLabels: PropTypes.bool,
   disabledTitle: PropTypes.bool,
   domain: types.DomainType,
@@ -217,6 +218,7 @@ export class Graph extends React.Component {
       currentTool,
       coordinatesOnHover,
       size,
+      disabled,
       disabledLabels,
       disabledTitle,
       domain,
@@ -307,26 +309,29 @@ export class Graph extends React.Component {
               );
             })}
 
-            {marks.map((m, index) => {
-              const Component = this.getComponent(m);
-              const markType = m.type;
+            {/* a disabled graph keeps its marks as they look, and only stops them being dragged */}
+            <DragLockContext.Provider value={!!disabled}>
+              {marks.map((m, index) => {
+                const Component = this.getComponent(m);
+                const markType = m.type;
 
-              return (
-                <Component
-                  key={`${markType}-${index}`}
-                  mark={m}
-                  coordinatesOnHover={coordinatesOnHover}
-                  onChange={this.changeMark}
-                  onComplete={this.completeMark}
-                  onClick={this.onBgClick}
-                  onDragStart={this.startDrag}
-                  onDragStop={this.stopDrag}
-                  labelNode={this.state.labelNode}
-                  isToolActive={currentTool && markType === currentTool.type}
-                  {...common}
-                />
-              );
-            })}
+                return (
+                  <Component
+                    key={`${markType}-${index}`}
+                    mark={m}
+                    coordinatesOnHover={coordinatesOnHover}
+                    onChange={this.changeMark}
+                    onComplete={this.completeMark}
+                    onClick={this.onBgClick}
+                    onDragStart={this.startDrag}
+                    onDragStop={this.stopDrag}
+                    labelNode={this.state.labelNode}
+                    isToolActive={currentTool && markType === currentTool.type}
+                    {...common}
+                  />
+                );
+              })}
+            </DragLockContext.Provider>
             <foreignObject
               ref={(labelNode) => (this.labelNode = labelNode)}
               x="0"

@@ -22,6 +22,12 @@ export const deltaFn = (scale, snap, val) => (delta) => {
 };
 
 /**
+ * A read-only graph provides `true` to stop every mark under it from being dragged. Unlike the
+ * `disabled` prop it leaves the marks as they look: they only stop moving.
+ */
+export const DragLockContext = React.createContext(false);
+
+/**
  * Creates a Component that is draggable, within a bounded grid.
  * @param {*} opts
  */
@@ -42,6 +48,8 @@ export const gridDraggable = (opts) => (Comp) => {
   );
 
   return class GridDraggable extends React.Component {
+    static contextType = DragLockContext;
+
     static propTypes = {
       disabled: PropTypes.bool,
       onDragStart: PropTypes.func,
@@ -62,6 +70,9 @@ export const gridDraggable = (opts) => (Comp) => {
       };
     }
 
+    // whether this handle may not be dragged, for being disabled or for being under a lock
+    isLocked: any = () => !!(this.props.disabled || this.context);
+
     grid: any = () => {
       const { graphProps } = this.props;
       const { scale, domain, range } = graphProps;
@@ -71,7 +82,7 @@ export const gridDraggable = (opts) => (Comp) => {
       };
     };
     onStart: any = (e) => {
-      const { onDragStart, disabled } = this.props;
+      const { onDragStart } = this.props;
       if (document.activeElement) {
         document.activeElement.blur();
       }
@@ -98,7 +109,7 @@ export const gridDraggable = (opts) => (Comp) => {
 
       // onStop reports the end of a drag only for a handle that is not disabled, so the start
       // must be gated the same way or whoever tracks the drag is never told it ended
-      if (onDragStart && !disabled) {
+      if (onDragStart && !this.isLocked()) {
         onDragStart();
       }
     };
@@ -154,7 +165,7 @@ export const gridDraggable = (opts) => (Comp) => {
     };
 
     onDrag: any = (e, dd) => {
-      const { onDrag, disabled } = this.props;
+      const { onDrag } = this.props;
 
       // Track drag movement BEFORE any early returns so that onStop always
       // knows a real drag occurred, even when onDrag prop is absent or disabled.
@@ -162,7 +173,7 @@ export const gridDraggable = (opts) => (Comp) => {
         this._didDrag = true;
       }
 
-      if (!onDrag || disabled) {
+      if (!onDrag || this.isLocked()) {
         return;
       }
 
@@ -217,7 +228,7 @@ export const gridDraggable = (opts) => (Comp) => {
       log('[onStop] dd:', dd);
       const { onDragStop, onClick, disabled } = this.props;
 
-      if (onDragStop && !disabled) {
+      if (onDragStop && !this.isLocked()) {
         onDragStop();
       }
 
