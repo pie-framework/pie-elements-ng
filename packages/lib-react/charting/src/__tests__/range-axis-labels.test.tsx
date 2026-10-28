@@ -44,6 +44,27 @@ describe('the range axis labels', () => {
     ]);
   });
 
+  // the axis calls its tick component as a function, so a hook in it counts against the axis: changing the
+  // number of ticks (max value, grid interval, label interval) changed the number of hooks (PIE-1350)
+  it('can change in number without breaking the chart', () => {
+    const chart = (range: Record<string, number>) => (
+      <Chart
+        chartType="bar"
+        data={data}
+        domain={{ label: 'Fruit' }}
+        range={{ label: 'Count', ...range }}
+        size={{ width: 300, height: 300 }}
+        onDataChange={() => {}}
+      />
+    );
+    const { container, rerender } = render(chart({ min: 0, max: 3, step: 1, labelStep: 1 }));
+
+    expect(() => rerender(chart({ min: 0, max: 6, step: 1, labelStep: 1 }))).not.toThrow();
+    expect(rangeLabels(container)).toHaveLength(7);
+    expect(() => rerender(chart({ min: 0, max: 6, step: 2, labelStep: 2 }))).not.toThrow();
+    expect(rangeLabels(container)).toHaveLength(4);
+  });
+
   it('are the color of the category labels', () => {
     const { container } = renderChart({ min: 0, max: 3, step: 1, labelStep: 1 });
 
