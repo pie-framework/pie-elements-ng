@@ -109,3 +109,30 @@ describe.each(['bar', 'histogram', 'lineDot', 'lineCross', 'dotPlot', 'linePlot'
     expect(rollover(apples)).toBe(false);
   });
 });
+
+// a disabled mark is not a slider, so find the marks by their drag handles: the root of a mark is the
+// largest ancestor of its handle that does not also hold the other mark's handle
+const markRoot = (handle: Element, other: Element) => {
+  let node = handle as HTMLElement;
+
+  while (node.parentElement && !node.parentElement.contains(other)) {
+    node = node.parentElement;
+  }
+
+  return node;
+};
+
+// the line types never block, since their handle reports its own drag; the bar and plot marks do
+describe.each(['bar', 'histogram', 'dotPlot', 'linePlot'])('%s hover when the marks are disabled', (chartType) => {
+  it('does not leave the other marks unable to hover after a press on one', () => {
+    renderChart({ chartType, disabled: true });
+    const [first, second] = Array.from(document.querySelectorAll('ellipse'));
+    const pears = markRoot(second, first);
+
+    fireEvent.mouseDown(first, { clientX: 10, clientY: 100, button: 0 });
+    fireEvent.mouseUp(first, { clientX: 10, clientY: 100, button: 0 });
+    fireEvent.mouseEnter(second);
+
+    expect(rollover(pears)).toBe(true);
+  });
+});
