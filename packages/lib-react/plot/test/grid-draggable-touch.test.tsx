@@ -358,3 +358,70 @@ describe('gridDraggable keeps the handle under the pointer', () => {
     expect(down[down.length - 1]).toBe(0);
   });
 });
+
+/**
+ * Graphing's shapes drag along x as well, and a shape that already touches the edge of the domain
+ * has a bound of 0 on that side: that is a limit, not the absence of one.
+ */
+describe('gridDraggable for a shape touching the edge of the domain', () => {
+  // The handle is the shape's anchor at x = 5, while another vertex of the shape sits at `edge`.
+  // The snap clamps a lone point to the domain, so only the bounds keep the other vertex inside.
+  const shapeHandle = (edge: { left: number; right: number }) =>
+    gridDraggable({
+      axis: 'x',
+      fromDelta: (props: HandleProps, delta: { x: number; y: number }) => {
+        delta.y = 0;
+        return utils.point(props).add(utils.point(delta)).x;
+      },
+      bounds: (_props: HandleProps, { domain, range }: { domain: typeof DOMAIN; range: typeof RANGE }) =>
+        utils.bounds({ left: edge.left, right: edge.right, top: 0, bottom: 0 }, domain, range),
+      anchorPoint: (props: HandleProps) => ({ x: props.x, y: props.y }),
+    })(Handle);
+
+  const dragX = (edge: { left: number; right: number }, toPx: number) => {
+    const ShapeHandle = shapeHandle(edge);
+    const onDrag = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const { getByTestId, unmount } = render(
+      <ShapeHandle x={5} y={5} graphProps={graphProps.create(DOMAIN, RANGE, SIZE, () => root)} onDrag={onDrag} />
+    );
+    const handle = getByTestId(HANDLE_TEST_ID);
+    fireEvent.mouseDown(handle, { clientX: 250, clientY: 250, button: 0 });
+    fireEvent.mouseMove(handle, { clientX: toPx, clientY: 250, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: toPx, clientY: 250, button: 0 });
+    unmount();
+    root.remove();
+    return onDrag.mock.calls.map(([value]) => value);
+  };
+
+  it('does not move a shape touching the left edge further left', () => {
+    const values = dragX({ left: DOMAIN.min, right: 8 }, 250 - 3 * PX_PER_STEP);
+
+    expect(Math.min(...values)).toBeGreaterThanOrEqual(5);
+  });
+
+  it('does not move a shape touching the right edge further right', () => {
+    const values = dragX({ left: 2, right: DOMAIN.max }, 250 + 3 * PX_PER_STEP);
+
+    expect(Math.max(...values)).toBeLessThanOrEqual(5);
+  });
+
+  it('still moves a shape that has room on both sides', () => {
+    const values = dragX({ left: 2, right: 8 }, 250 + 2 * PX_PER_STEP);
+
+    expect(values[values.length - 1]).toBe(7);
+  });
+});
+
+describe('gridDraggable when disabled', () => {
+  it('does not report a drag start, since it never reports the stop', () => {
+    const { handle, onDragStart, onDragStop } = renderHandle({ disabled: true });
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 250, button: 0 });
+
+    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onDragStop).not.toHaveBeenCalled();
+  });
+});

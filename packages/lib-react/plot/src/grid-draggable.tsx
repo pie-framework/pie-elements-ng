@@ -71,7 +71,7 @@ export const gridDraggable = (opts) => (Comp) => {
       };
     };
     onStart: any = (e) => {
-      const { onDragStart } = this.props;
+      const { onDragStart, disabled } = this.props;
       if (document.activeElement) {
         document.activeElement.blur();
       }
@@ -96,7 +96,9 @@ export const gridDraggable = (opts) => (Comp) => {
       };
       target.addEventListener('click', onNativeClick, true);
 
-      if (onDragStart) {
+      // onStop reports the end of a drag only for a handle that is not disabled, so the start
+      // must be gated the same way or whoever tracks the drag is never told it ended
+      if (onDragStart && !disabled) {
         onDragStart();
       }
     };
@@ -176,7 +178,7 @@ export const gridDraggable = (opts) => (Comp) => {
       const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
       const dragArg = this.applyDelta(
         {
-          x: clamp(total.x, bounds.left < 0 ? bounds.left : -Infinity, bounds.right > 0 ? bounds.right : Infinity),
+          x: clamp(total.x, Math.min(0, bounds.left), Math.max(0, bounds.right)),
           y: clamp(total.y, bounds.top, bounds.bottom),
         },
         startProps,
