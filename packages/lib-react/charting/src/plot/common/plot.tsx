@@ -9,7 +9,7 @@ import debug from 'debug';
 
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
-import { beginDrag, endDrag, hoverBlocked } from '../../common/drag-hover.js';
+import { DragHover } from '../../common/drag-hover.js';
 import MarkSlider from '../../common/mark-slider.js';
 import { color } from '@pie-lib/render-ui';
 import { bandKey } from '../../utils.js';
@@ -51,36 +51,30 @@ export class RawPlot extends React.Component {
     this.state = {
       dragValue: undefined,
       isHovered: false,
-      isDragging: false,
     };
-    this.pointerInside = false;
+    this.hover = new DragHover((isHovered) => this.setState({ isHovered }));
+  }
+
+  componentDidMount() {
+    this.hover.attach();
+  }
+
+  // disabling the mark swaps its drag handle for a plain one, which ends the drag without reporting it
+  componentDidUpdate(prevProps) {
+    if (this.props.disabled && !prevProps.disabled) {
+      this.hover.stop();
+    }
   }
 
   componentWillUnmount() {
-    endDrag(this);
+    this.hover.dispose();
   }
 
-  // a dragged plot stays hovered wherever the pointer goes, and no other one is while it is
-  handleMouseEnter: any = () => {
-    this.pointerInside = true;
+  handleMouseEnter: any = () => this.hover.setInside(true);
 
-    if (!this.state.isDragging && !hoverBlocked(this)) {
-      this.setState({ isHovered: true });
-    }
-  };
+  handleMouseLeave: any = () => this.hover.setInside(false);
 
-  handleMouseLeave: any = () => {
-    this.pointerInside = false;
-
-    if (!this.state.isDragging) {
-      this.setState({ isHovered: false });
-    }
-  };
-
-  dragStart: any = () => {
-    beginDrag(this);
-    this.setState({ isDragging: true, isHovered: true });
-  };
+  dragStart: any = () => this.hover.start();
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
@@ -100,8 +94,7 @@ export class RawPlot extends React.Component {
     }
 
     this.setDragValue(undefined);
-    endDrag(this);
-    this.setState({ isDragging: false, isHovered: this.pointerInside });
+    this.hover.stop();
   };
 
   dragValue: any = (existing, next) => {
