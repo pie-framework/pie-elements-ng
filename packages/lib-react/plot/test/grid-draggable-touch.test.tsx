@@ -24,7 +24,7 @@ import React from 'react';
 import { fireEvent, render, touchDrag, touchEnd, touchStart } from '@pie-lib/test-utils';
 
 import * as graphProps from '../src/graph-props.js';
-import { gridDraggable } from '../src/grid-draggable.js';
+import { DragLockContext, gridDraggable } from '../src/grid-draggable.js';
 import * as utils from '../src/utils.js';
 
 const SIZE = { width: 500, height: 500 };
@@ -275,5 +275,226 @@ describe('gridDraggable parity between mouse and touch', () => {
     const withTouch = dragValues((handle) => touchDrag(handle, { from: FROM, to: TO }));
 
     expect(withTouch).toEqual(withMouse);
+  });
+});
+
+/**
+ * react-draggable reports `deltaY` since the *previous* event, and the owner
+ * re-anchors on the value it was just handed. A dragged event that is dropped
+ * (a fast flick, a pointer outside the axes) therefore loses its movement for
+ * good, and the handle trails the cursor by that amount for the rest of the
+ * gesture. The handle must end up where the cursor says, however it got there.
+ */
+describe('gridDraggable keeps the handle under the pointer', () => {
+  function run(moves: Array<{ x: number; y: number }>, range = RANGE) {
+    const onDrag = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const { getByTestId, unmount } = render(
+      <ControlledHandle
+        initialY={5}
+        graphProps={graphProps.create(DOMAIN, range, SIZE, () => root)}
+        onDrag={onDrag}
+      />
+    );
+    const handle = getByTestId(HANDLE_TEST_ID);
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    moves.forEach(({ x, y }) => fireEvent.mouseMove(handle, { clientX: x, clientY: y, button: 0 }));
+    const last = moves[moves.length - 1];
+    fireEvent.mouseUp(handle, { clientX: last.x, clientY: last.y, button: 0 });
+    unmount();
+    root.remove();
+    return onDrag.mock.calls.map(([value]) => value);
+  }
+
+  it('does not lose movement when the pointer flicks past the bounds in one event', () => {
+    // 7 steps up in one event, then back down to 3 steps up overall.
+    const values = run([
+      { x: 100, y: 250 - 7 * PX_PER_STEP },
+      { x: 100, y: 250 - 3 * PX_PER_STEP },
+    ]);
+
+    expect(values[values.length - 1]).toBe(8);
+  });
+
+  it('does not lose movement while the pointer is outside the axes', () => {
+    // up past the top of the graph, then back down to 3 steps up overall
+    const values = run([
+      { x: 100, y: 150 },
+      { x: 100, y: 50 },
+      { x: 100, y: -50 },
+      { x: 100, y: -150 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ]);
+
+    expect(Math.max(...values)).toBeLessThanOrEqual(RANGE.max);
+    expect(values[values.length - 1]).toBe(8);
+  });
+
+  it('reaches the top and the bottom of the range', () => {
+    const up = run([{ x: 100, y: 250 - 400 }]);
+    const down = run([{ x: 100, y: 250 + 400 }]);
+
+    expect(up[up.length - 1]).toBe(RANGE.max);
+    expect(down[down.length - 1]).toBe(RANGE.min);
+  });
+
+  it('reaches the ends of a range whose step is not 1', () => {
+    const range = { min: 0, max: 10, step: 0.5 };
+    const up = run([{ x: 100, y: 250 - 400 }], range);
+    const down = run([{ x: 100, y: 250 + 400 }], range);
+
+    expect(up[up.length - 1]).toBe(10);
+    expect(down[down.length - 1]).toBe(0);
+  });
+
+  it('reaches the ends of a range whose step is larger than 1', () => {
+    const range = { min: 0, max: 100, step: 10 };
+    const up = run([{ x: 100, y: 250 - 800 }], range);
+    const down = run([{ x: 100, y: 250 + 800 }], range);
+
+    expect(up[up.length - 1]).toBe(100);
+    expect(down[down.length - 1]).toBe(0);
+  });
+});
+
+/**
+ * Graphing's shapes drag along x as well, and a shape that already touches the edge of the domain
+ * has a bound of 0 on that side: that is a limit, not the absence of one.
+ */
+describe('gridDraggable for a shape touching the edge of the domain', () => {
+  // The handle is the shape's anchor at x = 5, while another vertex of the shape sits at `edge`.
+  // The snap clamps a lone point to the domain, so only the bounds keep the other vertex inside.
+  const shapeHandle = (edge: { left: number; right: number }) =>
+    gridDraggable({
+      axis: 'x',
+      fromDelta: (props: HandleProps, delta: { x: number; y: number }) => {
+        delta.y = 0;
+        return utils.point(props).add(utils.point(delta)).x;
+      },
+      bounds: (_props: HandleProps, { domain, range }: { domain: typeof DOMAIN; range: typeof RANGE }) =>
+        utils.bounds({ left: edge.left, right: edge.right, top: 0, bottom: 0 }, domain, range),
+      anchorPoint: (props: HandleProps) => ({ x: props.x, y: props.y }),
+    })(Handle);
+
+  const dragX = (edge: { left: number; right: number }, toPx: number) => {
+    const ShapeHandle = shapeHandle(edge);
+    const onDrag = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const { getByTestId, unmount } = render(
+      <ShapeHandle x={5} y={5} graphProps={graphProps.create(DOMAIN, RANGE, SIZE, () => root)} onDrag={onDrag} />
+    );
+    const handle = getByTestId(HANDLE_TEST_ID);
+    fireEvent.mouseDown(handle, { clientX: 250, clientY: 250, button: 0 });
+    fireEvent.mouseMove(handle, { clientX: toPx, clientY: 250, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: toPx, clientY: 250, button: 0 });
+    unmount();
+    root.remove();
+    return onDrag.mock.calls.map(([value]) => value);
+  };
+
+  it('does not move a shape touching the left edge further left', () => {
+    const values = dragX({ left: DOMAIN.min, right: 8 }, 250 - 3 * PX_PER_STEP);
+
+    expect(Math.min(...values)).toBeGreaterThanOrEqual(5);
+  });
+
+  it('does not move a shape touching the right edge further right', () => {
+    const values = dragX({ left: 2, right: DOMAIN.max }, 250 + 3 * PX_PER_STEP);
+
+    expect(Math.max(...values)).toBeLessThanOrEqual(5);
+  });
+
+  it('still moves a shape that has room on both sides', () => {
+    const values = dragX({ left: 2, right: 8 }, 250 + 2 * PX_PER_STEP);
+
+    expect(values[values.length - 1]).toBe(7);
+  });
+});
+
+describe('gridDraggable when disabled', () => {
+  it('does not report a drag start, since it never reports the stop', () => {
+    const { handle, onDragStart, onDragStop } = renderHandle({ disabled: true });
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 250, button: 0 });
+
+    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onDragStop).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * A graph that is read-only (view and evaluate mode) locks its marks from above, so they stop moving
+ * without being given `disabled`, which would also restyle them.
+ */
+describe('gridDraggable inside a DragLockContext', () => {
+  it('does not drag, and does not restyle the handle', () => {
+    const onDragStart = vi.fn();
+    const onDrag = vi.fn();
+    const onDragStop = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const { getByTestId } = render(
+      <DragLockContext.Provider value={true}>
+        <DraggableHandle
+          x={0}
+          y={5}
+          graphProps={graphProps.create(DOMAIN, RANGE, SIZE, () => root)}
+          onDragStart={onDragStart}
+          onDrag={onDrag}
+          onDragStop={onDragStop}
+        />
+      </DragLockContext.Provider>
+    );
+    const handle = getByTestId(HANDLE_TEST_ID);
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    fireEvent.mouseMove(handle, { clientX: 100, clientY: 100, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 100, button: 0 });
+
+    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onDrag).not.toHaveBeenCalled();
+    expect(onDragStop).not.toHaveBeenCalled();
+    expect(handle).not.toHaveAttribute('disabled');
+  });
+
+  it('still reports the end of a drag that was reported, when the lock lands in the middle of it', () => {
+    const onDragStart = vi.fn();
+    const onDragStop = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const tree = (locked: boolean) => (
+      <DragLockContext.Provider value={locked}>
+        <DraggableHandle
+          x={0}
+          y={5}
+          graphProps={graphProps.create(DOMAIN, RANGE, SIZE, () => root)}
+          onDragStart={onDragStart}
+          onDragStop={onDragStop}
+        />
+      </DragLockContext.Provider>
+    );
+    const { getByTestId, rerender } = render(tree(false));
+    const handle = getByTestId(HANDLE_TEST_ID);
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    rerender(tree(true));
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 250, button: 0 });
+
+    expect(onDragStart).toHaveBeenCalledTimes(1);
+    expect(onDragStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('drags as usual outside of one', () => {
+    const { handle, onDrag } = renderHandle();
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    fireEvent.mouseMove(handle, { clientX: 100, clientY: 150, button: 0 });
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 150, button: 0 });
+
+    expect(onDrag).toHaveBeenCalled();
   });
 });

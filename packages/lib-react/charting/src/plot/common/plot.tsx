@@ -9,6 +9,7 @@ import debug from 'debug';
 
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import { DragHover } from '../../common/drag-hover.js';
 import MarkSlider from '../../common/mark-slider.js';
 import { color } from '@pie-lib/render-ui';
 import { bandKey } from '../../utils.js';
@@ -51,15 +52,29 @@ export class RawPlot extends React.Component {
       dragValue: undefined,
       isHovered: false,
     };
+    this.hover = new DragHover((isHovered) => this.setState({ isHovered }));
   }
 
-  handleMouseEnter: any = () => {
-    this.setState({ isHovered: true });
-  };
+  componentDidMount() {
+    this.hover.attach();
+  }
 
-  handleMouseLeave: any = () => {
-    this.setState({ isHovered: false });
-  };
+  // disabling the mark swaps its drag handle for a plain one, which ends the drag without reporting it
+  componentDidUpdate(prevProps) {
+    if (this.props.disabled && !prevProps.disabled) {
+      this.hover.stop();
+    }
+  }
+
+  componentWillUnmount() {
+    this.hover.dispose();
+  }
+
+  handleMouseEnter: any = () => this.hover.setInside(true);
+
+  handleMouseLeave: any = () => this.hover.setInside(false);
+
+  dragStart: any = () => this.hover.start();
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
@@ -79,6 +94,7 @@ export class RawPlot extends React.Component {
     }
 
     this.setDragValue(undefined);
+    this.hover.stop();
   };
 
   dragValue: any = (existing, next) => {
@@ -285,6 +301,7 @@ export class RawPlot extends React.Component {
             interactive={interactive}
             disabled={disabled}
             width={barWidth}
+            onDragStart={this.dragStart}
             onDrag={(v) => this.dragValue(value, v)}
             onDragStop={this.dragStop}
             graphProps={graphProps}

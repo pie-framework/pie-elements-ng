@@ -22,6 +22,12 @@ export const deltaFn = (scale, snap, val) => (delta) => {
 };
 
 /**
+ * A read-only graph provides `true` to stop every mark under it from being dragged. Unlike the
+ * `disabled` prop it leaves the marks as they look: they only stop moving.
+ */
+export const DragLockContext = React.createContext(false);
+
+/**
  * Creates a Component that is draggable, within a bounded grid.
  * @param {*} opts
  */
@@ -42,6 +48,8 @@ export const gridDraggable = (opts) => (Comp) => {
   );
 
   return class GridDraggable extends React.Component {
+    static contextType = DragLockContext;
+
     static propTypes = {
       disabled: PropTypes.bool,
       onDragStart: PropTypes.func,
@@ -62,6 +70,9 @@ export const gridDraggable = (opts) => (Comp) => {
       };
     }
 
+    // whether this handle may not be dragged, for being disabled or for being under a lock
+    isLocked: any = () => !!(this.props.disabled || this.context);
+
     grid: any = () => {
       const { graphProps } = this.props;
       const { scale, domain, range } = graphProps;
@@ -76,6 +87,12 @@ export const gridDraggable = (opts) => (Comp) => {
         document.activeElement.blur();
       }
       this._didDrag = false;
+      // react-draggable reports each delta since the previous event, and the owner re-anchors
+      // on the value it was handed. Keep the props the drag began with and the movement since,
+      // so every event is applied against one fixed anchor and none can be lost.
+      this._startProps = this.props;
+      this._bounds = this.getScaledBounds(this.props);
+      this._total = { x: 0, y: 0 };
       this.setState({ startX: e.clientX, startY: e.clientY });
 
       // Intercept the native 'click' event that the browser fires after mouseup.
@@ -91,12 +108,16 @@ export const gridDraggable = (opts) => (Comp) => {
       };
       target.addEventListener('click', onNativeClick, true);
 
-      if (onDragStart) {
+      // a locked handle is not dragged, so it reports no drag; one that was reported is always reported
+      // as ended (see onStop), even if it is locked in the middle of the drag
+      this._reportedStart = !!onDragStart && !this.isLocked();
+
+      if (this._reportedStart) {
         onDragStart();
       }
     };
-    position: any = () => {
-      const { x, y } = opts.anchorPoint(this.props);
+    position: any = (props = this.props) => {
+      const { x, y } = opts.anchorPoint(props);
       const { graphProps } = this.props;
       const { scale, snap } = graphProps;
 
@@ -110,106 +131,35 @@ export const gridDraggable = (opts) => (Comp) => {
       };
     };
 
-    tiny: any = (key, event) => {
-      const K = key.toUpperCase();
-      const end = event[`client${K}`];
-      const start = this.state[`start${K}`];
-      const delta = Math.abs(end - start);
-      const out = delta < Math.abs(this.grid()[key]) / 10;
-      log('[tiny] key: ', key, 'delta: ', delta, 'out: ', out);
-      return out;
-    };
-
-    getScaledBounds: any = () => {
-      const bounds = opts.bounds(this.props, this.props.graphProps);
+    getScaledBounds: any = (props = this.props) => {
+      const bounds = opts.bounds(props, props.graphProps);
       log('bounds: ', bounds);
-      const grid = this.grid();
+      // bounds are in domain/range units, so convert with the pixels in one unit, not in one step
+      const { scale } = props.graphProps;
+      const unit = { x: scale.x(1) - scale.x(0), y: scale.y(1) - scale.y(0) };
 
       let scaled = {
-        left: bounds.left * grid.x,
-        right: bounds.right * grid.x,
-        top: bounds.top * grid.y,
-        bottom: bounds.bottom * grid.y,
+        left: bounds.left * unit.x,
+        right: bounds.right * unit.x,
+        top: bounds.top * unit.y,
+        bottom: bounds.bottom * unit.y,
       };
 
-      // Normalize Y bounds so that:
-      // - top is <= 0 (negative or zero, allowing upward movement)
-      // - bottom is >= 0 (positive or zero, allowing downward movement)
-      // This compensates for the inverted Y scale (range.max -> 0, range.min -> size.height)
-      // Add a small buffer (1 grid unit) to ensure we can reach exact boundaries
-      const buffer = Math.abs(grid.y);
+      // Normalize the bounds so that left and top are <= 0 and right and bottom are >= 0. Y also compensates
+      // for the inverted Y scale (range.max -> 0, range.min -> size.height).
       scaled = {
-        ...scaled,
-        top: Math.min(0, scaled.top) - buffer, // More negative to allow reaching max
-        bottom: Math.abs(scaled.bottom) + buffer, // More positive to allow reaching min
+        left: Math.min(0, scaled.left),
+        right: Math.max(0, scaled.right),
+        top: Math.min(0, scaled.top),
+        bottom: Math.abs(scaled.bottom),
       };
 
       log('[getScaledBounds]: ', scaled);
       return scaled;
     };
 
-    /**
-     * Retrieves the coordinates of a mouse or touch event relative to an SVG element.
-     * This method has been overwritten from the d3-selection library's clientPoint to handle touch events and improve clarity.
-     * @param {Element} node - The SVG element.
-     * @param {Event} event - The mouse or touch event.
-     * @returns {Array} - An array containing the coordinates [x, y] relative to the SVG element.
-     */
-    getClientPoint: any = (node, event) => {
-      if (!node || !event) {
-        return null;
-      }
-      const svg = node.ownerSVGElement || node;
-
-      if (svg && svg.createSVGPoint) {
-        let point = svg.createSVGPoint();
-        // Check if it's a touch event and use the first touch point
-        if (event.touches && event.touches.length > 0) {
-          const touch = event.touches[0];
-          point.x = touch.clientX;
-          point.y = touch.clientY;
-        } else {
-          // Fall back to mouse event properties
-          point.x = event.clientX;
-          point.y = event.clientY;
-        }
-        if (node.getScreenCTM) {
-          point = point.matrixTransform(node.getScreenCTM().inverse());
-          return [point.x, point.y];
-        } else {
-          return null;
-        }
-      }
-
-      const rect = node.getBoundingClientRect();
-      if (rect) {
-        return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
-      } else {
-        return null;
-      }
-    };
-
-    skipDragOutsideOfBounds: any = (dd, e, graphProps) => {
-      // Ignore drag movement outside of the domain and range.
-      const rootNode = graphProps.getRootNode();
-      const clientPoint = this.getClientPoint(rootNode, e);
-
-      if (clientPoint === null) {
-        return true; // Indicate that the drag is outside of bounds
-      }
-
-      const [rawX, rawY] = clientPoint;
-      const { scale, domain, range } = graphProps;
-      let x = scale.x.invert(rawX);
-      let y = scale.y.invert(rawY);
-
-      const xOutside = (dd.deltaX > 0 && x < domain.min) || (dd.deltaX < 0 && x > domain.max);
-      const yOutside = (dd.deltaY > 0 && y > range.max) || (dd.deltaY < 0 && y < range.min);
-      return xOutside || yOutside;
-    };
-
     onDrag: any = (e, dd) => {
-      const { onDrag, graphProps, disabled } = this.props;
+      const { onDrag } = this.props;
 
       // Track drag movement BEFORE any early returns so that onStop always
       // knows a real drag occurred, even when onDrag prop is absent or disabled.
@@ -217,41 +167,35 @@ export const gridDraggable = (opts) => (Comp) => {
         this._didDrag = true;
       }
 
-      if (!onDrag || disabled) {
+      if (!onDrag || this.isLocked()) {
         return;
       }
 
-      const bounds = this.getScaledBounds();
+      const startProps = this._startProps || this.props;
+      const total = this._total || { x: 0, y: 0 };
+      total.x += dd.deltaX;
+      total.y += dd.deltaY;
+      this._total = total;
 
-      if (dd.deltaX < 0 && dd.deltaX < bounds.left) {
-        return;
-      }
+      // Keep the handle at the edge of the domain/range rather than ignoring movement past it:
+      // the pointer leaving the axes (or a fast flick) must not desynchronise handle and cursor.
+      const bounds = this._bounds || this.getScaledBounds(startProps);
+      const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+      const dragArg = this.applyDelta(
+        {
+          x: clamp(total.x, bounds.left, bounds.right),
+          y: clamp(total.y, bounds.top, bounds.bottom),
+        },
+        startProps,
+      );
 
-      if (dd.deltaX > 0 && dd.deltaX > bounds.right) {
-        return;
-      }
-
-      if (dd.deltaY < 0 && dd.deltaY < bounds.top) {
-        return;
-      }
-
-      if (dd.deltaY > 0 && dd.deltaY > bounds.bottom) {
-        return;
-      }
-
-      if (this.skipDragOutsideOfBounds(dd, e, graphProps)) {
-        return;
-      }
-
-      const dragArg = this.applyDelta({ x: dd.deltaX, y: dd.deltaY });
-
-      if (dragArg !== undefined || dragArg !== null) {
+      if (dragArg !== undefined && dragArg !== null) {
         onDrag(dragArg);
       }
     };
 
-    getDelta: any = (point) => {
-      const pos = this.position();
+    getDelta: any = (point, props) => {
+      const pos = this.position(props);
 
       const p = {
         x: pos.x(point.x),
@@ -261,10 +205,10 @@ export const gridDraggable = (opts) => (Comp) => {
       return utils.getDelta(pos.anchorPoint, p);
     };
 
-    applyDelta: any = (point) => {
-      const delta = this.getDelta(point);
+    applyDelta: any = (point, props = this.props) => {
+      const delta = this.getDelta(point, props);
       log('[applyDelta] delta:', delta);
-      return opts.fromDelta(this.props, delta);
+      return opts.fromDelta(props, delta);
     };
 
     /**
@@ -278,9 +222,14 @@ export const gridDraggable = (opts) => (Comp) => {
       log('[onStop] dd:', dd);
       const { onDragStop, onClick, disabled } = this.props;
 
-      if (onDragStop && !disabled) {
+      if (onDragStop && this._reportedStart) {
         onDragStop();
       }
+
+      this._reportedStart = false;
+      this._startProps = null;
+      this._bounds = null;
+      this._total = null;
 
       log('[onStop] lastX/Y: ', dd.lastX, dd.lastY);
       const isClick = !this._didDrag;

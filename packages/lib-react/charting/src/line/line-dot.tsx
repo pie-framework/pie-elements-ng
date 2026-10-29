@@ -8,6 +8,7 @@ import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { dataToXBand } from '../utils.js';
 import RawLine from './common/line.js';
+import { useDragHover } from '../common/drag-hover.js';
 import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
 
 const StyledHandle: any = styled('circle')(() => ({}));
@@ -19,25 +20,28 @@ const StyledTransparentHandle: any = styled('circle')(() => ({
   pointerEvents: 'auto', // allow drag events
 }));
 
-const DraggableComponent = ({ scale, x, y, r, correctness, interactive, correctData, label, ...rest }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
+const DraggableComponent = ({
+  scale,
+  x,
+  y,
+  r,
+  correctness,
+  interactive,
+  correctData,
+  label,
+  isDragging,
+  disabled,
+  ...rest
+}) => {
+  // a disabled mark is not dragged, so pressing it does not take the hover from the others
+  const { hovered: isHovered, onEnter, onLeave } = useDragHover(!!isDragging && !disabled);
   const allowRolloverEvent = !correctness && interactive;
 
   return (
-    <g
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onTouchStart={() => setIsHovered(true)}
-      onTouchEnd={() => setIsHovered(false)}
-    >
-      <StyledTransparentHandle
-        cx={scale.x(x)}
-        cy={scale.y(y)}
-        r={r * 3}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        {...rest}
-      />
+    // the pointer enters and leaves the group, not the ring and the dot in it: the dot is the ring's sibling,
+    // so going from one to the other would otherwise leave the mark while the pointer is still on it
+    <g onMouseEnter={onEnter} onMouseLeave={onLeave} onTouchStart={onEnter} onTouchEnd={onLeave}>
+      <StyledTransparentHandle cx={scale.x(x)} cy={scale.y(y)} r={r * 3} {...rest} />
       <StyledHandle
         cx={scale.x(x)}
         cy={scale.y(y)}
