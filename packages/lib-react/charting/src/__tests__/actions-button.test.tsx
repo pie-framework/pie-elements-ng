@@ -5,6 +5,10 @@ import userEvent from '@testing-library/user-event';
 
 import ActionsButton from '../actions-button';
 
+// the typeset label goes through MathJax, which does not load here; record what it is asked to typeset
+const typeset = vi.hoisted(() => vi.fn());
+vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: typeset }));
+
 const deletable = [
   { label: 'Apples', deletable: true },
   { label: 'Pears', deletable: true },
@@ -101,5 +105,47 @@ describe('charting Actions trigger', () => {
 
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(trigger).toHaveFocus();
+  });
+});
+
+describe('charting Actions delete options', () => {
+  const open = async (categories: object[]) => {
+    const user = userEvent.setup();
+    renderActions({ categories });
+    await openWithKeyboard(user);
+  };
+
+  it.each([
+    ['a fraction', '1/2', '\\(\\frac{1}{2}\\)'],
+    ['a mixed number', '2 1/2', '\\(2\\frac{1}{2}\\)'],
+    ['a negative fraction', '-3/4', '\\(-\\frac{3}{4}\\)'],
+    ['an integer', '7', '\\(7\\)'],
+    ['a decimal', '0.5', '\\(0.5\\)'],
+  ])('typeset %s as the chart does', async (_kind, label, math) => {
+    typeset.mockClear();
+    await open([{ label, deletable: true }]);
+
+    const item = screen.getByRole('menuitem', { name: `Delete <${label}>` });
+
+    expect(item).toHaveTextContent(`Delete <${math}>`);
+    expect(typeset).toHaveBeenCalledWith(item.querySelector('span'));
+  });
+
+  // MathJax's container is focusable and has a context menu of its own, so a press or right-click on the math
+  // must reach the option and not the container
+  it('lets pointer events on the typeset label through to the option', async () => {
+    await open([{ label: '1/2', deletable: true }]);
+
+    const item = screen.getByRole('menuitem', { name: 'Delete <1/2>' });
+
+    expect(item.querySelector('span')).toHaveStyle({ pointerEvents: 'none' });
+  });
+
+  it('shows any other label as it is, without typesetting it', async () => {
+    typeset.mockClear();
+    await open([{ label: 'Apples', deletable: true }]);
+
+    expect(screen.getByRole('menuitem', { name: 'Delete <Apples>' })).toHaveTextContent('Delete <Apples>');
+    expect(typeset).not.toHaveBeenCalled();
   });
 });
