@@ -57,7 +57,9 @@ const MathLabel = ({ math }) => {
     }
   }, [math]);
 
-  return <span ref={ref} />;
+  // MathJax's container takes focus (tabindex -1) and has a context menu of its own; with no pointer events a
+  // press or right-click on the math lands on the option, so focus stays on the option and no second menu opens
+  return <span ref={ref} style={{ pointerEvents: 'none' }} />;
 };
 
 export class ActionsButton extends React.Component {

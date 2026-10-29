@@ -131,6 +131,16 @@ describe('charting Actions delete options', () => {
     expect(typeset).toHaveBeenCalledWith(item.querySelector('span'));
   });
 
+  // MathJax's container is focusable and has a context menu of its own, so a press or right-click on the math
+  // must reach the option and not the container
+  it('lets pointer events on the typeset label through to the option', async () => {
+    await open([{ label: '1/2', deletable: true }]);
+
+    const item = screen.getByRole('menuitem', { name: 'Delete <1/2>' });
+
+    expect(item.querySelector('span')).toHaveStyle({ pointerEvents: 'none' });
+  });
+
   it('shows any other label as it is, without typesetting it', async () => {
     typeset.mockClear();
     await open([{ label: 'Apples', deletable: true }]);
