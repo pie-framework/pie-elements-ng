@@ -304,10 +304,19 @@ export async function getSelectedValue(page: Page): Promise<string | null> {
 
 /**
  * Navigate to an element deliver route and wait for shell.
+ *
+ * `layout: 'page'` lays the route out as a scrolling host page, with content above and below the
+ * element (see `src/lib/config/page-layout.ts`); by default `window` never scrolls.
  */
-export async function openDeliverRoute(page: Page, element: string, demoId?: string) {
+export async function openDeliverRoute(
+  page: Page,
+  element: string,
+  demoId?: string,
+  { layout }: { layout?: 'page' } = {}
+) {
   const demoQuery = demoId ? `&demo=${encodeURIComponent(demoId)}` : '';
-  await page.goto(`/${element}/deliver?mode=gather&role=student${demoQuery}`);
+  const layoutQuery = layout ? `&layout=${layout}` : '';
+  await page.goto(`/${element}/deliver?mode=gather&role=student${demoQuery}${layoutQuery}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('[data-testid="role-student"], pie-element-player[view="delivery"]', {
