@@ -18,19 +18,12 @@
  *
  * Shared packages — read this before running --apply:
  *
- * This repo does not own most of the package names it publishes. `@pie-element/*` and
- * `@pie-lib/*` are also published by pie-framework/pie-elements and pie-framework/pie-lib,
- * which are both still active: this repo ships `-next.N` prereleases (e.g.
- * @pie-element/multiple-choice 13.2.2-next.5) while those repos ship the stable versions of
- * the same names (13.3.5). As of 2026-07-31, 50 of the 74 packages here already have a
- * trusted publisher belonging to one of those repos, bound to their `ci.yml`, and 45 of
- * them published a stable release through it that same day.
- *
- * npm permits exactly ONE trusted publisher per package. So those 50 cannot be claimed
- * here without revoking a record that is actively releasing, and this repo can only
- * configure the ~23 packages that exist solely in pie-elements-ng. Until that changes,
- * releases here must keep using NPM_TOKEN: OIDC applies to a whole publish run, so a
- * cutover would fail every package still owned elsewhere.
+ * Most of the package names this repo publishes were first published by
+ * pie-framework/pie-elements and pie-framework/pie-lib, and on npm 49 of them (as of
+ * 2026-10-28) still carry a trusted publisher bound to one of those repos' `ci.yml`. Those
+ * repos no longer publish through CI (PIE-883), but npm permits exactly ONE trusted
+ * publisher per package, so --apply fails for those names until the legacy record is
+ * revoked. --verify reports them as WRONG TARGET and prints the revoke command for each.
  *
  * Who publishes a given package can be checked without any 2FA, because the registry
  * records it — `_npmUser.trustedPublisher.oidcConfigId` on a published version names the
@@ -53,6 +46,12 @@
  * pie-players — a "37/37 verified" run was followed by a release in which 35 of 36
  * packages failed with ENEEDAUTH.
  *
+ * Every confirmed claim is recorded in scripts/trusted-publishers.json and that file is
+ * committed. Reading npm's actual state costs a 2FA round trip per package, so CI cannot ask
+ * npm whether a newly added package was ever claimed — check-trusted-publishers.mjs asserts
+ * against the ledger instead, and fails the release rather than discovering it at publish
+ * time. So the ledger is part of the deliverable: commit it after applying.
+ *
  * Requirements:
  * - npm >= 12, which itself requires Node ^22.22.2 || ^24.15.0 || >=26.0.0. npm only
  *   warns on older Node, but this writes security configuration to a production account,
@@ -66,18 +65,18 @@
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const ROOT = process.cwd();
+import {
+  LEDGER_RELATIVE_PATH,
+  publishablePackages,
+  repositorySlug,
+  updateLedger,
+} from './lib/trusted-publishers.mjs';
 
-/**
- * The workflow that publishes every package in this repo. npm permits exactly ONE trusted
- * publisher per package, and release.yml is the only publish path here, so all packages
- * are registered against it.
- */
-const WORKFLOW = 'release.yml';
+const ROOT = process.cwd();
 
 /**
  * This is a local, one-time operator tool — never a CI step.
@@ -125,12 +124,12 @@ const mode = process.argv.includes('--apply')
 /**
  * --only <pkg>[,<pkg>...] limits the run to the named packages.
  *
- * A list is essential in this repo, not a convenience: 50 of the 74 packages already have
- * a trusted publisher belonging to pie-framework/pie-elements or pie-framework/pie-lib
- * (see the "Shared packages" note at the top of this file), so only a subset can be
- * claimed here and the rest must be skipped explicitly.
+ * A list is accepted because every `npm trust` call needs its own 2FA round trip, so a
+ * partially-configured repo has to be finishable without paying for the packages that are
+ * already done — and the names still held by a legacy record (see the "Shared packages"
+ * note at the top of this file) can only be claimed once that record is revoked.
  *
- * This exists because `--dry-run` is not the rehearsal it appears to be: `npm trust
+ * It also exists because `--dry-run` is not the rehearsal it appears to be: `npm trust
  * github --dry-run` exits 0 even for a package that does not exist, so a clean dry run
  * across every package proves the command lines are well-formed and nothing more. It
  * does not prove the packages exist, that you hold permission on them, or that npm will
@@ -158,59 +157,28 @@ const rootManifestPath = path.join(ROOT, 'package.json');
 if (!existsSync(rootManifestPath)) fail('run from the repository root (package.json not found).');
 const rootManifest = JSON.parse(readFileSync(rootManifestPath, 'utf8'));
 
-/** owner/repo, taken from repository.url so it cannot drift from what npm validates. */
-function repositorySlug() {
-  const url = rootManifest.repository?.url ?? '';
-  const m = url.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
-  if (!m) fail(`could not parse owner/repo from repository.url: ${JSON.stringify(url)}`);
-  return `${m[1]}/${m[2]}`;
-}
-
 /**
- * Expand one workspace glob to directories.
+ * Record a confirmed claim in the committed ledger, so check-trusted-publishers.mjs can
+ * assert offline that every publishable package has been through this script.
  *
- * This repo's `workspaces` mixes three shapes — plain globs (`packages/lib-react/*`),
- * literal paths (`packages/element-player`, `tools/cli`) and a nested glob (`packages/elements-react/
- * *​/demo`) — so a `endsWith("/*")` shortcut would silently skip most of the repo, including
- * every package under packages/shared, packages/element-* and tools/cli. A
- * missed package is a package that publishes without a trusted publisher, which is exactly
- * the failure this script exists to prevent, so `*` is expanded at any position.
+ * Written per package rather than once at the end, deliberately: a full run is one 2FA round
+ * trip per package, so it is routinely interrupted — a failed call partway down the list, or
+ * an operator who stops to deal with something. Batching the write would discard every claim
+ * already paid for.
+ *
+ * `null` retracts an entry, which is how --verify corrects a ledger that claims a record npm
+ * no longer reports.
  */
-function expandWorkspaceGlob(glob) {
-  let current = [ROOT];
-  for (const segment of glob.split('/')) {
-    const next = [];
-    for (const dir of current) {
-      if (segment === '*') {
-        if (!existsSync(dir)) continue;
-        for (const entry of readdirSync(dir, { withFileTypes: true })) {
-          if (entry.isDirectory()) next.push(path.join(dir, entry.name));
-        }
-      } else {
-        next.push(path.join(dir, segment));
-      }
-    }
-    current = next;
+function recordClaim(pkg, entry) {
+  try {
+    updateLedger(ROOT, { [pkg]: entry });
+  } catch (err) {
+    // Never fail a run over bookkeeping: the claim itself already succeeded on npm, and
+    // losing the ledger line is recoverable with --verify. Losing the OTP is not.
+    console.log(
+      `  (could not update ${LEDGER_RELATIVE_PATH}: ${err.message} — re-run --verify to reconcile)`
+    );
   }
-  return current;
-}
-
-/** Publishable workspace packages, derived rather than hardcoded so it cannot go stale. */
-function publishablePackages() {
-  const dirs = new Set();
-  for (const entry of rootManifest.workspaces ?? []) {
-    for (const dir of expandWorkspaceGlob(entry)) dirs.add(dir);
-  }
-
-  const found = [];
-  for (const dir of dirs) {
-    const manifestPath = path.join(dir, 'package.json');
-    if (!existsSync(manifestPath)) continue;
-    const pkg = JSON.parse(readFileSync(manifestPath, 'utf8'));
-    if (pkg.private || !pkg.name) continue;
-    found.push({ name: pkg.name, workflow: WORKFLOW });
-  }
-  return found.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function nodeSupportsNpm12(version) {
@@ -352,8 +320,13 @@ if (whoami.status !== 0) {
 }
 const user = (whoami.stdout ?? '').trim();
 
-const slug = repositorySlug();
-const allPackages = publishablePackages();
+const slug = repositorySlug(rootManifest);
+if (!slug) {
+  fail(
+    `could not parse owner/repo from repository.url: ${JSON.stringify(rootManifest.repository?.url)}`
+  );
+}
+const allPackages = publishablePackages(ROOT, rootManifest);
 if (allPackages.length === 0) fail('no publishable packages found.');
 
 let packages = allPackages;
@@ -414,22 +387,25 @@ for (const { name: pkg, workflow } of packages) {
     const match = records.find((r) => recordMatches(r, workflow));
     if (match) {
       console.log(`  ${pkg.padEnd(52)} CONFIGURED  ${describeRecord(match)}`);
+      recordClaim(pkg, { repository: slug, workflow });
       ok++;
     } else if (records.length > 0) {
       // npm permits only ONE trusted publisher per package, so a record bound to some
       // other repo/workflow is not merely wrong, it occupies the slot this repo needs.
-      // Expected for the ~50 packages still released by pie-elements / pie-lib.
+      // Expected for the names first published by pie-elements / pie-lib.
       console.log(`  ${pkg.padEnd(52)} WRONG TARGET  ${records.map(describeRecord).join('; ')}`);
-      foreign.push(pkg);
+      // This repo does not hold the slot, so any ledger line claiming it is wrong.
+      recordClaim(pkg, null);
+      foreign.push({ pkg, records });
       problems.push([
         pkg,
         `trusted publisher belongs to another repo: ${records.map(describeRecord).join('; ')} — ` +
-          'npm allows one publisher per package, so migrating this package means revoking ' +
-          `that record (\`${NPM.join(' ')} trust revoke ${pkg} <id>\`) and removing OIDC ` +
-          'publishing from the repo that currently owns it',
+          'npm allows one publisher per package, so that record must be revoked before this ' +
+          'repo can claim it (commands below)',
       ]);
     } else {
       console.log(`  ${pkg.padEnd(52)} NOT CONFIGURED`);
+      recordClaim(pkg, null);
       problems.push([
         pkg,
         'no trusted publisher — publishing from CI would fail with ENEEDAUTH; run --apply',
@@ -458,6 +434,7 @@ for (const { name: pkg, workflow } of packages) {
     const res = npm(args, { interactive: true });
     if (res.status === 0) {
       console.log(`  ${pkg.padEnd(52)} configured`);
+      recordClaim(pkg, { repository: slug, workflow });
       ok++;
     } else {
       console.log(`  ${pkg.padEnd(52)} FAILED (exit ${res.status})`);
@@ -491,10 +468,20 @@ if (unconfigured.length > 0) {
   );
 }
 if (foreign.length > 0) {
+  // Printed rather than run: revoking is the one irreversible step here, and the record it
+  // removes should be read before it goes. Each revoke is its own OTP.
   console.log(
-    `\n  ${foreign.length} package(s) are owned by another repo's trusted publisher and cannot be\n` +
-      '  claimed here without breaking that repo. See the "Shared packages" note at the top\n' +
-      '  of this file.'
+    `\n  ${foreign.length} package(s) are held by another repo's trusted publisher. Once that repo\n` +
+      '  no longer publishes them (see the "Shared packages" note at the top of this file),\n' +
+      '  revoke each record, then claim the names:'
+  );
+  for (const { pkg, records } of foreign) {
+    for (const record of records) {
+      console.log(`    ${NPM.join(' ')} trust revoke ${pkg} --id=${record.id ?? '<id>'}`);
+    }
+  }
+  console.log(
+    `    bun run trusted-publishers -- --apply --only ${foreign.map((f) => f.pkg).join(',')}`
   );
 }
 
