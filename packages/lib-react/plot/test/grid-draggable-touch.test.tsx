@@ -461,6 +461,33 @@ describe('gridDraggable inside a DragLockContext', () => {
     expect(handle).not.toHaveAttribute('disabled');
   });
 
+  it('still reports the end of a drag that was reported, when the lock lands in the middle of it', () => {
+    const onDragStart = vi.fn();
+    const onDragStop = vi.fn();
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const tree = (locked: boolean) => (
+      <DragLockContext.Provider value={locked}>
+        <DraggableHandle
+          x={0}
+          y={5}
+          graphProps={graphProps.create(DOMAIN, RANGE, SIZE, () => root)}
+          onDragStart={onDragStart}
+          onDragStop={onDragStop}
+        />
+      </DragLockContext.Provider>
+    );
+    const { getByTestId, rerender } = render(tree(false));
+    const handle = getByTestId(HANDLE_TEST_ID);
+
+    fireEvent.mouseDown(handle, { clientX: 100, clientY: 250, button: 0 });
+    rerender(tree(true));
+    fireEvent.mouseUp(handle, { clientX: 100, clientY: 250, button: 0 });
+
+    expect(onDragStart).toHaveBeenCalledTimes(1);
+    expect(onDragStop).toHaveBeenCalledTimes(1);
+  });
+
   it('drags as usual outside of one', () => {
     const { handle, onDrag } = renderHandle();
 

@@ -41,8 +41,10 @@ const StyledTransparentHandle: any = styled('circle')(() => ({
 }));
 
 const DraggableComponent = (props) => {
-  const { className, scale, x, y, r, correctness, interactive, correctData, label, isDragging, ...rest } = props;
-  const { hovered: hover, onEnter, onLeave } = useDragHover(!!isDragging);
+  const { className, scale, x, y, r, correctness, interactive, correctData, label, isDragging, disabled, ...rest } =
+    props;
+  // a disabled mark is not dragged, so pressing it does not take the hover from the others
+  const { hovered: hover, onEnter, onLeave } = useDragHover(!!isDragging && !disabled);
 
   const squareSize = r * 4;
   const squareHalf = squareSize / 2;

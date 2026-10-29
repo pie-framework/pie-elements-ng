@@ -91,6 +91,7 @@ export const gridDraggable = (opts) => (Comp) => {
       // on the value it was handed. Keep the props the drag began with and the movement since,
       // so every event is applied against one fixed anchor and none can be lost.
       this._startProps = this.props;
+      this._bounds = this.getScaledBounds(this.props);
       this._total = { x: 0, y: 0 };
       this.setState({ startX: e.clientX, startY: e.clientY });
 
@@ -107,9 +108,11 @@ export const gridDraggable = (opts) => (Comp) => {
       };
       target.addEventListener('click', onNativeClick, true);
 
-      // onStop reports the end of a drag only for a handle that is not disabled, so the start
-      // must be gated the same way or whoever tracks the drag is never told it ended
-      if (onDragStart && !this.isLocked()) {
+      // a locked handle is not dragged, so it reports no drag; one that was reported is always reported
+      // as ended (see onStop), even if it is locked in the middle of the drag
+      this._reportedStart = !!onDragStart && !this.isLocked();
+
+      if (this._reportedStart) {
         onDragStart();
       }
     };
@@ -128,16 +131,6 @@ export const gridDraggable = (opts) => (Comp) => {
       };
     };
 
-    tiny: any = (key, event) => {
-      const K = key.toUpperCase();
-      const end = event[`client${K}`];
-      const start = this.state[`start${K}`];
-      const delta = Math.abs(end - start);
-      const out = delta < Math.abs(this.grid()[key]) / 10;
-      log('[tiny] key: ', key, 'delta: ', delta, 'out: ', out);
-      return out;
-    };
-
     getScaledBounds: any = (props = this.props) => {
       const bounds = opts.bounds(props, props.graphProps);
       log('bounds: ', bounds);
@@ -152,10 +145,11 @@ export const gridDraggable = (opts) => (Comp) => {
         bottom: bounds.bottom * unit.y,
       };
 
-      // Normalize Y bounds so that top is <= 0 and bottom is >= 0. This compensates for the
-      // inverted Y scale (range.max -> 0, range.min -> size.height).
+      // Normalize the bounds so that left and top are <= 0 and right and bottom are >= 0. Y also compensates
+      // for the inverted Y scale (range.max -> 0, range.min -> size.height).
       scaled = {
-        ...scaled,
+        left: Math.min(0, scaled.left),
+        right: Math.max(0, scaled.right),
         top: Math.min(0, scaled.top),
         bottom: Math.abs(scaled.bottom),
       };
@@ -185,17 +179,17 @@ export const gridDraggable = (opts) => (Comp) => {
 
       // Keep the handle at the edge of the domain/range rather than ignoring movement past it:
       // the pointer leaving the axes (or a fast flick) must not desynchronise handle and cursor.
-      const bounds = this.getScaledBounds(startProps);
+      const bounds = this._bounds || this.getScaledBounds(startProps);
       const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
       const dragArg = this.applyDelta(
         {
-          x: clamp(total.x, Math.min(0, bounds.left), Math.max(0, bounds.right)),
+          x: clamp(total.x, bounds.left, bounds.right),
           y: clamp(total.y, bounds.top, bounds.bottom),
         },
         startProps,
       );
 
-      if (dragArg !== undefined || dragArg !== null) {
+      if (dragArg !== undefined && dragArg !== null) {
         onDrag(dragArg);
       }
     };
@@ -228,9 +222,14 @@ export const gridDraggable = (opts) => (Comp) => {
       log('[onStop] dd:', dd);
       const { onDragStop, onClick, disabled } = this.props;
 
-      if (onDragStop && !this.isLocked()) {
+      if (onDragStop && this._reportedStart) {
         onDragStop();
       }
+
+      this._reportedStart = false;
+      this._startProps = null;
+      this._bounds = null;
+      this._total = null;
 
       log('[onStop] lastX/Y: ', dd.lastX, dd.lastY);
       const isClick = !this._didDrag;
