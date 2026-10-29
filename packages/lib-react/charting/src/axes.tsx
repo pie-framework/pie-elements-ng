@@ -475,6 +475,10 @@ RangeTickLabel.propTypes = {
   formattedValue: PropTypes.string,
 };
 
+// the axis calls its tick component as a function, not as a component, so the hooks in RangeTickLabel would
+// count against the axis and change in number with the ticks; rendering it as an element keeps them its own
+const renderRangeTickLabel = (props) => <RangeTickLabel {...props} />;
+
 export class RawChartAxes extends React.Component {
   static propTypes = {
     bottomScale: PropTypes.func,
@@ -714,7 +718,7 @@ export class RawChartAxes extends React.Component {
             tickLength={10}
             tickFormat={(value) => `${value}`}
             tickValues={rowTickValues}
-            tickComponent={RangeTickLabel}
+            tickComponent={renderRangeTickLabel}
           />
         )}
         <AxisBottom
