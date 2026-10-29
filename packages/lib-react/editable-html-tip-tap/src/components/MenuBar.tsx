@@ -244,8 +244,25 @@ function MenuBar({
 
   const customStyles = toolbarOpts.minWidth !== undefined ? { minWidth: toolbarOpts.minWidth } : {};
 
+  // The editor keeps its selection while focus is in the toolbar, so focusing it again, without a
+  // position, puts the cursor back where it was before the user tabbed out of the text.
+  const returnFocusToText = () => {
+    editor.view.focus();
+    editor.commands.focus();
+  };
+
   // Arrows move along the toolbar's inline axis, so ArrowRight steps back in a right-to-left one.
   const handleToolbarKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    // Escape from a toolbar button returns to the text.
+    if (e.key === 'Escape') {
+      if (e.defaultPrevented || !e.currentTarget.contains(e.target as Node)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      returnFocusToText();
+      return;
+    }
+
     const side = inlineSideOfArrow(e.key, e.currentTarget);
 
     if (!side) return;
@@ -639,11 +656,10 @@ function MenuBar({
 
                 // A pointer click leaves focus in the text (see handleMouseDown), so blurring the
                 // editor closes the toolbar. From the keyboard focus is on this button: close the
-                // toolbar and put focus back in the text, with the cursor at the end. Focus moves
+                // toolbar and put focus back in the text, with the cursor where it was. Focus moves
                 // first, synchronously, so hiding the toolbar never strands it on the button.
                 if (e.detail === 0) {
-                  editor.view.focus();
-                  editor.commands.focus('end');
+                  returnFocusToText();
                   setDismissed(true);
                 } else {
                   editor.commands.blur();
