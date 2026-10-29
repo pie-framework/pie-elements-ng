@@ -472,6 +472,18 @@ export const MathNodeView = (props) => {
     setToolbarOpened(editor, selected || showToolbar);
   }, [editor, showToolbar, selected]);
 
+  // If the node is removed (e.g. select-all + delete) while selected or its toolbar is open,
+  // the effect above never runs again, leaving `_toolbarOpened` stuck on true. That hides the
+  // text toolbar and makes onBlur skip committing content to the model.
+  useEffect(
+    () => () => {
+      if (editor && !editor.isDestroyed) {
+        setToolbarOpened(editor, false);
+      }
+    },
+    [editor],
+  );
+
   useEffect(() => {
     if (!editor || !showToolbar) {
       setPosition({ top: 0, left: 0 });
