@@ -6,5 +6,94 @@
     "release when a publishable package has no entry. Do not hand-edit: an invented entry",
     "passes the check and still fails the publish with ENEEDAUTH."
   ],
-  "packages": {}
+  "packages": {
+    "@pie-element/cli": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/element-bundler": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/element-player": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/element-theme": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/element-theme-daisyui": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/mc-populated-blank": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-configure-events": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-controller-utils": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-editor-runtime": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-feedback": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-i18n": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-lodash": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-math-rendering-mathjax": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-player-events": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-test-utils": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-theming": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-types": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/shared-utils": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/simple-cloze": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/venn-classification": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/video-stimulus": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/delivery-events-svelte": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    }
+  }
 }
