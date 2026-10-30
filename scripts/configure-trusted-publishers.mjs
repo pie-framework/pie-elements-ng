@@ -234,27 +234,76 @@ if (Number(npmVersion.split('.')[0]) < 12) {
 /**
  * Run the resolved npm 12.
  *
- * Three stdio shapes, because 2FA constrains what may be captured:
+ * Two stdio shapes, because 2FA constrains what may be captured:
  *
  * - `interactive: true` inherits all three streams. Required for writes: npm asks for
  *   confirmation and an OTP and waits for input.
- * - `captureStdout: true` inherits stdin and stderr but pipes stdout. npm 12 splits these
- *   cleanly — the `--json` payload goes to stdout, while the 2FA prompt ("Press ENTER to
- *   open in the browser...") and the auth URL go to stderr. So the prompt still reaches
- *   the terminal and ENTER still works, and the payload is still parseable. Verified
- *   against npm 12.0.2.
- * - default pipes both, for non-interactive reads like `whoami`.
+ * - default pipes stdout and stderr, for reads whose output is parsed. npm only runs its
+ *   own 2FA prompt when both stdin AND stdout are a TTY (`otplease` in npm's
+ *   lib/utils/auth.js, npm 12.2.1), so a piped read never prompts — it fails with EOTP
+ *   and the caller has to run the browser round trip itself (see `otpFor`).
  */
-function npm(args, { interactive = false, captureStdout = false } = {}) {
-  const stdio = interactive
-    ? 'inherit'
-    : captureStdout
-      ? ['inherit', 'pipe', 'inherit']
-      : ['inherit', 'pipe', 'pipe'];
+function npm(args, { interactive = false } = {}) {
+  const stdio = interactive ? 'inherit' : ['inherit', 'pipe', 'pipe'];
   return spawnSync(NPM[0], [...NPM.slice(1), ...args], {
     encoding: 'utf8',
     stdio,
   });
+}
+
+/**
+ * Run npm's web 2FA round trip for a piped read that failed with EOTP; returns the OTP
+ * token, or null when the failure was not a web-auth EOTP.
+ *
+ * This is what npm does itself when it has a terminal (`webAuthOpener` in npm-profile):
+ * with `--json`, the EOTP error on stdout carries `authUrl` and `doneUrl`. The user
+ * approves at `authUrl`; `doneUrl` answers 202 + `retry-after` until then and 200 with
+ * `{ token }` after, and needs no credentials — the authId in it is the capability. The
+ * token is accepted as `--otp`. Only npmjs.com URLs are opened or polled, since they
+ * come from a subprocess's output.
+ */
+async function otpFor(raw) {
+  let error;
+  try {
+    error = JSON.parse(raw)?.error;
+  } catch {
+    return null;
+  }
+  if (error?.code !== 'EOTP') return null;
+  const { authUrl, doneUrl } = error;
+  const isNpm = (url, host) => {
+    try {
+      const u = new URL(url);
+      return u.protocol === 'https:' && u.hostname === host;
+    } catch {
+      return false;
+    }
+  };
+  if (!isNpm(authUrl, 'www.npmjs.com') || !isNpm(doneUrl, 'registry.npmjs.org')) return null;
+
+  console.log(`  authenticate in the browser: ${authUrl}`);
+  const opener =
+    process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? null : 'xdg-open';
+  if (opener) spawnSync(opener, [authUrl], { stdio: 'ignore' });
+  console.log('  waiting for approval (5 min) ...');
+
+  const deadline = Date.now() + 5 * 60_000;
+  while (Date.now() < deadline) {
+    const res = await fetch(doneUrl);
+    if (res.status === 200) {
+      const { token } = await res.json();
+      if (token) console.log('  approved, re-reading');
+      return token ?? null;
+    }
+    if (res.status !== 202) {
+      console.log(`  2FA poll failed: HTTP ${res.status}`);
+      return null;
+    }
+    const retry = Number(res.headers.get('retry-after')) || 3;
+    await new Promise((r) => setTimeout(r, retry * 1000));
+  }
+  console.log('  2FA not completed within 5 minutes');
+  return null;
 }
 
 /**
@@ -266,9 +315,16 @@ function npm(args, { interactive = false, captureStdout = false } = {}) {
  * produced a "37/37 verified" report for a repo where exactly one package was configured,
  * and the release that followed failed 35 of 36 publishes with ENEEDAUTH.
  */
-function readTrustRecord(pkg) {
-  const res = npm(['trust', 'list', pkg, '--json'], { captureStdout: true });
-  const raw = (res.stdout ?? '').trim();
+async function readTrustRecord(pkg) {
+  let res = npm(['trust', 'list', pkg, '--json']);
+  let raw = (res.stdout ?? '').trim();
+  if (res.status !== 0) {
+    const otp = await otpFor(raw);
+    if (otp) {
+      res = npm(['trust', 'list', pkg, '--json', `--otp=${otp}`]);
+      raw = (res.stdout ?? '').trim();
+    }
+  }
   if (res.status !== 0) {
     let detail = raw;
     try {
@@ -378,7 +434,7 @@ for (const { name: pkg, workflow } of packages) {
   // OTP — so expect one auth round trip per package in both apply and verify.
   if (mode === 'verify') {
     console.log(`\n  --- ${pkg}  (expecting ${slug} :: ${workflow})`);
-    const { records, error } = readTrustRecord(pkg);
+    const { records, error } = await readTrustRecord(pkg);
     if (error) {
       console.log(`  ${pkg.padEnd(52)} READ FAILED`);
       problems.push([pkg, error]);
