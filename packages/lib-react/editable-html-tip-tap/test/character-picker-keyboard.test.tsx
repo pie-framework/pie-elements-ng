@@ -84,27 +84,83 @@ describe('Insert Spanish/Special Character panel keyboard access', () => {
     expect(document.activeElement).toBe(toolbarButton('Bulleted list'));
   });
 
-  it('closes on Escape and returns focus to its toolbar button', async () => {
-    const { trigger } = await openPanel();
+  it('closes on Escape and returns focus to the text, with the cursor where it was', async () => {
+    const { trigger, tiptap } = await openPanel();
     await waitFor(() => expect(document.activeElement).toBe(panelButtons()[0]));
+    // Cursor after "Ho", as left in the text before tabbing to the toolbar.
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
 
     key('Escape');
 
     await waitFor(() => expect(dialog()).toBeNull());
-    expect(document.activeElement).toBe(trigger);
+    expect(document.activeElement).toBe(screen.getByRole('textbox'));
+    expect(tiptap.state.selection.from).toBe(3);
     expect(trigger.closest('[inert]')).toBeNull();
   });
 
-  it('returns focus to its toolbar button when closed with Done', async () => {
-    const { trigger } = await openPanel();
-    const buttons = panelButtons();
+  it('on Escape after inserting characters, puts the cursor after the last one inserted', async () => {
+    const { tiptap } = await openPanel();
+    const first = panelButtons()[0];
+    await waitFor(() => expect(document.activeElement).toBe(first));
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
 
     act(() => {
-      fireEvent.click(buttons[buttons.length - 1]);
+      fireEvent.click(first, { detail: 0 });
+    });
+    await waitFor(() => expect(tiptap.getText()).toBe('Hoála'));
+
+    key('Escape');
+
+    await waitFor(() => expect(dialog()).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('textbox'));
+    expect(tiptap.state.selection.from).toBe(4);
+  });
+
+  it('closes with Done from the keyboard and returns focus to the text, with the cursor where it was', async () => {
+    const { tiptap } = await openPanel();
+    const first = panelButtons()[0];
+    await waitFor(() => expect(document.activeElement).toBe(first));
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
+
+    act(() => {
+      fireEvent.click(first, { detail: 0 });
+    });
+    await waitFor(() => expect(tiptap.getText()).toBe('Hoála'));
+
+    const done = panelButtons()[panelButtons().length - 1];
+    act(() => done.focus());
+    act(() => {
+      fireEvent.click(done, { detail: 0 });
     });
 
     await waitFor(() => expect(dialog()).toBeNull());
-    expect(document.activeElement).toBe(trigger);
+    expect(document.activeElement).toBe(screen.getByRole('textbox'));
+    expect(tiptap.state.selection.from).toBe(4);
+  });
+
+  it('closes with a pointer click on Done and leaves the cursor in the text', async () => {
+    const { tiptap } = await openPanel({ keyboard: false });
+    const box = screen.getByRole('textbox');
+    act(() => box.focus());
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
+
+    const done = panelButtons()[panelButtons().length - 1];
+    act(() => {
+      fireEvent.pointerDown(done);
+      fireEvent.click(done, { detail: 1 });
+    });
+
+    await waitFor(() => expect(dialog()).toBeNull());
+    expect(document.activeElement).toBe(box);
+    expect(tiptap.state.selection.from).toBe(3);
   });
 
   it('moves focus between its buttons with the arrow keys, wrapping at the ends', async () => {
