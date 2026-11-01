@@ -42,6 +42,7 @@ const HANDLE_TEST_ID = 'handle';
 type HandleProps = {
   x: number;
   y: number;
+  isDragging?: boolean;
   onMouseDown?: React.MouseEventHandler;
   onMouseUp?: React.MouseEventHandler;
   onTouchEnd?: React.TouchEventHandler;
@@ -52,12 +53,13 @@ type HandleProps = {
  * the handlers react-draggable clones onto it. Only the handlers are forwarded -
  * the rest of `gridDraggable`'s props are not DOM attributes.
  */
-function Handle({ x, y, onMouseDown, onMouseUp, onTouchEnd }: HandleProps) {
+function Handle({ x, y, isDragging, onMouseDown, onMouseUp, onTouchEnd }: HandleProps) {
   return (
     <div
       data-testid={HANDLE_TEST_ID}
       data-x={x}
       data-y={y}
+      data-dragging={String(!!isDragging)}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
@@ -173,6 +175,28 @@ describe('gridDraggable on a touch device', () => {
     });
 
     expect(onDragStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('tells the handle it is being dragged for as long as the finger is down', () => {
+    const { handle } = renderHandle();
+
+    expect(handle).toHaveAttribute('data-dragging', 'false');
+
+    touchStart(handle, { x: 100, y: 250 });
+    expect(handle).toHaveAttribute('data-dragging', 'true');
+
+    touchEnd(handle, { x: 100, y: 250 });
+    expect(handle).toHaveAttribute('data-dragging', 'false');
+  });
+
+  it('tells the handle it is being dragged when the mouse goes down at the left edge of the page', () => {
+    const { handle } = renderHandle();
+
+    fireEvent.mouseDown(handle, { clientX: 0, clientY: 250, button: 0 });
+    expect(handle).toHaveAttribute('data-dragging', 'true');
+
+    fireEvent.mouseUp(handle, { clientX: 0, clientY: 250, button: 0 });
+    expect(handle).toHaveAttribute('data-dragging', 'false');
   });
 
   it('treats a tap with no movement as a click, not a drag', () => {

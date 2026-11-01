@@ -65,8 +65,7 @@ export const gridDraggable = (opts) => (Comp) => {
     constructor(props) {
       super(props);
       this.state = {
-        startX: null,
-        startY: null,
+        dragging: false,
       };
     }
 
@@ -93,7 +92,7 @@ export const gridDraggable = (opts) => (Comp) => {
       this._startProps = this.props;
       this._bounds = this.getScaledBounds(this.props);
       this._total = { x: 0, y: 0 };
-      this.setState({ startX: e.clientX, startY: e.clientY });
+      this.setState({ dragging: true });
 
       // Intercept the native 'click' event that the browser fires after mouseup.
       // We use a one-time capture-phase listener so we can suppress it when a
@@ -244,7 +243,7 @@ export const gridDraggable = (opts) => (Comp) => {
 
         if (onClick) {
           log('call onClick');
-          this.setState({ startX: null, startY: null });
+          this.setState({ dragging: false });
           const { graphProps } = this.props;
           const { scale, snap } = graphProps;
           try {
@@ -261,11 +260,11 @@ export const gridDraggable = (opts) => (Comp) => {
           }
         }
 
-        this.setState({ startX: null, startY: null });
+        this.setState({ dragging: false });
         return;
       }
 
-      this.setState({ startX: null, startY: null });
+      this.setState({ dragging: false });
     };
 
     render() {
@@ -292,11 +291,9 @@ export const gridDraggable = (opts) => (Comp) => {
       // page scroll after the first uncancelled touchmove.
       const onMouseDown = (e) => (e.nativeEvent || e).preventDefault();
 
-      /**
-       * TODO: This shouldnt be necessary, we should be able to use the r-d classnames.
-       * But they aren't being unset. If we continue with this lib, we'll have to fix this.
-       */
-      const isDragging = this.state ? !!this.state.startX : false;
+      // set by onStart and cleared by onStop, not read off the pointer: a touch has no clientX, and a mouse
+      // at x = 0 reads as not dragging
+      const isDragging = !!this.state?.dragging;
 
       return (
         <DraggableCore
