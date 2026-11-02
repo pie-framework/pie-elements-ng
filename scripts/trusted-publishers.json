@@ -7,7 +7,31 @@
     "passes the check and still fails the publish with ENEEDAUTH."
   ],
   "packages": {
+    "@pie-element/categorize": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/charting": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
     "@pie-element/cli": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/complex-rubric": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/drag-in-the-blank": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/drawing-response": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/ebsr": {
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     },
@@ -27,7 +51,91 @@
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     },
+    "@pie-element/explicit-constructed-response": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/extended-text-entry": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/fraction-model": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/graphing": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/graphing-solution-set": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/hotspot": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/image-cloze-association": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/inline-dropdown": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/likert": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/match": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/match-list": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/math-inline": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/math-templated": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/matrix": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
     "@pie-element/mc-populated-blank": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/multi-trait-rubric": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/multiple-choice": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/number-line": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/passage": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/placement-ordering": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/rubric": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-element/select-text": {
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     },
@@ -91,7 +199,95 @@
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     },
+    "@pie-lib/categorize": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/charting": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/config-ui": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/correct-answer-toggle": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
     "@pie-lib/delivery-events-svelte": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/drag": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/editable-html-tip-tap": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/graphing": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/graphing-solution-set": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/graphing-utils": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/icons": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/mask-markup": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/math-input": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/math-rendering": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/math-toolbar": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/plot": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/render-ui": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/rubric": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/style-utils": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/test-utils": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/text-select": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/tools": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
+    "@pie-lib/translator": {
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     }
