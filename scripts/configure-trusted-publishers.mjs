@@ -16,14 +16,15 @@
  * release that happens to include that package fails or silently falls back to a token. A
  * stale hardcoded list is exactly how that would happen unnoticed.
  *
- * Shared packages — read this before running --apply:
+ * Shared packages:
  *
  * Most of the package names this repo publishes were first published by
- * pie-framework/pie-elements and pie-framework/pie-lib, and on npm 49 of them (as of
- * 2026-10-28) still carry a trusted publisher bound to one of those repos' `ci.yml`. Those
- * repos no longer publish through CI (PIE-883), but npm permits exactly ONE trusted
- * publisher per package, so --apply fails for those names until the legacy record is
- * revoked. --verify reports them as WRONG TARGET and prints the revoke command for each.
+ * pie-framework/pie-elements and pie-framework/pie-lib, and 49 of them carried a trusted
+ * publisher bound to one of those repos' `ci.yml`. Those repos stopped publishing through
+ * CI and the records were revoked and re-claimed for this repo on 2026-11-02 (PIE-883).
+ * npm permits exactly ONE trusted publisher per package, so a name still held by another
+ * repo fails --apply until that record is revoked. --verify reports such a name as WRONG
+ * TARGET and prints the revoke command for it.
  *
  * Who publishes a given package can be checked without any 2FA, because the registry
  * records it — `_npmUser.trustedPublisher.oidcConfigId` on a published version names the
@@ -541,19 +542,15 @@ if (foreign.length > 0) {
   );
 }
 
-// Deliberately NOT advising "now delete NPM_TOKEN". Deleting the secret flips the release
-// workflow's `auto` mode to oidc for EVERY package in the same publish run, and a package
-// without a usable trusted publisher then fails with ENEEDAUTH. Because most of this
-// repo's packages are still owned by pie-elements / pie-lib, that would turn every release
-// into a partial one. pie-players learned this the expensive way: its token was deleted
-// while 36 of 37 packages were unconfigured, and the next release published exactly one
-// package. The token stays until `--verify` reports every package CONFIGURED.
+// The release workflow publishes every package of a run through OIDC, so a package
+// without a trusted publisher fails with ENEEDAUTH while the rest publish. pie-players
+// learned this the expensive way: 36 of its 37 packages were unconfigured when it moved to
+// OIDC, and the next release published exactly one package. The ledger written above is
+// what stops that here, so it has to reach develop before the release that needs it.
 if (mode === 'apply') {
   console.log(
-    '\n  next: re-run with --verify. Do NOT delete the NPM_TOKEN repo secret yet — `auto`\n' +
-      '  mode would then resolve to oidc for the whole publish run, and every package that\n' +
-      '  is still owned by pie-elements / pie-lib would fail with ENEEDAUTH. The token can\n' +
-      '  only be removed once --verify reports CONFIGURED for every package.'
+    '\n  next: commit scripts/trusted-publishers.json. The release workflow checks that\n' +
+      '  ledger and fails an OIDC run for any publishable package missing from it.'
   );
 }
 
