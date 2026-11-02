@@ -215,6 +215,26 @@ describe.each(['bar', 'histogram', 'lineDot', 'lineCross', 'dotPlot', 'linePlot'
   });
 });
 
+describe.each(['bar', 'histogram', 'lineDot', 'lineCross', 'dotPlot', 'linePlot'])('%s drag that is cut off by disabling the marks', (chartType) => {
+  it('does not show the half-dragged value once the marks are enabled again', () => {
+    const initial = fruit();
+    const onDataChange = vi.fn();
+    const { rerender } = render(<ChartHost chartType={chartType} initial={initial} onDataChange={onDataChange} />);
+    const apples = screen.getByRole('slider', { name: 'Apples' });
+    const before = apples.getAttribute('aria-valuenow');
+
+    fireEvent.mouseDown(grabber(apples), { clientX: 10, clientY: 100, button: 0 });
+    fireEvent.mouseMove(grabber(apples), { clientX: 10, clientY: -100, button: 0 });
+    expect(screen.getByRole('slider', { name: 'Apples' }).getAttribute('aria-valuenow')).not.toBe(before);
+
+    rerender(<ChartHost chartType={chartType} initial={initial} onDataChange={onDataChange} disabled />);
+    rerender(<ChartHost chartType={chartType} initial={initial} onDataChange={onDataChange} />);
+
+    expect(screen.getByRole('slider', { name: 'Apples' }).getAttribute('aria-valuenow')).toBe(before);
+    expect(onDataChange).not.toHaveBeenCalled();
+  });
+});
+
 // the dot has a transparent ring around it that is a sibling of the dot, so going from the ring onto the dot
 // moves between two elements of the mark, not out of it
 describe('lineDot hover when the pointer moves from the ring onto the dot', () => {

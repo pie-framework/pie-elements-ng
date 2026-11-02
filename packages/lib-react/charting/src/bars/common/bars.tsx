@@ -99,10 +99,11 @@ export class RawBar extends React.Component {
   }
 
   // disabling the mark replaces its slider group with a plain one, which remounts the drag handle in the middle of
-  // a drag, so the end of the drag never reaches it
+  // a drag, so the end of the drag never reaches it and the value it was dragging is dropped here
   componentDidUpdate(prevProps) {
     if (this.props.disabled && !prevProps.disabled) {
       this.hover.stop();
+      this.setDragValue(undefined);
     }
   }
 
