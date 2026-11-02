@@ -11,7 +11,10 @@ import RawLine from './common/line.js';
 import { useDragHover } from '../common/drag-hover.js';
 import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
 
-const StyledHandle: any = styled('circle')(() => ({}));
+// correctness and interactive are not attributes of the <circle>
+const StyledHandle: any = styled('circle', {
+  shouldForwardProp: (prop) => prop !== 'correctness' && prop !== 'interactive',
+})(() => ({}));
 
 const StyledTransparentHandle: any = styled('circle')(() => ({
   height: '20px',
@@ -31,6 +34,10 @@ const DraggableComponent = ({
   label,
   isDragging,
   disabled,
+  // the drag callbacks are for the drag wrapper, not for the circles they would otherwise land on
+  onDragStart,
+  onDrag,
+  onDragStop,
   ...rest
 }) => {
   // a disabled mark is not dragged, so pressing it does not take the hover from the others

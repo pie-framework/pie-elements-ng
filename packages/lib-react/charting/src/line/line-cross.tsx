@@ -21,7 +21,10 @@ const StyledLinePath: any = styled(LinePath)(() => ({
   },
 }));
 
-const StyledGroup: any = styled(Group)(({ correctness, interactive }) => ({
+// correctness and interactive only drive the styles; they are not attributes of the <g>
+const StyledGroup: any = styled(Group, {
+  shouldForwardProp: (prop) => prop !== 'correctness' && prop !== 'interactive',
+})(({ correctness, interactive }) => ({
   stroke: color.defaults.TEXT,
   transition: 'fill 200ms linear, height 200ms linear',
   ...(correctness &&
@@ -41,8 +44,24 @@ const StyledTransparentHandle: any = styled('circle')(() => ({
 }));
 
 const DraggableComponent = (props) => {
-  const { className, scale, x, y, r, correctness, interactive, correctData, label, isDragging, disabled, ...rest } =
-    props;
+  // the drag callbacks are for the drag wrapper, not for the circle they would otherwise land on
+  const {
+    className,
+    scale,
+    x,
+    y,
+    r,
+    correctness,
+    interactive,
+    correctData,
+    label,
+    isDragging,
+    disabled,
+    onDragStart,
+    onDrag,
+    onDragStop,
+    ...rest
+  } = props;
   // a disabled mark is not dragged, so pressing it does not take the hover from the others
   const { hovered: hover, onEnter, onLeave } = useDragHover(!!isDragging && !disabled);
 
