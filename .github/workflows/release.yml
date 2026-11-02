@@ -560,6 +560,14 @@ jobs:
           # gates (a full test and build) again on the version commit this run already built.
           LEFTHOOK: 0
 
+      # When npm cannot swap the runner's OIDC token for a publish token, it falls back to no
+      # credential and reports only ENEEDAUTH. The registry's reason for refusing the exchange
+      # goes to npm's debug log file alone, which is lost with the runner, so print it here.
+      - name: Show npm trusted-publishing log (oidc mode, on failure)
+        if: failure() && steps.npm_auth.outputs.mode == 'oidc' && (steps.changesets.conclusion == 'failure' || steps.snapshot_publish.conclusion == 'failure')
+        shell: bash
+        run: grep -hiE 'oidc|ENEEDAUTH|provenance' ~/.npm/_logs/*-debug-*.log || echo "No npm debug log lines about OIDC."
+
       # Publishing runs through release:publish:checked, so changesets/action never performs the
       # publish and its `published`/`publishedPackages` outputs stay empty on every successful
       # release. Gating on them silently skipped provenance verification, the GitHub release and
