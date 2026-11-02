@@ -9,6 +9,7 @@ import debug from 'debug';
 
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import { DragHover } from '../../common/drag-hover.js';
 import MarkSlider from '../../common/mark-slider.js';
 import { color } from '@pie-lib/render-ui';
 import { bandKey } from '../../utils.js';
@@ -51,15 +52,31 @@ export class RawPlot extends React.Component {
       dragValue: undefined,
       isHovered: false,
     };
+    this.hover = new DragHover((isHovered) => this.setState({ isHovered }));
   }
 
-  handleMouseEnter: any = () => {
-    this.setState({ isHovered: true });
-  };
+  componentDidMount() {
+    this.hover.attach();
+  }
 
-  handleMouseLeave: any = () => {
-    this.setState({ isHovered: false });
-  };
+  // disabling the mark replaces its slider group with a plain one, which remounts the drag handle in the middle of
+  // a drag, so the end of the drag never reaches it and the value it was dragging is dropped here
+  componentDidUpdate(prevProps) {
+    if (this.props.disabled && !prevProps.disabled) {
+      this.hover.stop();
+      this.setDragValue(undefined);
+    }
+  }
+
+  componentWillUnmount() {
+    this.hover.dispose();
+  }
+
+  handleMouseEnter: any = () => this.hover.setInside(true);
+
+  handleMouseLeave: any = () => this.hover.setInside(false);
+
+  dragStart: any = () => this.hover.start();
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
@@ -72,13 +89,16 @@ export class RawPlot extends React.Component {
 
   dragStop: any = () => {
     const { dragValue } = this.state;
+    const { disabled } = this.props;
     log('[dragStop]', dragValue);
 
-    if (dragValue !== undefined) {
+    // a drag that was under way when the marks got disabled still ends, but its value is not an answer
+    if (dragValue !== undefined && !disabled) {
       this.changeValue(dragValue);
     }
 
     this.setDragValue(undefined);
+    this.hover.stop();
   };
 
   dragValue: any = (existing, next) => {
@@ -285,6 +305,7 @@ export class RawPlot extends React.Component {
             interactive={interactive}
             disabled={disabled}
             width={barWidth}
+            onDragStart={this.dragStart}
             onDrag={(v) => this.dragValue(value, v)}
             onDragStop={this.dragStop}
             graphProps={graphProps}
