@@ -98,7 +98,8 @@ export class RawBar extends React.Component {
     window.addEventListener('mousemove', this.handleMouseMove);
   }
 
-  // disabling the mark swaps its drag handle for a plain one, which ends the drag without reporting it
+  // disabling the mark replaces its slider group with a plain one, which remounts the drag handle in the middle of
+  // a drag, so the end of the drag never reaches it
   componentDidUpdate(prevProps) {
     if (this.props.disabled && !prevProps.disabled) {
       this.hover.stop();
@@ -144,9 +145,11 @@ export class RawBar extends React.Component {
 
   dragStop: any = () => {
     const { dragValue } = this.state;
+    const { disabled } = this.props;
     log('[dragStop]', dragValue);
 
-    if (dragValue !== undefined) {
+    // a drag that was under way when the marks got disabled still ends, but its value is not an answer
+    if (dragValue !== undefined && !disabled) {
       this.changeValue(dragValue);
     }
 

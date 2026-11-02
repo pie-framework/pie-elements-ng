@@ -77,8 +77,13 @@ export class RawLine extends React.Component {
   setDragValue = (line) => this.setState({ line });
 
   dragStop: any = (index) => {
-    const { onChange } = this.props;
+    const { onChange, disabled } = this.props;
     this.setState({ dragging: false }, () => {
+      // a drag that was under way when the marks got disabled still ends, but its value is not an answer
+      if (disabled) {
+        return;
+      }
+
       onChange(index, this.state.line[index]);
     });
   };

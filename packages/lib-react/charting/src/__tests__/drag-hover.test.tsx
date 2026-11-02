@@ -195,6 +195,26 @@ describe.each(['bar', 'histogram', 'lineDot', 'lineCross', 'dotPlot', 'linePlot'
   });
 });
 
+describe.each(['bar', 'histogram', 'lineDot', 'lineCross', 'dotPlot', 'linePlot'])('%s drag that ends after the marks are disabled', (chartType) => {
+  // a drag long enough to change the value, were the marks still enabled; disabling remounts the handle, so the
+  // drag's end is lost, and dragStop also discards the value should an end ever reach a disabled mark
+  it('does not report the dragged value as a change', () => {
+    const initial = fruit();
+    const onDataChange = vi.fn();
+    const { rerender } = render(<ChartHost chartType={chartType} initial={initial} onDataChange={onDataChange} />);
+    const apples = screen.getByRole('slider', { name: 'Apples' });
+
+    fireEvent.mouseEnter(grabber(apples));
+    fireEvent.mouseDown(grabber(apples), { clientX: 10, clientY: 100, button: 0 });
+    fireEvent.mouseMove(grabber(apples), { clientX: 10, clientY: -100, button: 0 });
+
+    rerender(<ChartHost chartType={chartType} initial={initial} onDataChange={onDataChange} disabled />);
+    fireEvent.mouseUp(document.body, { clientX: 10, clientY: -100, button: 0 });
+
+    expect(onDataChange).not.toHaveBeenCalled();
+  });
+});
+
 // the dot has a transparent ring around it that is a sibling of the dot, so going from the ring onto the dot
 // moves between two elements of the mark, not out of it
 describe('lineDot hover when the pointer moves from the ring onto the dot', () => {
