@@ -107,6 +107,12 @@ describe('Insert Spanish/Special Character panel keyboard access', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
+  it('borders its characters in their own ink, which follows the colour scheme', async () => {
+    await openPanel();
+
+    expect(panelButtons()[0].style.border.toLowerCase()).toBe('1px solid currentcolor');
+  });
+
   it('moves focus between its buttons with the arrow keys, wrapping at the ends', async () => {
     await openPanel();
     const buttons = panelButtons();

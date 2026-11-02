@@ -22,6 +22,12 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
       backgroundColor: color.backgroundDark(),
     },
   }),
+  // Keyboard focus shows as the THEMING.md focus ring, not the pulsing focus ripple: an animation
+  // must not be what shows focus.
+  '&.Mui-focusVisible': {
+    outline: `4px solid ${color.focusOutline()}`,
+    outlineOffset: '-4px',
+  },
   '& .MuiIconButton-label': {
     position: 'absolute',
     top: '2px',
@@ -29,7 +35,13 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
 }));
 
 export const RawDoneButton = ({ onClick, hideBackground }) => (
-  <StyledIconButton aria-label="Done" onClick={onClick} hideBackground={hideBackground} size="large">
+  <StyledIconButton
+    aria-label="Done"
+    onClick={onClick}
+    hideBackground={hideBackground}
+    size="large"
+    disableFocusRipple
+  >
     <Check />
   </StyledIconButton>
 );

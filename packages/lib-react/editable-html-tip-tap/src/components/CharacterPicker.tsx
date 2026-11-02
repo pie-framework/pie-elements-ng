@@ -350,7 +350,9 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
                       ...(k.extraProps || {}),
                       style: {
                         ...(k.extraProps || {}).style,
-                        border: '1px solid #000',
+                        // The key's ink, which holds 4.5:1 on the key fill in every scheme; black
+                        // fell under 3:1 on the dark schemes' fills (WCAG 1.4.11).
+                        border: '1px solid currentColor',
                       },
                     },
                     ...(configToUse.hasPreview
