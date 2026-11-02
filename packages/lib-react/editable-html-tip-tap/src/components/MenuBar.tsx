@@ -731,6 +731,11 @@ const StyledMenuBarRoot: any = styled('div')(() => ({
     '&:hover': {
       color: color.text(),
     },
+    '&:disabled, &:disabled:hover': {
+      opacity: 0.4,
+      color: color.disabled(),
+      cursor: 'not-allowed',
+    },
     '&:focus': {
       /*
        * A focus ring is the one thing a keyboard user cannot do without, so it takes
