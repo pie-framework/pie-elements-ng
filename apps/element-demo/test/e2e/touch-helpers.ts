@@ -90,6 +90,12 @@ export type TouchDragOptions = {
   steps?: number;
   /** Pause between moves, for components that settle asynchronously. */
   delayMs?: number;
+  /**
+   * Pause after the last move, before lifting. Drag-and-drop libraries find the
+   * drop target as the last move renders, so a release that follows it at once
+   * can land nowhere.
+   */
+  settleMs?: number;
 };
 
 /** Drag one finger from `from` to `to`. */
@@ -97,7 +103,7 @@ export async function touchDrag(
   page: Page,
   from: Point,
   to: Point,
-  { steps = 10, delayMs = 16 }: TouchDragOptions = {}
+  { steps = 10, delayMs = 16, settleMs = 0 }: TouchDragOptions = {}
 ): Promise<void> {
   const session = await cdp(page);
 
@@ -122,6 +128,50 @@ export async function touchDrag(
     }
   }
 
+  if (settleMs > 0) {
+    await page.waitForTimeout(settleMs);
+  }
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+/**
+ * Pinch outward with two fingers, centred on `at`, as a learner zooms in.
+ *
+ * The fingers start `fromSpread` apart horizontally and end `toSpread` apart.
+ * Chromium turns the trusted touches into a pinch gesture, so the visual
+ * viewport zooms only where `touch-action` allows `pinch-zoom` - the same check
+ * the browser makes for a real finger.
+ */
+export async function touchPinch(
+  page: Page,
+  at: Point,
+  {
+    fromSpread = 60,
+    toSpread = 300,
+    steps = 12,
+  }: {
+    fromSpread?: number;
+    toSpread?: number;
+    steps?: number;
+  } = {}
+): Promise<void> {
+  const session = await cdp(page);
+  const fingers = (spread: number) => [
+    { x: at.x - spread / 2, y: at.y, id: 1 },
+    { x: at.x + spread / 2, y: at.y, id: 2 },
+  ];
+
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: fingers(fromSpread),
+  });
+  for (let step = 1; step <= steps; step++) {
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: fingers(fromSpread + ((toSpread - fromSpread) * step) / steps),
+    });
+    await page.waitForTimeout(16);
+  }
   await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 }
 
