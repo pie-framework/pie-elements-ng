@@ -70,6 +70,16 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
 
   onCloseRef.current = onClose;
 
+  // Escape and Done close the panel and return focus to the text. The editor keeps its selection
+  // while focus is in the panel, so focusing it without a position puts the cursor back where
+  // characters were being inserted; after a pointer click, the cursor is already there and stays.
+  // Focus moves before the panel closes, so it is never left on a button that is going away.
+  const closeAndReturnToText = () => {
+    editor.view.focus();
+    editor.commands.focus();
+    onCloseRef.current();
+  };
+
   const configToUse = useMemo(() => {
     if (!opts) return spanishConfig;
 
@@ -210,11 +220,6 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
   useEffect(() => {
     if (!triggerEl) return;
 
-    const closeAndReturnFocus = () => {
-      onCloseRef.current();
-      triggerEl.focus();
-    };
-
     const moveFocusWithArrow = (key, target, buttons) => {
       const currentIndex = Math.max(0, buttons.indexOf(target.closest('button')));
       const columns = layoutForCharacters.columns || 1;
@@ -244,11 +249,11 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
       const firstButton = buttons[0];
       const lastButton = buttons[buttons.length - 1];
 
-      // Escape closes the panel and returns focus to the trigger.
+      // Escape closes the panel and returns focus to the text, with the cursor where it was.
       if (inDialog && e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        closeAndReturnFocus();
+        closeAndReturnToText();
         return;
       }
 
@@ -283,7 +288,7 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
 
     document.addEventListener('keydown', handleKeyDown, true);
     return () => document.removeEventListener('keydown', handleKeyDown, true);
-  }, [triggerEl, layoutForCharacters.columns]);
+  }, [editor, triggerEl, layoutForCharacters.columns]);
 
   const renderPopOver = (event, el) => setPopover({ anchorEl: event.currentTarget, el });
 
@@ -368,10 +373,7 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
               }, [])}
               keypadMode="language"
               onChange={handleChange}
-              onDone={() => {
-                onClose();
-                triggerEl?.focus();
-              }}
+              onDone={closeAndReturnToText}
             />
           </div>
         </div>,
