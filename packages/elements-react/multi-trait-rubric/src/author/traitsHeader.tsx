@@ -40,7 +40,6 @@ import { color, createUniqueId } from '@pie-lib/render-ui';
 
 import {
   Block,
-  BlockWidth,
   PrimaryBlockWidth,
   SecondaryBlock,
   ScorePoint,
@@ -216,6 +215,8 @@ export class TraitsHeaderTile extends React.Component {
             }
           }}
           width={`${secondaryBlockWidth}px`}
+          // the label toolbar (~45px) opens below the labels and is clipped by this block's overflow
+          paddingBottom="55px"
         >
           {showStandards && (
             <Block>
@@ -230,8 +231,6 @@ export class TraitsHeaderTile extends React.Component {
           )}
 
           {scorePointsValues.map((scorePointsValue, index) => {
-            const adjustedBlockWidth = BlockWidth + 2 * 8; // 8 is padding
-            const remainingSpace = secondaryBlockWidth - adjustedBlockWidth * index + currentPosition - 128;
             const value = scorePointsValues.length - index - 1;
             let scoreDescriptor;
             let error;
@@ -253,7 +252,6 @@ export class TraitsHeaderTile extends React.Component {
                   pluginProps={labelPluginProps}
                   showScorePointLabels={showScorePointLabels}
                   onChange={(scorePointLabel) => this.onScorePointLabelChange({ scorePointLabel, value })}
-                  alignToRight={remainingSpace < 296 && scorePointsValue < maxPoints} // 296 is the space required for the toolbar
                   spellCheck={spellCheck}
                   uploadSoundSupport={uploadSoundSupport}
                   mathMlOptions={mathMlOptions}

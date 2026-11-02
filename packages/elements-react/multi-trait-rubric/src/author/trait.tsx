@@ -9,7 +9,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 import { color, useUniqueId } from '@pie-lib/render-ui';
 
-import { Block, BlockWidth, ExpandedInput, PrimaryBlock, Row, SecondaryBlock, UnderlinedInput } from './common.js';
+import { Block, ExpandedInput, PrimaryBlock, Row, SecondaryBlock, UnderlinedInput } from './common.js';
 
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -236,8 +236,6 @@ function TraitTile({
           )}
 
           {(scorePointsValues || []).map((scorePointsValue, scoreIndex) => {
-            const adjustedBlockWidth = BlockWidth + 2 * 8; // 8 is padding
-            const remainingSpace = secondaryBlockWidth - adjustedBlockWidth * scoreIndex + currentPosition - 98;
             const value = scorePointsValues.length - scoreIndex - 1;
             let scoreDescriptor;
 
@@ -255,7 +253,6 @@ function TraitTile({
                   markup={scoreDescriptor}
                   onChange={(descriptor) => onScorePointDescriptorChange({ descriptor, value })}
                   pluginProps={expandedPluginProps}
-                  alignToRight={remainingSpace < 296 && scorePointsValue < maxPoints} // 296 is the space required for the toolbar
                   spellCheck={spellCheck}
                   uploadSoundSupport={uploadSoundSupport}
                   mathMlOptions={mathMlOptions}
