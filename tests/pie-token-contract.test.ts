@@ -136,6 +136,7 @@ const REACT_ALLOWED_TOKENS = new Set([
   '--pie-faded-primary',
   '--pie-focus-checked',
   '--pie-focus-checked-border',
+  '--pie-focus-keyboard-outline',
   '--pie-focus-unchecked',
   '--pie-focus-unchecked-border',
   '--pie-incorrect',
