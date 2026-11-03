@@ -169,6 +169,24 @@ describe('Insert Spanish/Special Character panel keyboard access', () => {
     expect(panelButtons()[0].style.border.toLowerCase()).toBe('1px solid currentcolor');
   });
 
+  it('closes on Escape from its toolbar button and returns focus to the text, with the cursor where it was', async () => {
+    const { trigger, tiptap } = await openPanel();
+    await waitFor(() => expect(document.activeElement).toBe(panelButtons()[0]));
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
+
+    // Shift+Tab from the first character goes back to the trigger, outside the panel.
+    key('Tab', { shiftKey: true });
+    expect(document.activeElement).toBe(trigger);
+
+    key('Escape');
+
+    await waitFor(() => expect(dialog()).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('textbox'));
+    expect(tiptap.state.selection.from).toBe(3);
+  });
+
   it('moves focus between its buttons with the arrow keys, wrapping at the ends', async () => {
     await openPanel();
     const buttons = panelButtons();
