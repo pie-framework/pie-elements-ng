@@ -103,7 +103,7 @@
     "@vitest/ui": "^5.0.5",
     "ajv": "^8.20.0",
     "bun-types": "^1.4.4",
-    "glob": "^13.0.0",
+    "glob": "^14.0.3",
     "happy-dom": "^21.0.4",
     "import-meta-resolve": "^4.2.0",
     "js-yaml": "^5.5.0",
