@@ -9,6 +9,7 @@ import { PureToolbar } from '@pie-lib/math-toolbar';
 
 import CustomPopper from './characters/custom-popper.js';
 import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
+import { returnFocusToText } from '../utils/focus.js';
 
 const CharacterIcon = ({ letter }) => (
   <div
@@ -70,13 +71,10 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
 
   onCloseRef.current = onClose;
 
-  // Escape and Done close the panel and return focus to the text. The editor keeps its selection
-  // while focus is in the panel, so focusing it without a position puts the cursor back where
-  // characters were being inserted; after a pointer click, the cursor is already there and stays.
-  // Focus moves before the panel closes, so it is never left on a button that is going away.
+  // Escape and Done close the panel and return focus to the text, with the cursor where characters
+  // were being inserted; after a pointer click, the cursor is already there and stays. Focus moves before the panel closes, so it is never left on a button that is going away.
   const closeAndReturnToText = () => {
-    editor.view.focus();
-    editor.commands.focus();
+    returnFocusToText(editor);
     onCloseRef.current();
   };
 
