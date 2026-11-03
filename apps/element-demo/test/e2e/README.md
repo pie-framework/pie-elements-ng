@@ -108,12 +108,23 @@ Drags released outside the element, by mouse and by touch. In `categorize`, a pl
 
 ### Touch specs (`*.touch.spec.ts`)
 
-These run only under the `touch` project in [playwright.config.ts](../../playwright.config.ts): Chromium with touch emulation at an iPad Air landscape viewport. The `chromium` project ignores them, because without touch emulation their gestures do nothing. Gestures go through [touch-helpers.ts](./touch-helpers.ts), which sends trusted touch input over CDP, since `page.touchscreen` can only tap. Real iOS Safari is not covered and still needs a device.
+Three projects in [playwright.config.ts](../../playwright.config.ts) run them:
+- `touch`: Chromium with touch emulation at an iPad Air landscape viewport (1180x820). The `chromium` project ignores these specs, because without touch emulation their gestures do nothing.
+- `touch-phone`: the same specs, except [page-gestures.touch.spec.ts](./page-gestures.touch.spec.ts) (its page-height precondition fails at this viewport before any gesture is sent), in Chromium with a phone viewport (390x844, `isMobile`). `isMobile` makes the browser honour the viewport meta tag, which is what gives double-tap-to-zoom something to do.
+- `touch-webkit`: only [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts), in WebKit with `hasTouch`. Playwright can send WebKit a tap (`page.touchscreen.tap`) but no trusted touch-drag, long-press or double-tap, so those specs skip themselves there (`supportsTrustedTouch`), and touch-drag in WebKit is a non-goal. WebKit comes from `bunx playwright install webkit`; CI's `bunx playwright install --with-deps` already installs it.
+
+Gestures go through [touch-helpers.ts](./touch-helpers.ts), which sends trusted touch input over CDP in Chromium, since `page.touchscreen` can only tap. Real iOS Safari is not covered and still needs a device.
 - [graph-elements.touch.spec.ts](./graph-elements.touch.spec.ts): a finger can place a mark and drag a handle in `charting`, `graphing`, `graphing-solution-set` and `number-line`, each checked as a session change.
-- [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts): in `multiple-choice` (radio and checkbox), `select-text`, `ebsr`, `inline-dropdown`, `matrix`, `likert` and `hotspot`, a tap selects with exactly one session change, a second tap deselects (or keeps a radio selected), and a deselected choice looks as it did before it was touched. It also covers `extended-text-entry` annotations, using the `annotations` demo in evaluate mode as instructor.
+- [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts): in `multiple-choice` (radio and checkbox), `select-text`, `ebsr`, `inline-dropdown`, `matrix`, `likert`, `hotspot`, `fraction-model`, `mc-populated-blank` and `simple-cloze` (tap, then type), a tap selects with exactly one session change, a second tap deselects (or keeps a radio selected), and a deselected choice looks as it did before it was touched. For each of them:
+  - a long-press opens no context menu (a `contextmenu` event nobody cancelled) and selects no text, and changes the session at most once;
+  - a double-tap makes one session change per tap that lands (two for a toggle, one for a radio) and, at the phone viewport only, leaves `visualViewport.scale` at 1. `inline-dropdown` and `simple-cloze` skip the double-tap specs: their gesture is a sequence (open, then pick; focus, then type), not two taps on one control.
+
+  It also covers `extended-text-entry` annotations, using the `annotations` demo in evaluate mode as instructor.
+- [target-size.touch.spec.ts](./target-size.touch.spec.ts): every tappable control in each element's default delivery view is measured against 24x24 CSS pixels (WCAG 2.2 SC 2.5.8) and the shortfalls are listed. A control that is under 24px but has no other target within a 24px circle of it passes, as the criterion allows; so do inline links and controls clipped to 1x1px for assistive technology. `SHORTFALLS` in the spec records each element that falls short with its ticket or exception; it is empty because no element fell short at the touch viewport. `rubric` and `complex-rubric` are skipped because their delivery views have nothing to tap.
+- [orientation.touch.spec.ts](./orientation.touch.spec.ts): the device is rotated mid-session without a reload (`rotateTo`, which sets the viewport size and screen orientation over CDP). The response must be unchanged, the controls must stay inside the viewport with no new sideways scroll, a second control must still answer, and rotating back must restore the position. `number-line` also checks that a placed point keeps its place along the line.
 - [page-gestures.touch.spec.ts](./page-gestures.touch.spec.ts): whether a learner can still scroll and zoom the page with a finger over `number-line`, `charting`, `graphing`, `graphing-solution-set`, `categorize`, `match-list`, `drag-in-the-blank` and `venn-classification`. It opens the deliver route with `layout=page`, which lays it out as a scrolling host page with content above and below the element. For each surface of an element, such as its graph or a choices pool, a vertical swipe that starts clear of any handle must scroll the page (`scrollY`) without changing the session, and a two-finger pinch over it must zoom the page (`visualViewport.scale`). A finger must still be able to drag a handle, which changes the session without scrolling the page. Two control tests make the same gestures on the page outside the element. A surface whose `touch-action: none` blocks a gesture is `test.fixme`, with the cause listed in the spec's `BLOCKS`. iOS Safari handles `touch-action` and pinch-zoom differently, so it still needs a check on a device.
 
-A test for a confirmed touch defect is marked `test.fixme`, names the mechanism in a comment and links the ticket in its report annotation. Un-fixme it in the change that fixes the defect.
+A test for a confirmed touch defect is marked `test.fixme`, names the mechanism in its report annotation and links the ticket there. Un-fixme it in the change that fixes the defect. At the phone viewport a wide control, such as the `hotspot` map or the `graphing-solution-set` graph, scrolls inside the page, so the specs scroll it into view before tapping, as a finger would.
 
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 
@@ -245,14 +256,17 @@ bunx playwright test -g "Demo selection works correctly"
 
 ```bash
 bunx playwright test --project=touch
+bunx playwright test --project=touch-phone
+bunx playwright install webkit && bunx playwright test --project=touch-webkit
 ```
 
 ## Configuration
 
 Test configuration is in [playwright.config.ts](../../playwright.config.ts):
 - **Base URL**: `http://localhost:5222`, or `PLAYWRIGHT_BASE_URL`
-- **Browsers**: Chromium (headless), as two projects: `chromium` at a desktop viewport, and
-  `touch`, with touch emulation at 1180x820, for `*.touch.spec.ts` only
+- **Browsers**: Chromium (headless) as three projects: `chromium` at a desktop viewport,
+  `touch` (touch emulation, 1180x820) and `touch-phone` (touch emulation, 390x844, `isMobile`),
+  both for `*.touch.spec.ts` only; and WebKit as `touch-webkit`, for the tap spec only
 - **Timeout**: 30 seconds per test
 - **Workers**: 1 (serial execution for state management tests)
 - **Web Server**: Starts `bun run dev` unless a server already answers at the base URL, which is

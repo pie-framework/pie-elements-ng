@@ -20,7 +20,9 @@ import type { Locator, Page } from '@playwright/test';
  * `pointercancel` that aborts a dnd-kit drag only happen for trusted input.
  * Synthetic in-page events would bypass exactly the machinery worth testing.
  * It is Chromium-only, which is why the `touch` project emulates a tablet in
- * Chromium rather than running WebKit (see playwright.config.ts).
+ * Chromium rather than running WebKit (see playwright.config.ts). The
+ * `touch-webkit` project runs only taps, which `touchTap` sends through
+ * `page.touchscreen` there; the other gestures need `supportsTrustedTouch`.
  *
  * A project must set `hasTouch: true` for any of this to work;
  * `assertTouchEnabled` fails loudly rather than letting a spec silently pass on
@@ -70,9 +72,18 @@ export async function centerOf(target: Locator): Promise<Point> {
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
+/** CDP is Chromium-only; WebKit gets only what `page.touchscreen` offers. */
+export function supportsTrustedTouch(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === 'chromium';
+}
+
 /** Tap a point or a locator. */
 export async function touchTap(page: Page, target: Locator | Point): Promise<void> {
   const point = 'x' in target ? target : await centerOf(target);
+  if (!supportsTrustedTouch(page)) {
+    await page.touchscreen.tap(point.x, point.y);
+    return;
+  }
   const session = await cdp(page);
   await session.send('Input.dispatchTouchEvent', {
     type: 'touchStart',
@@ -97,6 +108,38 @@ export type TouchDragOptions = {
    */
   settleMs?: number;
 };
+
+/**
+ * Press and hold at a point or a locator, then lift: a long-press. The hold is
+ * long enough for the browser's long-press recognition, which is what opens a
+ * context menu or starts a text selection on a touch device.
+ */
+export async function touchLongPress(
+  page: Page,
+  target: Locator | Point,
+  { holdMs = 900 }: { holdMs?: number } = {}
+): Promise<void> {
+  const point = 'x' in target ? target : await centerOf(target);
+  const session = await cdp(page);
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: point.x, y: point.y }],
+  });
+  await page.waitForTimeout(holdMs);
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+/** Two taps at one point, `gapMs` apart: a double-tap. */
+export async function touchDoubleTap(
+  page: Page,
+  target: Locator | Point,
+  { gapMs = 80 }: { gapMs?: number } = {}
+): Promise<void> {
+  const point = 'x' in target ? target : await centerOf(target);
+  await touchTap(page, point);
+  await page.waitForTimeout(gapMs);
+  await touchTap(page, point);
+}
 
 /** Drag one finger from `from` to `to`. */
 export async function touchDrag(
@@ -209,6 +252,34 @@ export async function touchSelect(
   }
 
   await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+/**
+ * Rotate the device mid-session: swap the viewport's width and height and
+ * report the new screen orientation, which fires `resize` and the screen
+ * orientation `change` event as a real rotation does. The page is not reloaded.
+ */
+export async function rotateTo(page: Page, orientation: 'portrait' | 'landscape'): Promise<void> {
+  const { width, height, scale, mobile } = await page.evaluate(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    scale: window.devicePixelRatio,
+    mobile: 'ontouchstart' in window,
+  }));
+  const long = Math.max(width, height);
+  const short = Math.min(width, height);
+  const landscape = orientation === 'landscape';
+  const session = await cdp(page);
+  await session.send('Emulation.setDeviceMetricsOverride', {
+    width: landscape ? long : short,
+    height: landscape ? short : long,
+    deviceScaleFactor: scale,
+    mobile,
+    screenOrientation: landscape
+      ? { type: 'landscapePrimary', angle: 90 }
+      : { type: 'portraitPrimary', angle: 0 },
+  });
+  await page.waitForFunction((wide) => window.innerWidth > window.innerHeight === wide, landscape);
 }
 
 /** Drag a locator by a pixel delta from its centre. */

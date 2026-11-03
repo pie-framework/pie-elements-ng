@@ -74,7 +74,11 @@ function resolveLocalChromium(): string | undefined {
   return undefined;
 }
 
-const localChromium = resolveLocalChromium();
+// A WebKit project must not inherit this: it is the path of a Chromium binary.
+const chromiumLaunch = (() => {
+  const executablePath = resolveLocalChromium();
+  return executablePath ? { launchOptions: { executablePath } } : {};
+})();
 
 export default defineConfig({
   testDir: './test/e2e',
@@ -96,7 +100,6 @@ export default defineConfig({
     video: 'off',
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
-    ...(localChromium ? { launchOptions: { executablePath: localChromium } } : {}),
   },
   projects: [
     {
@@ -104,7 +107,11 @@ export default defineConfig({
       // `*.touch.spec.ts` belongs to the touch project below; without touch
       // emulation those gestures are no-ops and the specs would fail here.
       testIgnore: ['**/*.touch.spec.ts'],
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+        ...chromiumLaunch,
+      },
     },
     {
       // Touch-device coverage. The rest of the suite drives every draggable
@@ -123,6 +130,39 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         // iPad Air landscape, in CSS pixels.
+        viewport: { width: 1180, height: 820 },
+        hasTouch: true,
+        ...chromiumLaunch,
+      },
+    },
+    {
+      // The same touch specs at a phone viewport, for layouts that reflow below
+      // tablet width. `isMobile` is what makes the browser honour the viewport
+      // meta tag and its double-tap-to-zoom, which the desktop `touch` project
+      // does not have; the double-tap zoom spec runs only here.
+      name: 'touch-phone',
+      testMatch: ['**/*.touch.spec.ts'],
+      // Its precondition, a page more than 1.5 viewports tall, does not hold at
+      // this viewport, so it fails before any gesture is sent. Not yet adapted.
+      testIgnore: ['**/page-gestures.touch.spec.ts'],
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true,
+        ...chromiumLaunch,
+      },
+    },
+    {
+      // The tap specs in WebKit, the engine under every browser on iOS. Taps
+      // only: Playwright can send WebKit a tap (`page.touchscreen.tap`) but no
+      // trusted touch-drag, long-press or double-tap, so the specs that need
+      // those skip themselves here (see touch-helpers.ts). No `executablePath`:
+      // WebKit comes from `playwright install webkit`.
+      name: 'touch-webkit',
+      testMatch: ['**/tap-elements.touch.spec.ts'],
+      use: {
+        ...devices['Desktop Safari'],
         viewport: { width: 1180, height: 820 },
         hasTouch: true,
       },
