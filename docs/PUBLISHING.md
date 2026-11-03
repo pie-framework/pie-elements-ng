@@ -80,35 +80,33 @@ Until PIE-1121, `develop` ran Changesets prerelease mode (`.changeset/pre.json`)
 
 ## npm Authentication and Trusted Publishers
 
-Migrating this repository to npm trusted publishing (OIDC) is tracked in PIE-834 and is
-deliberately incomplete. The blocker is package-name ownership, not workflow configuration.
+CI publishes through npm trusted publishing (OIDC), PIE-883. Every publishable package has a
+trusted publisher bound to this repository's `release.yml`, so `release.yml` resolves `auto` to
+OIDC: npm exchanges the run's GitHub id-token for a short-lived publish credential, no npm
+secret is read, and each version carries a provenance attestation. Provenance is checked after
+publishing and fails an OIDC run when it is missing.
 
-npm permits exactly **one** trusted publisher per package. This repository publishes `-next.N`
-prereleases of the same `@pie-element/*` and `@pie-lib/*` names that the still-active
-`pie-framework/pie-elements` and `pie-framework/pie-lib` repositories release as stable, and
-those repositories already hold the record for most of them. Measured on 2026-08-01: of 68
-publishable packages, 45 were last published via OIDC by a legacy repository, leaving roughly
-23 names free for this repository to claim.
-
-npm resolves a single auth mode for a publish run as a whole, so OIDC is not a per-package
-choice. That is why `release.yml` resolves `auto` to **token, or failure — never OIDC**: an
-OIDC run would let Changesets bump and commit versions and then fail every legacy-owned publish
-with `ENEEDAUTH`, leaving versions in git that were never released. The full rationale is in
-the workflow's "Resolve npm publish auth mode" step.
-
-So the `NPM_TOKEN` secret must not be deleted: if it ever goes missing, an automated publish
-run fails at that step by design, with remediation instructions. Opting into OIDC is a
-deliberate manual dispatch with `publish_auth=oidc`, and only once every package it would
-publish is confirmed:
+npm permits exactly **one** trusted publisher per package, and an OIDC run publishes every
+package in it the same way, so one unclaimed package would fail with `ENEEDAUTH` while the
+rest publish. The committed ledger `scripts/trusted-publishers.json` records each claim npm
+has confirmed, and the release fails before the version bump if a publishable package is
+missing from it. A package added to the workspace needs a one-time claim, which asks for 2FA
+in the browser:
 
 ```bash
-bun run trusted-publishers -- --verify
+bun run trusted-publishers -- --apply --only @pie-element/new-package
 ```
 
-`--verify` classifies each package as configured, wrong target (a record bound to another
-repository, which matters because it occupies the one available slot), or not configured. It
-parses npm's JSON rather than trusting the exit status, which is essential here: `npm trust
-list` exits 0 and prints an empty list for a package with no record at all.
+A brand-new name has to be published once by hand first, because npm only accepts a trusted
+publisher for a package that already exists. Commit the ledger change with the package.
+
+A manual dispatch with `publish_auth=token` still publishes with the `NPM_TOKEN` secret, as a
+rollback while that secret exists.
+
+`bun run trusted-publishers -- --verify` reads each package's record from npm and classifies it
+as configured, wrong target (a record bound to another repository, which occupies the one
+slot), or not configured. Each read is its own 2FA approval; ticking "skip two-factor
+authentication for the next 5 minutes" on the first one covers a full run.
 
 Ownership can also be audited with no 2FA round trip, because a published version records the
 publisher that produced it:

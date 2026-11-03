@@ -16,8 +16,6 @@ import { sortKeys } from './keys-layout.js';
 
 const log = debug('pie-lib:math-inline:keypad');
 
-const pieVar = color.v('pie');
-
 // Key label ink, after a --pie-text declaration that browsers without relative colour syntax keep.
 const keyInk = [color.text(), color.keypadInk()];
 
@@ -29,13 +27,10 @@ const keyRipple = {
   },
 };
 
-// Keyboard focus: the THEMING.md focus ring on the key's edge. The chain holds 3:1 on the scheme
-// background and can fall under it on a key fill, so a 2px --pie-background ring backs it inside.
 const keyFocus = {
   '&.Mui-focusVisible': {
-    outline: `2px solid ${color.focusOutline()}`,
-    outlineOffset: '-2px',
-    boxShadow: `inset 0 0 0 4px ${pieVar('background', color.defaults.WHITE)}`,
+    outline: `4px solid ${color.keyboardFocusOutline()}`,
+    outlineOffset: '-4px',
   },
 };
 
@@ -438,6 +433,7 @@ export class KeyPad extends React.Component {
             return (
               <StyledLatexButtonWrapper
                 key={common.key}
+                disableFocusRipple
                 onClick={common.onClick}
                 disabled={common.disabled}
                 category={!keysWithoutBaseSet ? k.category : undefined}
@@ -454,6 +450,7 @@ export class KeyPad extends React.Component {
             return (
               <StyledButton
                 key={common.key}
+                disableFocusRipple
                 onClick={common.onClick}
                 disabled={common.disabled}
                 category={!keysWithoutBaseSet ? k.category : undefined}
@@ -473,6 +470,7 @@ export class KeyPad extends React.Component {
             return (
               <StyledIconButton
                 key={common.key}
+                disableFocusRipple
                 tabIndex={'-1'}
                 onClick={common.onClick}
                 disabled={common.disabled}

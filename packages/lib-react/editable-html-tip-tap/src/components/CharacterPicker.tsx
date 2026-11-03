@@ -9,6 +9,7 @@ import { PureToolbar } from '@pie-lib/math-toolbar';
 
 import CustomPopper from './characters/custom-popper.js';
 import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
+import { returnFocusToText } from '../utils/focus.js';
 
 const CharacterIcon = ({ letter }) => (
   <div
@@ -69,6 +70,13 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
   const [popover, setPopover] = useState(null);
 
   onCloseRef.current = onClose;
+
+  // Escape and Done close the panel and return focus to the text, with the cursor where characters
+  // were being inserted; after a pointer click, the cursor is already there and stays. Focus moves before the panel closes, so it is never left on a button that is going away.
+  const closeAndReturnToText = () => {
+    returnFocusToText(editor);
+    onCloseRef.current();
+  };
 
   const configToUse = useMemo(() => {
     if (!opts) return spanishConfig;
@@ -210,11 +218,6 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
   useEffect(() => {
     if (!triggerEl) return;
 
-    const closeAndReturnFocus = () => {
-      onCloseRef.current();
-      triggerEl.focus();
-    };
-
     const moveFocusWithArrow = (key, target, buttons) => {
       const currentIndex = Math.max(0, buttons.indexOf(target.closest('button')));
       const columns = layoutForCharacters.columns || 1;
@@ -244,11 +247,11 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
       const firstButton = buttons[0];
       const lastButton = buttons[buttons.length - 1];
 
-      // Escape closes the panel and returns focus to the trigger.
+      // Escape closes the panel and returns focus to the text, with the cursor where it was.
       if (inDialog && e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        closeAndReturnFocus();
+        closeAndReturnToText();
         return;
       }
 
@@ -283,7 +286,7 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
 
     document.addEventListener('keydown', handleKeyDown, true);
     return () => document.removeEventListener('keydown', handleKeyDown, true);
-  }, [triggerEl, layoutForCharacters.columns]);
+  }, [editor, triggerEl, layoutForCharacters.columns]);
 
   const renderPopOver = (event, el) => setPopover({ anchorEl: event.currentTarget, el });
 
@@ -350,7 +353,9 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
                       ...(k.extraProps || {}),
                       style: {
                         ...(k.extraProps || {}).style,
-                        border: '1px solid #000',
+                        // The key's ink, which holds 4.5:1 on the key fill in every scheme; black
+                        // fell under 3:1 on the dark schemes' fills (WCAG 1.4.11).
+                        border: '1px solid currentColor',
                       },
                     },
                     ...(configToUse.hasPreview
@@ -368,10 +373,7 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
               }, [])}
               keypadMode="language"
               onChange={handleChange}
-              onDone={() => {
-                onClose();
-                triggerEl?.focus();
-              }}
+              onDone={closeAndReturnToText}
             />
           </div>
         </div>,

@@ -44,7 +44,22 @@ const StyledIncorrectIcon: any = styled(Close)(() => ({
   boxSizing: 'unset', // to override the default border-box in IBX
 }));
 
-const RawDragHandle = ({ x, y, width, graphProps, interactive, isHovered, correctness, isPlot, ...rest }) => {
+const RawDragHandle = ({
+  x,
+  y,
+  width,
+  graphProps,
+  interactive,
+  isHovered,
+  correctness,
+  isPlot,
+  // the drag wrapper's state and callbacks are not attributes of the ellipse they would otherwise land on
+  isDragging,
+  onDragStart,
+  onDrag,
+  onDragStop,
+  ...rest
+}) => {
   const { scale } = graphProps;
   const scaleValue = getScale(width)?.scale;
 

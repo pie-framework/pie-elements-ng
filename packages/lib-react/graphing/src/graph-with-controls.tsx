@@ -214,6 +214,7 @@ export class GraphWithControls extends React.Component {
           backgroundMarks={backgroundMarks}
           coordinatesOnHover={coordinatesOnHover}
           currentTool={currentTool}
+          disabled={!!disabled}
           disabledLabels={disabledLabels}
           disabledTitle={disabledTitle}
           domain={domain}

@@ -35,6 +35,7 @@ import { PIE_TOOLBAR__CLASS, TOOLBAR_BACKGROUND } from '../constants.js';
 import { ToolbarIcon } from './respArea/ToolbarIcon.js';
 import { logicalAlignment, selectionDirection } from '../extensions/text-direction.js';
 import { writtenLanguage } from '../utils/content-languages.js';
+import { returnFocusToText } from '../utils/focus.js';
 import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
 import TextAlignControl from './icons/TextAlign.js';
 import ToolbarDisclosure from './ToolbarDisclosure.js';
@@ -246,6 +247,20 @@ function MenuBar({
 
   // Arrows move along the toolbar's inline axis, so ArrowRight steps back in a right-to-left one.
   const handleToolbarKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    // Escape from a toolbar button returns to the text.
+    if (e.key === 'Escape') {
+      if (e.defaultPrevented || !e.currentTarget.contains(e.target as Node)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      // Focus is on the toolbar, so the panel's own Escape handler ignores the key: close an open
+      // panel here, as Escape from inside it does. Focus moves first, so it is never left on a
+      // button that is going away.
+      returnFocusToText(editor);
+      setShowPicker(false);
+      return;
+    }
+
     const side = inlineSideOfArrow(e.key, e.currentTarget);
 
     if (!side) return;
@@ -639,11 +654,10 @@ function MenuBar({
 
                 // A pointer click leaves focus in the text (see handleMouseDown), so blurring the
                 // editor closes the toolbar. From the keyboard focus is on this button: close the
-                // toolbar and put focus back in the text, with the cursor at the end. Focus moves
+                // toolbar and put focus back in the text, with the cursor where it was. Focus moves
                 // first, synchronously, so hiding the toolbar never strands it on the button.
                 if (e.detail === 0) {
-                  editor.view.focus();
-                  editor.commands.focus('end');
+                  returnFocusToText(editor);
                   setDismissed(true);
                 } else {
                   editor.commands.blur();
@@ -730,6 +744,11 @@ const StyledMenuBarRoot: any = styled('div')(() => ({
     },
     '&:hover': {
       color: color.text(),
+    },
+    '&:disabled, &:disabled:hover': {
+      opacity: 0.4,
+      color: color.disabled(),
+      cursor: 'not-allowed',
     },
     '&:focus': {
       /*

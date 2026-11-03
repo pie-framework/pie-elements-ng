@@ -106,15 +106,20 @@ describe('EditableHtml toolbar', () => {
         fireEvent.click(button, { detail: 0 });
       });
 
-    it('from the keyboard, closes the toolbar and returns focus to the end of the text', async () => {
+    it('from the keyboard, closes the toolbar and returns the cursor to where it was in the text', async () => {
       const { box, done, onChange, tiptap } = await focusDone();
+      // Cursor after "He", set while focus is in the toolbar, as it is left when tabbing out of the text.
+      act(() => {
+        tiptap.commands.setTextSelection(3);
+      });
+      act(() => done.focus());
 
       pressFromKeyboard(done);
 
       await waitFor(() => expect(inert(toolbar())).toBe(true));
       expect(document.activeElement).toBe(box);
       expect(tiptap.state.selection.empty).toBe(true);
-      expect(tiptap.state.selection.from).toBe(tiptap.state.doc.content.size - 1);
+      expect(tiptap.state.selection.from).toBe(3);
       expect(onChange).toHaveBeenCalledWith('<p>Hello</p>');
     });
 
@@ -156,6 +161,37 @@ describe('EditableHtml toolbar', () => {
       expect(document.activeElement).toBe(box);
       expect(inert(toolbar())).toBe(false);
     });
+  });
+
+  it('returns the cursor to its previous position in the text on Escape from a toolbar button', async () => {
+    let tiptap: any;
+    render(
+      editor({
+        markup: '<p>Hello</p>',
+        activePlugins: ['bold', 'italic'],
+        editorRef: (instance: unknown) => {
+          tiptap = instance;
+        },
+      }),
+    );
+    const box = await textbox();
+    await waitFor(() => expect(tiptap).toBeTruthy());
+    act(() => box.focus());
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const button = toolbar().querySelector('button') as HTMLButtonElement;
+    act(() => button.focus());
+    expect(document.activeElement).toBe(button);
+
+    fireEvent.keyDown(button, { key: 'Escape' });
+
+    expect(document.activeElement).toBe(box);
+    expect(tiptap.state.selection.from).toBe(3);
+    // The toolbar stays available while focus is in the text.
+    expect(inert(toolbar())).toBe(false);
   });
 
   it('moves focus to the next and previous button with the arrow keys', async () => {
