@@ -48,6 +48,7 @@ import {
   ScaleSettings,
   HeaderHeight,
   HeaderHeightLarge,
+  HeaderToolbarClearance,
 } from './common.js';
 
 const Label: any = styled('div')({
@@ -215,8 +216,7 @@ export class TraitsHeaderTile extends React.Component {
             }
           }}
           width={`${secondaryBlockWidth}px`}
-          // the label toolbar (~45px) opens below the labels and is clipped by this block's overflow
-          paddingBottom="55px"
+          paddingBottom={HeaderToolbarClearance}
         >
           {showStandards && (
             <Block>

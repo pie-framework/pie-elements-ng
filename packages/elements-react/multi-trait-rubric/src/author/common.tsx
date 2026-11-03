@@ -42,7 +42,9 @@ import { filteredDefaultPlugins } from './utils.js';
 const InputHeight = '120px';
 export const BlockWidth = 200;
 export const PrimaryBlockWidth = 200;
-export const HeaderHeight = '120px';
+export const HeaderHeight = '100px';
+// room under the header labels for their toolbar (28px, plus its 5px offset); the labels sit above this
+export const HeaderToolbarClearance = '35px';
 export const HeaderHeightLarge = '160px';
 const greyBorder = `solid 1px ${grey[400]}`;
 const Padding = '8px 4px';
@@ -265,7 +267,7 @@ export const ScorePoint = ({
               pluginProps={pluginProps}
               activePlugins={filteredDefaultPlugins}
               spellCheck={spellCheck}
-                            uploadSoundSupport={uploadSoundSupport}
+              uploadSoundSupport={uploadSoundSupport}
               languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
               mathMlOptions={mathMlOptions}
               imageSupport={imageSupport}
@@ -434,7 +436,7 @@ export const ExpandedInput = ({
         onChange={onChange}
         placeholder={placeholder}
         pluginProps={pluginProps}
-              spellCheck={spellCheck}
+        spellCheck={spellCheck}
         uploadSoundSupport={uploadSoundSupport}
         languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
         autoWidthToolbar

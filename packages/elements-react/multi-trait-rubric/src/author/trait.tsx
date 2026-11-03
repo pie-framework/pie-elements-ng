@@ -64,7 +64,6 @@ function TraitTile({
   currentPosition,
   secondaryBlockWidth,
   spellCheck,
-  maxPoints,
   uploadSoundSupport,
   mathMlOptions = {},
   expandedPluginProps = {},
