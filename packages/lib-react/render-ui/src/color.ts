@@ -142,6 +142,9 @@ export const buttonFocusOutline = () => pv('button-focus-outline', defaults.BUTT
 // defines it yet, so it falls through to the registered button and checked-border focus tokens. One
 // line, so tests/pie-token-contract.test.ts sees the tokens it reads.
 export const focusOutline = () => pv('focus-outline', 'button-focus-outline', 'focus-checked-border', defaults.FOCUS_CHECKED_BORDER);
+// The keyboard focus ring for a control drawn on its own fill rather than the page, such as a
+// keypad key, where the focus chain can fall under 3:1. It falls back through that chain.
+export const keyboardFocusOutline = () => pv('focus-keyboard-outline', 'focus-outline', 'button-focus-outline', 'focus-checked-border', defaults.FOCUS_CHECKED_BORDER);
 /** @deprecated The keyboard focus ring is {@link focusOutline}. */
 export const keyBoardFocusIndicator = focusOutline;
 

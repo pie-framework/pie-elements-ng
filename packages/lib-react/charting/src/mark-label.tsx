@@ -85,7 +85,7 @@ const NUMBER_REGEX = /^-?(?:\d+\.?\d*|\.\d+)$/;
 
 // numeric labels are all typeset as math so integers, decimals, fractions and mixed numbers
 // look alike when mixed on one axis; anything else stays plain text
-function getLabelMathFormat(label) {
+export function getLabelMathFormat(label) {
   const trimmedLabel = label?.trim() || '';
   const fraction = FRACTION_REGEX.exec(trimmedLabel);
 

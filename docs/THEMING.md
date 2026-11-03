@@ -96,6 +96,11 @@ theme, so the chain falls through to `--pie-button-focus-outline` (set by every
 `pie-players` scheme) and then `--pie-focus-checked-border` (also defined by
 `packages/shared/theming`).
 
+A control drawn on its own fill rather than the page, such as a keypad key, reads
+`--pie-focus-keyboard-outline` ahead of that chain (`color.keyboardFocusOutline()`):
+every `pie-players` scheme sets it to hold 3:1 against the page and that fill,
+where the button focus outline can fall under it.
+
 ## Runtime Theme Changes
 
 Theme changes apply immediately because elements consume CSS variables at render time.  

@@ -82,6 +82,7 @@
     "check:repository-metadata": "bun ./scripts/check-repository-metadata.mjs",
     "check:npm-auth": "node ./scripts/check-npm-auth.mjs",
     "check:provenance": "bun ./scripts/check-provenance.mjs",
+    "check:trusted-publishers": "node ./scripts/check-trusted-publishers.mjs",
     "trusted-publishers": "node ./scripts/configure-trusted-publishers.mjs",
     "check:sourcemaps": "bun ./scripts/check-sourcemap-sources.mjs",
     "verify:dependency-integrity": "bun run cli verify:dependency-integrity"
