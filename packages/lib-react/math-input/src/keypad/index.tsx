@@ -8,6 +8,7 @@ import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { flatten } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
+import { KEYPAD_ATTRIBUTE } from '../mq/inactive-cursor.js';
 
 import * as mq from '../mq/index.js';
 import { baseSet } from '../keys/index.js';
@@ -384,6 +385,7 @@ export class KeyPad extends React.Component {
     return (
       <KeyPadContainer
         ref={this.keypadRef}
+        {...{ [KEYPAD_ATTRIBUTE]: '' }}
         className={[className, mode].filter(Boolean).join(' ')}
         style={style}
         onFocus={onFocus}

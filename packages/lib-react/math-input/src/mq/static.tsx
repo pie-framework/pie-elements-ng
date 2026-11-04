@@ -8,6 +8,7 @@ import { updateSpans } from '../updateSpans.js';
 import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
 import { mqInkStyles } from './common-mq-styles.js';
+import { keepCursorWhileKeypadFocused } from './inactive-cursor.js';
 
 const log = debug('pie-lib:math-input:mq:static');
 const REGEX = /\\MathQuillMathField\[r\d*\]\{(.*?)\}/g;
@@ -79,6 +80,7 @@ export default class Static extends React.Component {
   componentWillUnmount() {
     this.removeLiveRegion();
     this.removeEventListeners();
+    this.stopKeepingCursors?.forEach((stop) => stop());
   }
 
   createLiveRegion: any = () => {
@@ -234,6 +236,8 @@ export default class Static extends React.Component {
 
     // Setting the latex rebuilds the response fields, and with them their textareas.
     labelFieldTextareas(this.inputRef?.current, this.props.language);
+    this.stopKeepingCursors?.forEach((stop) => stop());
+    this.stopKeepingCursors = this.mathField.innerFields.map(keepCursorWhileKeypadFocused);
   };
 
   blur: any = () => {
