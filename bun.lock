@@ -809,7 +809,7 @@
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
-        "@pie-framework/math-validation": "^1.0.0",
+        "@pie-framework/math-validation": "^1.4.3",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -851,7 +851,7 @@
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
-        "@pie-framework/math-validation": "^1.0.0",
+        "@pie-framework/math-validation": "^1.4.3",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -2692,7 +2692,7 @@
 
     "@pie-element/video-stimulus": ["@pie-element/video-stimulus@workspace:packages/elements-svelte/video-stimulus"],
 
-    "@pie-framework/math-validation": ["@pie-framework/math-validation@1.4.2", "", { "dependencies": { "lodash": "^4.17.21", "mathjs": "^9.4.2" } }, "sha512-qQPvLb6fAhQOPyqkpiYTrw6nsaARlGZcAIqBA13a2WLNkeRYodqRGH/+31UdRWnDc/ibqGRG/I41wTCb50kl7Q=="],
+    "@pie-framework/math-validation": ["@pie-framework/math-validation@1.4.3", "", { "dependencies": { "lodash": "^4.17.21", "mathjs": "^9.4.2" } }, "sha512-RB+mdDSMw/34ZbU9t6l3cwiNu5p8SYmTd1OkzkorWzxHgGM5Zcdd9YvdVC15hPktbh2U8Ai03xDHm6yFIwNa1Q=="],
 
     "@pie-framework/mathml-to-latex": ["@pie-framework/mathml-to-latex@1.4.4", "", { "dependencies": { "@xmldom/xmldom": "^0.8.10" } }, "sha512-jXOUH2NsfUEK+D8d5kVgIj3FANth9soCw6fXTLDDCss8IGnQ1RlFgXv9ReNfRnt9uCFYhlqRbNyU+k+c6J8nAA=="],
 
