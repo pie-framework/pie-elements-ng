@@ -2,6 +2,7 @@
   "name": "@pie-lib/text-select",
   "version": "4.0.7",
   "description": "Some react components for text selection",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

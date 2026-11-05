@@ -2,6 +2,7 @@
   "name": "@pie-lib/graphing-solution-set",
   "version": "5.0.7",
   "description": "Graphing components",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

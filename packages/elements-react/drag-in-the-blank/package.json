@@ -2,6 +2,7 @@
   "name": "@pie-element/drag-in-the-blank",
   "version": "11.0.7",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
