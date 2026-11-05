@@ -298,6 +298,7 @@ class Response extends React.Component {
               >
                 <MenuItem value="literal">Literal Validation</MenuItem>
                 <MenuItem value="symbolic">Symbolic Validation</MenuItem>
+                <MenuItem value="value">Value Validation</MenuItem>
               </Select>
             </SelectContainer>
           </TitleBar>

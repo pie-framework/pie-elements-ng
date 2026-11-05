@@ -5,7 +5,7 @@ import { outcome } from '../src/controller/index.js';
 import { DIGIT_ZEROS, inSystem, systemName } from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 const EVALUATE = { mode: 'evaluate' } as const;
-const question = (answer: string, validation: 'literal' | 'symbolic' = 'symbolic') =>
+const question = (answer: string, validation: 'literal' | 'symbolic' | 'value' = 'symbolic') =>
   ({ responseType: 'Simple', responses: [{ id: '1', answer, validation, alternates: {} }] }) as any;
 
 describe('response normalization', () => {
@@ -41,5 +41,25 @@ describe('every Unicode digit system', () => {
         expect(await score('2024', inSystem(zero, '2025'), validation), `${name} ${validation}`).toBe(0);
       }
     }
+  });
+});
+
+describe('value validation', () => {
+  const score = async (answer: string, response: string) =>
+    (await outcome(question(answer, 'value'), { id: '1', response } as any, EVALUATE as any)).score;
+
+  it('accepts a single number equal in value', async () => {
+    expect(await score('6', '6.0')).toBe(1);
+    expect(await score('\\frac{2}{3}', '4/6')).toBe(1);
+    expect(await score('0.5', '\\frac{1}{2}')).toBe(1);
+    expect(await score('-0.75', '−\\frac{3}{4}')).toBe(1);
+    expect(await score('-3', '\\frac{-6}{2}')).toBe(1);
+  });
+
+  it('rejects an expression with an operation or a different value', async () => {
+    expect(await score('6', '3+3')).toBe(0);
+    expect(await score('6', '2\\cdot3')).toBe(0);
+    expect(await score('6', '7')).toBe(0);
+    expect(await score('1', '1/0')).toBe(0);
   });
 });
