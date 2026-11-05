@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * Touch gesture helpers for the element-demo e2e suite.
@@ -70,15 +70,61 @@ export async function centerOf(target: Locator): Promise<Point> {
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
-/** Tap a point or a locator. */
-export async function touchTap(page: Page, target: Locator | Point): Promise<void> {
+/**
+ * Tap a point or a locator.
+ *
+ * `holdMs` is how long the finger stays down. The default lifts it at once, which is enough for a
+ * handler that acts on `touchstart` or `click`. A finger rests for tens of milliseconds, and code
+ * that arms a timer on `touchstart` and cancels it on `touchend` - an MUI `Tooltip` opening on a
+ * touch - may never fire for a tap lifted that fast, so pass about 100 to tap as a learner does.
+ *
+ * `driftPx` moves the finger that far, in one `touchMove`, before it lifts. A finger is never
+ * perfectly still, and a small move stays a tap (the browser's slop is far larger), so the
+ * compatibility mouse events and `click` still follow - but later, and with the finger off its
+ * starting point.
+ */
+export async function touchTap(
+  page: Page,
+  target: Locator | Point,
+  { holdMs = 0, driftPx = 0 }: { holdMs?: number; driftPx?: number } = {}
+): Promise<void> {
   const point = 'x' in target ? target : await centerOf(target);
   const session = await cdp(page);
   await session.send('Input.dispatchTouchEvent', {
     type: 'touchStart',
     touchPoints: [{ x: point.x, y: point.y }],
   });
+  if (driftPx > 0) {
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: point.x + driftPx, y: point.y + driftPx }],
+    });
+  }
+  if (holdMs > 0) {
+    await page.waitForTimeout(holdMs);
+  }
   await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+/**
+ * Waits until `target` has stopped moving or resizing: its box unchanged over a few polls. A finger
+ * that goes down on something still animating into place lifts over whatever has moved under it.
+ */
+export async function waitForSettled(target: Locator): Promise<void> {
+  let last = '';
+  let stableFor = 0;
+  await expect
+    .poll(
+      async () => {
+        const box = await target.boundingBox();
+        const now = box ? [box.x, box.y, box.width, box.height].map(Math.round).join() : '';
+        stableFor = now === last ? stableFor + 1 : 0;
+        last = now;
+        return stableFor >= 4;
+      },
+      { timeout: 5_000, intervals: [50] }
+    )
+    .toBe(true);
 }
 
 export type TouchDragOptions = {
