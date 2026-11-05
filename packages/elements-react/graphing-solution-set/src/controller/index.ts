@@ -32,8 +32,10 @@ type BestAnswer = {
 /** The model the delivery view receives. */
 type GraphingSolutionSetViewModel = Omit<
   GraphingSolutionSetModel,
-  'arrows' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
+  'answers' | 'arrows' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
 > & {
+  /** Only in evaluate mode or for the instructor: delivery reads `correctResponse` instead */
+  answers?: GraphingSolutionSetModel['answers'];
   arrows?: Arrows;
   defaultTool: 'line';
   disabled: boolean;
@@ -235,7 +237,8 @@ export function model(
 
     const base: GraphingSolutionSetViewModel = {
       ...questionProps,
-      answers,
+      // The answer key reaches the browser only once it may show it.
+      ...((mode === 'evaluate' || role === 'instructor') && { answers }),
       arrows,
       defaultTool: 'line',
       disabled: env.mode !== 'gather',

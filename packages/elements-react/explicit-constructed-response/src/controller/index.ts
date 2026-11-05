@@ -185,8 +185,12 @@ export async function model(
     }
   });
 
+  // The accepted answers reach the browser only once it may show them; delivery reads them for
+  // the correct-answer view alone. maxLengthPerChoice above is sized from them beforehand.
+  const includeAnswers = env.mode === 'evaluate' || env.role === 'instructor';
+
   const out = {
-    choices,
+    choices: includeAnswers ? choices : {},
     disabled: env.mode !== 'gather',
     displayType: normalizedQuestion.displayType,
     mode: env.mode,
