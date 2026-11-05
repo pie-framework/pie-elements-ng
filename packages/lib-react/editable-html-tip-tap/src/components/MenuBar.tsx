@@ -44,6 +44,7 @@ import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons
 
 import { CharacterIcon, CharacterPicker } from './CharacterPicker.js';
 import { DoneButton } from './common/done-button.js';
+import { TOOLBAR_ATTRIBUTE } from '../extensions/inactive-caret.js';
 
 const { translator } = Translator;
 
@@ -571,7 +572,13 @@ function MenuBar({
   );
 
   return (
-    <div ref={toolbarRef} className={names} style={{ ...customStyles }} onMouseDown={handleMouseDown}>
+    <div
+      ref={toolbarRef}
+      className={names}
+      style={{ ...customStyles }}
+      onMouseDown={handleMouseDown}
+      {...{ [TOOLBAR_ATTRIBUTE]: '' }}
+    >
       {isDragInTheBlankSelected && (
         <div
           className={classes.defaultToolbar}
