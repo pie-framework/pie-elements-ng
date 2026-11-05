@@ -298,7 +298,8 @@ class Response extends React.Component {
               >
                 <MenuItem value="literal">Literal Validation</MenuItem>
                 <MenuItem value="symbolic">Symbolic Validation</MenuItem>
-                <MenuItem value="value">Value Validation</MenuItem>
+                {/* Advanced Multi scores the whole expression, which value validation always rejects. */}
+                {(defaultResponse || validation === 'value') && <MenuItem value="value">Value Validation</MenuItem>}
               </Select>
             </SelectContainer>
           </TitleBar>

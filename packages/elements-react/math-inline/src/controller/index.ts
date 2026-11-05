@@ -526,6 +526,8 @@ export const validate = (
 
     if (answer === '') {
       responseError.answer = 'Content should not be empty.';
+    } else if (responseType === 'Advanced Multi' && response.validation === 'value') {
+      responseError.answer = 'Value validation needs a Simple response; choose Literal or Symbolic.';
     }
 
     reversedAlternates.forEach(([key, value], index) => {

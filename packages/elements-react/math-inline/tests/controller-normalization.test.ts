@@ -1,7 +1,7 @@
 // Controllers also run server-side, so these run without a DOM.
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { outcome } from '../src/controller/index.js';
+import { outcome, validate } from '../src/controller/index.js';
 import { DIGIT_ZEROS, inSystem, systemName } from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 const EVALUATE = { mode: 'evaluate' } as const;
@@ -61,5 +61,14 @@ describe('value validation', () => {
     expect(await score('6', '2\\cdot3')).toBe(0);
     expect(await score('6', '7')).toBe(0);
     expect(await score('1', '1/0')).toBe(0);
+  });
+});
+
+describe('value validation in authoring', () => {
+  it('is an error on an Advanced Multi response, which scores the whole expression', () => {
+    const responses = [{ id: '1', answer: '3+2=5', validation: 'value', alternates: {} }];
+    const advanced = validate({ responseType: 'Advanced Multi', expression: '{{response}} + 2 = 5', responses } as any);
+    expect(advanced.responsesErrors?.[0]?.answer).toMatch(/Simple/);
+    expect(validate({ responseType: 'Simple', responses } as any).responsesErrors).toBeUndefined();
   });
 });
