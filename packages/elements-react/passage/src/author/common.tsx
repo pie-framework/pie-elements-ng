@@ -6,6 +6,8 @@ import { styled } from '@mui/material/styles';
 import { Button } from '@mui/material';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,7 +15,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 
 export const RemoveAddButton = ({ label, type = 'add', onClick }) => {
-  const Tag = type === 'add' ? AddCircleIcon : RemoveCircleIcon;
+  const Tag = { add: AddCircleIcon, remove: RemoveCircleIcon, up: ArrowUpwardIcon, down: ArrowDownwardIcon }[type];
   return (
     <Button color="primary" size="small" onClick={onClick}>
       <Tag fontSize="small" color="primary" style={{ marginRight: 4 }} />
