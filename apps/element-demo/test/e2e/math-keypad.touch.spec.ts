@@ -1,6 +1,14 @@
-import { test, type Page, type TestInfo } from '@playwright/test';
-import { expectSessionValue, expectShown, key, openKeypad } from './math-keypad-helpers';
-import { touchTap } from './touch-helpers';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import {
+  expectSessionValue,
+  expectShown,
+  key,
+  keypad,
+  mathResponse,
+  openKeypad,
+} from './math-keypad-helpers';
+import { deliveryContainer } from './test-helpers';
+import { rotateTo, touchTap } from './touch-helpers';
 
 /**
  * Can a learner enter math by tapping the on-screen keypad?
@@ -13,7 +21,7 @@ import { touchTap } from './touch-helpers';
  * neither.
  *
  * For each element this taps into the response, taps keys one at a time and checks, under the
- * `touch` project only (see playwright.config.ts):
+ * `touch` and `touch-phone` projects (see playwright.config.ts):
  *
  * - after every tap the response shows what has been tapped so far, and still does a moment later -
  *   one tap, one key, with no late second one;
@@ -24,8 +32,8 @@ import { touchTap } from './touch-helpers';
  * doubled tap turns 1-1 into 1-1-1 and a dropped one into 1. An operator key and Delete are tapped
  * as well, since they act through other code than the digits do.
  *
- * The math toolbar in extended-text-entry and explicit-constructed-response uses the same keypad but
- * sits in an editor, so it is not covered here.
+ * The math toolbar in extended-text-entry uses the same keypad but sits in an editor; it is covered by
+ * math-toolbar.touch.spec.ts.
  */
 
 const JIRA = 'https://illuminate.atlassian.net/browse/';
@@ -52,7 +60,7 @@ const CASES: KeypadCase[] = [
         '`mouseup` together and finishes before the move. Not traced to the code that moves ' +
         'it; math-templated/src/delivery/main.tsx `onBlur` and the tooltip `open` state are ' +
         'where to start. math-inline is unaffected.',
-      ticket: 'PIE-TBD',
+      ticket: 'PIE-1475',
     },
   },
 ];
@@ -136,4 +144,31 @@ test.describe('math keypad under touch', () => {
       await expectSessionValue(page, '1+3');
     });
   }
+  // Turning the device with the keypad open moves its tooltip. The response must keep what was
+  // tapped, and a learner must be able to carry on, reopening the keypad if the turn closed it.
+  test('math-inline: a rotation with the keypad open keeps the response and the keypad usable', async ({
+    page,
+  }) => {
+    const response = await openKeypad(page, 'math-inline');
+    await touchTap(page, key(page, '1'), { holdMs: 100 });
+    await expectShown(response, '1');
+
+    const { width, height } = page.viewportSize()!;
+    const landscape = width > height;
+    await rotateTo(page, landscape ? 'portrait' : 'landscape');
+
+    await expectShown(response, '1');
+    await expectSessionValue(page, '1');
+
+    if (!(await keypad(page).isVisible())) {
+      await touchTap(page, mathResponse(deliveryContainer(page)));
+      await expect(keypad(page)).toBeVisible({ timeout: 10_000 });
+    }
+    // A landscape phone is shorter than the keypad, so a learner scrolls to the key first.
+    await key(page, '2').scrollIntoViewIfNeeded();
+    await expect(key(page, '2')).toBeInViewport();
+    await touchTap(page, key(page, '2'), { holdMs: 100 });
+    await expectShown(response, '12');
+    await expectSessionValue(page, '12');
+  });
 });

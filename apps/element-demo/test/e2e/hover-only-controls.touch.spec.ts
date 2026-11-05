@@ -13,7 +13,7 @@ import { assertTouchEnabled, centerOf, touchTap, waitForSettled } from './touch-
  *
  * A touchscreen has no pointer to rest on a control, so anything that opens only on `mouseenter` or
  * `:hover` has to give a finger another way in. These specs reach each such control by tap alone,
- * under the `touch` project only (see playwright.config.ts).
+ * under the `touch` and `touch-phone` projects (see playwright.config.ts).
  *
  * Survey of the delivery code for hover-opened content (`onMouseEnter`/`onMouseOver`, MUI
  * `Tooltip`, `title`):
@@ -96,7 +96,7 @@ test.describe('hover-only controls under touch', () => {
       'about 100ms the touch timer is cancelled and the tooltip never opens, however many taps. ' +
       'Not traced to the call that blurs the field: look at math-inline/src/delivery/main.tsx ' +
       '`onBlur` / `onFocus` and the math-input mq/static.tsx `blur()`.';
-    const TICKET = 'PIE-TBD';
+    const TICKET = 'PIE-1470';
 
     test.fixme('one tap on the response opens the toggle', async ({ page }, testInfo) => {
       testInfo.annotations.push(
@@ -137,7 +137,7 @@ test.describe('hover-only controls under touch', () => {
       '(hotspot/src/delivery/hotspot/image-konva-tooltip.tsx: `onMouseEnter`/`onMouseLeave`, no ' +
       'touch handler). A tap sends `touchstart`/`touchend`, which Konva does not turn into ' +
       '`mouseenter`, so a scorer on a tablet cannot read why a shape is marked wrong.';
-    const TICKET = 'PIE-TBD';
+    const TICKET = 'PIE-1474';
 
     /** The rectangle the spec selects and marks: the demo's second one. */
     const RECTANGLE_ID = '4';

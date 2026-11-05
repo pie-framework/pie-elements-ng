@@ -11,7 +11,7 @@ import { assertTouchEnabled, touchDrag, touchTap } from './touch-helpers';
  * `touch-action: none` so the browser leaves the gesture to it. Every other drawing-response spec
  * drives the stage with `page.mouse`, which reaches none of those listeners.
  *
- * Under the `touch` project only (see playwright.config.ts), this draws with a finger and asserts
+ * Under the `touch` and `touch-phone` projects (see playwright.config.ts), this draws with a finger and asserts
  * what lands in the session:
  *
  * - a line, and two shapes, each as exactly one new drawable whose ends are where the finger went;
