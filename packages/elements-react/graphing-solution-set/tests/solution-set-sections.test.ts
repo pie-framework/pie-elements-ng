@@ -55,3 +55,16 @@ describe('solution set sections', () => {
     expect(pointInsidePolygon({ x: 5, y: 2 }, square)).toBe(false);
   });
 });
+
+describe('solution set section vertices', () => {
+  it('places a crossing at the same point whichever line was drawn first', () => {
+    // y = 3x - 12 and y = -13x + 61 cross at (4.5625, 1.6875)
+    const first = line({ x: 4, y: 0 }, { x: 5, y: 3 });
+    const second = line({ x: 4, y: 9 }, { x: 5, y: -4 });
+    const crossings = (lines) =>
+      new Set(sectionsFor(lines).flatMap((section) => section.filter((point) => point.x === 4.563)).map((p) => p.y));
+
+    expect([...crossings([first, second])]).toEqual([1.688]);
+    expect([...crossings([second, first])]).toEqual([1.688]);
+  });
+});

@@ -38,7 +38,32 @@ const sideOfLine = (mark, point) =>
   (mark.to.x - mark.from.x) * (point.y - mark.from.y) - (mark.to.y - mark.from.y) * (point.x - mark.from.x);
 
 /*
- * Clip a convex polygon to one side of a line (Sutherland-Hodgman); vertices on the line belong to both sides
+ * Where a polygon edge meets a line mark. An edge on another mark meets it at the two lines' intersection, and a
+ * grid edge at the mark's value on that axis, both from the marks' own points; the edge's endpoints may already
+ * carry float error from earlier clipping, and interpolating along them would make the vertex depend on the order
+ * the lines were drawn in.
+ * @param {Object} current - edge start, with the mark the edge lies on (`line`), or none for a grid edge
+ * @param {Object} next - edge end
+ * @param {Object} mark - line mark
+ * */
+const edgeCrossing = (current, next, mark) => {
+  const { from, to } = mark;
+  if (current.line) {
+    const { from: a, to: b } = current.line;
+    const d = (a.x - b.x) * (from.y - to.y) - (a.y - b.y) * (from.x - to.x);
+    const ab = a.x * b.y - a.y * b.x;
+    const ft = from.x * to.y - from.y * to.x;
+    return { x: (ab * (from.x - to.x) - (a.x - b.x) * ft) / d, y: (ab * (from.y - to.y) - (a.y - b.y) * ft) / d };
+  }
+  if (current.x === next.x) {
+    return { x: current.x, y: from.y + ((current.x - from.x) * (to.y - from.y)) / (to.x - from.x) };
+  }
+  return { x: from.x + ((current.y - from.y) * (to.x - from.x)) / (to.y - from.y), y: current.y };
+};
+
+/*
+ * Clip a convex polygon to one side of a line (Sutherland-Hodgman); vertices on the line belong to both sides.
+ * Each vertex carries the mark its outgoing edge lies on (`line`), none for a grid edge.
  * @param {Array} polygon - polygon points array
  * @param {Object} mark - line mark
  * @param {Number} sign - 1 or -1, the side to keep
@@ -50,11 +75,10 @@ const clipToSideOfLine = (polygon, mark, sign) => {
     const currentSide = sign * sideOfLine(mark, current);
     const nextSide = sign * sideOfLine(mark, next);
     if (currentSide >= 0) {
-      clipped.push(current);
+      clipped.push({ ...current, line: currentSide === 0 && nextSide < 0 ? mark : current.line });
     }
     if ((currentSide > 0 && nextSide < 0) || (currentSide < 0 && nextSide > 0)) {
-      const t = currentSide / (currentSide - nextSide);
-      clipped.push({ x: current.x + t * (next.x - current.x), y: current.y + t * (next.y - current.y) });
+      clipped.push({ ...edgeCrossing(current, next, mark), line: currentSide > 0 ? mark : current.line });
     }
   });
   return clipped;
