@@ -6,9 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { styled } from '@mui/material/styles';
 import { Collapsible as CollapsibleImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport, Purpose as PurposeImport, UiLayout as UiLayoutImport, transformDataHeadings } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 
-const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -31,6 +29,7 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 }
 import * as RenderUiNamespace from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { catalogs } from '../i18n/index.js';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
 const renderUi =
@@ -204,6 +203,9 @@ class StimulusTabs extends React.Component {
 
   tabButtonId: any = (tabId) => `${this.idPrefix}-button-${tabId}`;
 
+  // The chrome language the element resolved; print passes none and falls back to the item's.
+  i18n = () => catalogs.forLocale(this.props.language ?? this.props.model?.language);
+
   tabPanelId: any = (tabId) => `${this.idPrefix}-tabpanel-${tabId}`;
 
   componentDidMount() {
@@ -344,8 +346,8 @@ class StimulusTabs extends React.Component {
     return (
       <Collapsible
         labels={{
-          hidden: translator.t('common:showTeacherInstructions', { lng: this.props.model?.language }),
-          visible: translator.t('common:hideTeacherInstructions', { lng: this.props.model?.language }),
+          hidden: this.i18n().t('showTeacherInstructions'),
+          visible: this.i18n().t('hideTeacherInstructions'),
         }}
       >
         {teacherInstructionsDiv}
@@ -481,7 +483,7 @@ class StimulusTabs extends React.Component {
                       <>
                         <Purpose purpose="passage-label">
                           {useNumericLabels ? (
-                            <span className="passage-label">{`Passage ${index + 1}`}</span>
+                            <span className="passage-label">{this.i18n().t('passageNumber', { number: index + 1 })}</span>
                           ) : (
                             <span
                               className="passage-label"
@@ -523,6 +525,7 @@ StimulusTabs.propTypes = {
   ).isRequired,
   disabledTabs: PropTypes.bool,
   model: PropTypes.object,
+  language: PropTypes.string,
   baseHeadingLevel: PropTypes.number,
 };
 

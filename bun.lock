@@ -1056,7 +1056,6 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@pie-lib/translator": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
         "react": "^18.2.0",
