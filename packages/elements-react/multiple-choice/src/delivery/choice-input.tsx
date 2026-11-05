@@ -58,16 +58,19 @@ const labelContent = (label) => {
 
 const CLASS_NAME = 'multiple-choice-component';
 
+/*
+ * The row, the holder and the label paint no background: the element's main container paints
+ * --pie-background behind them, and a fill of their own covers the choice's selected or hover
+ * fill, leaving it as a frame around an opaque box.
+ */
 const Row: any = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: color.background(),
 });
 
 const CheckboxHolder: any = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: color.background(),
   flex: 1,
   '& .MuiFormControlLabel-root': {
     marginLeft: '-14px', // to be consistent to previous versions before MUI v5 upgrade
@@ -104,7 +107,6 @@ const SrOnly: any = styled('span')({
 export const StyledFormControlLabel: any = styled(FormControlLabel)({
   '& .MuiFormControlLabel-label': {
     color: `${color.text()} !important`,
-    backgroundColor: color.background(),
     letterSpacing: 'normal',
   },
   '&.Mui-disabled *': {

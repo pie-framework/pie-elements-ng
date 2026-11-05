@@ -30,6 +30,18 @@ const ChoiceContainer: any = styled(Box, {
   }),
 }));
 
+/*
+ * The selected and hover colours are authored, so they are fixed hues the palette does not own.
+ * --pie-fixed-hue-collapse is 0% under a Base Theme, which renders them exactly, and 100% under
+ * every colour scheme, which folds a fill into the scheme's recessed surface and a stroke into its
+ * ink: an authored fill would otherwise sit under the scheme's text colour. The radio or checkbox
+ * still carries the state.
+ */
+const collapseFill = (authored) =>
+  `color-mix(in srgb, ${color.backgroundDark()} var(--pie-fixed-hue-collapse, 0%), ${authored})`;
+const collapseStroke = (authored) =>
+  `color-mix(in srgb, ${color.text()} var(--pie-fixed-hue-collapse, 0%), ${authored})`;
+
 export class Choice extends React.Component {
   static propTypes = {};
 
@@ -129,19 +141,19 @@ export class Choice extends React.Component {
     if ((hasSelectedStroke || hasHoverStroke)) {
       if (checked && hasSelectedStroke) {
         // selected state takes priority when selected stroke is configured
-        currentStrokeColor = selectedAnswerStrokeColor;
+        currentStrokeColor = collapseStroke(selectedAnswerStrokeColor);
         currentStrokeWidth = selectedAnswerStrokeWidth;
       } else if (isHovered && !disabled && hasHoverStroke) {
         // hover state when not selected and not disabled, and hover stroke is configured
-        currentStrokeColor = hoverAnswerStrokeColor;
+        currentStrokeColor = collapseStroke(hoverAnswerStrokeColor);
         currentStrokeWidth = hoverAnswerStrokeWidth;
       }
     }
-    
+
     if (checked && selectedAnswerBackgroundColor && selectedAnswerBackgroundColor !== 'initial') {
-      currentBackgroundColor = selectedAnswerBackgroundColor;
+      currentBackgroundColor = collapseFill(selectedAnswerBackgroundColor);
     } else if (isHovered && !disabled && hoverAnswerBackgroundColor && hoverAnswerBackgroundColor !== 'initial') {
-      currentBackgroundColor = hoverAnswerBackgroundColor;
+      currentBackgroundColor = collapseFill(hoverAnswerBackgroundColor);
     }
 
     const hasStroke = hasSelectedStroke || hasHoverStroke;
