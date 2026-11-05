@@ -1,10 +1,17 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 import { Main } from '../main';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
+vi.mock('mathlive', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  MathfieldElement: (await import('./fake-mathlive')).FakeMathfieldElement,
+}));
+
+// The first render waits for MathLive's module graph to load.
+const LOAD = { timeout: 10_000 };
 
 // main.tsx is untyped, so its class declares no props.
 const MathTemplated = Main as unknown as React.ComponentType<{
@@ -44,14 +51,17 @@ describe('math-templated answer blocks', () => {
     expect(new Set(ids(document)).size).toBe(ids(document).length);
   });
 
-  it('show each item its own answers', () => {
+  it('show each item its own answers', async () => {
     const first = render(item('view', ['12', '34'])).container;
     const second = render(item('view', ['56', '78'])).container;
 
-    expect([answerBlock(first, 'r0'), answerBlock(first, 'r1')]).toEqual([
-      expect.stringContaining('12'),
-      expect.stringContaining('34'),
-    ]);
+    // MathLive renders the static math once it has loaded.
+    await waitFor(() =>
+      expect([answerBlock(first, 'r0'), answerBlock(first, 'r1')]).toEqual([
+        expect.stringContaining('12'),
+        expect.stringContaining('34'),
+      ]), LOAD,
+    );
     expect([answerBlock(second, 'r0'), answerBlock(second, 'r1')]).toEqual([
       expect.stringContaining('56'),
       expect.stringContaining('78'),

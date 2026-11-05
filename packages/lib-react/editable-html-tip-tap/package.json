@@ -15,7 +15,7 @@
     "@mui/material": "^7.3.4",
     "@pie-framework/mathml-to-latex": "1.4.4",
     "@pie-lib/drag": "workspace:*",
-    "@pie-lib/math-input": "workspace:*",
+    "@pie-lib/math-input-mathlive": "workspace:*",
     "@pie-lib/math-toolbar": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",

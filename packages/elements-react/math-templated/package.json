@@ -14,7 +14,7 @@
     "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/mask-markup": "workspace:*",
-    "@pie-lib/math-input": "workspace:*",
+    "@pie-lib/math-input-mathlive": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-element/shared-lodash": "workspace:*",
@@ -103,6 +103,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
+    "mathlive": "0.110.0",
     "vite": "^8.3.5",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.2",

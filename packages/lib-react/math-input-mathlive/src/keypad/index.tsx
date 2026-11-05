@@ -1,0 +1,480 @@
+// @ts-nocheck
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
+import debug from 'debug';
+import { flatten } from '@pie-element/shared-lodash';
+import { color } from '@pie-lib/render-ui';
+
+import { baseSet } from '../keys/index.js';
+import { sortKeys } from './keys-layout.js';
+import { commonKeyboardStyles, rootIndexStyles } from '../mf/common-styles.js';
+import { loadMathLive, latexToMarkup } from '../mathlive-instance.js';
+import { fixLongDivisionWhenReady } from '../longdiv.js';
+
+const log = debug('pie-lib:math-input-mathlive:keypad');
+
+// These are functions for the same reason as LabelHolder's colours: the `color.*()` helpers run
+// inside the styled callbacks, never at module load.
+
+// Key label ink, after a --pie-text declaration that browsers without relative colour syntax keep.
+const keyInk = () => [color.text(), color.keypadInk()];
+
+// The press and focus ripples paint the ink at 30%, which lifts a key towards a light scheme ink.
+// Folding each channel above 127 below it keeps the ripple dark; dark inks pass unchanged.
+const keyRipple = () => ({
+  '& .MuiTouchRipple-root': {
+    color: `rgb(from ${color.text()} min(r, 255 - r) min(g, 255 - g) min(b, 255 - b))`,
+  },
+});
+
+// Keyboard focus: the THEMING.md focus ring on the key's edge. The chain holds 3:1 on the scheme
+// background and can fall under it on a key fill, so a 2px --pie-background ring backs it inside.
+const keyFocus = () => ({
+  '&.Mui-focusVisible': {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '-2px',
+    boxShadow: `inset 0 0 0 4px ${color.v('pie')('background', color.defaults.WHITE)}`,
+  },
+});
+
+/**
+ * A LaTeX keypad label.
+ *
+ * The MathQuill implementation rendered every LaTeX label as its own
+ * `MQ.StaticMath` instance. Here each label is static HTML produced once by
+ * `convertLatexToMarkup`, so a 40-key keypad no longer creates 40 live math
+ * instances.
+ */
+// Labels that the legacy keypad drew slanted. MathQuill styled `\parallel` as
+// italic, which slants the two bars; MathLive draws it upright. A skew is used
+// rather than `font-style: italic` so the slant does not depend on the font
+// having an italic face for this glyph.
+const SLANTED_LABELS = ['\\parallel'];
+const SLANT = 'skewX(-15deg)';
+// MathLive's `∥` has hairline bars next to the radical sign and the other keys, so
+// they are thickened with a text stroke and stretched a little taller.
+const SLANTED_STROKE = '0.03em currentColor';
+const SLANTED_SCALE_Y = 1.25;
+
+// The `color.*()` helpers must be called lazily, inside the styled callback.
+// Evaluating them in a plain object literal runs them at module load, which
+// breaks any consumer that mocks a subset of @pie-lib/render-ui.
+const LabelHolder = styled('span', { shouldForwardProp: (prop) => prop !== 'slanted' })(({ slanted }) => ({
+  ...(slanted && {
+    transform: `${SLANT} scaleY(${SLANTED_SCALE_Y})`,
+    '& *': { WebkitTextStroke: SLANTED_STROKE },
+  }),
+  pointerEvents: 'none',
+  textTransform: 'none',
+  color: keyInk(),
+  // Deliberately inline-block, NOT inline-flex: MathLive's markup relies on
+  // normal inline flow. Making its spans flex items collapses their width, and
+  // stretchy accents render an <svg width="100%" preserveAspectRatio="none">
+  // that then squeezes into a spike instead of spanning the content.
+  display: 'inline-block',
+  textAlign: 'center',
+  lineHeight: 1,
+  // Keep a label from sizing its grid column. `overflow: hidden` also collapses
+  // the label's min-content contribution, so a wide accent cannot drag the
+  // column across the screen. The svg's own positioning is left to
+  // mathlive-static.css (injected by the package) - duplicating it here broke
+  // the accent's containing block.
+  maxWidth: '100%',
+  overflow: 'hidden',
+  // Answer-block / empty-slot boxes inside a label.
+  '& .ML__placeholder': {
+    backgroundColor: color.keypadEmptyPlaceholder ? color.keypadEmptyPlaceholder() : undefined,
+  },
+  // The stand-in glyph for an empty argument slot (see EMPTY_SLOT). Muted so it
+  // reads as "a slot goes here" rather than as part of the symbol, matching how
+  // MathQuill shaded `.mq-empty`.
+  '& [data-pie-empty]': {
+    opacity: 0.5,
+  },
+  // A fraction is taller than the label's 1em line box, so its numerator sat
+  // flush against (and was clipped by) the top edge. Extra room above it grows
+  // the box, which the keypad then centres, so the fraction moves down a little.
+  '&:has(.ML__mfrac)': {
+    paddingTop: '0.25em',
+  },
+  // Centre a fraction's bar between its empty slots. MathLive spaces the bar for
+  // text, but a slot is a taller `\rule` box, so the bar hugs the numerator's box.
+  // Measured on the real keypad: dropping it 0.07em centres it between two boxes, and 0.08em
+  // between a real numerator (`x`, whose ink ends at the baseline) and an empty
+  // denominator. Only the bar moves, not the slots. The numerator is the second
+  // `.ML__center` (MathLive emits the denominator first).
+  '& .ML__mfrac:has([data-pie-empty]) .ML__frac-line': {
+    position: 'relative',
+    top: '0.14em',
+  },
+  '& .ML__mfrac:has([data-pie-empty]):not(:has(.ML__center ~ .ML__center [data-pie-empty])) .ML__frac-line': {
+    top: '0.13em',
+  },
+  // A mixed number (`x` then the fraction): the leading `x` is a sibling of the
+  // fraction, which a lone `\frac{}{}` does not have, and the label's pixel
+  // rounding then lands the bar a row lower - so it takes a smaller drop. This
+  // also keeps the bar level with the `x`.
+  '& .ML__mfrac:has([data-pie-empty]):not(:only-child) .ML__frac-line': {
+    top: '0.1em',
+  },
+  // A readable index on the nth-root key. Carried by the label itself, not only
+  // by the keypad container, so it holds wherever a LatexLabel is mounted.
+  ...rootIndexStyles,
+}));
+
+export class LatexLabel extends React.Component {
+  static propTypes = {
+    latex: PropTypes.string.isRequired,
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = { markup: latexToMarkup(props.latex) };
+    this.labelRef = React.createRef();
+  }
+
+  async componentDidMount() {
+    // MathLive may not have finished loading when the keypad first mounts.
+    if (this.state.markup) {
+      // The long-division key's label needs MathLive's drawing corrected.
+      fixLongDivisionWhenReady(this.labelRef.current);
+      return;
+    }
+
+    await loadMathLive();
+
+    if (this.unmounted) {
+      return;
+    }
+
+    const markup = latexToMarkup(this.props.latex);
+
+    if (markup) {
+      this.setState({ markup });
+      return;
+    }
+
+    // Still nothing: the engine is genuinely unavailable (a missing chunk, a
+    // blocked request). Keep the raw-latex fallback visible rather than an
+    // empty button, and log once so this is diagnosable.
+    if (!LatexLabel.warned) {
+      LatexLabel.warned = true;
+      log('MathLive unavailable - keypad labels are falling back to raw latex');
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.latex !== this.props.latex) {
+      this.setState({ markup: latexToMarkup(this.props.latex) });
+    }
+
+    if (this.state.markup !== (prevState && prevState.markup)) {
+      fixLongDivisionWhenReady(this.labelRef.current);
+    }
+  }
+
+  componentWillUnmount() {
+    this.unmounted = true;
+  }
+
+  render() {
+    const { markup } = this.state;
+
+    // Fall back to the raw latex so a button is never blank.
+    return markup ? (
+      // eslint-disable-next-line react/no-danger
+      <LabelHolder
+        ref={this.labelRef}
+        slanted={SLANTED_LABELS.includes(this.props.latex)}
+        dangerouslySetInnerHTML={{ __html: markup }}
+      />
+    ) : (
+      <LabelHolder slanted={SLANTED_LABELS.includes(this.props.latex)}>{this.props.latex}</LabelHolder>
+    );
+  }
+}
+
+const createCustomLayout = (layoutObj) => {
+  if (layoutObj) {
+    return {
+      gridTemplateColumns: `repeat(${layoutObj.columns}, minmax(min-content, 150px))`,
+      gridTemplateRows: `repeat(${layoutObj.rows}, minmax(40px, 60px))`,
+      gridAutoFlow: 'initial',
+    };
+  }
+
+  return {};
+};
+
+const KeyPadContainer = styled('div')(() => ({
+  ...commonKeyboardStyles,
+  width: '100%',
+  display: 'grid',
+  gridTemplateRows: 'repeat(5, minmax(40px, 60px))',
+  gridRowGap: '0px',
+  gridColumnGap: '0px',
+  gridAutoFlow: 'column',
+  '&.character': {
+    textTransform: 'initial !important',
+    gridTemplateRows: 'repeat(5, minmax(40px, 50px)) !important',
+  },
+  '&.language': {
+    gridTemplateRows: 'repeat(4, minmax(40px, 50px)) !important',
+    '& *': {
+      fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+    },
+  },
+}));
+
+const buttonBackground = (category) => ({
+  backgroundColor: category === 'operators' ? color.keypadButtonOperator() : color.keypadButton(),
+  '&:hover': {
+    backgroundColor: category === 'operators' ? color.keypadButtonOperatorHover() : color.keypadButtonHover(),
+  },
+});
+
+const StyledButton = styled(Button)(({ category, isDelete, isComma, isDot }) => ({
+  minWidth: 'auto',
+  textTransform: 'none',
+  fontSize: isComma || isDot ? '200% !important' : '140% !important',
+  lineHeight: isComma || isDot ? '100%' : 'normal',
+  color: keyInk(),
+  ...buttonBackground(category),
+  borderRadius: 0,
+  ...(isDelete && {
+    fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+  }),
+  ...keyRipple(),
+  ...keyFocus(),
+}));
+
+const StyledLatexButtonWrapper = styled(Button)(({ category }) => ({
+  textTransform: 'none',
+  padding: 0,
+  margin: 0,
+  fontSize: '110% !important',
+  minWidth: 'auto',
+  borderRadius: 0,
+  ...buttonBackground(category),
+  ...keyRipple(),
+  ...keyFocus(),
+}));
+
+const StyledIconButton = styled(IconButton)(({ category }) => ({
+  minWidth: 'auto',
+  ...buttonBackground(category),
+  borderRadius: 0,
+  '& .icon': {
+    height: '30px',
+  },
+}));
+
+export class KeyPad extends React.Component {
+  static propTypes = {
+    className: PropTypes.string,
+    controlledKeypadMode: PropTypes.bool,
+    baseSet: PropTypes.array,
+    additionalKeys: PropTypes.array,
+    layoutForKeyPad: PropTypes.object,
+    onPress: PropTypes.func.isRequired,
+    onFocus: PropTypes.func,
+    noDecimal: PropTypes.bool,
+    setKeypadInteraction: PropTypes.func,
+    mode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  };
+
+  static defaultProps = {
+    baseSet: baseSet,
+    noDecimal: false,
+  };
+
+  constructor(props) {
+    super(props);
+    this.keypadRef = React.createRef();
+  }
+
+  componentDidMount() {
+    // Ensure MathLive is available for the LaTeX labels.
+    loadMathLive();
+
+    const keyPadElement = this.keypadRef?.current;
+    const mainContainer = keyPadElement?.closest('.main-container');
+    const currentToolbar = keyPadElement?.closest('.pie-toolbar');
+
+    // need only for math keyboard so we need also controlledKeypadMode
+    if (this.props.controlledKeypadMode && mainContainer && currentToolbar) {
+      const mainContainerPosition = mainContainer.getBoundingClientRect();
+      const currentToolbarPosition = currentToolbar.getBoundingClientRect();
+      const difference =
+        mainContainerPosition.top +
+        mainContainerPosition.height -
+        (currentToolbarPosition.top + currentToolbarPosition.height);
+
+      if (difference < 0) {
+        const totalHeight = mainContainerPosition.height + mainContainerPosition.top - difference;
+
+        mainContainer.style.height = `${totalHeight}px`;
+      }
+    }
+
+    if (keyPadElement) {
+      keyPadElement.addEventListener('touchstart', this.handleKeypadInteraction, true);
+      keyPadElement.addEventListener('mousedown', this.handleKeypadInteraction, true);
+    }
+  }
+
+  componentWillUnmount() {
+    const keyPadElement = this.keypadRef?.current;
+
+    if (this.props.controlledKeypadMode && keyPadElement) {
+      const mainContainer = keyPadElement.closest('.main-container');
+
+      if (mainContainer) {
+        mainContainer.style.height = 'unset';
+      }
+    }
+
+    if (keyPadElement) {
+      keyPadElement.removeEventListener('touchstart', this.handleKeypadInteraction, true);
+      keyPadElement.removeEventListener('mousedown', this.handleKeypadInteraction, true);
+    }
+  }
+
+  handleKeypadInteraction = () => {
+    if (this.props.setKeypadInteraction) {
+      this.props.setKeypadInteraction(true);
+    }
+  };
+
+  buttonClick = (key) => {
+    log('[buttonClick]', key);
+    this.props.onPress(key);
+  };
+
+  flowKeys = (base, extras) => flatten([...sortKeys(base), ...sortKeys(extras)]);
+
+  keyIsNotAllowed = (key) => {
+    const { noDecimal } = this.props;
+
+    return !!(((key.write === '.' && key.label === '.') || (key.write === ',' && key.label === ',')) && noDecimal);
+  };
+
+  render() {
+    const { className, baseSet: base, additionalKeys, layoutForKeyPad, onFocus, mode } = this.props;
+
+    const noBaseSet = ['non-negative-integers', 'integers', 'decimals', 'fractions', 'item-authoring', 'language'];
+    const keysWithoutBaseSet = noBaseSet.includes(mode);
+    const allKeys = keysWithoutBaseSet
+      ? this.flowKeys([], additionalKeys || [])
+      : this.flowKeys(base, additionalKeys || []);
+
+    const shift = allKeys.length % 5 ? 1 : 0;
+    const style = {
+      gridTemplateColumns: `repeat(${Math.floor(allKeys.length / 5) + shift}, minmax(min-content, 150px))`,
+      ...createCustomLayout(layoutForKeyPad),
+    };
+
+    return (
+      <KeyPadContainer
+        ref={this.keypadRef}
+        className={[className, mode].filter(Boolean).join(' ')}
+        style={style}
+        onFocus={onFocus}
+      >
+        {allKeys.map((k, index) => {
+          if (!k) {
+            return <span key={`empty-${index}`} />;
+          }
+
+          // grades.ts pads some layouts with keys that have no label, latex, icon or action; they are
+          // placeholders that fill a grid cell, so they get no hover, no click and no focus
+          const isPlaceholder = !(
+            k.label ||
+            k.latex ||
+            k.icon ||
+            k.command ||
+            k.keystroke ||
+            k.write ||
+            k.type ||
+            k.actions ||
+            k.extraProps
+          );
+
+          if (isPlaceholder) {
+            return (
+              <StyledButton
+                key={`placeholder-${index}`}
+                disabled
+                aria-hidden="true"
+                tabIndex={-1}
+                category={!keysWithoutBaseSet ? k.category : undefined}
+              />
+            );
+          }
+
+          const key = `${k.label || k.latex || k.command}-${index}`;
+          const category = !keysWithoutBaseSet ? k.category : undefined;
+          const extra = { ...(k.actions || {}), ...(k.extraProps || {}) };
+          const onClick = this.buttonClick.bind(this, k);
+          const disabled = this.keyIsNotAllowed(k);
+          const ariaLabel = k.ariaLabel ? k.ariaLabel : k.name || k.label;
+
+          if (k.latex) {
+            return (
+              <StyledLatexButtonWrapper
+                key={key}
+                onClick={onClick}
+                disabled={disabled}
+                category={category}
+                aria-label={ariaLabel}
+                {...extra}
+              >
+                <LatexLabel latex={k.latex} />
+              </StyledLatexButtonWrapper>
+            );
+          }
+
+          if (k.label) {
+            return (
+              <StyledButton
+                key={key}
+                onClick={onClick}
+                disabled={disabled}
+                category={category}
+                isDelete={k.label === '⌫'}
+                isComma={k.label === ','}
+                isDot={k.label === '.'}
+                aria-label={ariaLabel}
+                {...extra}
+              >
+                {k.label}
+              </StyledButton>
+            );
+          }
+
+          const Icon = k.icon ? k.icon : 'div';
+
+          return (
+            <StyledIconButton
+              key={key}
+              tabIndex={'-1'}
+              onClick={onClick}
+              disabled={disabled}
+              category={category}
+              size="large"
+              {...extra}
+            >
+              <Icon className="icon" />
+            </StyledIconButton>
+          );
+        })}
+      </KeyPadContainer>
+    );
+  }
+}
+
+export default KeyPad;

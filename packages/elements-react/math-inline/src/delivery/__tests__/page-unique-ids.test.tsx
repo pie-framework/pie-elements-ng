@@ -1,47 +1,67 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { render, waitFor } from '@testing-library/react';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
+vi.mock('mathlive', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  MathfieldElement: (await import('./fake-mathlive')).FakeMathfieldElement,
+}));
+
+// The first render waits for MathLive's module graph to load.
+const LOAD = { timeout: 10_000 };
+
+// Load MathLive before the first field mounts, as on a page that already shows math.
+beforeAll(async () => {
+  const { loadMathLive } = await import('@pie-lib/math-input-mathlive');
+  await loadMathLive();
+});
 
 const { Main } = await import('../main');
 const { default: SimpleQuestionBlock } = await import('../simple-question-block');
 
-// The item's rendered MathQuill fields, reduced to what updateAria reads: each field's textarea
-// inside its .mq-textarea wrapper.
-const renderItem = (language?: string) => {
-  const root = document.createElement('div');
-  root.innerHTML = [1, 2].map(() => '<span class="mq-textarea"><textarea></textarea></span>').join('');
-  document.body.appendChild(root);
+// main.tsx is untyped, so its class declares no props.
+const MathInline = Main as unknown as React.ComponentType<{ model: object; session: object; onSessionChange: () => void }>;
 
-  // main.tsx is untyped, so its class declares no props.
-  const item = new (Main as unknown as new (props: object) => {
-    root: HTMLElement;
-    props: { model: object };
-    updateAria: () => void;
-  })({
-    model: { config: {}, language },
-    session: {},
-  });
-  item.root = root;
-  item.updateAria();
-
-  return { root, item };
-};
+const item = (language?: string) => (
+  <MathInline
+    model={{
+      language,
+      config: {
+        id: '1',
+        expression: '{{response}} + 1 = {{response}}',
+        responseType: 'Advanced Multi',
+        responses: [{ id: '1', answer: 'x', alternates: {} }],
+        env: { mode: 'gather', role: 'student' },
+      },
+    }}
+    session={{ answers: { r1: { value: '' }, r2: { value: '' } } }}
+    onSessionChange={vi.fn()}
+  />
+);
 
 const describedBy = (root: HTMLElement) =>
-  [...root.querySelectorAll('textarea')].map((textarea) => textarea.getAttribute('aria-describedby') as string);
+  [...root.querySelectorAll('math-field')].map((field) => field.getAttribute('aria-describedby') as string);
+
+// The answer field mounts once MathLive has loaded.
+const renderItem = async (language?: string) => {
+  const view = render(item(language));
+  await waitFor(() => expect(describedBy(view.container)).toHaveLength(1), LOAD);
+
+  return view;
+};
 
 afterEach(() => {
-  document.body.innerHTML = '';
   vi.useRealTimers();
 });
 
 describe('math-inline keypad instructions', () => {
-  it('describe each field from inside its own item when two items share a page', () => {
-    const first = renderItem().root;
-    const second = renderItem().root;
+  it('describe each field from inside its own item when two items share a page', async () => {
+    const first = (await renderItem()).container;
+    const second = (await renderItem()).container;
 
     const ids = [...describedBy(first), ...describedBy(second)];
-    expect(new Set(ids).size).toBe(4);
+    expect(new Set(ids).size).toBe(2);
     for (const root of [first, second]) {
       for (const id of describedBy(root)) {
         expect(root.contains(document.getElementById(id))).toBe(true);
@@ -49,36 +69,34 @@ describe('math-inline keypad instructions', () => {
     }
   });
 
-  it('keep their ids when the item updates', () => {
-    const { root, item } = renderItem();
-    const before = describedBy(root);
+  it('keep their ids when the item updates', async () => {
+    const { container, rerender } = await renderItem();
+    const before = describedBy(container);
 
-    item.updateAria();
+    rerender(item());
 
-    expect(describedBy(root)).toEqual(before);
-    expect(root.querySelectorAll('.sr-only')).toHaveLength(2);
+    expect(describedBy(container)).toEqual(before);
+    expect(container.querySelectorAll('.sr-only')).toHaveLength(1);
   });
 
   it.each([
     ['en_US', /^This field supports both keypad and keyboard input\./],
     ['es_ES', /^Este campo admite la entrada con el teclado en pantalla y con el teclado físico\./],
     [undefined, /^This field supports both keypad and keyboard input\./],
-  ])('are in the %s item language', (language, text) => {
-    const { root } = renderItem(language);
+  ])('are in the %s item language', async (language, text) => {
+    const { container } = await renderItem(language);
 
-    for (const id of describedBy(root)) {
+    for (const id of describedBy(container)) {
       expect(document.getElementById(id)?.textContent).toMatch(text);
     }
   });
 
-  it('follow a language change after the first render', () => {
-    const { root, item } = renderItem('en_US');
+  it('follow a language change after the first render', async () => {
+    const { container, rerender } = await renderItem('en_US');
 
-    // The component re-runs updateAria when the model language changes.
-    (item as { props: object }).props = { model: { config: {}, language: 'es_ES' }, session: {} };
-    item.updateAria();
+    rerender(item('es_ES'));
 
-    for (const id of describedBy(root)) {
+    for (const id of describedBy(container)) {
       expect(document.getElementById(id)?.textContent).toMatch(/^Este campo admite/);
     }
   });
