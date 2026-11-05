@@ -106,13 +106,33 @@ export class Main extends React.Component<MainProps, MainState> {
     onModelChanged({ ...model, passages: updatedPassages });
   };
 
-  moveAdditionalPassage = (from: number, to: number) => {
+  // Move buttons by passage key and direction, so focus can follow a passage to its new position.
+  private moveButtons = new Map<string, HTMLButtonElement>();
+  private pendingMoveFocus: { key: number; direction: 'up' | 'down' } | null = null;
+
+  moveButtonRef = (key: number, direction: 'up' | 'down') => (node: HTMLButtonElement | null) => {
+    if (node) this.moveButtons.set(`${key}-${direction}`, node);
+    else this.moveButtons.delete(`${key}-${direction}`);
+  };
+
+  movePassage = (from: number, to: number) => {
     const { model, onModelChanged } = this.props;
     const passages = [...model.passages];
     [passages[from], passages[to]] = [passages[to], passages[from]];
     [this.passageKeys[from], this.passageKeys[to]] = [this.passageKeys[to], this.passageKeys[from]];
+    this.pendingMoveFocus = { key: this.passageKeys[to], direction: to < from ? 'up' : 'down' };
     onModelChanged({ ...model, passages });
   };
+
+  componentDidUpdate() {
+    if (!this.pendingMoveFocus) return;
+    const { key, direction } = this.pendingMoveFocus;
+    const opposite = direction === 'up' ? 'down' : 'up';
+    const button = this.moveButtons.get(`${key}-${direction}`) ?? this.moveButtons.get(`${key}-${opposite}`);
+    if (!button) return;
+    this.pendingMoveFocus = null;
+    button.focus();
+  }
 
   render() {
     const { model, configuration, imageSupport, onConfigurationChanged, onModelChanged, uploadSoundSupport } =
@@ -193,18 +213,20 @@ export class Main extends React.Component<MainProps, MainState> {
                 onClick={() => this.removeAdditionalPassage(passageIndex)}
               />
             )}
-            {passageIndex > 1 && additionalPassage.enabled && (
+            {passageIndex > 0 && additionalPassage.enabled && (
               <PassageButton
                 type={'up'}
-                label={`Move ${additionalPassage.label} up`}
-                onClick={() => this.moveAdditionalPassage(passageIndex, passageIndex - 1)}
+                label={`Move passage ${passageIndex + 1} up`}
+                buttonRef={this.moveButtonRef(keys[passageIndex], 'up')}
+                onClick={() => this.movePassage(passageIndex, passageIndex - 1)}
               />
             )}
-            {passageIndex > 0 && passageIndex < passages.length - 1 && additionalPassage.enabled && (
+            {passageIndex < passages.length - 1 && additionalPassage.enabled && (
               <PassageButton
                 type={'down'}
-                label={`Move ${additionalPassage.label} down`}
-                onClick={() => this.moveAdditionalPassage(passageIndex, passageIndex + 1)}
+                label={`Move passage ${passageIndex + 1} down`}
+                buttonRef={this.moveButtonRef(keys[passageIndex], 'down')}
+                onClick={() => this.movePassage(passageIndex, passageIndex + 1)}
               />
             )}
             {passageIndex === passages.length - 1 && canAddPassage && (

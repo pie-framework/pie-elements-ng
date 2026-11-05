@@ -14,10 +14,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 
-export const RemoveAddButton = ({ label, type = 'add', onClick }) => {
+export const RemoveAddButton = ({ label, type = 'add', onClick, buttonRef }) => {
   const Tag = { add: AddCircleIcon, remove: RemoveCircleIcon, up: ArrowUpwardIcon, down: ArrowDownwardIcon }[type];
   return (
-    <Button color="primary" size="small" onClick={onClick}>
+    <Button color="primary" size="small" onClick={onClick} ref={buttonRef}>
       <Tag fontSize="small" color="primary" style={{ marginRight: 4 }} />
       {label}
     </Button>
