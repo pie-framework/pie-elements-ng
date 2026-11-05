@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Assert every publishable manifest declares the canonical `repository` block.
+ * Assert every publishable manifest declares the canonical `repository` block and the MIT
+ * `license`.
  *
  * npm compares repository.url against the repository it is publishing from when it generates
  * a provenance attestation, and rewrites anything else to the git+https form with a warning.
@@ -11,6 +12,9 @@
  * `repository.directory` is required too: without it, npm and the registry cannot point at
  * the right subdirectory of a monorepo, and provenance links back to the repo root.
  *
+ * `license` is what npm and a consumer's SBOM tooling read; 53 manifests published without one
+ * until it was checked here.
+ *
  * Usage:
  *   node scripts/check-repository-metadata.mjs
  */
@@ -20,6 +24,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const EXPECTED_URL = 'git+https://github.com/pie-framework/pie-elements-ng.git';
+const EXPECTED_LICENSE = 'MIT';
 
 const rootManifestPath = path.join(ROOT, 'package.json');
 if (!existsSync(rootManifestPath)) {
@@ -86,6 +91,10 @@ for (const dir of [...dirs].sort()) {
     }
   }
 
+  if (pkg.license !== EXPECTED_LICENSE) {
+    problems.push(`license must be "${EXPECTED_LICENSE}" (got ${JSON.stringify(pkg.license)})`);
+  }
+
   if (problems.length > 0) failures.push([pkg.name, relDir, problems]);
 }
 
@@ -99,7 +108,7 @@ if (checked === 0) {
 
 if (failures.length > 0) {
   console.error(
-    `[check-repository-metadata] ${failures.length} of ${checked} publishable package(s) have repository problems:\n`
+    `[check-repository-metadata] ${failures.length} of ${checked} publishable package(s) have metadata problems:\n`
   );
   for (const [name, relDir, problems] of failures) {
     console.error(`  ${name}  (${relDir})`);
@@ -108,6 +117,7 @@ if (failures.length > 0) {
   console.error(
     '\nnpm needs repository.url to match the repository it publishes from for provenance.'
   );
+  console.error(`Every published package declares license "${EXPECTED_LICENSE}".`);
   process.exit(1);
 }
 

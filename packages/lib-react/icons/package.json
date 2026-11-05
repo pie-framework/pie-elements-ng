@@ -2,6 +2,7 @@
   "name": "@pie-lib/icons",
   "version": "5.0.2",
   "description": "Some simple icons",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

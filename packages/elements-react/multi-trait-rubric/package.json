@@ -2,6 +2,7 @@
   "name": "@pie-element/multi-trait-rubric",
   "version": "9.0.7",
   "description": "React implementation of multi-trait-rubric element",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

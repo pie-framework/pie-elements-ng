@@ -2,6 +2,7 @@
   "name": "@pie-lib/editable-html-tip-tap",
   "version": "3.1.2",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
