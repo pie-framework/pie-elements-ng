@@ -40,6 +40,7 @@ import Radio from '@mui/material/Radio';
 import classNames from 'clsx';
 
 import FeedbackTick from './feedback-tick.js';
+import { labelIsNameless } from '../label-name.js';
 
 const MATH_MARKERS = ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container'];
 
@@ -53,6 +54,7 @@ const labelContent = (label) => {
     math: MATH_MARKERS.some((marker) => html.includes(marker)),
     table: html.includes('<table'),
     image: html.includes('<img'),
+    nameless: labelIsNameless(html),
   };
 };
 
@@ -261,6 +263,7 @@ export class ChoiceInput extends React.Component {
     index: PropTypes.number,
     // The translated note a math choice's name ends with.
     pickTheAnswerBelow: PropTypes.string,
+    choiceName: PropTypes.string,
   };
 
   static defaultProps = {
@@ -331,6 +334,7 @@ export class ChoiceInput extends React.Component {
       isSelectionButtonBelow,
       index,
       pickTheAnswerBelow,
+      choiceName,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -360,13 +364,16 @@ export class ChoiceInput extends React.Component {
     // "A. Pick the answer below", and keeps its math out of its name: the screen reader reads the
     // MathML in the content, where the student can explore it and a braille display shows it as
     // math. A choice with no key gets its position as a hidden key, so the names stay distinct.
-    // Other choices are named from their label (PIE-1244).
+    // Other choices are named from their label (PIE-1244), and a label with no text and no image
+    // description from its key or position, "Choice A" (PIE-1484).
     const content = labelContent(label);
     const namedByNote = content.math || content.table;
-    const key = displayKey || (namedByNote ? `${index + 1}` : '');
+    const nameless = !namedByNote && content.nameless;
+    const key = displayKey || (namedByNote || nameless ? `${index + 1}` : '');
 
     let keyText = key;
     if (namedByNote) keyText = `${key}.`;
+    else if (nameless) keyText = choiceName || key;
     else if (content.image) keyText = `${pickTheAnswerBelow}, ${key}`;
 
     const screenReaderLabel = key ? (
