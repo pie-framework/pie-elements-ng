@@ -5,12 +5,16 @@ import PropTypes from 'prop-types';
 import { Button, Radio, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { createUniqueId } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 export class ToolMenu extends React.Component {
   static propTypes = {
     gssLineData: PropTypes.object,
     disabled: PropTypes.bool,
     onChange: PropTypes.func,
+    language: PropTypes.string,
   };
 
   // Each radio takes its accessible name from the visible line name beside it, and the radios
@@ -31,145 +35,65 @@ export class ToolMenu extends React.Component {
     onChange(gssLineData, oldSelectedTool);
   };
 
-  render() {
-    const { gssLineData, disabled } = this.props;
+  renderLineTypeButton(line, type, side) {
+    const { gssLineData, disabled, language } = this.props;
+    const selected = gssLineData[`line${line}`].lineType === type;
+    const state = `${selected ? 'Selected' : 'UnSelected'}${disabled ? 'Disabled' : ''}`;
+    return (
+      <Button
+        size="small"
+        variant="contained"
+        color={selected ? 'primary' : 'inherit'}
+        disabled={!!disabled}
+        aria-pressed={selected}
+        onClick={() => this.lineTypeChange(line, type)}
+        className={`lineTypeButton${side}${state}`}
+      >
+        {selected && <span aria-hidden="true">✔</span>} {translator.t(`graphing.${type.toLowerCase()}`, { lng: language })}
+      </Button>
+    );
+  }
 
+  renderToolRadio(value) {
+    const { gssLineData, disabled, language } = this.props;
+    return (
+      <div className="radioFieldInner">
+        <Radio
+          name={`${this.idPrefix}-line`}
+          onChange={this.onChangeRadioValue}
+          value={value}
+          disabled={!!disabled}
+          checked={gssLineData.selectedTool === value}
+          className="lineTypeRadio"
+          inputProps={{ 'aria-labelledby': `${this.idPrefix}-${value}` }}
+        />
+        <Typography id={`${this.idPrefix}-${value}`} className="lineNameFont">
+          {translator.t(`graphing.${value}`, { lng: language })}
+        </Typography>
+      </div>
+    );
+  }
+
+  renderLine(line) {
+    return (
+      <div className="radioFieldOuter">
+        {this.renderToolRadio(`line${line}`)}
+        <div className="radioFieldButtons">
+          {this.renderLineTypeButton(line, 'Solid', 'Left')}
+          {this.renderLineTypeButton(line, 'Dashed', 'Right')}
+        </div>
+      </div>
+    );
+  }
+
+  render() {
+    const { gssLineData } = this.props;
     return (
       <Root>
         <div className="selectLineRadioGroup">
-          {/* LINE A */}
-          <div className="radioFieldOuter">
-            <div className="radioFieldInner">
-              <Radio
-                name={`${this.idPrefix}-line`}
-                onChange={this.onChangeRadioValue}
-                value="lineA"
-                disabled={!!disabled}
-                checked={gssLineData.selectedTool === 'lineA'}
-                className="lineTypeRadio"
-                inputProps={{ 'aria-labelledby': `${this.idPrefix}-lineA` }}
-              />
-              <Typography id={`${this.idPrefix}-lineA`} className="lineNameFont">
-                Line A
-              </Typography>
-            </div>
-            <div className="radioFieldButtons">
-              <Button
-                size="small"
-                variant="contained"
-                color={gssLineData.lineA.lineType === 'Solid' ? 'primary' : 'inherit'}
-                disabled={!!disabled}
-                onClick={() => this.lineTypeChange('A', 'Solid')}
-                className={
-                  gssLineData.lineA.lineType === 'Solid'
-                    ? disabled
-                      ? 'lineTypeButtonLeftSelectedDisabled'
-                      : 'lineTypeButtonLeftSelected'
-                    : disabled
-                      ? 'lineTypeButtonLeftUnSelectedDisabled'
-                      : 'lineTypeButtonLeftUnSelected'
-                }
-              >
-                {gssLineData.lineA.lineType === 'Solid' && '✔'} Solid
-              </Button>
-
-              <Button
-                size="small"
-                variant="contained"
-                color={gssLineData.lineA.lineType === 'Dashed' ? 'primary' : 'inherit'}
-                disabled={!!disabled}
-                onClick={() => this.lineTypeChange('A', 'Dashed')}
-                className={
-                  gssLineData.lineA.lineType === 'Dashed'
-                    ? disabled
-                      ? 'lineTypeButtonRightSelectedDisabled'
-                      : 'lineTypeButtonRightSelected'
-                    : disabled
-                      ? 'lineTypeButtonRightUnSelectedDisabled'
-                      : 'lineTypeButtonRightUnSelected'
-                }
-              >
-                {gssLineData.lineA.lineType === 'Dashed' && '✔'} Dashed
-              </Button>
-            </div>
-          </div>
-
-          {/* LINE B (if applicable) */}
-          {gssLineData.numberOfLines === 2 && (
-            <div className="radioFieldOuter">
-              <div className="radioFieldInner">
-                <Radio
-                  name={`${this.idPrefix}-line`}
-                  onChange={this.onChangeRadioValue}
-                  value="lineB"
-                  disabled={!!disabled}
-                  checked={gssLineData.selectedTool === 'lineB'}
-                  className="lineTypeRadio"
-                  inputProps={{ 'aria-labelledby': `${this.idPrefix}-lineB` }}
-                />
-                <Typography id={`${this.idPrefix}-lineB`} className="lineNameFont">
-                  Line B
-                </Typography>
-              </div>
-              <div className="radioFieldButtons">
-                <Button
-                  size="small"
-                  variant="contained"
-                  color={gssLineData.lineB.lineType === 'Solid' ? 'primary' : 'inherit'}
-                  disabled={!!disabled}
-                  onClick={() => this.lineTypeChange('B', 'Solid')}
-                  className={
-                    gssLineData.lineB.lineType === 'Solid'
-                      ? disabled
-                        ? 'lineTypeButtonLeftSelectedDisabled'
-                        : 'lineTypeButtonLeftSelected'
-                      : disabled
-                        ? 'lineTypeButtonLeftUnSelectedDisabled'
-                        : 'lineTypeButtonLeftUnSelected'
-                  }
-                >
-                  {gssLineData.lineB.lineType === 'Solid' && '✔'} Solid
-                </Button>
-
-                <Button
-                  size="small"
-                  variant="contained"
-                  color={gssLineData.lineB.lineType === 'Dashed' ? 'primary' : 'inherit'}
-                  disabled={!!disabled}
-                  onClick={() => this.lineTypeChange('B', 'Dashed')}
-                  className={
-                    gssLineData.lineB.lineType === 'Dashed'
-                      ? disabled
-                        ? 'lineTypeButtonRightSelectedDisabled'
-                        : 'lineTypeButtonRightSelected'
-                      : disabled
-                        ? 'lineTypeButtonRightUnSelectedDisabled'
-                        : 'lineTypeButtonRightUnSelected'
-                  }
-                >
-                  {gssLineData.lineB.lineType === 'Dashed' && '✔'} Dashed
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* SOLUTION SET */}
-          <div className="radioFieldOuter">
-            <div className="radioFieldInner">
-              <Radio
-                name={`${this.idPrefix}-line`}
-                onChange={this.onChangeRadioValue}
-                value="solutionSet"
-                disabled={!!disabled}
-                checked={gssLineData.selectedTool === 'solutionSet'}
-                className="lineTypeRadio"
-                inputProps={{ 'aria-labelledby': `${this.idPrefix}-solutionSet` }}
-              />
-              <Typography id={`${this.idPrefix}-solutionSet`} className="lineNameFont">
-                Solution Set
-              </Typography>
-            </div>
-          </div>
+          {this.renderLine('A')}
+          {gssLineData.numberOfLines === 2 && this.renderLine('B')}
+          <div className="radioFieldOuter">{this.renderToolRadio('solutionSet')}</div>
         </div>
       </Root>
     );
