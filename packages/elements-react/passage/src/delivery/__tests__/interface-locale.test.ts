@@ -49,6 +49,12 @@ describe('passage interface locale', () => {
     expect(el.getAttribute('aria-label')).toBe('Pasaje');
   });
 
+  it('labels an untitled passage tab in the player locale', async () => {
+    const el = await mount({ passages: [{ label: 'Primero', title: 'Primero', text: '<p>Uno</p>' }, { label: '', text: '<p>Dos</p>' }] }, 'es');
+    const tabs = [...el.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent);
+    expect(tabs).toEqual(['Primero', 'Pasaje 2']);
+  });
+
   it('renders English when neither declares one', async () => {
     const el = await mount(model);
     expect(el.getAttribute('aria-label')).toBe('Passage');
