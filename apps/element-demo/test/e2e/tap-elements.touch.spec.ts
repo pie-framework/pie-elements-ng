@@ -1,6 +1,13 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { deliveryContainer, getSessionState, openDeliverRoute } from './test-helpers';
-import { assertTouchEnabled, touchSelect, touchTap } from './touch-helpers';
+import {
+  assertTouchEnabled,
+  supportsTrustedTouch,
+  touchDoubleTap,
+  touchLongPress,
+  touchSelect,
+  touchTap,
+} from './touch-helpers';
 
 /**
  * Can a finger operate the elements a learner taps rather than drags?
@@ -14,7 +21,13 @@ import { assertTouchEnabled, touchSelect, touchTap } from './touch-helpers';
  * - a tap selects, and commits exactly one session change - a handler bound to
  *   both `mousedown` and `click` would toggle twice and land back where it was;
  * - a second tap deselects (or, for a radio, keeps the selection);
- * - once deselected, the choice looks exactly as it did before it was touched.
+ * - once deselected, the choice looks exactly as it did before it was touched;
+ * - a long-press neither opens a context menu nor selects text, and a
+ *   double-tap neither zooms the page nor toggles more than its two taps do.
+ *
+ * `touch-webkit` runs the tap specs above in WebKit. The long-press,
+ * double-tap and text-selection specs need trusted touch input, which only
+ * Chromium offers (see touch-helpers.ts), so they skip there.
  */
 
 type TapCase = {
@@ -105,6 +118,35 @@ const CASES: TapCase[] = [
     toggles: true,
     look: (canvas) => canvas,
   },
+  {
+    element: 'fraction-model',
+    // Each part of the bar is a recharts rectangle; a tap shades it, a second unshades it.
+    target: (root) => visibleFirst(root, '.recharts-bar-rectangle rect'),
+    selections: (session) => session?.answers?.response?.length ?? 0,
+    toggles: true,
+    // No `look`: recharts animates the bar from script, which `animations: 'disabled'`
+    // does not stop, so WebKit never finds the rectangle stable to screenshot.
+  },
+  {
+    element: 'mc-populated-blank',
+    demoId: 'variant-sr-vic',
+    target: (root) => visibleFirst(root, 'input[type="radio"]'),
+    selections: (session) => session?.value?.length ?? 0,
+    toggles: false,
+  },
+  {
+    element: 'simple-cloze',
+    // A tap on a text entry focuses it; the answer is what is typed next. The
+    // demo can start with a leftover value, so "selected" is the answer typed here.
+    target: (root) => visibleFirst(root, 'input[type="text"]'),
+    select: async (page, _root, target) => {
+      await touchTap(page, target);
+      await page.keyboard.press('ControlOrMeta+a');
+      await page.keyboard.type('4');
+    },
+    selections: (session) => (session?.value === '4' ? 1 : 0),
+    toggles: false,
+  },
 ];
 
 /** Counts the session changes the player reports, so a double toggle shows as two. */
@@ -134,6 +176,14 @@ const resetSessionChanges = (page: Page) =>
 /** Lets a stray second change arrive before the count is read. */
 const SETTLE_MS = 750;
 
+/**
+ * Between a tap and the next on the same control. Playwright lifts a finger in
+ * about 10ms and the element's session change can still be re-rendering, so a
+ * back-to-back second tap lands on a control that has not settled (WebKit shows
+ * it: the controlled checkbox is still unchecked). A person takes far longer.
+ */
+const NEXT_TAP_MS = 120;
+
 async function openForTouch(
   page: Page,
   item: TapCase
@@ -145,6 +195,9 @@ async function openForTouch(
   await expect(root).toBeVisible();
   const target = item.target(root);
   await target.waitFor({ state: 'visible', timeout: 15_000 });
+  // A phone viewport can be narrower than the control: a wide map or graph scrolls inside
+  // the page, and a finger scrolls it to the control first.
+  await target.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'center' }));
   await resetSessionChanges(page);
   return { root, target };
 }
@@ -185,6 +238,7 @@ test.describe('tap-operated elements under touch', () => {
 
         await select(page, item, root, target);
         await expectSelections(page, item, 1);
+        await page.waitForTimeout(NEXT_TAP_MS);
         await touchTap(page, target);
 
         await expectSelections(page, item, 0);
@@ -200,6 +254,7 @@ test.describe('tap-operated elements under touch', () => {
 
         await select(page, item, root, target);
         await expectSelections(page, item, 1);
+        await page.waitForTimeout(NEXT_TAP_MS);
         await touchTap(page, target);
 
         await page.waitForTimeout(SETTLE_MS);
@@ -238,6 +293,84 @@ test.describe('tap-operated elements under touch', () => {
         );
       });
     }
+  }
+});
+
+/**
+ * The gestures a finger makes on a choice that are not a tap. A long-press is how
+ * a touch device opens a context menu or starts selecting text, and either would
+ * take the place of the choice responding; a double-tap is how it zooms.
+ */
+test.describe('long-press and double-tap on tap-operated elements', () => {
+  test.skip(
+    ({ page }) => !supportsTrustedTouch(page),
+    'Playwright cannot send WebKit a long-press or a double-tap'
+  );
+
+  /** Records every `contextmenu` event and whether anything cancelled it. */
+  async function watchContextMenu(page: Page) {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __contextMenus: boolean[] };
+      w.__contextMenus = [];
+      // Bubble phase on window: runs after every handler that could cancel it.
+      window.addEventListener('contextmenu', (event) => {
+        w.__contextMenus.push(event.defaultPrevented);
+      });
+    });
+  }
+
+  const openedContextMenus = (page: Page) =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __contextMenus: boolean[] }).__contextMenus.filter((p) => !p).length
+    );
+
+  for (const item of CASES) {
+    const title = item.demoId ? `${item.element} [demo=${item.demoId}]` : item.element;
+
+    test(`${title}: a long-press opens no context menu and selects no text`, async ({ page }) => {
+      await watchContextMenu(page);
+      const { target } = await openForTouch(page, item);
+
+      await touchLongPress(page, target);
+      await page.waitForTimeout(SETTLE_MS);
+
+      expect(await openedContextMenus(page), 'a context menu would open').toBe(0);
+      expect(
+        await page.evaluate(() => String(getSelection())),
+        'the long-press selected text'
+      ).toBe('');
+      // A long-press may act or not, but it must not act twice.
+      expect(await sessionChanges(page)).toBeLessThanOrEqual(1);
+    });
+
+    // A custom `select` is a sequence (open a menu, then pick; focus, then type),
+    // so two quick taps are not two taps on the same control.
+    if (item.select) {
+      continue;
+    }
+
+    test(`${title}: a double-tap acts once per tap`, async ({ page }) => {
+      const { target } = await openForTouch(page, item);
+
+      await touchDoubleTap(page, target);
+      await page.waitForTimeout(SETTLE_MS);
+
+      // A toggle takes both taps (select, deselect); a radio takes the first and keeps it.
+      await expectSelections(page, item, item.toggles ? 0 : 1);
+      expect(await sessionChanges(page)).toBe(item.toggles ? 2 : 1);
+    });
+
+    test(`${title}: a double-tap does not zoom the page`, async ({ page }, testInfo) => {
+      // Only a mobile viewport honours the viewport meta tag and zooms at all.
+      test.skip(!testInfo.project.use.isMobile, 'page zoom exists only with a mobile viewport');
+      const { target } = await openForTouch(page, item);
+
+      await touchDoubleTap(page, target);
+      await page.waitForTimeout(SETTLE_MS);
+
+      expect(await page.evaluate(() => window.visualViewport?.scale)).toBe(1);
+    });
   }
 });
 
@@ -296,6 +429,7 @@ test.describe('extended-text-entry annotations under touch', () => {
   // touch, which gets no compatibility mouse events, so no `mouseup` arrives. The
   // annotation editor therefore also reads the selection once it settles.
   test('a touch selection opens the annotation menu', async ({ page }) => {
+    test.skip(!supportsTrustedTouch(page), 'touchSelect needs trusted touch input');
     const response = await openAnnotations(page);
     const box = await response.boundingBox();
     if (!box) {

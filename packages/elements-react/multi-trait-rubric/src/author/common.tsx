@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Select from '@mui/material/Select';
@@ -42,8 +42,9 @@ import { filteredDefaultPlugins } from './utils.js';
 const InputHeight = '120px';
 export const BlockWidth = 200;
 export const PrimaryBlockWidth = 200;
-export const DragHandleSpace = 32;
 export const HeaderHeight = '100px';
+// room under the header labels for their toolbar (28px, plus its 5px offset); the labels sit above this
+export const HeaderToolbarClearance = '35px';
 export const HeaderHeightLarge = '160px';
 const greyBorder = `solid 1px ${grey[400]}`;
 const Padding = '8px 4px';
@@ -51,10 +52,19 @@ const Padding = '8px 4px';
 // global styles for EditableHtml components
 const GlobalStyles: any = styled('div')(({ theme }) => ({
   fontFamily: 'Cerebri',
-  
+
+  // The toolbar is position: relative, so --toolbar-offset (set on focus by useToolbarInView) moves it
+  // sideways just enough to stay inside the scrolling area instead of being clipped by it. Scoped
+  // here so other editors are unaffected.
+  '& .toolbar': {
+    left: 'var(--toolbar-offset, 0px)',
+  },
+
   '& .editable-label': {
     textAlign: 'left',
     flex: 1,
+    // as a flex item it would otherwise grow to the toolbar's min-width, past its column
+    minWidth: 0,
     border: 'none',
 
     '& div:not(.tiptap)': {
@@ -153,8 +163,8 @@ const StyledSecondaryBlock: any = styled('div')({
   paddingBottom: '30px',
 });
 
-export const SecondaryBlock = ({ children, setRef, width }) => (
-  <StyledSecondaryBlock style={{ width: width }} ref={setRef}>
+export const SecondaryBlock = ({ children, setRef, width, paddingBottom }) => (
+  <StyledSecondaryBlock style={{ width: width, ...(paddingBottom !== undefined && { paddingBottom }) }} ref={setRef}>
     {children}
   </StyledSecondaryBlock>
 );
@@ -199,6 +209,31 @@ const SubLabel: any = styled('div')({
   textAlign: 'center',
 });
 
+// The columns scroll horizontally inside an overflow-hidden block, so a toolbar opening from an editor
+// near (or partly past) the visible edge gets clipped. On focus, measure the real toolbar against the
+// visible area and offset it by the least amount needed to keep it inside.
+const useToolbarInView = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+
+  const onFocusCapture = useCallback(() => {
+    const toolbar = ref.current?.querySelector<HTMLElement>('.toolbar');
+    const anchor = toolbar?.parentElement;
+    let clip = anchor?.parentElement;
+
+    while (clip && getComputedStyle(clip).overflowX !== 'hidden') clip = clip.parentElement;
+    if (!toolbar || !anchor || !clip) return;
+
+    const { left } = anchor.getBoundingClientRect();
+    const visible = clip.getBoundingClientRect();
+    const wanted = Math.max(visible.left, Math.min(left, visible.right - toolbar.offsetWidth));
+
+    setOffset(Math.round(wanted - left));
+  }, []);
+
+  return { ref, onFocusCapture, style: { '--toolbar-offset': `${offset}px` } as React.CSSProperties };
+};
+
 export const ScorePoint = ({
   ariaLabel = '',
   error = '',
@@ -207,17 +242,17 @@ export const ScorePoint = ({
   pluginProps,
   onChange,
   showScorePointLabels,
-  alignToRight,
   spellCheck,
   uploadSoundSupport,
   imageSupport = {},
   mathMlOptions = {},
 }) => {
   const ScorePointBoxComponent = showScorePointLabels ? ScorePointBox : ScorePointBoxDisabled;
+  const { ref, onFocusCapture, style } = useToolbarInView();
 
   return (
     <GlobalStyles>
-      <ScorePointBoxWrapper>
+      <ScorePointBoxWrapper ref={ref} style={style} onFocusCapture={onFocusCapture}>
         <ScorePointBoxComponent>
           <SubLabel>{scorePointsValue}</SubLabel>
 
@@ -232,7 +267,6 @@ export const ScorePoint = ({
               pluginProps={pluginProps}
               activePlugins={filteredDefaultPlugins}
               spellCheck={spellCheck}
-              toolbarOpts={alignToRight ? { alignment: 'right' } : {}}
               uploadSoundSupport={uploadSoundSupport}
               languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
               mathMlOptions={mathMlOptions}
@@ -385,31 +419,33 @@ export const ExpandedInput = ({
   onChange,
   pluginProps,
   placeholder,
-  alignToRight,
   spellCheck,
   uploadSoundSupport,
   mathMlOptions = {},
   imageSupport = {},
-}) => (
-  <GlobalStyles>
-    <EditableHtml
-      ariaLabel={ariaLabel || placeholder || 'Trait description'}
-      className="expanded-input-prompt"
-      error={error}
-      markup={markup}
-      onChange={onChange}
-      placeholder={placeholder}
-      pluginProps={pluginProps}
-      toolbarOpts={alignToRight ? { alignment: 'right' } : {}}
-      spellCheck={spellCheck}
-      uploadSoundSupport={uploadSoundSupport}
-      languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
-      autoWidthToolbar
-      mathMlOptions={mathMlOptions}
-      imageSupport={imageSupport}
-    />
-  </GlobalStyles>
-);
+}) => {
+  const { ref, onFocusCapture, style } = useToolbarInView();
+
+  return (
+    <GlobalStyles ref={ref} style={style} onFocusCapture={onFocusCapture}>
+      <EditableHtml
+        ariaLabel={ariaLabel || placeholder || 'Trait description'}
+        className="expanded-input-prompt"
+        error={error}
+        markup={markup}
+        onChange={onChange}
+        placeholder={placeholder}
+        pluginProps={pluginProps}
+        spellCheck={spellCheck}
+        uploadSoundSupport={uploadSoundSupport}
+        languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+        autoWidthToolbar
+        mathMlOptions={mathMlOptions}
+        imageSupport={imageSupport}
+      />
+    </GlobalStyles>
+  );
+};
 
 export const ScaleSettings: any = styled('div')(({ theme }) => ({
   display: 'flex',

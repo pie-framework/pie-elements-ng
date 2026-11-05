@@ -53,7 +53,11 @@ const CASES: TouchCase[] = [
   { element: 'charting' },
   { element: 'graphing', selectTool: true, seedTaps: CENTER },
   // The default tool is a solid line: one tap starts it, the second commits it.
-  { element: 'graphing-solution-set', selectTool: true, seedTaps: TWO_POINTS },
+  {
+    element: 'graphing-solution-set',
+    selectTool: true,
+    seedTaps: TWO_POINTS,
+  },
   { element: 'number-line', seedTaps: CENTER, drag: { x: 120 } },
 ];
 

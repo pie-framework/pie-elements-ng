@@ -65,6 +65,8 @@ export async function selectFirstTool(root: Locator) {
 /** Tap the given fractional positions inside the graph. */
 export async function tapGraph(page: Page, root: Locator, points: GraphPoint[]) {
   const svg = await graphSvg(root);
+  // At phone width the graph can be wider than the page and scrolls; scroll it into view first.
+  await svg.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'center' }));
   const box = await svg.boundingBox();
   if (!box) {
     throw new Error('Graph SVG has no bounding box');
