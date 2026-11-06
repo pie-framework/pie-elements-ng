@@ -174,12 +174,12 @@ export class Graph extends React.Component {
     return (tool && tool.Component) || null;
   };
 
-  onBgClick: any = (point) => {
+  onBgClick: any = (point, rawPoint) => {
     const { x, y } = point || {};
     const { labelModeEnabled, currentTool, marks, gssLineData, onSolutionSetSelected } = this.props;
     if (gssLineData) {
       if (gssLineData.selectedTool === 'solutionSet') {
-        onSolutionSetSelected(point);
+        onSolutionSetSelected(point, rawPoint);
         return;
       }
       if (
