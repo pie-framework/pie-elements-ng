@@ -2,6 +2,7 @@
   "name": "@pie-lib/math-input-mathlive",
   "version": "2.0.0",
   "description": "MathLive-based math input (drop-in alternative to @pie-lib/math-input)",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
