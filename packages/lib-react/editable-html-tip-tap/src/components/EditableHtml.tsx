@@ -19,6 +19,7 @@ import { setPendingSaveFlush } from '../pending-save.js';
 import ExtendedTable from '../extensions/extended-table.js';
 import { ExtendedTableCell, ExtendedTableHeader } from '../extensions/extended-table-cell.js';
 import { DivNode } from '../extensions/div-node.js';
+import { InactiveCaret } from '../extensions/inactive-caret.js';
 import { EnsureEmptyRootIsDiv } from '../extensions/ensure-empty-root-div.js';
 import { EnsureListItemContentIsDiv } from '../extensions/ensure-list-item-content-is-div.js';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -373,6 +374,7 @@ export const EditableHtml = (props) => {
       showOnlyCurrent: false, // show on all empty nodes, not only the current one
       includeChildren: true,
     }),
+    InactiveCaret,
     ExtendedTable,
     TableRow,
     ExtendedTableHeader,
@@ -646,6 +648,15 @@ const StyledEditorContent: any = styled(EditorContent, {
 })(({ showParagraph, separateParagraph }) => ({
   display: 'flex',
   outline: 'none !important',
+  position: 'relative',
+
+  // The text cursor kept visible while the formatting toolbar has focus: steady, out of flow.
+  '& > .pie-inactive-caret': {
+    position: 'absolute',
+    width: 0,
+    borderLeft: '1px solid currentColor',
+    pointerEvents: 'none',
+  },
   '& .ProseMirror': {
     flex: 1,
     padding: '5px',
