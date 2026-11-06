@@ -44,7 +44,8 @@ import Translator from '@pie-lib/translator';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { createDragCollision, DragProvider } from '@pie-lib/drag';
 
-import { HorizontalTiler, VerticalTiler } from './tiler.js';
+import { HorizontalTiler, ScreenReaderText, VerticalTiler } from './tiler.js';
+import { cancelledMessage, focusLabel, getCounts, movedMessage, selectedMessage } from './announcements.js';
 import { DragPreview } from './tile.js';
 import { buildState, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
@@ -100,7 +101,7 @@ const releasedTileRect = (rect, pointer, activatorEvent) => {
   };
 };
 
-const getKeyboardDragOptions = (includeTargets) =>
+const getKeyboardDragOptions = (includeTargets, announcements) =>
   includeTargets
     ? {
         keyboardCoordinateGetter: closestDroppableKeyboardCoordinates,
@@ -110,6 +111,7 @@ const getKeyboardDragOptions = (includeTargets) =>
           end: ['Space', 'Enter'],
         },
         accessibility: {
+          announcements,
           screenReaderInstructions: {
             draggable:
               'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel.',
@@ -210,8 +212,12 @@ export class PlacementOrdering extends React.Component {
       selectedChoice: null,
       // The drag data of the tile being dragged, which the drag overlay draws.
       draggedTile: null,
+      // What the screen reader announces of the last change to the answer (spec rows 16 to 21).
+      announcement: '',
     };
     this.lastDragEndAt = 0;
+    // When the last placement was made, so the cancel it causes in a live keyboard drag is not announced.
+    this.lastPlacementAt = 0;
     // Records the pointer of the drag in progress, for onDragEnd.
     this.dragCollision = createDragCollision({ detect: placementAreaCollision });
 
@@ -344,6 +350,9 @@ export class PlacementOrdering extends React.Component {
     const from = ordering.tiles.find((t) => t.id === source.id && t.type === source.type && t.index === source.index);
     const to = target;
     log('[onDropChoice] ', from, to);
+    this.announce(
+      movedMessage(ordering.tiles, source, to) ?? cancelledMessage(source, getCounts(ordering.tiles)),
+    );
     const update = reducer({ type: 'move', from, to }, ordering);
     const sessionUpdate = Object.assign({}, session, {
       value: update.response,
@@ -355,6 +364,7 @@ export class PlacementOrdering extends React.Component {
   onRemoveChoice: any = (target, ordering) => {
     const { onSessionChange, session } = this.props;
     log('[onRemoveChoice]', target);
+    this.announce(movedMessage(ordering.tiles, target, { type: 'choice' }));
     const update = reducer({ type: 'remove', target }, ordering);
     const sessionUpdate = Object.assign({}, session, {
       value: update.response,
@@ -423,6 +433,9 @@ export class PlacementOrdering extends React.Component {
         // Removed straight back to the pool (dragged off with no valid drop target) —
         // the destination is the choice's own vacated slot, identified by its id.
         this.focusTile(this.getDestinationSlotId({ type: 'choice', id: draggedItem.id }));
+      } else if (draggedItem) {
+        // Dropped where nothing takes it, and nothing moved: the pick-up just ended
+        this.announce(cancelledMessage(draggedItem, getCounts(ordering.tiles)));
       }
     }
   };
@@ -443,10 +456,60 @@ export class PlacementOrdering extends React.Component {
   };
 
   onDragCancel: any = () => {
+    const { selectedChoice } = this.state;
+
+    if (selectedChoice && Date.now() - this.lastPlacementAt >= CLICK_AFTER_DRAG_GUARD_MS) {
+      this.announce(cancelledMessage(selectedChoice, getCounts(this.createOrdering().tiles)));
+    }
+
     this.setState({ draggedTile: null });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
   };
+
+  announce: any = (message) => {
+    if (message) {
+      // A live region only announces a change, so the same message twice in a row differs by a trailing space.
+      this.setState((state) => ({
+        announcement: state.announcement === message ? `${message}\u00a0` : message,
+      }));
+    }
+  };
+
+  // dnd-kit announces a keyboard drag through its own live region: what is selected as it is picked up,
+  // and where it is as it moves over each sort position (spec rows 10 to 15). What a drop or a cancel
+  // changes is announced by `announce` above, which the click path to the same changes shares, so dnd-kit's
+  // own messages for them are left empty.
+  getAnnouncements: any = () => {
+    const tileFor = (data, tiles) =>
+      data.type === 'target' ? tiles.find((t) => t.type === 'target' && t.index === data.index) : data;
+
+    return {
+      onDragStart: ({ active }) => {
+        const data = active?.data?.current;
+
+        return data ? selectedMessage(data, getCounts(this.createOrdering().tiles)) : undefined;
+      },
+      onDragOver: ({ active, over }) => {
+        const selected = active?.data?.current;
+        const data = over?.data?.current;
+
+        if (!selected || !data) return undefined;
+
+        // The unsorted list is only a stop in the cycle as the selected object's own place in it
+        if (data.type === 'choice' && data.id !== selected.id) return undefined;
+
+        const { tiles } = this.createOrdering();
+
+        return focusLabel(tileFor(data, tiles) || data, selected, getCounts(tiles));
+      },
+      onDragEnd: () => undefined,
+      onDragCancel: () => undefined,
+    };
+  };
+
+  // Built once: dnd-kit is handed the same object on every render, and each call reads the current answer.
+  announcements: any = this.getAnnouncements();
 
   isSameChoice = (a, b) => !!a && !!b && a.type === b.type && a.id === b.id && a.index === b.index;
 
@@ -476,6 +539,8 @@ export class PlacementOrdering extends React.Component {
   // (dnd-kit simply has no listener attached in that case, and the dispatch is a
   // no-op).
   endAnyLiveKeyboardDrag: any = () => {
+    // The drag is ended by the placement, not cancelled by the student, so it is not announced as cancelled.
+    this.lastPlacementAt = Date.now();
     document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
   };
 
@@ -602,6 +667,8 @@ export class PlacementOrdering extends React.Component {
       width: '100%',
     };
 
+    const keyboardDragOptions = getKeyboardDragOptions(includeTargets, this.announcements);
+
     const clickPlacementProps = includeTargets
       ? {
           selectedChoice: this.state.selectedChoice,
@@ -616,9 +683,14 @@ export class PlacementOrdering extends React.Component {
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
         collisionDetection={this.dragCollision.collisionDetection}
-        {...getKeyboardDragOptions(includeTargets)}
+        {...keyboardDragOptions}
       >
         <PlacementOrderingContainer ref={this.containerRef}>
+          {includeTargets && (
+            <ScreenReaderText role="status" aria-live="polite" aria-atomic="true">
+              {this.state.announcement}
+            </ScreenReaderText>
+          )}
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
               <StyledCollapsible

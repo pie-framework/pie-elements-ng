@@ -183,6 +183,7 @@ export const Tile = (props) => {
     selectedChoice,
     onChoiceClick,
     onPlacementClick,
+    ariaLabel,
   } = props;
 
   // Use type + tileIndex in the IDs to guarantee uniqueness in all modes.
@@ -357,6 +358,7 @@ export const Tile = (props) => {
       onMouseLeave={() => setIsHovered(false)}
       data-tile-id={dataTileId}
       {...(draggable && !disabled ? { ...listeners, ...attributes } : {})}
+      {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
     >
       <TileContent
         label={label}
@@ -391,6 +393,7 @@ Tile.propTypes = {
   selectedChoice: PropTypes.object,
   onChoiceClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
+  ariaLabel: PropTypes.string,
 };
 
 export default Tile;
