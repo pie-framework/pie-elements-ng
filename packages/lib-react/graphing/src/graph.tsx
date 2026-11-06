@@ -46,6 +46,8 @@ export const graphPropTypes = {
   title: PropTypes.string,
   tools: PropTypes.array,
   limitLabeling: PropTypes.bool,
+  // the most marks of each tool type a student can place, keyed by tool type; a tool without one is unlimited
+  markLimits: PropTypes.objectOf(PropTypes.number),
   language: PropTypes.string,
 };
 
@@ -201,9 +203,15 @@ export class Graph extends React.Component {
 
     const buildingMark = marks.filter((m) => m.building)[0];
     let updatedMark;
+    const continuesMark = buildingMark && buildingMark.type === currentTool.type;
+    const limit = this.props.markLimits?.[currentTool.type];
+
+    if (!continuesMark && Number.isFinite(limit) && marks.filter((m) => m.type === currentTool.type).length >= limit) {
+      return;
+    }
 
     // if the building mark has a different type, we just replace it
-    if (buildingMark && currentTool && buildingMark.type === currentTool.type) {
+    if (continuesMark) {
       updatedMark = currentTool.addPoint({ x, y }, { ...buildingMark });
     } else {
       updatedMark = currentTool.addPoint({ x, y }, undefined);
