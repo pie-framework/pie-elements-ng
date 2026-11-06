@@ -129,6 +129,9 @@ const LabelHolder = styled('span', { shouldForwardProp: (prop) => prop !== 'slan
 export class LatexLabel extends React.Component {
   static propTypes = {
     latex: PropTypes.string.isRequired,
+    // The button around the label names the key, so the drawing is hidden from
+    // assistive technology: an empty-slot box has no text a screen reader could read.
+    decorative: PropTypes.bool,
   };
 
   constructor(props) {
@@ -183,17 +186,21 @@ export class LatexLabel extends React.Component {
 
   render() {
     const { markup } = this.state;
+    const ariaHidden = this.props.decorative ? 'true' : undefined;
 
     // Fall back to the raw latex so a button is never blank.
     return markup ? (
       // eslint-disable-next-line react/no-danger
       <LabelHolder
         ref={this.labelRef}
+        aria-hidden={ariaHidden}
         slanted={SLANTED_LABELS.includes(this.props.latex)}
         dangerouslySetInnerHTML={{ __html: markup }}
       />
     ) : (
-      <LabelHolder slanted={SLANTED_LABELS.includes(this.props.latex)}>{this.props.latex}</LabelHolder>
+      <LabelHolder aria-hidden={ariaHidden} slanted={SLANTED_LABELS.includes(this.props.latex)}>
+        {this.props.latex}
+      </LabelHolder>
     );
   }
 }
@@ -433,7 +440,7 @@ export class KeyPad extends React.Component {
                 aria-label={ariaLabel}
                 {...extra}
               >
-                <LatexLabel latex={k.latex} />
+                <LatexLabel latex={k.latex} decorative={!!ariaLabel} />
               </StyledLatexButtonWrapper>
             );
           }

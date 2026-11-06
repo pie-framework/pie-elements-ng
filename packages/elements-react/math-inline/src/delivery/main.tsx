@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { mq, HorizontalKeypad, updateSpans, answerBlockLatex } from '@pie-lib/math-input-mathlive';
+import { mq, HorizontalKeypad, updateSpans, answerBlockLatex, fieldIds } from '@pie-lib/math-input-mathlive';
 import { Feedback as FeedbackImport, Collapsible as CollapsibleImport, Readable as ReadableImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -244,6 +244,10 @@ export class Main extends React.Component {
   componentDidMount() {
     this.handleAnswerBlockDomUpdate();
     setTimeout(() => renderMath(this.root), 100);
+    // The first click on an answer block lands before MathLive reports its focus,
+    // so the listener has to be there already.
+    this.focusedAnswerBlock = 'r1';
+    this.listenForKeypadOpen();
   }
 
   componentDidUpdate() {
@@ -274,14 +278,17 @@ export class Main extends React.Component {
     }, 0);
   };
 
-  handleKeyDown: any = (event, id) => {
+  handleKeyDown: any = (event) => {
+    const id = this.focusedAnswerBlock;
+    const holder = this.mqStatic?.holderRef?.current;
     const isTrigerredFromActualPieElement = isChildOfCurrentPieElement(event.target, this.root);
-    const isAnswerInputFocused =
-      this.mqStatic && this.mqStatic.holderRef?.current
-        ? this.mqStatic.holderRef.current.contains(document.activeElement)
-        : document.activeElement?.tagName === 'MATH-FIELD';
     const { key, type } = event;
     const isClickOrTouchEvent = type === 'click' || type === 'touchstart';
+    // MathLive focuses the field after the click event, so a click is judged by
+    // where it landed rather than by what has focus.
+    const isAnswerInputFocused = holder
+      ? holder.contains(document.activeElement) || (isClickOrTouchEvent && holder.contains(event.target))
+      : document.activeElement?.tagName === 'MATH-FIELD';
 
     if (isAnswerInputFocused && (key === 'ArrowDown' || isClickOrTouchEvent)) {
       if (this.state.activeAnswerBlock !== id && isTrigerredFromActualPieElement) {
@@ -299,22 +306,29 @@ export class Main extends React.Component {
   };
 
   onSubFieldFocus: any = (id) => {
+    // The keypad follows the block that has the caret.
+    this.focusedAnswerBlock = id;
+    this.listenForKeypadOpen();
+  };
+
+  listenForKeypadOpen: any = () => {
     if (!this.handleEvent) {
       this.handleEvent = (event) => {
-        this.handleKeyDown(event, id);
+        this.handleKeyDown(event);
       };
 
       document.addEventListener('keydown', this.handleEvent);
-      document.addEventListener('click', this.handleEvent);
-      document.addEventListener('touchstart', this.handleEvent);
+      // Captured: MathLive stops a click on the answer field inside its shadow root.
+      document.addEventListener('click', this.handleEvent, true);
+      document.addEventListener('touchstart', this.handleEvent, true);
     }
   };
 
   cleanupKeyDownListener: any = () => {
     if (this.handleEvent) {
       document.removeEventListener('keydown', this.handleEvent);
-      document.removeEventListener('click', this.handleEvent);
-      document.removeEventListener('touchstart', this.handleEvent);
+      document.removeEventListener('click', this.handleEvent, true);
+      document.removeEventListener('touchstart', this.handleEvent, true);
       this.handleEvent = null;
     }
   };
@@ -547,6 +561,7 @@ export class Main extends React.Component {
     const additionalKeys = generateAdditionalKeys(customKeys);
     const correct = correctness && correctness.correct;
     const staticLatex = prepareForStatic(model, this.state) || '';
+    const answerFieldShown = fieldIds(staticLatex).length > 0;
     const viewMode = disabled && !correctness;
     const studentPrintMode = printMode && !alwaysShowCorrect;
     const showRationale = rationale && (hasText(rationale) || hasMedia(rationale));
@@ -697,7 +712,8 @@ export class Main extends React.Component {
                     )}
                   >
                     <div>
-                      {this.renderInstructions()}
+                      {/* Instructions for the answer field, so only where there is one to type into. */}
+                      {answerFieldShown && this.renderInstructions()}
                       <mq.Static
                         className="static-math"
                         ref={(mqStatic) => {
@@ -705,7 +721,7 @@ export class Main extends React.Component {
                         }}
                         latex={staticLatex}
                         language={language}
-                        ariaDescribedBy={this.instructionsId()}
+                        ariaDescribedBy={answerFieldShown ? this.instructionsId() : undefined}
                         onSubFieldChange={this.subFieldChanged}
                         getFieldName={this.getFieldName}
                         setInput={this.setInput}

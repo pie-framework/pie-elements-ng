@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import debug from 'debug';
-import { NEWLINE_EMBED, toMathLive, withVisibleEmptySlots } from './latex-bridge.js';
+import { NEWLINE_EMBED, toAccessibleLatex, toMathLive, withVisibleEmptySlots } from './latex-bridge.js';
 import { ROOT_INDEX_CSS, PARALLEL_CSS } from './mf/common-styles.js';
 import { fixLongDivisionWhenReady } from './longdiv.js';
 
@@ -647,6 +647,51 @@ export function latexToMarkup(latex, options = {}) {
     log('convertLatexToMarkup failed for "%s": %s', latex, e.message);
     return '';
   }
+}
+
+/**
+ * Latex as MathML, for a text alternative to static markup, which has none of
+ * its own: a screen reader reads its glyphs in DOM order, so `\frac12` came out
+ * as "2 1".
+ *
+ * @param {string} latex stored latex
+ * @returns {string} a `<math>` element, or '' if MathLive is not loaded
+ */
+export function latexToMathMl(latex) {
+  const ml = getMathLive();
+
+  if (!ml?.convertLatexToMathMl || !latex) {
+    return '';
+  }
+
+  try {
+    const mathMl = ml.convertLatexToMathMl(toAccessibleLatex(toMathLive(latex)));
+
+    return mathMl ? `<math xmlns="http://www.w3.org/1998/Math/MathML">${mathMl}</math>` : '';
+  } catch (e) {
+    log('convertLatexToMathMl failed for "%s": %s', latex, e.message);
+    return '';
+  }
+}
+
+/**
+ * A new `<math-field>`, configured with the pie macros.
+ *
+ * Built through the registry, not with `new MathfieldElement()`: every IIFE
+ * bundle carries its own MathLive, and only the first one to load registers
+ * `math-field`. Constructing another copy's unregistered class throws "Illegal
+ * constructor", while `createElement` returns the registered one.
+ *
+ * @param {object} ml the loaded MathLive module
+ * @returns {HTMLElement}
+ */
+export function createMathField(ml) {
+  const registered = typeof customElements !== 'undefined' && customElements.get('math-field');
+  const mathField = registered ? document.createElement('math-field') : new ml.MathfieldElement();
+
+  mathField.macros = getMacros();
+
+  return mathField;
 }
 
 export { NEWLINE_EMBED };

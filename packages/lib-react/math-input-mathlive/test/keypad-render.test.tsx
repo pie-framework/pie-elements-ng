@@ -74,6 +74,19 @@ describe('KeyPad', () => {
     expect(container.textContent).toContain('\\pi');
   });
 
+  it('hides a named latex key\'s drawing from assistive technology, as the button names it', () => {
+    const { container } = render(<KeyPad onPress={() => {}} baseSet={[[{ name: 'pi', latex: '\\pi' }]]} />);
+    const button = container.querySelector('button[aria-label="pi"]');
+
+    expect(button?.querySelector('[aria-hidden="true"]')?.textContent).toContain('\\pi');
+  });
+
+  it('keeps the drawing of a latex key with no name, as it is the only label', () => {
+    const { container } = render(<KeyPad onPress={() => {}} baseSet={[[{ latex: '\\pi' }]]} />);
+
+    expect(container.querySelector('button [aria-hidden="true"]')).toBeNull();
+  });
+
   it('disables the decimal separators when noDecimal is set', () => {
     const dot = key({ name: '.', label: '.', write: '.' });
     const comma = key({ name: ',', label: ',', write: ',' });

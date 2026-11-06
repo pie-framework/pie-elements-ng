@@ -6,18 +6,32 @@ import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import {
   loadMathLive,
-  getMacros,
+  createMathField,
   latexToMarkup,
+  latexToMathMl,
   MATH_MODE_SPACE,
   applyShadowStyles,
   trackPlaceholderCaret,
 } from '../mathlive-instance.js';
 import { trackLongDivision, fixLongDivisionWhenReady } from '../longdiv.js';
 import { describeMathField, labelMathField } from './field-label.js';
-import { toMathLive, fromMathLive, fieldIds, keyToAction, KEYSTROKES } from '../latex-bridge.js';
+import {
+  toMathLive,
+  fromMathLive,
+  fieldIds,
+  fieldTemplate,
+  fieldValues,
+  fillFields,
+  keyToAction,
+  KEYSTROKES,
+} from '../latex-bridge.js';
 import { placeholderStyles, rootIndexStyles, parallelStyles } from './common-styles.js';
 
 const log = debug('pie-lib:math-input-mathlive:static');
+
+// Visually hidden, still read: the text alternative of display markup.
+const SR_ONLY =
+  'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
 
 const Holder = styled('span')({
   display: 'inline-block',
@@ -109,7 +123,7 @@ export default class Static extends React.Component {
       return;
     }
 
-    this.mathField = new ml.MathfieldElement({ macros: getMacros() });
+    this.mathField = createMathField(ml);
     labelMathField(this.mathField, this.props.language);
     describeMathField(this.mathField, this.props.ariaDescribedBy);
     this.mathField.readOnly = true;
@@ -133,11 +147,17 @@ export default class Static extends React.Component {
     this.untrackLongDivision = trackLongDivision(this.mathField);
 
     this.mathField.addEventListener('input', this.onPromptInput);
+    // Capture: MathLive handles the pointer inside its shadow root and stops it there.
+    this.mathField.addEventListener('pointerdown', this.onPointerDown, true);
     this.mathField.addEventListener('focusin', this.onPromptFocus);
+    this.mathField.addEventListener('selection-change', this.onSelectionChange);
     this.mathField.addEventListener('keydown', this.onKeyDown);
 
     // Belt and braces: drop anything a previous mount may have left behind.
     this.holderRef.current.replaceChildren(this.mathField);
+    // Its keyboard input only exists now that it is connected, and connecting resets the caret.
+    labelMathField(this.mathField, this.props.language);
+    this.parkCaret();
 
     this.createLiveRegion();
   }
@@ -169,11 +189,56 @@ export default class Static extends React.Component {
       return;
     }
 
-    if (this.mathField) {
-      this.mathField.value = toMathLive(this.props.latex);
-    } else {
+    if (!this.mathField) {
       this.renderMarkup();
+    } else if (fieldTemplate(this.props.latex) === fieldTemplate(prevProps.latex)) {
+      this.syncPrompts();
+    } else {
+      this.mathField.value = toMathLive(this.props.latex);
+      this.parkCaret();
     }
+  }
+
+  /**
+   * Put the caret at the start of the first answer block, without focusing.
+   *
+   * Setting `value` leaves the caret at the end, after every block. When the field
+   * then takes focus from Tab, MathLive looks for the next block after the caret,
+   * finds none, and moves focus on to the next element on the page: Tab skipped
+   * the field. With the caret in a block, MathLive leaves focus where it is.
+   */
+  parkCaret() {
+    if (!this.mathField || this.mathField.hasFocus?.()) {
+      return;
+    }
+
+    const [first] = this.mathField.getPrompts?.() || [];
+    const range = first && this.mathField.getPromptRange(first);
+
+    if (range) {
+      this.mathField.selection = { ranges: [[range[0], range[0]]] };
+    }
+  }
+
+  /**
+   * Put answers from the latex prop into their prompts, leaving alone any the
+   * field reported itself: the prop is usually the parent echoing the last
+   * `onSubFieldChange`, and reassigning the field moves the caret out of the
+   * prompt, so the next keys typed would be lost.
+   */
+  syncPrompts() {
+    const values = fieldValues(this.props.latex);
+
+    Object.keys(values).forEach((id) => {
+      const value = values[id];
+
+      if (value === this.promptValues[id] || value === fromMathLive(this.mathField.getPromptValue(id))) {
+        return;
+      }
+
+      this.mathField.setPromptValue(id, toMathLive(value), {});
+      this.promptValues[id] = value;
+    });
   }
 
   componentWillUnmount() {
@@ -197,13 +262,16 @@ export default class Static extends React.Component {
 
     if (this.mathField) {
       this.mathField.removeEventListener('input', this.onPromptInput);
+      this.mathField.removeEventListener('pointerdown', this.onPointerDown, true);
       this.mathField.removeEventListener('focusin', this.onPromptFocus);
+      this.mathField.removeEventListener('selection-change', this.onSelectionChange);
       this.mathField.removeEventListener('keydown', this.onKeyDown);
       this.mathField.remove();
       this.mathField = undefined;
     }
 
     this.promptValues = {};
+    this.focusedPrompt = undefined;
   }
 
   /**
@@ -293,7 +361,11 @@ export default class Static extends React.Component {
   }
 
   renderMarkup() {
-    const markup = latexToMarkup(this.props.latex);
+    const visual = latexToMarkup(this.props.latex);
+    const mathMl = visual && latexToMathMl(this.props.latex);
+    // Static markup reads as its glyphs in DOM order, so it is hidden from
+    // assistive technology in favour of MathML, as MathLive's own <math-span> does.
+    const markup = mathMl ? `<span aria-hidden="true">${visual}</span><span style="${SR_ONLY}">${mathMl}</span>` : visual;
 
     if (markup !== this.state.markup) {
       this.setState({ markup });
@@ -317,7 +389,9 @@ export default class Static extends React.Component {
 
   /** The whole field's latex, in stored form. MathQuill's `mathField.latex()`. */
   latex() {
-    return this.mathField ? fromMathLive(this.mathField.getValue('latex')) : '';
+    // The stored latex with the current answers: rebuilt from the prop rather than
+    // read back from MathLive, so everything outside the answers is kept as stored.
+    return this.mathField ? fillFields(this.props.latex, this.values()) : '';
   }
 
   /** Put the selection inside prompt `id`, unless it is there already, so edits land in it. */
@@ -438,7 +512,45 @@ export default class Static extends React.Component {
     this.promptValues = next;
   };
 
+  onPointerDown = () => {
+    // MathLive puts the caret where the pointer is; focusin must not move it.
+    this.pointerFocus = true;
+  };
+
   onPromptFocus = () => {
+    const pointer = this.pointerFocus;
+
+    this.pointerFocus = false;
+
+    if (!this.mathField) {
+      return;
+    }
+
+    // Focus from the keyboard (Tab) leaves the caret outside every prompt, where
+    // nothing can be typed: start in the first answer block.
+    if (!pointer && !this.promptContaining(this.caretOffset())) {
+      this.focusPrompt();
+    }
+
+    this.reportFocusedPrompt(true);
+  };
+
+  // The caret moving to another answer block (a click, Tab, an arrow key) fires
+  // no new focusin, since the blocks share one field.
+  onSelectionChange = () => {
+    // Only a caret the student moves: placing it without focus (see parkCaret) is no focus.
+    if (this.mathField?.hasFocus?.()) {
+      this.reportFocusedPrompt(false);
+    }
+  };
+
+  /**
+   * Tell the parent which answer block has the caret, through `setInput` and
+   * `onSubFieldFocus`, so keypad input goes to that block.
+   *
+   * @param {boolean} always report even when it is the block reported last
+   */
+  reportFocusedPrompt(always) {
     const { onSubFieldFocus, getFieldName } = this.props;
 
     if (!this.mathField || !onSubFieldFocus) {
@@ -446,36 +558,33 @@ export default class Static extends React.Component {
     }
 
     try {
-      const ids = this.mathField.getPrompts() || [];
-      // The focused prompt is the one containing the current selection.
-      const focused = ids.find((id) => {
-        const range = this.mathField.getPromptRange(id);
-        const selection = this.mathField.selection;
+      const focused = this.promptContaining(this.caretOffset());
 
-        if (!range || !selection || !selection.ranges || !selection.ranges.length) {
-          return false;
-        }
-
-        const [start, end] = range;
-        const [selStart] = selection.ranges[0];
-
-        return selStart >= start && selStart <= end;
-      });
-
-      if (focused) {
-        const handle = this.promptHandle(focused);
-        const name = getFieldName(handle, this.innerFields) || focused;
-
-        if (this.props.setInput) {
-          this.props.setInput(handle);
-        }
-
-        onSubFieldFocus(name, handle);
+      if (!focused || (!always && focused === this.focusedPrompt)) {
+        return;
       }
+
+      this.focusedPrompt = focused;
+
+      const handle = this.promptHandle(focused);
+      const name = getFieldName(handle, this.innerFields) || focused;
+
+      if (this.props.setInput) {
+        this.props.setInput(handle);
+      }
+
+      onSubFieldFocus(name, handle);
     } catch (e) {
       log('error resolving focused prompt: %s', e.message);
     }
-  };
+  }
+
+  /** Where the selection starts, which is the caret when nothing is selected. */
+  caretOffset() {
+    const selection = this.mathField?.selection;
+
+    return selection?.ranges?.length ? selection.ranges[0][0] : this.mathField?.position;
+  }
 
   /** The id of the prompt whose range contains `position`, if any. */
   promptContaining(position) {

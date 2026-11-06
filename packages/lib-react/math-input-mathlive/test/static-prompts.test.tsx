@@ -108,9 +108,17 @@ describe('Static: answer blocks / prompts', () => {
 
       expect(s.latex()).toEqual('');
 
-      s.mathField = { getValue: () => 'x=\\placeholder[r1]{2}' };
+      s.mathField = stubField({ r1: '2' });
 
       expect(s.latex()).toEqual('x=\\MathQuillMathField[r1]{2}');
+    });
+
+    it('keeps the latex around the answers exactly as stored', () => {
+      const s = make({ latex: '$\\MathQuillMathField[r1]{}' });
+
+      s.mathField = stubField({ r1: '\\frac{1}{2}' });
+
+      expect(s.latex()).toEqual('$\\MathQuillMathField[r1]{\\frac{1}{2}}');
     });
   });
 
@@ -227,6 +235,82 @@ describe('Static: answer blocks / prompts', () => {
     });
   });
 
+  describe('the caret before the field has focus', () => {
+    it('starts in the first block, so focus from Tab stays in the field', () => {
+      const s = make();
+
+      s.mathField = stubField({ r1: '', r2: '' }, { ranges: [[30, 30]] });
+      s.parkCaret();
+
+      expect(s.mathField.selection).toEqual({ ranges: [[0, 0]] });
+    });
+
+    it('is left alone while the field has focus', () => {
+      const s = make();
+
+      s.mathField = stubField({ r1: '', r2: '' }, { ranges: [[12, 12]] });
+      s.mathField.hasFocus = () => true;
+      s.parkCaret();
+
+      expect(s.mathField.selection).toEqual({ ranges: [[12, 12]] });
+    });
+
+    it('reports no focused block when it is placed without focus', () => {
+      const onSubFieldFocus = vi.fn();
+      const s = make({ onSubFieldFocus });
+
+      s.mathField = stubField({ r1: '', r2: '' }, { ranges: [[12, 12]] });
+      s.mathField.hasFocus = () => false;
+      s.onSelectionChange();
+
+      expect(onSubFieldFocus).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('a new latex prop while the field is live', () => {
+    const update = (s, latex) => {
+      const prevProps = s.props;
+
+      s.props = { ...s.props, latex };
+      // As mount() records it: the field is live.
+      s.interactive = true;
+      s.componentDidUpdate(prevProps, s.state);
+    };
+
+    it('leaves the field alone when the prop echoes what the student typed', () => {
+      const s = make({ latex: 'x=\\MathQuillMathField[r1]{4}' });
+
+      s.mathField = stubField({ r1: '41' });
+      s.mathField.value = 'untouched';
+      s.promptValues = { r1: '41' };
+      update(s, 'x=\\MathQuillMathField[r1]{41}');
+
+      expect(s.mathField.value).toEqual('untouched');
+      expect(s.mathField.values).toEqual({ r1: '41' });
+    });
+
+    it('puts an answer changed elsewhere into its prompt only', () => {
+      const s = make({ latex: 'x=\\MathQuillMathField[r1]{7}' });
+
+      s.mathField = stubField({ r1: '7' });
+      s.mathField.value = 'untouched';
+      s.promptValues = { r1: '7' };
+      update(s, 'x=\\MathQuillMathField[r1]{}');
+
+      expect(s.mathField.value).toEqual('untouched');
+      expect(s.mathField.values).toEqual({ r1: '' });
+    });
+
+    it('replaces the whole field when the latex around the answers changes', () => {
+      const s = make({ latex: 'x=\\MathQuillMathField[r1]{}' });
+
+      s.mathField = stubField({ r1: '' });
+      update(s, 'y=\\MathQuillMathField[r1]{}');
+
+      expect(s.mathField.value).toEqual('y=\\placeholder[r1]{}');
+    });
+  });
+
   describe('onSubFieldFocus', () => {
     it('reports the prompt containing the selection, plus setInput', () => {
       const onSubFieldFocus = vi.fn();
@@ -243,14 +327,45 @@ describe('Static: answer blocks / prompts', () => {
       expect(setInput).toHaveBeenCalled();
     });
 
-    it('does nothing without a selection', () => {
+    it('puts the caret in the first block when focus arrives outside every block, as Tab does', () => {
       const onSubFieldFocus = vi.fn();
       const s = make({ onSubFieldFocus });
 
-      s.mathField = stubField({ r1: '' }, null);
+      s.mathField = stubField({ r1: '', r2: '' }, null);
       s.onPromptFocus();
 
+      expect(s.mathField.selection).toEqual({ ranges: [[0, 0]] });
+      expect(onSubFieldFocus.mock.calls[0][0]).toEqual('r1');
+    });
+
+    it('leaves the caret where a click put it', () => {
+      const onSubFieldFocus = vi.fn();
+      const s = make({ onSubFieldFocus });
+
+      s.mathField = stubField({ r1: '', r2: '' }, { ranges: [[50, 50]] });
+      s.onPointerDown();
+      s.onPromptFocus();
+
+      expect(s.mathField.selection).toEqual({ ranges: [[50, 50]] });
       expect(onSubFieldFocus).not.toHaveBeenCalled();
+    });
+
+    it('follows the caret to another block, which fires no new focusin', () => {
+      const onSubFieldFocus = vi.fn();
+      const setInput = vi.fn();
+      const s = make({ onSubFieldFocus, setInput });
+
+      s.mathField = stubField({ r1: '', r2: '' }, { ranges: [[1, 1]] });
+      s.mathField.hasFocus = () => true;
+      s.onPromptFocus();
+      s.mathField.selection = { ranges: [[12, 12]] };
+      s.onSelectionChange();
+      // Moving within the same block reports nothing new.
+      s.mathField.selection = { ranges: [[13, 13]] };
+      s.onSelectionChange();
+
+      expect(onSubFieldFocus.mock.calls.map((c) => c[0])).toEqual(['r1', 'r2']);
+      expect(setInput.mock.calls.at(-1)[0].id).toEqual('r2');
     });
 
     it('does not throw when the field is missing', () => {

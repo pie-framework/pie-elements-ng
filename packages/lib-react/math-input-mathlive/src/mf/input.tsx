@@ -6,7 +6,7 @@ import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import {
   loadMathLive,
-  getMacros,
+  createMathField,
   MATH_MODE_SPACE,
   applyShadowStyles,
   trackPlaceholderCaret,
@@ -79,7 +79,7 @@ export class Input extends React.Component {
       return;
     }
 
-    this.mathField = new ml.MathfieldElement({ macros: getMacros() });
+    this.mathField = createMathField(ml);
     labelMathField(this.mathField, this.props.language);
     describeMathField(this.mathField, this.props.ariaDescribedBy);
     this.mathField.value = toMathLive(this.props.latex || '');
@@ -116,6 +116,8 @@ export class Input extends React.Component {
 
     // Belt and braces: drop anything a previous mount may have left behind.
     this.holderRef.current.replaceChildren(this.mathField);
+    // Its keyboard input only exists now that it is connected.
+    labelMathField(this.mathField, this.props.language);
 
     if (this.props.innerRef) {
       this.props.innerRef(this);

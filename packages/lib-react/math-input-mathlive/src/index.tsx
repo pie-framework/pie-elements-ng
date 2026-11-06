@@ -17,7 +17,7 @@ import {
   getMacros,
   PIE_MACROS,
 } from './mathlive-instance.js';
-import { toMathLive, fromMathLive, keyToAction, answerBlockLatex, NEWLINE_EMBED } from './latex-bridge.js';
+import { toMathLive, fromMathLive, fieldIds, keyToAction, answerBlockLatex, NEWLINE_EMBED } from './latex-bridge.js';
 
 const addLeftBracket = (s) => (s.indexOf('\\(') === 0 ? s : `\\(${s}`);
 const addRightBracket = (s) => (s.indexOf('\\)') === s.length - 2 ? s : `${s}\\)`);
@@ -60,6 +60,7 @@ export {
   PIE_MACROS,
   toMathLive,
   fromMathLive,
+  fieldIds,
   keyToAction,
   answerBlockLatex,
   NEWLINE_EMBED,

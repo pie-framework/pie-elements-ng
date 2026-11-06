@@ -37,6 +37,8 @@ vi.mock('../src/mathlive-instance', () => {
     applyShadowStyles: () => {},
     trackPlaceholderCaret: () => () => {},
     latexToMarkup: (l) => `<span>${l}</span>`,
+    latexToMathMl: () => '',
+    createMathField: (ml) => new ml.MathfieldElement(),
   };
 });
 

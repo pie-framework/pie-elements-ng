@@ -6,6 +6,10 @@ import {
   toMathLive,
   fromMathLive,
   fieldIds,
+  fieldTemplate,
+  fieldValues,
+  fillFields,
+  toAccessibleLatex,
   keyToAction,
   toNativeCommands,
   toCanonicalCommands,
@@ -104,6 +108,60 @@ describe('latex-bridge', () => {
 
     it('ignores escaped braces when matching the group', () => {
       expect(toMathLive('\\MathQuillMathField[r1]{\\{x\\}}')).toEqual('\\placeholder[r1]{\\{x\\}}');
+    });
+  });
+
+  describe('dollar signs', () => {
+    it('escapes a literal dollar, which MathLive would read as a math delimiter', () => {
+      expect(toMathLive('$\\MathQuillMathField[r1]{}')).toEqual('\\$\\placeholder[r1]{}');
+    });
+
+    it('leaves an escaped dollar alone', () => {
+      expect(toMathLive('\\$5')).toEqual('\\$5');
+    });
+  });
+
+  describe('line breaks inside a group', () => {
+    it('turns the blank lines of a print field into a one-column array', () => {
+      expect(toMathLive(`\\MathQuillMathField[r1]{a${NEWLINE_EMBED}b}`)).toEqual(
+        '\\placeholder[r1]{\\begin{array}{l}a \\\\ b\\end{array}}',
+      );
+    });
+
+    it('still makes top-level breaks displaylines rows', () => {
+      expect(toMathLive(`x${NEWLINE_EMBED}\\MathQuillMathField[r1]{a${NEWLINE_EMBED}b}`)).toEqual(
+        '\\displaylines{x \\\\ \\placeholder[r1]{\\begin{array}{l}a \\\\ b\\end{array}}}',
+      );
+    });
+  });
+
+  describe('answer field values', () => {
+    const stored = '$\\MathQuillMathField[r1]{\\frac{1}{2}}+\\MathQuillMathField[r2]{}';
+
+    it('reads each answer by id', () => {
+      expect(fieldValues(stored)).toEqual({ r1: '\\frac{1}{2}', r2: '' });
+    });
+
+    it('empties the answers to give the template', () => {
+      expect(fieldTemplate(stored)).toEqual('$\\MathQuillMathField[r1]{}+\\MathQuillMathField[r2]{}');
+    });
+
+    it('fills the answers, keeping everything else as stored', () => {
+      expect(fillFields(stored, { r2: '3' })).toEqual('$\\MathQuillMathField[r1]{\\frac{1}{2}}+\\MathQuillMathField[r2]{3}');
+    });
+  });
+
+  describe('toAccessibleLatex', () => {
+    it('keeps the answer in an answer block and drops its label', () => {
+      expect(toAccessibleLatex(`x+${answerBlockLatex('r1', '\\frac{1}{2}')}=3`)).toEqual('x+{{\\frac{1}{2}}}=3');
+    });
+
+    it('reads an empty response area as a blank', () => {
+      expect(toAccessibleLatex('x+\\answerBlock{r1}')).toEqual('x+\\square');
+    });
+
+    it('leaves plain latex alone', () => {
+      expect(toAccessibleLatex('\\frac12')).toEqual('\\frac12');
     });
   });
 

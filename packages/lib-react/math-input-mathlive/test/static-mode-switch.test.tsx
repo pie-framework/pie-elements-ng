@@ -23,6 +23,8 @@ vi.mock('../src/mathlive-instance', () => {
     applyShadowStyles: () => {},
     trackPlaceholderCaret: () => () => {},
     latexToMarkup: (l) => `<span class="markup">${l}</span>`,
+    latexToMathMl: (l) => `<math data-source="${l}"></math>`,
+    createMathField: (ml) => new ml.MathfieldElement(),
   };
 });
 
@@ -65,5 +67,14 @@ describe('Static switching between display and answer blocks', () => {
     await waitFor(() => expect(markup(container)).not.toBeNull());
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(mathField(container)).toBeNull();
+  });
+
+  it('hides display markup from assistive technology behind MathML', async () => {
+    const { container } = render(<Static latex={DISPLAY} />);
+
+    await waitFor(() => expect(markup(container)).not.toBeNull());
+    expect(markup(container).closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(container.querySelector('math').getAttribute('data-source')).toEqual(DISPLAY);
+    expect(container.querySelector('math').closest('[aria-hidden]')).toBeNull();
   });
 });

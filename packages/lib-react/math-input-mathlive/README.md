@@ -42,12 +42,18 @@ readable and MathJax rendering needs no change. Translation happens at the packa
 | `\embed{newLine}[]`         | `\displaylines{… \\ …}` |
 | `\MathQuillMathField[id]{}` | `\placeholder[id]{}`    |
 | `\embed{answerBlock}[id]`   | `\answerBlock{id}`      |
+| `$`                         | `\$`                    |
 
 `\answerBlock{id}` is a built-in macro: a box labelled "Response", tagged `data-response-area`, that
 serialises back unchanged and deletes as one atom. To show a submitted answer in the same box, build
 the latex with `answerBlockLatex(id, answer)`, which tags it `data-answer-block` and its label
 `data-answer-block-index`. This replaces rendering an empty embed and calling `applyStaticMath` on
 a span inside it, which has no MathLive equivalent.
+
+A line break inside a group, such as an answer field holding several lines, becomes a one-column
+`array`, because `\displaylines` rows only work at the top level. `mq.Static`'s `latex()` rebuilds
+the stored latex from its `latex` prop with the current answers filled in, so everything outside
+the answers comes back exactly as stored.
 
 `toMathLive()` / `fromMathLive()` are exported if you need the conversion directly.
 
@@ -76,6 +82,25 @@ decorates MathLive's own output, so an embed that mounted a custom widget needs 
   then stay empty while static math still renders.
 - **Loading.** MathLive is loaded with a dynamic `import()` marked `webpackMode: "eager"`, so a webpack
   host keeps it in its main bundle rather than a chunk that may not be served.
+- **Several bundles on a page.** Each IIFE bundle carries its own MathLive, and only the first to
+  load registers `math-field`. Fields are created with `document.createElement('math-field')`, so
+  they use whichever copy registered it; constructing another copy's class throws "Illegal
+  constructor".
+- **Focus after a click.** MathLive moves keyboard focus into a field 60ms after a click, so a key
+  typed sooner is lost. Tests should wait for the field to be focused before typing.
+- **Field semantics.** A field is a group named "Enter answer" in the item language, around
+  MathLive's keyboard input, a textbox in its shadow root that gets the same name. MathLive names
+  that textbox with the spoken math once it has focus. Keypad keys are named by their buttons, so
+  a LaTeX key's drawing is hidden from assistive technology.
+- **Answer blocks.** Static keeps the caret in the first answer block until the field has focus.
+  Otherwise MathLive, finding no block after the caret when focus arrives, moves focus on to the
+  next element, and Tab skips the field. Tab into a field with answer blocks puts the caret in the
+  first one. Static
+  reports the block holding the caret through `setInput` and `onSubFieldFocus` whenever the caret
+  moves to another block, since the blocks share one field and that fires no new `focusin`.
+- **Text alternative.** Static math in display mode has no accessible text of its own, so its markup
+  is `aria-hidden` and MathML is rendered beside it, visually hidden, as MathLive's `<math-span>`
+  does.
 - **Fonts.** Some symbols (`\neq`, `\nsim`, `\ncong`) are built from Private Use Area glyphs that exist
   only in the KaTeX fonts. With no `configureFonts()` call the fonts come from a version-pinned CDN
   (`https://unpkg.com/mathlive@<version>/fonts`); call `configureFonts('/path/to/fonts')` before the

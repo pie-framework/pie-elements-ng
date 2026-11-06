@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ROOT_INDEX_CSS } from '../src/mf/common-styles';
 describe('mathlive-instance', () => {
   let instance;
@@ -436,6 +436,58 @@ describe('mathlive-instance', () => {
       expect(seen.foo).toEqual('x');
       expect(seen.parallelogram).toBeDefined();
       expect(seen.answerBlock).toBeDefined();
+    });
+  });
+
+  describe('latexToMathMl', () => {
+    it('returns empty string when MathLive is not loaded', () => {
+      expect(instance.latexToMathMl('\\frac12')).toEqual('');
+    });
+
+    it('wraps the MathML of the latex without its display-only markup', () => {
+      let seen;
+
+      instance.__setMathLiveForTest({
+        convertLatexToMathMl: (l) => {
+          seen = l;
+          return '<mn>1</mn>';
+        },
+      });
+
+      expect(instance.latexToMathMl('\\htmlData{answer-block=r1}{\\boxed{12}}')).toEqual(
+        '<math xmlns="http://www.w3.org/1998/Math/MathML"><mn>1</mn></math>',
+      );
+      expect(seen).toEqual('{{12}}');
+    });
+  });
+
+  describe('createMathField', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('uses the registered math-field, which another bundle may have defined', () => {
+      const registered = document.createElement('div');
+      const MathfieldElement = vi.fn();
+
+      vi.stubGlobal('customElements', { get: (name) => (name === 'math-field' ? class {} : undefined) });
+      const createElement = vi.spyOn(document, 'createElement').mockReturnValue(registered);
+
+      const field = instance.createMathField({ MathfieldElement });
+
+      expect(createElement).toHaveBeenCalledWith('math-field');
+      expect(MathfieldElement).not.toHaveBeenCalled();
+      expect(field).toBe(registered);
+      expect(field.macros.answerBlock).toBeDefined();
+      createElement.mockRestore();
+    });
+
+    it('constructs the class when nothing is registered', () => {
+      class MathfieldElement {}
+
+      vi.stubGlobal('customElements', { get: () => undefined });
+
+      expect(instance.createMathField({ MathfieldElement })).toBeInstanceOf(MathfieldElement);
     });
   });
 });

@@ -23,6 +23,8 @@ vi.mock('../src/mathlive-instance', () => {
     applyShadowStyles: () => {},
     trackPlaceholderCaret: () => () => {},
     latexToMarkup: (l) => `<span>${l}</span>`,
+    latexToMathMl: () => '',
+    createMathField: (ml) => new ml.MathfieldElement(),
   };
 });
 
@@ -51,5 +53,19 @@ describe('math field name', () => {
     rerender(<Input latex="" language="es-ES" />);
 
     expect(mathField(container)).toHaveAccessibleName('Escribe la respuesta');
+  });
+
+  it('names the keyboard input inside the field, which the field\'s own label does not reach', async () => {
+    const { labelMathField } = await import('../src/mf/field-label');
+    const field = document.createElement('div');
+    const sink = document.createElement('span');
+
+    sink.className = 'ML__keyboard-sink';
+    field.attachShadow({ mode: 'open' }).append(sink);
+    labelMathField(field, 'es-ES');
+
+    expect(field.getAttribute('role')).toEqual('group');
+    expect(field.getAttribute('aria-label')).toEqual('Escribe la respuesta');
+    expect(sink.getAttribute('aria-label')).toEqual('Escribe la respuesta');
   });
 });

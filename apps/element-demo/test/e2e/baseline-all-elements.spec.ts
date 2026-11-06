@@ -540,9 +540,11 @@ async function assertAuthorAcceptsInput(page: Page, element: string) {
 async function assertMathGatherInput(page: Page, elementName: string) {
   await switchMode(page, 'gather');
   const root = page.locator('.delivery-view .element-container').first();
-  const mq = root.locator('.mq-editable-field').first();
-  if (await mq.isVisible().catch(() => false)) {
-    await mq.click();
+  const field = root.locator('math-field').first();
+  if (await field.isVisible().catch(() => false)) {
+    await field.click();
+    // MathLive takes focus a moment after the click; keys typed before then are lost.
+    await expect(field).toBeFocused();
     await page.keyboard.type('1');
     return;
   }

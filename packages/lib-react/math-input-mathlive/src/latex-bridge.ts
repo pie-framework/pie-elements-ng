@@ -145,6 +145,77 @@ const splitTopLevel = (latex, separator) => {
 };
 
 /**
+ * Line breaks inside a group (an answer field holding a multiline answer, or the
+ * blank lines of a print view) cannot be `\displaylines` rows, which only work
+ * at the top level. Each such group becomes a one-column array instead.
+ *
+ * @param {string} latex
+ * @returns {string}
+ */
+const nestedLineBreaksToArrays = (latex) => {
+  if (latex.indexOf(NEWLINE_EMBED) === -1) {
+    return latex;
+  }
+
+  let out = '';
+  let i = 0;
+
+  while (i < latex.length) {
+    const ch = latex[i];
+
+    if (ch === '\\') {
+      out += latex.slice(i, i + 2);
+      i += 2;
+      continue;
+    }
+
+    if (ch === '{') {
+      const close = groupEnd(latex, i);
+
+      if (close !== -1) {
+        const lines = splitTopLevel(nestedLineBreaksToArrays(latex.slice(i + 1, close)), NEWLINE_EMBED);
+
+        out += `{${lines.length > 1 ? `\\begin{array}{l}${lines.join(' \\\\ ')}\\end{array}` : lines[0]}}`;
+        i = close + 1;
+        continue;
+      }
+    }
+
+    out += ch;
+    i += 1;
+  }
+
+  return out;
+};
+
+/**
+ * A bare `$` is a literal dollar sign in stored latex (MathQuill and MathJax
+ * read it so), but MathLive's parser takes it as a math-mode delimiter and drops
+ * it. `\$` is the dollar sign to MathLive.
+ *
+ * @param {string} latex
+ * @returns {string}
+ */
+const escapeDollars = (latex) => {
+  if (latex.indexOf('$') === -1) {
+    return latex;
+  }
+
+  let out = '';
+
+  for (let i = 0; i < latex.length; i++) {
+    if (latex[i] === '\\') {
+      out += latex.slice(i, i + 2);
+      i += 1;
+    } else {
+      out += latex[i] === '$' ? '\\$' : latex[i];
+    }
+  }
+
+  return out;
+};
+
+/**
  * Unnamed placeholders, which MathLive inserts on its own.
  *
  * Typing a command with empty arguments (`\longdiv{}`, `\frac{}{}`) makes
@@ -404,6 +475,115 @@ export const fieldIds = (latex) => {
 };
 
 /**
+ * The answer in each answer block of stored latex, keyed by id.
+ *
+ * @param {string} latex
+ * @returns {Record<string, string>}
+ */
+export const fieldValues = (latex) => {
+  const out = {};
+
+  if (typeof latex === 'string') {
+    replaceFields(latex, MQ_FIELD, (id, content) => {
+      out[id || DEFAULT_FIELD_ID] = content;
+      return '';
+    });
+  }
+
+  return out;
+};
+
+/**
+ * Stored latex with every answer block emptied: what stays the same while a
+ * student types.
+ *
+ * @param {string} latex
+ * @returns {string}
+ */
+export const fieldTemplate = (latex) =>
+  typeof latex === 'string'
+    ? replaceFields(latex, MQ_FIELD, (id) => `${MQ_FIELD}[${id || DEFAULT_FIELD_ID}]{}`)
+    : latex;
+
+/**
+ * Stored latex with each answer block holding `values[id]`. Everything outside
+ * the blocks is kept exactly as stored, so it round-trips unchanged.
+ *
+ * @param {string} latex
+ * @param {Record<string, string>} values
+ * @returns {string}
+ */
+export const fillFields = (latex, values) =>
+  replaceFields(latex, MQ_FIELD, (id, content) => {
+    const key = id || DEFAULT_FIELD_ID;
+
+    return `${MQ_FIELD}[${key}]{${values[key] !== undefined ? values[key] : content}}`;
+  });
+
+/**
+ * Latex for a text alternative: the same expression without the display-only
+ * markup that MathLive's MathML and speech conversions drop with its content.
+ *
+ * - `\htmlData{...}{x}` keeps `x`, and `\boxed{x}` keeps `x`;
+ * - an answer block's "R" label goes, as it is decoration;
+ * - an empty response area reads as a blank.
+ *
+ * @param {string} latex MathLive latex, after `toMathLive`
+ * @returns {string}
+ */
+export const toAccessibleLatex = (latex) => {
+  if (typeof latex !== 'string' || !latex) {
+    return latex || '';
+  }
+
+  const unwrap = (input, command, fn) => {
+    let out = input;
+    let idx = out.indexOf(command);
+
+    while (idx !== -1) {
+      const open = idx + command.length;
+      const close = out[open] === '{' ? groupEnd(out, open) : -1;
+
+      if (close === -1) {
+        idx = out.indexOf(command, idx + command.length);
+        continue;
+      }
+
+      const replacement = fn(out, open, close);
+
+      out = out.slice(0, idx) + replacement.text + out.slice(replacement.end);
+      idx = out.indexOf(command, idx);
+    }
+
+    return out;
+  };
+
+  let out = latex.replace(ANSWER_BLOCK_MACRO_REGEX, '\\square');
+
+  // `\htmlData{key=value}{content}`: the label of an answer block goes, any other content stays.
+  out = unwrap(out, '\\htmlData', (text, open, close) => {
+    const key = text.slice(open + 1, close);
+    const contentOpen = close + 1;
+    const contentClose = text[contentOpen] === '{' ? groupEnd(text, contentOpen) : -1;
+
+    if (contentClose === -1) {
+      return { text: '', end: close + 1 };
+    }
+
+    if (/^answer-block-index=/.test(key)) {
+      // The label, and the space that separates it from the answer.
+      const space = text.slice(contentClose + 1).match(/^\s*\\enspace\s*/);
+
+      return { text: '', end: contentClose + 1 + (space ? space[0].length : 0) };
+    }
+
+    return { text: `{${text.slice(contentOpen + 1, contentClose)}}`, end: contentClose + 1 };
+  });
+
+  return unwrap(out, '\\boxed', (text, open, close) => ({ text: `{${text.slice(open + 1, close)}}`, end: close + 1 }));
+};
+
+/**
  * Convert stored latex (which may contain `\embed{newLine}[]`) into latex that
  * MathLive can parse and render as multiple lines.
  *
@@ -424,6 +604,11 @@ export const toMathLive = (latex) => {
 
   // Response areas: \embed{answerBlock}[id] -> \answerBlock{id}
   out = out.replace(ANSWER_BLOCK_EMBED_REGEX, (_m, id) => `\\answerBlock{${id}}`);
+
+  out = escapeDollars(out);
+
+  // Breaks inside a group: one-column arrays.
+  out = nestedLineBreaksToArrays(out);
 
   // Newlines: \embed{newLine}[] -> a multiline environment. Only top-level
   // breaks are rows; one inside a group (an answer box) is left alone.
