@@ -6,6 +6,17 @@ import { styled } from '@mui/material/styles';
 
 import Tile from './tile.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import {
+  endOfSorted,
+  endOfUnsorted,
+  focusLabel,
+  getCounts,
+  readingInstructions,
+  sortedHeading,
+  sortedObjectPrefix,
+  unsortedHeading,
+  unsortedObjectPrefix,
+} from './announcements.js';
 
 const types = {
   choiceLabel: PropTypes.string,
@@ -25,7 +36,29 @@ const defaults = {
   addGuide: false,
 };
 
+// Text for screen readers only, read in the place it sits in the document.
+export const ScreenReaderText: any = styled('span')({
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: -1,
+  padding: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+});
+
+// The tiles in document order are every choice, then every target. With placement areas, each is
+// preceded or followed by the text a screen reader reads as it goes through the item (spec rows 2 to 7),
+// and gets the label it announces on focus (rows 8, 9, 12 to 15).
 const buildTiles = (props) => {
+  const counts = props.includeTargets ? getCounts(props.tiles) : undefined;
+  const firstChoice = props.tiles.findIndex((t) => t.type === 'choice');
+  const firstTarget = props.tiles.findIndex((t) => t.type === 'target');
+  const lastChoice = props.tiles.reduce((last, t, i) => (t.type === 'choice' ? i : last), -1);
+  const lastTarget = props.tiles.length - 1;
+
   const T = (tile, index) => {
     tile.instanceId = props.instanceId;
     tile.disabled = props.disabled;
@@ -37,7 +70,21 @@ const buildTiles = (props) => {
     tile.onPlacementClick = props.onPlacementClick;
 
     if (props.includeTargets) {
-      return <Tile {...tile} key={index} />;
+      return (
+        <React.Fragment key={index}>
+          {/* the heading of the unsorted column is the choice label, which is read as it is */}
+          {index === firstChoice && <ScreenReaderText>{unsortedHeading(undefined, counts)}</ScreenReaderText>}
+          {/* the visible target label is hidden from screen readers, which read it here, in the order of the tiles */}
+          {index === firstTarget && <ScreenReaderText>{sortedHeading(props.targetLabel, counts)}</ScreenReaderText>}
+          {tile.type === 'choice' && !tile.empty && <ScreenReaderText>{unsortedObjectPrefix()}</ScreenReaderText>}
+          {tile.type === 'target' && !tile.empty && (
+            <ScreenReaderText>{sortedObjectPrefix(tile.index)}</ScreenReaderText>
+          )}
+          <Tile {...tile} ariaLabel={focusLabel(tile, props.selectedChoice, counts)} />
+          {index === lastChoice && <ScreenReaderText>{endOfUnsorted()}</ScreenReaderText>}
+          {index === lastTarget && <ScreenReaderText>{endOfSorted(props.disabled)}</ScreenReaderText>}
+        </React.Fragment>
+      );
     } else {
       return tile.type === 'choice' ? <Tile {...tile} key={index} /> : <Tile {...tile} label="" key={index} />;
     }
@@ -86,7 +133,7 @@ export class HorizontalTiler extends React.Component {
   static propTypes = { ...types };
   static defaultProps = { ...defaults };
   render() {
-    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize } = this.props;
+    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize, disabled } = this.props;
 
     const rows = includeTargets ? `auto ${tileSize} auto ${tileSize}` : `auto ${tileSize} auto`;
     const columns = includeTargets ? tiles.length / 2 : tiles.length;
@@ -104,12 +151,17 @@ export class HorizontalTiler extends React.Component {
 
     return (
       <StyledHTilerContainer includeTargets={includeTargets} style={style}>
+        {includeTargets && <ScreenReaderText>{readingInstructions(getCounts(tiles), disabled)}</ScreenReaderText>}
         <StyledChoiceLabel
           style={labelStyle}
           dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choiceLabelEnabled ? choiceLabel : '') }}
         />
         {includeTargets && (
-          <StyledTargetLabel style={labelStyle} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }} />
+          <StyledTargetLabel
+            aria-hidden="true"
+            style={labelStyle}
+            dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }}
+          />
         )}
         {tiles.map(buildTiles(this.props))}
       </StyledHTilerContainer>
@@ -121,7 +173,7 @@ export class VerticalTiler extends React.Component {
   static propTypes = { ...types };
   static defaultProps = { ...defaults };
   render() {
-    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize } = this.props;
+    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize, disabled } = this.props;
 
     const columns = includeTargets ? 2 : 1;
     const rows = includeTargets ? tiles.length / 2 : tiles.length;
@@ -135,11 +187,14 @@ export class VerticalTiler extends React.Component {
 
     return (
       <StyledVTilerContainer includeTargets={includeTargets} style={style}>
+        {includeTargets && <ScreenReaderText>{readingInstructions(getCounts(tiles), disabled)}</ScreenReaderText>}
         <StyledVChoiceLabel
           dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choiceLabelEnabled ? choiceLabel : '') }}
         />
 
-        {includeTargets && <StyledVTargetLabel dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }} />}
+        {includeTargets && (
+          <StyledVTargetLabel aria-hidden="true" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }} />
+        )}
         {tiles.map(buildTiles(this.props))}
       </StyledVTilerContainer>
     );
