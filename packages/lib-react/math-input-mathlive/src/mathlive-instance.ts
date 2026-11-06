@@ -1,0 +1,697 @@
+// @ts-nocheck
+
+import debug from 'debug';
+import { NEWLINE_EMBED, toAccessibleLatex, toMathLive, withVisibleEmptySlots } from './latex-bridge.js';
+import { ROOT_INDEX_CSS, PARALLEL_CSS } from './mf/common-styles.js';
+import { fixLongDivisionWhenReady } from './longdiv.js';
+
+const log = debug('pie-lib:math-input-mathlive:instance');
+
+/**
+ * MathLive bootstrap + compatibility shims for @pie-lib/math-input's public API.
+ *
+ * MathLive is loaded lazily and only in the browser: the editor bundle is
+ * ~227KB gzip and registers custom elements, so it must never run during SSR.
+ */
+
+let mathlive;
+
+/**
+ * Where the KaTeX woff2 fonts are served from, as configured by the host app.
+ * `undefined` means "not configured"; `null` means "explicitly disabled".
+ */
+let fontsDirectory;
+
+/**
+ * Turn a fonts path into a fully-qualified URL.
+ *
+ * MathLive's default `fontsDirectory` is the relative `'./fonts/'`, which it
+ * resolves against its own script URL. Under a bundler (webpack/Next) that
+ * script URL is empty, so `new URL('./fonts/', '')` throws
+ * "Failed to construct 'URL': Invalid base URL" from `loadFonts`.
+ * Resolving against `document.baseURI` avoids that entirely and honours any
+ * <base href> / asset prefix the host app uses.
+ */
+const absoluteFontsDirectory = (dir) => {
+  if (!dir) {
+    return dir;
+  }
+
+  // Already absolute (http://, https://, //cdn...) - MathLive handles these.
+  if (/^(?:[a-z+]+:)?\/\//i.test(dir)) {
+    return dir;
+  }
+
+  try {
+    return new URL(dir, document.baseURI).href;
+  } catch (e) {
+    log('could not resolve fontsDirectory "%s": %s', dir, e && e.message);
+    return null;
+  }
+};
+
+/**
+ * Version-pinned CDN fallback for the KaTeX fonts.
+ *
+ * Some symbols are composed from Private Use Area glyphs that exist only in
+ * those fonts: `\\neq` is U+E020 (a negation slash) overlapped on `=`, and
+ * `\\nsim` / `\\ncong` work the same way. With no fonts the browser substitutes
+ * an arbitrary glyph for U+E020, so those keys render as garbage rather than
+ * simply falling back to a plainer face.
+ *
+ * The version comes from MathLive itself, so the fonts always match the engine.
+ * Hosts that would rather not depend on a third party should serve the fonts and
+ * call `configureFonts('/their/path')`, or pass `null` to opt out.
+ */
+const FALLBACK_MATHLIVE_VERSION = '0.110.0';
+
+const cdnFontsDirectory = () => {
+  const version = (mathlive && mathlive.version && mathlive.version.mathlive) || FALLBACK_MATHLIVE_VERSION;
+
+  // NOTE: `/fonts`, not `/dist/fonts` - the published package root holds them.
+  return `https://unpkg.com/mathlive@${version}/fonts`;
+};
+
+/**
+ * Tell the package where the MathLive fonts are served from.
+ *
+ * Call before `loadMathLive()`.
+ *
+ *  - a path/URL: served by you, no third-party request
+ *  - `null`:     skip font loading; note `\\neq`, `\\nsim` and `\\ncong` then
+ *                render incorrectly, being built from Private Use Area glyphs
+ *  - not called: falls back to a version-pinned CDN
+ *
+ * The fonts ship inside the `mathlive` package (`node_modules/mathlive/fonts`)
+ * ready to copy into whatever the host app serves statically.
+ *
+ * @param {string|null} [dir]
+ */
+export const configureFonts = (dir) => {
+  fontsDirectory = dir;
+
+  if (mathlive) {
+    mathlive.MathfieldElement.fontsDirectory = dir === undefined ? cdnFontsDirectory() : absoluteFontsDirectory(dir);
+  }
+};
+
+/**
+ * What the spacebar inserts in math mode.
+ *
+ * MathLive's `mathModeSpace` defaults to an empty string, which makes the
+ * spacebar a no-op - users cannot type a space at all. `\\ ` (a LaTeX control
+ * space) is what MathQuill serialised spaces as, so existing content and the
+ * MathJax renderer in @pie-lib/math-rendering both already understand it.
+ *
+ * A literal " " is not usable: LaTeX skips raw whitespace.
+ */
+export const MATH_MODE_SPACE = '\\ ';
+
+/**
+ * Custom macros for the pie-specific commands that the MathQuill fork
+ * understood but stock LaTeX does not.
+ *
+ * Kept deliberately in sync with the MathJax macros in
+ * @pie-lib/math-rendering (`render-math.js`) so the same latex renders the same
+ * way in the editor and in the static renderer.
+ */
+export const PIE_MACROS = {
+  // Argument-less symbols. Atomic is correct here: backspace should remove the
+  // whole glyph, and there is nothing to type into.
+  parallelogram: '\\htmlData{pie-macro=parallelogram}{\\unicode{"25B1}}',
+  // Same glyph as the built-in `\\parallel` (U+2225), tagged so it can be sized -
+  // see `parallelStyles`.
+  parallel: '\\htmlData{pie-macro=parallel}{\\unicode{"2225}}',
+  napprox: '\\not\\approx',
+  nsim: '\\not\\sim',
+  ncong: '\\not\\cong',
+  nparallel: '\\not\\parallel',
+  perpendicular: '\\perp',
+  divide: '\\div',
+  degree: '^{\\circ}',
+  square: '\\unicode{"25A1}',
+
+  // Argument-taking commands, kept ONLY so previously authored latex still
+  // parses and renders. They are never used for editing: MathLive serialises a
+  // macro from the arguments it was created with, so text typed inside the
+  // expansion never comes back out of `getValue('latex')`. Anything entering a
+  // mathfield is rewritten to the native equivalent first - see
+  // `toNativeCommands` in latex-bridge.
+  longdiv: '\\enclose{longdiv}{#1}',
+  overarc: '\\overparen{#1}',
+  abs: '\\left|#1\\right|',
+
+  // A response area in an authored template, the MathLive form of
+  // `\embed{answerBlock}[id]` (see latex-bridge): a box labelled "Response", as
+  // the MathQuill embed drew it, tagged `data-response-area` with the id.
+  // `expand: false` serialises it as `\answerBlock{id}` again, and
+  // `captureSelection` keeps it one atom.
+  answerBlock: {
+    args: 1,
+    def: '\\htmlData{response-area=#1}{\\boxed{\\textsf{Response}}}',
+    captureSelection: true,
+    expand: false,
+  },
+};
+
+/**
+ * Registry for `registerEmbed`.
+ *
+ * MathLive has no embed plugin system, so an embed is expressed as a macro that
+ * expands to real LaTeX. `\htmlData{embed=<name>}` tags the rendered output so
+ * consumers can target it with CSS exactly as they targeted the old
+ * `htmlString` markup.
+ *
+ * Known embeds map to native constructs:
+ *  - `newLine`    -> structural, handled by latex-bridge (`\displaylines` + `\\`)
+ *  - `answerBlock`-> `\placeholder{}` (interactive, read via the prompts API)
+ *
+ * @type {Map<string, {factory: Function, latex: string}>}
+ */
+const embeds = new Map();
+
+const KNOWN_EMBED_LATEX = {
+  // newLine is structural: it is translated by latex-bridge before it ever
+  // reaches MathLive, so the macro only needs to be harmless.
+  newLine: '',
+  // answerBlock is a built-in macro (see PIE_MACROS); registering it changes nothing.
+  answerBlock: '',
+};
+
+let loadWarned = false;
+
+/** Apply post-load configuration exactly once. */
+const configureLoaded = () => {
+  // Always replace MathLive's relative `'./fonts/'` default: it throws
+  // "Invalid base URL" when bundled. Use the host's copy if one was configured,
+  // otherwise the version-pinned CDN.
+  if (fontsDirectory === undefined) {
+    log(
+      'no fontsDirectory configured - falling back to the CDN (%s). ' +
+        'Serve the fonts yourself and call configureFonts("/path/to/fonts") to avoid the network request, ' +
+        'or configureFonts(null) to opt out.',
+      cdnFontsDirectory(),
+    );
+  }
+
+  mathlive.MathfieldElement.fontsDirectory =
+    fontsDirectory === undefined ? cdnFontsDirectory() : absoluteFontsDirectory(fontsDirectory);
+
+  injectCoreStylesheet();
+};
+
+/**
+ * CSS that has to live *inside* a mathfield's shadow root.
+ *
+ * A live `<math-field>` renders in shadow DOM (`attachShadow({mode:'open'})`),
+ * so nothing in the host page's stylesheets reaches it. The stretchy-accent
+ * problem therefore needs fixing twice: once for static markup (see
+ * `placeholderStyles`) and once here for the editor.
+ *
+ * MathLive centres an accent with `margin-left: <half the content width>` as an
+ * inline style. For a stretchy accent that also shrinks its containing block
+ * (`.ML__center` is position:relative), so the arc ends up half-width and offset
+ * - visibly failing to span the text underneath.
+ *
+ * `:has(.ML__stretchy)` keeps the fix to stretchy accents; single-glyph accents
+ * (`\hat{x}`, `\vec{x}`) still need their centring offset.
+ */
+/**
+ * Marker put on the host `<math-field>` while a `\placeholder{}` is selected,
+ * so the caret rules below apply to a placeholder and nothing else.
+ */
+export const PLACEHOLDER_CARET_CLASS = 'pie-caret-in-placeholder';
+
+/** What MathLive serialises a `#?` slot as. */
+const PLACEHOLDER_LATEX = '\\placeholder{}';
+
+/**
+ * A blinking caret inside a selected placeholder box.
+ *
+ * A keypad key such as `\frac` inserts `\frac{#?}{#?}`. MathLive turns each
+ * `#?` into a `\placeholder{}` atom and *selects* the first one. That atom is a
+ * leaf - the offsets around it are "before" and "after", there is no position
+ * inside it - so MathLive renders **no caret element at all** and shows only
+ * the selection highlight. The box therefore looked focused (blue) but dead,
+ * where MathQuill used to blink a cursor inside its empty box.
+ *
+ * So the caret is drawn here. `:not(:has(.ML__selected))` picks the innermost
+ * selected element (MathLive puts the class on a wrapper *and* the glyph span,
+ * which would otherwise give two carets), and the `ML__caret-blink` keyframes
+ * plus `--_caret-color` are MathLive's own, already in this shadow root.
+ *
+ * Typing still replaces the whole placeholder, which for an empty box is
+ * indistinguishable from inserting at the caret.
+ */
+const PLACEHOLDER_CARET_CSS = [
+  `:host(.${PLACEHOLDER_CARET_CLASS}) .ML__selected:not(:has(.ML__selected)){position:relative}`,
+  `:host(.${PLACEHOLDER_CARET_CLASS}) .ML__selected:not(:has(.ML__selected))::after{`,
+  'content:"";position:absolute;left:50%;top:12%;height:76%;',
+  'border-right:2px solid var(--_caret-color, currentColor);',
+  'animation:ML__caret-blink 1.05s step-end forwards infinite}',
+].join('');
+
+// MathLive sets the bar of `\overline{}` lower than the shafts of the ray and line
+// arrows (stretchy accents), and its strut is shorter than theirs, which also
+// shifts the whole field vertically as the font grows. The bar is raised to the
+// shaft height (measured in a live <math-field> at 14-24px), drawn once at the
+// shafts' 0.04em, and the strut matches the arrows' (1.37em).
+const OVERLINE_BAR_MASK =
+  'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 522\' preserveAspectRatio=\'none\'%3E' +
+  '%3Crect y=\'241\' width=\'100\' height=\'40\'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat';
+
+const OVERLINE_LIFT = '-0.06em';
+
+const OVERLINE_GAP_CSS =
+  '.ML__latex .overline>.ML__vlist-t>.ML__vlist-r>.ML__vlist>span:has(>.overline-line){top:-4.07em !important}' +
+  // ...and its bar ~0.03em lower than the arrows' shafts.
+  '.ML__latex .overline:has(>.ML__vlist-t>.ML__vlist-r>.ML__vlist>span>span[style*="height:0.9em"])>.ML__vlist-t>.ML__vlist-r>.ML__vlist>span:has(>.overline-line){top:-4.1em !important}' +
+  // The bar and box move up together as one unit (the live field only; the keypad is fine).
+  `.ML__latex .overline{position:relative;top:${OVERLINE_LIFT}}` +
+  // An empty slot's box (0.9em tall, against 0.65em for text) ends up ~0.03em higher than in the arrows.
+  '.ML__latex .overline>.ML__vlist-t>.ML__vlist-r>.ML__vlist>span:has(>span[style*="height:0.9em"]){top:-2.97em !important}' +
+  // The bar is a CSS border, which the browser snaps to whole device pixels, so it
+  // renders crisper than the arrows' antialiased SVG shafts. Draw it the same way: a
+  // mask with the shaft's geometry (y 241-281 of a 522-high box), centred on the
+  // bar's own position.
+  `.ML__latex .overline .overline-line{position:relative}` +
+  `.ML__latex .overline .overline-line:before{content:"";display:block;position:absolute;left:0;right:0;top:-0.241em;` +
+  `height:0.522em !important;border:0 !important;background:currentColor;` +
+  `-webkit-mask:${OVERLINE_BAR_MASK};mask:${OVERLINE_BAR_MASK}}` +
+  '.ML__latex .overline .overline-line:after{display:none !important}' +
+  '.ML__latex:has(.overline)>.ML__strut{height:1.37em !important}';
+
+// An empty slot is a `▢` glyph in a 0.9em-tall box, which hangs lower than the
+// ink of text, so MathLive's bar ends up much nearer the denominator's box than
+// the numerator's (measured at 100px: 24px above the bar, 9px below). Raising the
+// bar 0.025em evens the gaps (measured on screen at authoring size: 1px above, 2px below at -0.075em, so it moves back down). The denominator is the first `.ML__center`
+// (MathLive emits it first); only fractions with an empty denominator are touched,
+// because `▢ over 2` is already balanced and filled fractions are MathLive's own.
+const FRAC_BAR_CENTER_CSS =
+  '.ML__latex .ML__mfrac:has(.ML__vlist>.ML__center:first-child span[style*="height:0.9em"]) .ML__frac-line' +
+  '{position:relative;top:-0.025em}';
+
+// A filled fraction (`55/555`) has its bar ~0.075em nearer the numerator's digits
+// than the denominator's (measured at 40px: 8.5px above, 11.5px below); drop it 0.04em.
+// Fractions with an empty slot (a 0.9em-tall box) are handled above.
+const FRAC_BAR_FILLED_CSS =
+  '.ML__latex .ML__mfrac:not(:has(span[style*="height:0.9em"])) .ML__frac-line{position:relative;top:0.04em}';
+
+// A live mathfield needs the readable radical index too: `rootIndexStyles` is
+// written for static markup in the host page, which cannot cross the shadow
+// boundary.
+const SHADOW_CSS =
+  '.ML__latex .ML__center:has(.ML__stretchy){margin-left:0 !important}' +
+  ROOT_INDEX_CSS +
+  PARALLEL_CSS +
+  OVERLINE_GAP_CSS +
+  FRAC_BAR_CENTER_CSS +
+  FRAC_BAR_FILLED_CSS +
+  PLACEHOLDER_CARET_CSS;
+
+/**
+ * Keep {@link PLACEHOLDER_CARET_CLASS} in step with the selection.
+ *
+ * Gating on the class is what keeps the caret specific to placeholders: an
+ * ordinary selection (`x+1`) must not sprout one. MathLive fires
+ * `selection-change` for every caret move, including the one that lands on the
+ * placeholder straight after an insert.
+ *
+ * @param {HTMLElement} mathField
+ * @returns {function|undefined} teardown, to call on unmount
+ */
+export const trackPlaceholderCaret = (mathField) => {
+  if (!mathField || typeof mathField.addEventListener !== 'function') {
+    return undefined;
+  }
+
+  const update = () => {
+    let selected = '';
+
+    try {
+      // A collapsed selection already has a real MathLive caret.
+      if (!mathField.selectionIsCollapsed && mathField.selection) {
+        selected = mathField.getValue(mathField.selection, 'latex');
+      }
+    } catch (e) {
+      log('could not read the selection: %s', e && e.message);
+    }
+
+    if (mathField.classList) {
+      mathField.classList.toggle(PLACEHOLDER_CARET_CLASS, selected === PLACEHOLDER_LATEX);
+    }
+  };
+
+  mathField.addEventListener('selection-change', update);
+  update();
+
+  return () => mathField.removeEventListener('selection-change', update);
+};
+
+/**
+ * Apply {@link SHADOW_CSS} inside a mathfield's shadow root.
+ *
+ * Uses `adoptedStyleSheets` when available (which is how MathLive loads its own
+ * stylesheets) and falls back to appending a <style> node.
+ *
+ * @param {HTMLElement} mathField
+ */
+export const applyShadowStyles = (mathField) => {
+  const root = mathField && mathField.shadowRoot;
+
+  if (!root) {
+    return;
+  }
+
+  try {
+    if ('adoptedStyleSheets' in root && typeof CSSStyleSheet !== 'undefined') {
+      // Do not re-add on a re-render.
+      if (root.__pieAccentSheet) {
+        return;
+      }
+
+      const sheet = new CSSStyleSheet();
+
+      sheet.replaceSync(SHADOW_CSS);
+      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+      root.__pieAccentSheet = sheet;
+
+      return;
+    }
+
+    if (!root.querySelector('style[data-pie-accent]')) {
+      const style = document.createElement('style');
+
+      style.setAttribute('data-pie-accent', '');
+      style.textContent = SHADOW_CSS;
+      root.appendChild(style);
+    }
+  } catch (e) {
+    log('could not apply shadow styles to the mathfield: %s', e && e.message);
+  }
+};
+
+/**
+ * Ensure MathLive's "core" stylesheet is in the document.
+ *
+ * `convertLatexToMarkup` - which renders keypad labels and static math - does
+ * NOT inject it, while `renderMathInElement` and live mathfields do. Without it
+ * the generated markup is unstyled: glyphs misalign and the <svg> used by
+ * stretchy accents lays out statically at an unbounded width.
+ *
+ * Hosts that can import CSS should `import 'mathlive/static.css'`. For bundles
+ * that cannot handle CSS imports (pie-elements ships JS-only web components),
+ * this triggers MathLive's own injection against a detached element, so the
+ * styles come from MathLive itself rather than being duplicated here.
+ */
+const injectCoreStylesheet = () => {
+  if (typeof document === 'undefined' || !mathlive || !mathlive.renderMathInElement) {
+    return;
+  }
+
+  try {
+    mathlive.renderMathInElement(document.createElement('span'));
+  } catch (e) {
+    log('could not trigger MathLive core stylesheet injection: %s', e && e.message);
+  }
+};
+
+let loading;
+
+/**
+ * The loaded MathLive, starting the load if it has not begun.
+ *
+ * This package is ESM, so there is no synchronous `require`: a caller that runs
+ * synchronously (applyStaticMath, keypad labels) gets undefined on the first
+ * pass and is expected to retry once {@link loadMathLive} resolves.
+ *
+ * Returns undefined during SSR or until the module has loaded.
+ *
+ * @returns {object|undefined}
+ */
+export const loadMathLiveSync = () => {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  if (!mathlive) {
+    loadMathLive();
+  }
+
+  return mathlive;
+};
+
+/**
+ * Load MathLive with a dynamic import. Resolves to undefined during SSR.
+ *
+ * `webpackMode: "eager"` keeps MathLive inside a webpack host's bundle: a
+ * separate chunk 404s on deployments that do not serve it, leaving every
+ * mathfield and keypad label blank with no obvious cause.
+ *
+ * @returns {Promise<object|undefined>}
+ */
+export const loadMathLive = async () => {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  if (mathlive) {
+    return mathlive;
+  }
+
+  loading ??= import(/* webpackMode: "eager" */ 'mathlive');
+
+  try {
+    const loaded = await loading;
+
+    if (!mathlive) {
+      mathlive = loaded;
+      configureLoaded();
+    }
+  } catch (e) {
+    loading = undefined;
+
+    // Surface this once: a silent failure here renders every field and keypad
+    // label blank, which is very hard to trace back to a module load.
+    // Skipped under test, where happy-dom cannot load the browser build.
+    if (!loadWarned && globalThis.process?.env?.NODE_ENV !== 'test') {
+      loadWarned = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[@pie-lib/math-input-mathlive] MathLive could not be loaded; math input will not render. ' +
+          'If this is a bundling issue, ensure "mathlive" is resolvable from the host bundle. Cause: ' +
+          (e && e.message),
+      );
+    }
+
+    return undefined;
+  }
+
+  return mathlive;
+};
+
+/**
+ * Synchronous accessor for an already-loaded MathLive.
+ * @returns {object|undefined}
+ */
+export const getMathLive = () => mathlive;
+
+/**
+ * The macro dictionary to hand to a mathfield: pie macros plus anything
+ * registered through `registerEmbed`.
+ *
+ * @returns {object}
+ */
+export const getMacros = () => {
+  const out = { ...PIE_MACROS };
+
+  embeds.forEach(({ latex }, name) => {
+    // A registration never replaces a built-in macro such as answerBlock.
+    if (!Object.prototype.hasOwnProperty.call(PIE_MACROS, name)) {
+      out[name] = `\\htmlData{embed=${name}}{${latex}}`;
+    }
+  });
+
+  return out;
+};
+
+/**
+ * Register an embed. API-compatible with @pie-lib/math-input's `registerEmbed`
+ * so existing callers do not change.
+ *
+ * MathQuill's factory returns `{ htmlString, text, latex }`. Only the
+ * declarative parts survive: `latex` round-trips through a macro and the
+ * styling hook becomes a `data-embed` attribute. Arbitrary DOM injection via
+ * `htmlString` has no MathLive equivalent and is ignored.
+ *
+ * @param {string} name
+ * @param {Function} factory
+ */
+export function registerEmbed(name, factory) {
+  if (!name || typeof factory !== 'function') {
+    return;
+  }
+
+  let definition = {};
+
+  try {
+    definition = factory() || {};
+  } catch (e) {
+    log('embed factory threw for "%s": %s', name, e.message);
+  }
+
+  const latex = Object.prototype.hasOwnProperty.call(KNOWN_EMBED_LATEX, name)
+    ? KNOWN_EMBED_LATEX[name]
+    : definition.mathliveLatex || '\\placeholder{}';
+
+  if (!Object.prototype.hasOwnProperty.call(KNOWN_EMBED_LATEX, name) && !definition.mathliveLatex) {
+    // Unknown third-party embed: degrade instead of throwing. `htmlString`
+    // cannot be reproduced, so it renders as an editable slot.
+    log(
+      'embed "%s" is not natively supported by MathLive; rendering as a placeholder. ' +
+        'Provide `mathliveLatex` in the factory result to control this.',
+      name,
+    );
+  }
+
+  embeds.set(name, { factory, latex });
+}
+
+/**
+ * Embeds registered so far. Exposed for tests/diagnostics.
+ * @returns {string[]}
+ */
+export const registeredEmbeds = () => Array.from(embeds.keys());
+
+/** Reset the embed registry. Test helper. */
+export const __resetEmbeds = () => embeds.clear();
+
+/** Inject a stub MathLive instance. Test helper. */
+export const __setMathLiveForTest = (stub) => {
+  mathlive = stub;
+};
+
+/**
+ * Render static math into an element. API-compatible with
+ * @pie-lib/math-input's `applyStaticMath`.
+ *
+ * Callers written against MathQuill invoke this synchronously from lifecycle
+ * methods, where MathLive (a dynamic import) may not have loaded yet. Rather
+ * than silently rendering nothing, this kicks off the load and re-applies once
+ * the engine is ready, so the element fills in on the next tick.
+ *
+ * @param {HTMLElement} element
+ * @param {string} [latex] assigned to the element before rendering
+ * @param {object} [options] `{ macros }` overrides
+ * @returns {HTMLElement|undefined} the element, or undefined if deferred
+ */
+export function applyStaticMath(element, latex, options = {}) {
+  if (!element || typeof window === 'undefined') {
+    return undefined;
+  }
+
+  // Capture the source now: if we defer, the element's textContent may have
+  // been overwritten by the time MathLive is ready.
+  const source = latex === undefined || latex === null ? element.textContent : latex;
+  const ml = getMathLive() || loadMathLiveSync();
+
+  if (!ml) {
+    log('applyStaticMath called before MathLive loaded - deferring until it is ready');
+
+    loadMathLive().then((loaded) => {
+      // The element may have been unmounted while loading.
+      if (loaded && element.isConnected !== false) {
+        applyStaticMath(element, source, options);
+      }
+    });
+
+    return undefined;
+  }
+
+  element.innerHTML = ml.convertLatexToMarkup(withVisibleEmptySlots(toMathLive(source)), {
+    macros: { ...getMacros(), ...(options.macros || {}) },
+  });
+
+  // MathLive misdraws long division (see longdiv.js).
+  fixLongDivisionWhenReady(element);
+
+  return element;
+}
+
+/**
+ * Convert latex to markup using the pie macro set. Used for keypad labels and
+ * any read-only rendering that does not need a live mathfield.
+ *
+ * @param {string} latex
+ * @param {object} [options]
+ * @returns {string} HTML markup, or '' if MathLive is not loaded
+ */
+export function latexToMarkup(latex, options = {}) {
+  // Try the synchronous load so the very first render can produce markup
+  // instead of falling back to raw latex.
+  const ml = getMathLive() || loadMathLiveSync();
+
+  if (!ml || !latex) {
+    return '';
+  }
+
+  try {
+    // Empty groups render as nothing in static markup, so give them a visible
+    // box. This covers every static path: keypad labels, mf.Static in display
+    // mode, and applyStaticMath.
+    return ml.convertLatexToMarkup(withVisibleEmptySlots(toMathLive(latex)), {
+      ...options,
+      macros: { ...getMacros(), ...(options.macros || {}) },
+    });
+  } catch (e) {
+    log('convertLatexToMarkup failed for "%s": %s', latex, e.message);
+    return '';
+  }
+}
+
+/**
+ * Latex as MathML, for a text alternative to static markup, which has none of
+ * its own: a screen reader reads its glyphs in DOM order, so `\frac12` came out
+ * as "2 1".
+ *
+ * @param {string} latex stored latex
+ * @returns {string} a `<math>` element, or '' if MathLive is not loaded
+ */
+export function latexToMathMl(latex) {
+  const ml = getMathLive();
+
+  if (!ml?.convertLatexToMathMl || !latex) {
+    return '';
+  }
+
+  try {
+    const mathMl = ml.convertLatexToMathMl(toAccessibleLatex(toMathLive(latex)));
+
+    return mathMl ? `<math xmlns="http://www.w3.org/1998/Math/MathML">${mathMl}</math>` : '';
+  } catch (e) {
+    log('convertLatexToMathMl failed for "%s": %s', latex, e.message);
+    return '';
+  }
+}
+
+/**
+ * A new `<math-field>`, configured with the pie macros.
+ *
+ * Built through the registry, not with `new MathfieldElement()`: every IIFE
+ * bundle carries its own MathLive, and only the first one to load registers
+ * `math-field`. Constructing another copy's unregistered class throws "Illegal
+ * constructor", while `createElement` returns the registered one.
+ *
+ * @param {object} ml the loaded MathLive module
+ * @returns {HTMLElement}
+ */
+export function createMathField(ml) {
+  const registered = typeof customElements !== 'undefined' && customElements.get('math-field');
+  const mathField = registered ? document.createElement('math-field') : new ml.MathfieldElement();
+
+  mathField.macros = getMacros();
+
+  return mathField;
+}
+
+export { NEWLINE_EMBED };

@@ -55,7 +55,7 @@ async function measure(page: Page): Promise<Measured> {
       'summary',
       'canvas',
       '[contenteditable="true"]',
-      '.mq-editable-field',
+      'math-field',
       '[role="button"]',
       '[role="checkbox"]',
       '[role="radio"]',
@@ -68,13 +68,15 @@ async function measure(page: Page): Promise<Measured> {
       '[tabindex]:not([tabindex^="-"])',
     ].join(',');
 
-    // Collects matches through open shadow roots, which querySelectorAll does not cross.
+    // Collects matches through open shadow roots, which querySelectorAll does not cross. A
+    // math-field is the tap target itself: its shadow root holds MathLive's zero-size keyboard
+    // sink, which is never tapped.
     const collect = (root: ParentNode, into: Element[]) => {
       for (const el of Array.from(root.querySelectorAll(SELECTOR))) {
         into.push(el);
       }
       for (const host of Array.from(root.querySelectorAll('*'))) {
-        if (host.shadowRoot) {
+        if (host.shadowRoot && host.tagName !== 'MATH-FIELD') {
           collect(host.shadowRoot, into);
         }
       }

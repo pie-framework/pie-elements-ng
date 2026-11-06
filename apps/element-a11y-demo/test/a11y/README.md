@@ -68,8 +68,11 @@ image role still needs a name.
 they take no pointer input, so the size of what they stand for is a manual check. It also
 skips `display: inline` targets, such as select-text's tokens, which the inline exception of
 WCAG 2.5.8 covers.
-`math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
-and counts only text that assistive technology reads.
+`math-alternative` evaluates each formula once, at its outermost MathJax or MathLive node,
+and counts only text that assistive technology reads. Math hidden from assistive technology is
+skipped: the math input's static math hides its glyphs and exposes MathML beside them.
+`keyboard-tab-reach` counts focus inside an open shadow root, such as the math input's keyboard
+input, as inside the scan subject.
 `keyboard-tab-reach` is left off the drawing-response, extended-text-entry, likert, math-inline
 and matrix evaluate scenarios: their evaluate views disable every control and render no other tab
 stop. math-inline shows its show-correct-answer toggle only for a wrong answer, and its sample's

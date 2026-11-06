@@ -11,7 +11,7 @@ import { isEqual } from '@pie-element/shared-lodash';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 
-import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input';
+import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input-mathlive';
 import { color } from '@pie-lib/render-ui';
 import { markFractionBaseSuperscripts } from './utils.js';
 
@@ -315,7 +315,9 @@ export class EditorAndPad extends React.Component {
     } else if (c.type === 'cursor') {
       this.input.keystroke(c.value);
     } else if (c.type === 'answer') {
-      this.input.write('%response%');
+      // `%` opens a LaTeX comment, so it is escaped; the field stores `\%response\%`, which the
+      // template's owner replaces with a response area.
+      this.input.write('\\%response\\%');
     } else {
       this.input.write(c.value);
     }
@@ -355,28 +357,21 @@ export class EditorAndPad extends React.Component {
       return;
     }
 
-    // eslint-disable-next-line no-useless-escape
-    const regexMatch = latex.match(/[0-9]\\ \\frac\{[^\{]*\}\{ \}/);
-
-    if (this.input && regexMatch && regexMatch?.length) {
-      try {
-        this.input.mathField.__controller.cursor.insLeftOf(this.input.mathField.__controller.cursor.parent[-1].parent);
-        this.input.mathField.el().dispatchEvent(new KeyboardEvent('keydown', { keyCode: 8 }));
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e.toString());
-      }
-
+    // A mixed number typed with a space (`1\ \frac{2}{}`): the input drops the space and reports
+    // the joined latex as a new change.
+    if (this.input && /[0-9]\\ \\frac\{[^{}]*\}\{\s*\}/.test(latex) && this.input.joinMixedNumber()) {
       return;
     }
 
     onChange(latex);
   };
 
-  /** Only render if the mathquill instance's latex is different
+  /** Only render if the editor's latex is different
    * or the keypad state changed from one state to the other (shown / hidden) */
   shouldComponentUpdate(nextProps, nextState) {
-    const inputIsDifferent = this.input.mathField.latex() !== nextProps.latex;
+    // MathLive loads asynchronously, so the input may not be ready yet; treat that as different
+    // so the first real render is not skipped.
+    const inputIsDifferent = !this.input || this.input.latex() !== nextProps.latex;
     log('[shouldComponentUpdate] ', 'inputIsDifferent: ', inputIsDifferent);
 
     if (!isEqual(this.props.error, nextProps.error)) {

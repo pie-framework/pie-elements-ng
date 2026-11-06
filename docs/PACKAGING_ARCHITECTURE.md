@@ -137,8 +137,10 @@ long time, so browser ESM must support it for compatibility.
 
 Library mode extracts every stylesheet the bundled code imports into a `.css` file and
 references it nowhere, and browser ESM hosts, `pie-players` and the legacy
-`@pie-framework/pie-print` client alike, load no element CSS. MathQuill's stylesheet shipped
-that way, and math-inline rendered `$$$` and a bare textarea.
+`@pie-framework/pie-print` client alike, load no element CSS, so an element whose library
+imports a stylesheet rendered unstyled. MathLive (`@pie-lib/math-input-mathlive`) imports none:
+it installs its own styles at runtime, inside each `<math-field>`'s shadow root and, for static
+markup, in the document.
 
 `tools/vite/browser-css-loader.ts`, which the React and Svelte browser and legacy print configs
 all use, compiles each extracted stylesheet into the chunks that import it and deletes the
@@ -157,12 +159,12 @@ literal `new URL("./assets/…", import.meta.url)`, which Vite, webpack and the 
 alike. Library mode inlines every asset as a data URI whatever its size; the plugin applies the
 app-build limit instead, keeping data URIs of 4 KiB or less inline and writing larger ones out.
 A `@font-face` rule with a WOFF2 source keeps only its `local()` and WOFF2 sources, because every
-browser that runs these modules reads WOFF2. MathQuill's Symbola font ships as one 148 KB file
-this way, where the extracted stylesheet embedded it in five formats and weighed 2.6 MB.
+browser that runs these modules reads WOFF2, so a font a stylesheet offers in several formats
+ships as one file rather than every format embedded in the stylesheet.
 
 Each `<style>` carries a hash of its stylesheet as `data-pie-css`, and a chunk skips a
-stylesheet the document already has, so the MathQuill stylesheet that most elements ship
-installs once however many of them a page loads.
+stylesheet the document already has, so a stylesheet that several elements ship installs once
+however many of them a page loads.
 
 The bundler-facing `dist/` builds and the IIFE builds keep their CSS imports for the consuming
 bundler, and are untouched.
