@@ -97,6 +97,14 @@ export interface ExplicitConstructedResponseModel extends PieModel {
    * @default true
    */
   maxLengthPerChoiceEnabled?: boolean;
+  /** Indicates if responses match answers regardless of case, with the content language's case fold */
+  ignoreCase?: boolean;
+  /** Indicates if responses match answers regardless of how much whitespace separates words */
+  collapseWhitespace?: boolean;
+  /** Indicates if responses match answers regardless of spacing around `/` */
+  ignoreSlashSpacing?: boolean;
+  /** Indicates if responses match answers regardless of accents */
+  ignoreAccents?: boolean;
   /** Indicates if Rubric is enabled */
   rubricEnabled?: boolean;
   /**
@@ -161,6 +169,14 @@ export interface ExplicitConstructedResponseConfiguration {
   alternates?: ConfigureProp;
   /** Maximum Length Per Choice Configuration: the settings panel control for `maxLengthPerChoiceEnabled` */
   maxLengthPerChoice?: ConfigureProp;
+  /** The settings panel control for `ignoreCase` */
+  ignoreCase?: ConfigureProp;
+  /** The settings panel control for `collapseWhitespace` */
+  collapseWhitespace?: ConfigureProp;
+  /** The settings panel control for `ignoreSlashSpacing` */
+  ignoreSlashSpacing?: ConfigureProp;
+  /** The settings panel control for `ignoreAccents` */
+  ignoreAccents?: ConfigureProp;
   /** Maximum number of response areas */
   maxResponseAreas?: number;
   /** Maximum image width for input fields */
