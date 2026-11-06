@@ -36,6 +36,7 @@ import { ToolbarIcon } from './respArea/ToolbarIcon.js';
 import { logicalAlignment, selectionDirection } from '../extensions/text-direction.js';
 import { writtenLanguage } from '../utils/content-languages.js';
 import { returnFocusToText } from '../utils/focus.js';
+import { insertTypedCharacter } from '../utils/toolbar-typing.js';
 import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
 import TextAlignControl from './icons/TextAlign.js';
 import ToolbarDisclosure from './ToolbarDisclosure.js';
@@ -259,6 +260,11 @@ function MenuBar({
       // button that is going away.
       returnFocusToText(editor);
       setShowPicker(false);
+      return;
+    }
+
+    if (insertTypedCharacter(editor, e)) {
+      e.stopPropagation();
       return;
     }
 

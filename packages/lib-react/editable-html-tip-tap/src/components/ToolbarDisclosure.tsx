@@ -28,11 +28,16 @@ export default function ToolbarDisclosure({ editor, label, trigger, options, onS
     if (!open || !editor) return;
 
     const close = () => setOpen(false);
-    editor.on('selectionUpdate', close);
+    // Typing from one of the options inserts at the cursor, which moves it: the group stays open
+    // while focus is in it, so focus is not left on a hidden button.
+    const closeUnlessFocused = () => {
+      if (!groupRef.current?.contains(document.activeElement)) close();
+    };
+    editor.on('selectionUpdate', closeUnlessFocused);
     editor.on('blur', close);
 
     return () => {
-      editor.off('selectionUpdate', close);
+      editor.off('selectionUpdate', closeUnlessFocused);
       editor.off('blur', close);
     };
   }, [open, editor]);
