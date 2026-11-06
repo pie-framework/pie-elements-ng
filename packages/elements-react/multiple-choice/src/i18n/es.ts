@@ -16,4 +16,5 @@ export default {
   answerChoicesA11y: 'Opciones de respuesta',
   partAnswerChoicesA11y: '{partLabel}, opciones de respuesta',
   pickTheAnswerBelowA11y: 'Seleccione la respuesta de abajo',
+  choiceNameA11y: 'Opción {key}',
 } satisfies MessageCatalog;

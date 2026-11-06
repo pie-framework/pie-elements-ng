@@ -21,4 +21,6 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, answer choices',
   /** Visually hidden note after a choice's key, naming a choice whose math is read in the content. */
   pickTheAnswerBelowA11y: 'Pick the answer below',
+  /** Visually hidden name of a choice with no text and no image description, from its key or position. */
+  choiceNameA11y: 'Choice {key}',
 };

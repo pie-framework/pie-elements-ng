@@ -15,4 +15,5 @@ export default {
   answerChoicesA11y: 'ตัวเลือกคำตอบ',
   partAnswerChoicesA11y: '{partLabel}, ตัวเลือกคำตอบ',
   pickTheAnswerBelowA11y: 'เลือกคำตอบด้านล่าง',
+  choiceNameA11y: 'ตัวเลือก {key}',
 } satisfies MessageCatalog;
