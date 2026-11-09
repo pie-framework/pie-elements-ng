@@ -221,9 +221,10 @@ export async function model(
   return out;
 }
 
-// Trimmed after decoding, so an encoded trailing space such as `&nbsp;` is trimmed too.
+// Trimmed before decoding so existing items keep their scores: an encoded space such as `&nbsp;`
+// counts unless the author turns on `collapseWhitespace`.
 export const prepareVal = (html: string | undefined) => {
-  return decodeHTML(getInnerText(html)).trim();
+  return decodeHTML(getInnerText(html).trim());
 };
 
 type MatchingModel = Pick<
