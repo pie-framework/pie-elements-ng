@@ -1,3 +1,5 @@
+import { globSync } from 'node:fs';
+import { join } from 'node:path';
 import { latexEqual } from '../index.js';
 import type { Opts } from '../options.js';
 
@@ -19,15 +21,18 @@ type FixtureModule = {
   tests: FixtureData[];
 };
 
+// Listed at run time: an `import.meta.glob` list is fixed when the file is transformed, and
+// vitest's transform cache then keeps serving it after a fixture file is added.
 // Narrow the run with vitest's own filters, for example `vitest -t PD-303`.
-const modules = import.meta.glob<FixtureModule>('../fixtures/latex-equal/**/*.ts', {
-  eager: true,
-  import: 'default',
-});
+const fixturesDir = join(import.meta.dirname, '../fixtures/latex-equal');
+const fixtureFiles = globSync('**/*.ts', { cwd: fixturesDir }).sort();
 
-const testData = Object.keys(modules)
-  .sort()
-  .map((f) => ({ data: modules[f], filename: f.replace(/^\.\.\//, 'src/') }));
+const testData = await Promise.all(
+  fixtureFiles.map(async (f) => ({
+    data: ((await import(join(fixturesDir, f))) as { default: FixtureModule }).default,
+    filename: `src/fixtures/latex-equal/${f}`,
+  }))
+);
 
 const skipTest = (root: FixtureModule, test: FixtureData) => {
   if (process.env.NO_SKIP) {
@@ -67,7 +72,6 @@ const optsLabel = (mode, o) => {
 };
 
 testData.forEach((d) => {
-  // console.log("d.data", d.data);
   describe(d.filename, () => {
     d.data.tests.forEach((t) => {
       const eq = t.eq ? (Array.isArray(t.eq) ? t.eq : [t.eq]) : [];
@@ -77,16 +81,13 @@ testData.forEach((d) => {
         return;
       }
       const skip = skipTest(d.data, t);
-      const only = onlyTest(d.data, t); //.only !== undefined ? d.data.only : t.only;
-      // console.log("skip?", skip, "only?", only);
+      const only = onlyTest(d.data, t);;
       const dfn = skip ? describe.skip : only ? describe.only : describe;
 
       const label = getLabel(t);
       const mode = t.mode || d.data.mode;
 
       dfn(`[${mode}] ${label}`, () => {
-        // console.log(t.label || t.target, "eq.length", eq.length);
-        // console.log("mode!!", mode);
         const l = optsLabel(mode, t.opts);
         eq.forEach((y) => {
           it(`== ${y} ${l}`, () => {
@@ -94,7 +95,6 @@ testData.forEach((d) => {
               mode,
               ...t.opts,
             });
-            // console.log(l);
             expect(l).toEqual(true);
           });
         });
