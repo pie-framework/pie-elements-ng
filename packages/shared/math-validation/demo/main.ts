@@ -1,4 +1,4 @@
-import { latexEqual as le, Opts } from "./latex-equal";
+import { latexEqual as le, type Opts } from "../src/index";
 
 export type Latex = string;
 
@@ -18,11 +18,11 @@ export const demo = () => {
   let ignoreOrder: HTMLInputElement;
 
   const getOptions = (mode, allowTrailingZeros, ignoreOrder) => {
-    if (mode == "literal" || mode == "symbolic") {
+    if (mode === "literal" || mode === "symbolic") {
       opts.mode = mode;
     }
 
-    if (opts.mode == "literal") {
+    if (opts.mode === "literal") {
       opts.literal = {
         allowTrailingZeros: false,
         ignoreOrder: false,
@@ -41,7 +41,7 @@ export const demo = () => {
   const showAndHideLiteralOptions = (mode) => {
     const literalOptions = document.querySelector("#literal-options");
 
-    if (mode.value == "literal") {
+    if (mode.value === "literal") {
       literalOptions.classList.remove("d-none");
     } else {
       literalOptions.classList.add("d-none");

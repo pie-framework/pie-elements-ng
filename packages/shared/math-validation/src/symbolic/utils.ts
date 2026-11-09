@@ -29,16 +29,16 @@ export const expressionsCanBeCompared = (
   let symbolNode: boolean = false;
   let seriesNode: boolean = false;
 
-  firstEquation.traverse(function (node, path, parent) {
+  firstEquation.traverse(function (node) {
     if (node.isSymbolNode) {
       firstSymbolNode = true;
-      seriesNode = seriesNode || node.name.includes("[");
+      seriesNode = seriesNode || node.name!.includes("[");
     }
     noFunctionOrArray =
-      noFunctionOrArray || node.isFunctionNode || node.isArrayNode;
+      noFunctionOrArray || !!node.isFunctionNode || !!node.isArrayNode;
   });
 
-  secondEquation.traverse(function (node, path, parent) {
+  secondEquation.traverse(function (node) {
     if (node.isFunctionNode || node.isArrayNode) {
       noFunctionOrArray = false;
     }
@@ -56,7 +56,7 @@ export const hasSymbolicExponent = (node: MathNode): boolean => {
     if (
       n.isOperatorNode &&
       n.op === "^" &&
-      !n.args[1]?.isConstantNode // Exponent is symbolic or compound
+      !n.args![1]?.isConstantNode // Exponent is symbolic or compound
     ) {
       found = true;
     }
@@ -306,13 +306,13 @@ export const transformEqualityInExpression = (equality: MathNode) =>
 export const getVariables = (equation: MathNode) => {
   let variableNames: string[] = [];
 
-  equation.traverse(function (node, path, parent) {
+  equation.traverse(function (node) {
     if (
       node.isSymbolNode &&
-      node?.name.length === 1 &&
-      !variableNames.includes(node.name)
+      node.name!.length === 1 &&
+      !variableNames.includes(node.name!)
     ) {
-      variableNames.push(node.name);
+      variableNames.push(node.name!);
     }
   });
 
@@ -326,10 +326,10 @@ export const getCoefficients = (equation: MathNode, isInequality: boolean) => {
     const rationalizedEquation = m.rationalize(equation, {}, true);
 
     let coefficients = rationalizedEquation.coefficients;
-    let allNegatives = coefficients.every((coefficient) => coefficient < 0);
+    let allNegatives = coefficients.every((coefficient: number) => coefficient < 0);
 
     return allNegatives
-      ? coefficients.map((coefficient) => Math.abs(coefficient))
+      ? coefficients.map((coefficient: number) => Math.abs(coefficient))
       : coefficients;
   } catch (e) {
     // rationalize may fail if variable is isolated in a fraction
@@ -411,7 +411,7 @@ export const solveQuadraticEquation = (coefficients: number[]) => {
 
 // solve x
 export const solveLinearEquation = (coefficients: number[]) => {
-  let result: number;
+  let result: number | undefined;
 
   if (!coefficients) {
     return undefined;

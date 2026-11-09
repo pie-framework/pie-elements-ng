@@ -2202,6 +2202,21 @@
         "vitest": "^5.0.5",
       },
     },
+    "packages/shared/math-validation": {
+      "name": "@pie-framework/math-validation",
+      "version": "1.4.3",
+      "dependencies": {
+        "debug": "^4.4.3",
+        "mathjs": "^9.4.2",
+      },
+      "devDependencies": {
+        "@types/debug": "^4.1.12",
+        "@types/mathjs": "^6.0.12",
+        "typescript": "^5.9.3",
+        "vite": "^8.3.5",
+        "vitest": "^5.0.5",
+      },
+    },
     "packages/shared/player-events": {
       "name": "@pie-element/shared-player-events",
       "version": "0.2.1",
@@ -2729,7 +2744,7 @@
 
     "@pie-element/video-stimulus": ["@pie-element/video-stimulus@workspace:packages/elements-svelte/video-stimulus"],
 
-    "@pie-framework/math-validation": ["@pie-framework/math-validation@1.4.3", "", { "dependencies": { "lodash": "^4.17.21", "mathjs": "^9.4.2" } }, "sha512-RB+mdDSMw/34ZbU9t6l3cwiNu5p8SYmTd1OkzkorWzxHgGM5Zcdd9YvdVC15hPktbh2U8Ai03xDHm6yFIwNa1Q=="],
+    "@pie-framework/math-validation": ["@pie-framework/math-validation@workspace:packages/shared/math-validation"],
 
     "@pie-framework/mathml-to-latex": ["@pie-framework/mathml-to-latex@1.4.4", "", { "dependencies": { "@xmldom/xmldom": "^0.8.10" } }, "sha512-jXOUH2NsfUEK+D8d5kVgIj3FANth9soCw6fXTLDDCss8IGnQ1RlFgXv9ReNfRnt9uCFYhlqRbNyU+k+c6J8nAA=="],
 
@@ -3048,6 +3063,8 @@
     "@types/js-yaml": ["@types/js-yaml@4.0.9", "", {}, "sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg=="],
 
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
+
+    "@types/mathjs": ["@types/mathjs@6.0.12", "", { "dependencies": { "decimal.js": "^10.0.0" } }, "sha512-bpKs8CDJ0aOiiJguywryE/U6Wre/uftJ89xhp4aCgF4oRb3Yug2VyZ87958gmSeq4WMsvWPMs2Q5TtFv+dJtaA=="],
 
     "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
@@ -3694,8 +3711,6 @@
     "loader-utils": ["loader-utils@2.0.4", "", { "dependencies": { "big.js": "^5.2.2", "emojis-list": "^3.0.0", "json5": "^2.1.2" } }, "sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw=="],
 
     "locate-character": ["locate-character@3.0.0", "", {}, "sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA=="],
-
-    "lodash": ["lodash@4.18.1", "", {}, "sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q=="],
 
     "lodash-es": ["lodash-es@4.18.1", "", {}, "sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A=="],
 

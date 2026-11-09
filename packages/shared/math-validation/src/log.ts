@@ -1,8 +1,6 @@
-export const logger = (name: string) => {
-  if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
-    const debug = require("debug");
-    return debug(name);
-  } else {
-    return () => {};
-  }
-};
+import debug from 'debug';
+
+const noop = () => {};
+
+export const logger = (name: string): ((...args: unknown[]) => void) =>
+  typeof process !== 'undefined' && process.env.NODE_ENV === 'test' ? debug(name) : noop;

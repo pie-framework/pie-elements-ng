@@ -1,9 +1,7 @@
 import { ParseError } from "./error";
 import lexer, { Token } from "./lexer";
 import { flatten } from "./flatten";
-import { logger } from "../log";
 
-const log = logger("mv:latex-to-ast");
 // UPDATETHIS: Delete or change to new license & package name
 
 /*
@@ -469,7 +467,7 @@ const appliedFunctionSymbolsDefault = [
   "arg",
 ];
 
-const missingFactorDefaultBehavior = function (token, e) {
+const missingFactorDefaultBehavior = function (_token: Token, e: Error): never {
   throw e;
 };
 
@@ -502,9 +500,9 @@ export const DEFAULT_OPTS: Opts = {
 };
 
 export class LatexToAst {
-  private unknownCommandBehavior: string;
+  private unknownCommandBehavior?: string;
   private lexer: lexer;
-  private token: Token;
+  private token!: Token;
   private opts: Opts;
   constructor(opts?: Partial<Opts>) {
     this.opts = { ...DEFAULT_OPTS, ...opts };
@@ -538,12 +536,12 @@ export class LatexToAst {
     };
   }
 
-  set_state(state) {
+  set_state(state: any) {
     this.lexer.set_state(state.lexer_state);
     this.token = Object.assign({}, state.token);
   }
 
-  public convert(input, pars?: any) {
+  public convert(input: string, pars?: any) {
     this.lexer.set_input(input);
     this.advance();
 
@@ -558,7 +556,7 @@ export class LatexToAst {
     return flatten(result);
   }
 
-  statement_list(pars?: any) {
+  statement_list(pars?: any): any {
     var list = [this.statement(pars)];
 
     while (this.token.token_type === ",") {
@@ -578,7 +576,7 @@ export class LatexToAst {
       inside_absolute_value?: number;
       unknownCommands?: string;
     } = {}
-  ) {
+  ): any {
     const { inside_absolute_value = 0, unknownCommands = "error" } = opts;
     // \ldots can be a statement by itself
     if (this.token.token_type === "LDOTS") {
@@ -586,7 +584,7 @@ export class LatexToAst {
       return ["ldots"];
     }
 
-    var original_state;
+    var original_state: any;
 
     try {
       original_state = this.return_state();
@@ -635,7 +633,7 @@ export class LatexToAst {
     }
   }
 
-  statement_a(opts: any = {}) {
+  statement_a(opts: any = {}): any {
     const {
       inside_absolute_value = 0,
       parse_absolute_value = true,
@@ -665,7 +663,7 @@ export class LatexToAst {
     return lhs;
   }
 
-  statement_b(params) {
+  statement_b(params: any): any {
     // split AND into second statement to give higher precedence than OR
 
     var lhs = this.relation(params);
@@ -683,7 +681,7 @@ export class LatexToAst {
     return lhs;
   }
 
-  relation(params) {
+  relation(params: any): any {
     if (this.token.token_type === "NOT" || this.token.token_type === "!") {
       this.advance();
       return ["not", this.relation(params)];
@@ -691,7 +689,7 @@ export class LatexToAst {
 
     var lhs = this.expression(params);
 
-    let relationalToken = (token) =>
+    let relationalToken = (token: string) =>
       token === "<" ||
       token === "LE" ||
       token === ">" ||
@@ -749,11 +747,11 @@ export class LatexToAst {
       if (inequality_sequence && relationalToken(this.token.token_type)) {
         let strict: (string | boolean)[] = ["tuple"];
 
-        strict.push(relationalOperator(operation));
+        strict.push(relationalOperator(operation)!);
         let args = ["tuple", lhs, rhs];
 
         while (relationalToken(this.token.token_type)) {
-          strict.push(relationalOperator(this.token.token_type));
+          strict.push(relationalOperator(this.token.token_type)!);
           this.advance();
           args.push(this.expression(params));
         }
@@ -775,7 +773,7 @@ export class LatexToAst {
     return lhs;
   }
 
-  expression(params) {
+  expression(params: any): any {
     if (this.token.token_type === "+") this.advance();
 
     let negative_begin = false;
@@ -822,13 +820,13 @@ export class LatexToAst {
     return lhs;
   }
 
-  term(params) {
-    var lhs;
+  term(params: any): any {
+    var lhs: any;
 
     try {
       lhs = this.factor(params);
     } catch (e) {
-      lhs = this.opts.missingFactor(this.token, e);
+      lhs = this.opts.missingFactor(this.token, e as Error);
       lhs = Number.isFinite(lhs) ? lhs : 0;
     }
 
@@ -864,7 +862,7 @@ export class LatexToAst {
     return lhs;
   }
 
-  factor(params) {
+  factor(params: any): any {
     // console.log("factor:", this.token);
     // console.log("before: lexer state:", this.lexer.return_state());
     if (this.token.token_type === "-") {
@@ -889,7 +887,7 @@ export class LatexToAst {
     }
   }
 
-  nonMinusFactor(params) {
+  nonMinusFactor(params: any): any {
     let result = this.baseFactor(params);
 
     // allow arbitrary sequence of factorials
@@ -925,11 +923,14 @@ export class LatexToAst {
   }
 
   fraction({
-    inside_absolute_value = 0,
     parse_absolute_value = true,
-    allow_absolute_value_closing = false,
     unknownCommands = "error",
-  }) {
+  }: {
+    inside_absolute_value?: number;
+    parse_absolute_value?: boolean;
+    allow_absolute_value_closing?: boolean;
+    unknownCommands?: string;
+  }): any {
     this.advance();
 
     if (this.token.token_type !== "{") {
@@ -986,8 +987,8 @@ export class LatexToAst {
     parse_absolute_value = true,
     allow_absolute_value_closing = false,
     unknownCommands = "error",
-  } = {}) {
-    var result = false;
+  } = {}): any {
+    var result: any = false;
 
     if (this.token.token_type === "MIXED_NUMBER") {
       try {
@@ -998,7 +999,7 @@ export class LatexToAst {
         // this is correct, to convert a mixed number to an improper fraction we have to multiply the demoninator by the whole number and add the result to the numerator
         return this.opts.keepMixedNumbers ? ["mixed", number, f] : ["+", number, f];
       } catch (e) {
-        throw new ParseError(`Mixed number parsing failed: ${e.message}`);
+        throw new ParseError(`Mixed number parsing failed: ${(e as Error).message}`);
       }
     }
 
@@ -1016,7 +1017,7 @@ export class LatexToAst {
     if (this.token.token_type === "BEGINENVIRONMENT") {
       let environment = /\\begin\s*{\s*([a-zA-Z0-9]+)\s*}/.exec(
         this.token.token_text
-      )[1];
+      )![1];
 
       if (["matrix", "pmatrix", "bmatrix"].includes(environment)) {
         let n_rows = 0;
@@ -1057,6 +1058,7 @@ export class LatexToAst {
             this.advance();
           } else {
             if (
+              // biome-ignore lint/correctness/noConstantCondition: always true as inherited; tightening it would change what parses.
               last_token === "&" ||
               last_token === "LINEBREAK" ||
               "BEGINENVIRONMENT"
@@ -1081,7 +1083,7 @@ export class LatexToAst {
         // token is ENDENVIRONMENT
         let environment2 = /\\end\s*{\s*([a-zA-Z0-9]+)\s*}/.exec(
           this.token.token_text
-        )[1];
+        )![1];
         if (environment2 !== environment) {
           throw new ParseError(
             "Expecting \\end{" + environment + "}",
@@ -1129,7 +1131,7 @@ export class LatexToAst {
       // @ts-ignore
       result = this.token.token_text.replace(/,/g, "");
 
-      let removeLeadingZeros = (result) =>
+      let removeLeadingZeros = (result: string) =>
         result.indexOf(".") >= 0
           ? result.replace(/^[0]*([0-9])(.*)/, "$1$2")
           : result.replace(/0*([1-9]*)/, "$1");
@@ -1153,7 +1155,7 @@ export class LatexToAst {
           // @ts-ignore
           .substring(p.length)
           .split("")
-          .filter((c) => c === "0");
+          .filter((c: string) => c === "0");
         const noOfTrailingZeros = sub.length;
 
         // @ts-ignore
@@ -1193,7 +1195,7 @@ export class LatexToAst {
       this.advance();
 
       let root = 2;
-      let parameter;
+      let parameter: any;
       // @ts-ignore
       if (this.token.token_type === "[") {
         this.advance();
@@ -1211,7 +1213,7 @@ export class LatexToAst {
       }
 
       // @ts-ignore
-      if (this.token.token_type == "{") {
+      if (this.token.token_type === "{") {
         this.advance();
         parameter = this.statement({
           parse_absolute_value: parse_absolute_value,
@@ -1240,7 +1242,7 @@ export class LatexToAst {
     ) {
       // function log(x) in JS returns ln(x)
       let base = this.token.token_type === "LOG" ? 10 : "e";
-      let parameter;
+      let parameter: any;
 
       this.advance();
       // @ts-ignore
@@ -1263,7 +1265,7 @@ export class LatexToAst {
       }
 
       // @ts-ignore
-      if (this.token.token_type == "(") {
+      if (this.token.token_type === "(") {
         this.advance();
         parameter = this.statement({
           parse_absolute_value: parse_absolute_value,
@@ -1379,7 +1381,7 @@ export class LatexToAst {
 
         // @ts-ignore
         if (this.token.token_type === "{" || this.token.token_type === "(") {
-          let expected_right;
+          let expected_right: any;
           if (this.token.token_type === "{") expected_right = "}";
           else expected_right = ")";
 
@@ -1427,7 +1429,7 @@ export class LatexToAst {
       this.token.token_type === "LBRACE"
     ) {
       let token_left = this.token.token_type;
-      let expected_right, other_right;
+      let expected_right: any, other_right: any;
       if (this.token.token_type === "(") {
         expected_right = ")";
         other_right = "]";
@@ -1466,7 +1468,7 @@ export class LatexToAst {
         result[0] = "list";
         // @ts-ignore
         result = ["interval", result];
-        let closed;
+        let closed: any;
         if (token_left === "(") closed = ["list", false, true];
         else closed = ["list", true, false];
         // @ts-ignore
@@ -1620,7 +1622,7 @@ export class LatexToAst {
     // @ts-ignore
     else if (this.token.token_type === "VARMULTICHAR") {
       // strip out name of variable from \var command
-      var1 = /\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(this.token.token_text)[1];
+      var1 = /\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(this.token.token_text)![1];
     } else if (this.token.token_type === "LATEXCOMMAND") {
       result = this.token.token_text.slice(1);
       // @ts-ignore
@@ -1681,7 +1683,7 @@ export class LatexToAst {
       else if (this.token.token_type === "VARMULTICHAR") {
         // strip out name of variable from \var command
         var2s.push(
-          /\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(this.token.token_text)[1]
+          /\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(this.token.token_text)![1]
         );
       } else if (this.token.token_type === "LATEXCOMMAND") {
         let r = this.token.token_text.slice(1);
@@ -1759,7 +1761,7 @@ export class LatexToAst {
         // @ts-ignore
         else result.push(["tuple", var1, n_deriv]);
 
-        let r2 = [];
+        let r2: any[] = [];
         for (let i = 0; i < var2s.length; i += 1) {
           if (var2_exponents[i] === 1) r2.push(var2s[i]);
           else r2.push(["tuple", var2s[i], var2_exponents[i]]);

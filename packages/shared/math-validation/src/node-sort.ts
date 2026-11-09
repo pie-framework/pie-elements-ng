@@ -23,7 +23,7 @@ const newCompare = (a: MathNode, b: MathNode): number => {
 
   if (a.isSymbolNode && b.isSymbolNode) {
     // log(a.name, "> ", b.name);
-    return a.name.localeCompare(b.name);
+    return a.name!.localeCompare(b.name!);
   }
 
   // both constants - sort by value
@@ -52,9 +52,9 @@ const newCompare = (a: MathNode, b: MathNode): number => {
   }
 
   if (a.isOperatorNode && b.isOperatorNode) {
-    const localeCompareResult = a.args
+    const localeCompareResult = a.args!
       .toString()
-      .localeCompare(b.args.toString());
+      .localeCompare(b.args!.toString());
 
     return -localeCompareResult;
   }
@@ -62,6 +62,9 @@ const newCompare = (a: MathNode, b: MathNode): number => {
   if (!a.isFunctionNode && b.isFunctionNode) {
     return -1;
   }
+
+  // An unordered pair: sort() reads NaN as 0, and sortRelationalNode's `> -1` is false for it.
+  return NaN;
 };
 
 const applySort = (node: MathNode) => {
@@ -69,21 +72,19 @@ const applySort = (node: MathNode) => {
   // log("path: ", path);
   // log("parent: ", parent);
   if (node.fn === "add" || node.fn === "multiply") {
-    node.args = node.args.sort(newCompare);
+    node.args = node.args!.sort(newCompare);
     node.args = node.args.map(applySort);
   }
 
   return node;
 };
 
-const firstChildOperator = (args: any, operator: string) => {
+const firstChildOperator = (args: any, operator?: string) => {
   let result = false;
-  args.forEach((arg) => {
+  args.forEach((arg: any) => {
     if (arg.fn === operator) {
       result = true;
     }
-
-    return result;
   });
 
   return result;
@@ -94,25 +95,25 @@ export const flattenNode = (node: MathNode) => {
     node = node.content;
   }
 
-  node = node.transform((currentNode, path, parent) => {
+  node = node.transform((currentNode, _path, parent) => {
     if (
       currentNode.isParenthesisNode &&
-      (parent?.op != "*" ||
-        (parent?.op == "*" && currentNode.content.op != "+"))
+      (parent?.op !== "*" ||
+        (parent?.op === "*" && currentNode.content!.op !== "+"))
     ) {
-      while (currentNode.isParenthesisNode) currentNode = currentNode.content;
+      while (currentNode.isParenthesisNode) currentNode = currentNode.content!;
     }
 
     return currentNode;
   });
 
-  if (node.fn === "multiply" && node["implicit"]) {
-    node["implicit"] = false;
+  if (node.fn === "multiply" && (node as any).implicit) {
+    (node as any).implicit = false;
   }
 
   let resultNode = node;
 
-  resultNode = resultNode.transform((currentNode, path, parent) => {
+  resultNode = resultNode.transform((currentNode) => {
     while (
       firstChildOperator(currentNode, currentNode.fn) &&
       !currentNode.isArrayNode
@@ -123,18 +124,18 @@ export const flattenNode = (node: MathNode) => {
         if (parent?.fn === node.fn) {
           const indexToRemove = path.replace(/[^0-9]/g, "");
 
-          parent.args.splice(+indexToRemove, 1) || [];
+          parent.args!.splice(+indexToRemove, 1) || [];
 
-          let argstoAdd = parent.args;
+          let argstoAdd = parent.args!;
 
-          node.args.forEach((arg) => {
+          node.args!.forEach((arg) => {
             argstoAdd.push(arg);
           });
 
           node = new m.OperatorNode(node.op, node.fn, argstoAdd);
 
-          if (node.fn === "multiply" && node["implicit"]) {
-            node["implicit"] = false;
+          if (node.fn === "multiply" && (node as any).implicit) {
+            (node as any).implicit = false;
           }
         }
         return node;
@@ -144,7 +145,7 @@ export const flattenNode = (node: MathNode) => {
     return currentNode;
   });
 
-  resultNode = resultNode.transform((currentNode, path, parent) => {
+  resultNode = resultNode.transform((currentNode) => {
     if (
       currentNode.fn === "multiply" &&
       firstChildOperator(currentNode.args, "divide")
@@ -155,35 +156,33 @@ export const flattenNode = (node: MathNode) => {
         divisionNode.fn === "multiply" &&
         firstChildOperator(divisionNode, "divide")
       ) {
-        let newNode: MathNode;
-        divisionNode = divisionNode.traverse((node, path, parent) => {
+        let newNode!: MathNode;
+        divisionNode = divisionNode.traverse((node, _path, parent) => {
           if (parent && parent.fn === "multiply" && node.fn === "divide") {
-            if (node.args[0].isOperatorNode) {
-              parent.args.forEach((arg) => {
+            if (node.args![0].isOperatorNode) {
+              parent.args!.forEach((arg) => {
                 if (!arg.isOperatorNode) {
-                  node.args[0].args.push(arg);
+                  node.args![0].args!.push(arg);
                 }
               });
             } else {
               const newArgs = [];
 
-              newArgs.push(node.args[0]);
+              newArgs.push(node.args![0]);
 
-              parent.args.forEach((arg) => {
+              parent.args!.forEach((arg) => {
                 if (!arg.isOperatorNode) {
                   newArgs.push(arg);
                 }
               });
 
-              node.args[0] = new m.OperatorNode("*", "multiply", newArgs);
+              node.args![0] = new m.OperatorNode("*", "multiply", newArgs);
             }
             newNode = node;
           }
         });
         return newNode;
       }
-    } else {
-      currentNode = currentNode;
     }
 
     return currentNode;
@@ -198,7 +197,7 @@ export const sortRelationalNode = (node: any) => {
   const smaller = ["smaller", "smallerEq"];
   const bigger = ["larger", "largerEq"];
 
-  const resultNode = node.transform((node, path, parent) => {
+  const resultNode = node.transform((node: any, _path: string, parent: any) => {
     let reverse = false;
 
     if (node.conditionals) {
@@ -254,13 +253,13 @@ export const sort = (node: MathNode) => {
   if (node.isOperatorNode && node.fn === "smaller") {
     node.op = ">";
     node.fn = "larger";
-    node.args = node.args.reverse();
+    node.args = node.args!.reverse();
   }
 
   if (node.isOperatorNode && node.fn === "smallerEq") {
     node.op = ">=";
     node.fn = "largerEq";
-    node.args = node.args.reverse();
+    node.args = node.args!.reverse();
   }
 
   const relationOperators = "=|NE|≃|≈|≈|≉|~|≃|≁|≅|≆";
@@ -270,17 +269,17 @@ export const sort = (node: MathNode) => {
     // @ts-ignore
     node.fn.name.match(relationOperators)
   ) {
-    node.args = node.args.sort(newCompare);
+    node.args = node.args!.sort(newCompare);
   }
 
   if (
     node.isOperatorNode &&
-    (node.fn == "larger" ||
-      node.fn == "largerEq" ||
-      node.fn == "equal" ||
-      node.fn == "unequal")
+    (node.fn === "larger" ||
+      node.fn === "largerEq" ||
+      node.fn === "equal" ||
+      node.fn === "unequal")
   ) {
-    node.args = node.args.map(sort);
+    node.args = node.args!.map(sort);
 
     if (node.fn === "equal" || node.fn === "unequal") {
       node.args = node.args.sort(newCompare);

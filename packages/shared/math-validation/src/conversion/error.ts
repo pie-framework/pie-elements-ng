@@ -1,10 +1,9 @@
-function ParseError(message: string, location?: number) {
-  this.name = "ParseError";
-  this.message = message || "Error parsing input";
-  this.stack = new Error().stack;
-  this.location = location;
-}
-ParseError.prototype = Object.create(Error.prototype);
-ParseError.prototype.constructor = ParseError;
+export class ParseError extends Error {
+  location?: number;
 
-export { ParseError };
+  constructor(message: string, location?: number) {
+    super(message || "Error parsing input");
+    this.name = "ParseError";
+    this.location = location;
+  }
+}

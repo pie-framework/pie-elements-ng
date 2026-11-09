@@ -1,28 +1,5 @@
-import { sync } from "glob";
-import { resolve, relative } from "path";
 import { latexEqual } from "../index";
-import minimist from "minimist";
-import { LiteralOpts } from "../literal";
-import { SymbolicOpts } from "../symbolic";
-
-const doubleDashIndex = process.argv.indexOf("--");
-
-const args = minimist(
-  process.argv.slice(doubleDashIndex ? doubleDashIndex + 1 : 2)
-);
-
-const cwd = resolve(__dirname, "../..");
-
-const fixtures = sync(
-  // run only symbolic test at this point (all literal are passing)"src/fixtures/latex-equal/symbolic/**.ts",
-
-  args.t || "src/fixtures/latex-equal/**/**.ts",
-  {
-    cwd,
-  }
-);
-
-let testData = [];
+import type { Opts } from "../options";
 
 type FixtureData = {
   target: string;
@@ -30,7 +7,7 @@ type FixtureData = {
   skip?: boolean;
   only?: boolean;
   label?: string;
-  opts?: LiteralOpts | SymbolicOpts;
+  opts?: Omit<Opts, "mode">;
   eq: string | string[];
   ne: string | string[];
 };
@@ -42,15 +19,15 @@ type FixtureModule = {
   tests: FixtureData[];
 };
 
-try {
-  testData = fixtures.map((f) => {
-    const r = relative(__dirname, f);
-    const data = require(`./${r}`).default as FixtureModule;
-    return { data, filename: f };
-  });
-} catch (e) {
-  console.error(e);
-}
+// Narrow the run with vitest's own filters, for example `vitest -t PD-303`.
+const modules = import.meta.glob<FixtureModule>("../fixtures/latex-equal/**/*.ts", {
+  eager: true,
+  import: "default",
+});
+
+const testData = Object.keys(modules)
+  .sort()
+  .map((f) => ({ data: modules[f], filename: f.replace(/^\.\.\//, "src/") }));
 
 const skipTest = (root: FixtureModule, test: FixtureData) => {
   if (process.env.NO_SKIP) {
@@ -93,6 +70,12 @@ testData.forEach((d) => {
   // console.log("d.data", d.data);
   describe(d.filename, () => {
     d.data.tests.forEach((t) => {
+      const eq = t.eq ? (Array.isArray(t.eq) ? t.eq : [t.eq]) : [];
+      const ne = t.ne ? (Array.isArray(t.ne) ? t.ne : [t.ne]) : [];
+      // An entry without pairs is a placeholder; vitest rejects the empty suite it would make.
+      if (eq.length + ne.length === 0) {
+        return;
+      }
       const skip = skipTest(d.data, t);
       const only = onlyTest(d.data, t); //.only !== undefined ? d.data.only : t.only;
       // console.log("skip?", skip, "only?", only);
@@ -102,7 +85,6 @@ testData.forEach((d) => {
       const mode = t.mode || d.data.mode;
 
       dfn(`[${mode}] ${label}`, () => {
-        const eq = t.eq ? (Array.isArray(t.eq) ? t.eq : [t.eq]) : [];
 
         // console.log(t.label || t.target, "eq.length", eq.length);
         // console.log("mode!!", mode);
@@ -117,8 +99,6 @@ testData.forEach((d) => {
             expect(l).toEqual(true);
           });
         });
-
-        const ne = t.ne ? (Array.isArray(t.ne) ? t.ne : [t.ne]) : [];
 
         ne.forEach((y) => {
           it(`!= ${y} ${l}`, () => {

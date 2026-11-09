@@ -1,6 +1,6 @@
 import { get_tree } from "./util";
 
-export var is_associative = {
+export var is_associative: Record<string, boolean> = {
   "+": true,
   "*": true,
   and: true,
@@ -9,7 +9,7 @@ export var is_associative = {
   intersect: true,
 };
 
-export function flatten(expr) {
+export function flatten(expr: any): any {
   // flatten tree with all associative operators
 
   var tree = get_tree(expr);
@@ -19,14 +19,14 @@ export function flatten(expr) {
   var operator = tree[0];
   var operands = tree.slice(1);
 
-  operands = operands.map(function (v, i) {
+  operands = operands.map(function (v: any) {
     return flatten(v);
   });
 
   if (is_associative[operator]) {
-    var result = [];
+    let result: any[] = [];
 
-    for (var i = 0; i < operands.length; i++) {
+    for (let i = 0; i < operands.length; i++) {
       if (Array.isArray(operands[i]) && operands[i][0] === operator) {
         result = result.concat(operands[i].slice(1));
       } else {
@@ -40,7 +40,7 @@ export function flatten(expr) {
   return [operator].concat(operands);
 }
 
-export const unflattenRight = function (expr) {
+export const unflattenRight = function (expr: any): any {
   // unflatten tree with associate operators
   // into a right heavy tree;
 
@@ -51,15 +51,15 @@ export const unflattenRight = function (expr) {
   var operator = tree[0];
   var operands = tree.slice(1);
 
-  operands = operands.map(function (v, i) {
+  operands = operands.map(function (v: any) {
     return unflattenRight(v);
   });
 
   if (operands.length > 2 && is_associative[operator]) {
-    var result = [operator, operands[0], undefined];
-    var next = result;
+    let result = [operator, operands[0], undefined];
+    let next = result;
 
-    for (var i = 1; i < operands.length - 1; i++) {
+    for (let i = 1; i < operands.length - 1; i++) {
       next[2] = [operator, operands[i], undefined];
       next = next[2];
     }
@@ -72,7 +72,7 @@ export const unflattenRight = function (expr) {
   return [operator].concat(operands);
 };
 
-export const unflattenLeft = function (expr) {
+export const unflattenLeft = function (expr: any): any {
   // unflatten tree with associate operator op
   // into a left heavy tree;
 
@@ -83,15 +83,15 @@ export const unflattenLeft = function (expr) {
   var operator = tree[0];
   var operands = tree.slice(1);
 
-  operands = operands.map(function (v, i) {
+  operands = operands.map(function (v: any) {
     return unflattenLeft(v);
   });
 
   if (operands.length > 2 && is_associative[operator]) {
-    var result = [operator, undefined, operands[operands.length - 1]];
-    var next = result;
+    let result = [operator, undefined, operands[operands.length - 1]];
+    let next = result;
 
-    for (var i = operands.length - 2; i > 0; i--) {
+    for (let i = operands.length - 2; i > 0; i--) {
       next[1] = [operator, undefined, operands[i]];
       next = next[1];
     }
@@ -104,7 +104,7 @@ export const unflattenLeft = function (expr) {
   return [operator].concat(operands);
 };
 
-export const allChildren = function (tree) {
+export const allChildren = function (tree: any): any[] {
   // find all children of operator of tree as though it had been flattened
 
   if (!Array.isArray(tree)) return [];
@@ -114,7 +114,7 @@ export const allChildren = function (tree) {
 
   if (!is_associative[operator]) return operands;
 
-  return operands.reduce(function (a, b) {
+  return operands.reduce(function (a: any[], b: any) {
     if (Array.isArray(b) && b[0] === operator) {
       return a.concat(allChildren(b));
     } else return a.concat([b]);

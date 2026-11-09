@@ -1,11 +1,7 @@
-import { latexEqual as le } from "./latex-equal";
-import { LiteralOpts } from "./literal";
-export type Latex = string;
+import { latexEqual as le } from './latex-equal';
+import type { Latex, Opts } from './options';
 
-export type Opts = {
-  mode?: "symbolic" | "literal";
-  literal?: LiteralOpts;
-};
+export type { Latex, LiteralOpts, Mode, Opts, SymbolicOpts } from './options';
 
 export const latexEqual = (a: Latex, b: Latex, opts: Opts): boolean => {
   return le(a, b, opts);

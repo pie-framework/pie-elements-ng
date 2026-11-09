@@ -1,17 +1,15 @@
-<html>
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Demo</title>
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="css/diff2html.min.css" rel="stylesheet" type="text/css" />
     <link href="css/jest-stare.css" rel="stylesheet" type="text/css" />
-    <link href="css/demo.css" rel="stylesheet" type="text/css" />
+    <link href="./demo.css" rel="stylesheet" type="text/css" />
     <script src="js/jquery.min.js"></script>
-    <script src="js/holder.js"></script>
-    <script src="js/diff2html.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script type="module">
-      import { demo } from "./js/demo.js";
+      import { demo } from "./main.ts";
       console.log("demo:", demo);
       demo();
     </script>
@@ -21,7 +19,7 @@
     <header>
       <!-- Fixed navbar -->
       <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" id="navbar-title" href="#">equality-checker</a>
+        <span class="navbar-brand" id="navbar-title">equality-checker</span>
         <button
           class="navbar-toggler"
           type="button"
@@ -35,16 +33,8 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/math-validation">Home</a>
-            </li>
             <li class="nav-item active">
-              <a class="nav-link">Demo</a>
-            </li>
-            <li class="nav-item">
-              <a id="coverage-link" class="nav-link disabled" href="#"
-                >Coverage</a
-              >
+              <span class="nav-link" aria-current="page">Demo</span>
             </li>
           </ul>
         </div>
@@ -52,13 +42,13 @@
     </header>
 
     <!-- Begin page content -->
-    <main role="main" class="container">
+    <main class="container">
       <h1 class="page-header text-center margin">Math equality checker</h1>
       <form action="" id="equality-form" class="margin form-horizontal">
         <div class="clearfix"></div>
         <div class="form-content">
           <div class="form-group">
-            <label>Choose Validation Type:</label>
+            <label for="validation-type">Choose Validation Type:</label>
             <select id="validation-type" class="form-control">
               <option value="literal">Literal</option>
               <option value="symbolic">Symbolic</option>

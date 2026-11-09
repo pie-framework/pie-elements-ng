@@ -1,18 +1,14 @@
 import { LatexToAst } from "./conversion/latex-to-ast";
 import { AstToMathJs } from "./conversion/ast-to-mathjs";
-import { isMathEqual as isSymbolicEqual, SymbolicOpts } from "./symbolic";
-import { isMathEqual as isLiteralEqual, LiteralOpts } from "./literal";
+import { isMathEqual as isSymbolicEqual } from "./symbolic";
+import { isMathEqual as isLiteralEqual } from "./literal";
 import { differenceIsTooGreat } from "./difference";
 import { compareNumbers } from "./value";
 
-export type Latex = string;
-export type RawAst = any[];
+import type { Latex, Opts } from "./options";
 
-export type Opts = {
-  mode?: "symbolic" | "literal";
-  literal?: LiteralOpts;
-  symbolic?: SymbolicOpts;
-};
+export type { Latex, Opts };
+export type RawAst = any[];
 
 const lta = new LatexToAst();
 const atm = new AstToMathJs();

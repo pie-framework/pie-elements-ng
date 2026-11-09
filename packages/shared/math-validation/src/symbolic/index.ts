@@ -23,7 +23,7 @@ const RELATIVE_EPSILON = 1e-13;
 // it covers residues such as sin(200pi) and cos(100.5pi) while still rejecting 0 vs 0.0000000000001
 const ABSOLUTE_EPSILON = 1e-14;
 
-export type SymbolicOpts = {};
+export type { SymbolicOpts } from "../options";
 
 const { simplify: ms, rationalize } = mathjs;
 
@@ -78,7 +78,7 @@ const SIMPLIFY_RULES = [
   { l: "tan(acot(n))", r: "1/n" },
 ];
 
-export const simplify = (v) => {
+export const simplify = (v: any) => {
   const rules = SIMPLIFY_RULES.concat((ms as any).rules);
   return ms(v, rules); //.concat(SIMPLIFY_RULES));
 };
@@ -193,10 +193,10 @@ const normalize = (a: string | MathNode | any) => {
   let pi = false;
   let containsInverseFlag = false;
 
-  r.traverse(function (node, path, parent) {
+  r.traverse(function (node: any) {
     if (node.isArrayNode) {
       containsArrayNode = true;
-      node.items = node.items.map((item) => simplify(item));
+      node.items = node.items.map((item: any) => simplify(item));
     }
 
     if (node.isSymbolNode) {
@@ -206,7 +206,7 @@ const normalize = (a: string | MathNode | any) => {
   });
 
   if (r.args) {
-    r.args = r.args.map((arg) => {
+    r.args = r.args.map((arg: any) => {
       if (
         !arg.isFunctionNode &&
         !arg.isArrayNode &&
@@ -228,7 +228,7 @@ const normalize = (a: string | MathNode | any) => {
     });
 
     if (containsFunctionNode || containsInverseFlag) {
-      r.args = r.args.map((arg) => {
+      r.args = r.args.map((arg: any) => {
         if (!arg.isFunctionNode && !arg.isArrayNode) {
           try {
             arg = rationalize(simplify(arg), {}, true).expression;
@@ -250,7 +250,7 @@ const normalize = (a: string | MathNode | any) => {
   }
 
   if (r.conditionals && r.params) {
-    r.params = r.params.map((param) => sort(simplify(param)));
+    r.params = r.params.map((param: any) => sort(simplify(param)));
   }
 
   if (!containsArrayNode && !onlyConstant) {
@@ -281,7 +281,7 @@ const normalize = (a: string | MathNode | any) => {
 
 // numeric value of an expression without variables, such as 5, -5 or -1/2; undefined for anything else
 const constantValue = (node: any): number | undefined => {
-  if (node.filter((n) => n.isSymbolNode).length > 0) {
+  if (node.filter((n: any) => n.isSymbolNode).length > 0) {
     return undefined;
   }
 

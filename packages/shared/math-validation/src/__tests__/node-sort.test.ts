@@ -1,7 +1,6 @@
 import { flattenNode, sort as s } from "../node-sort";
 // @ts-ignore
 import { replacer, parse } from "../mathjs";
-import diff from "jest-diff";
 import { logger } from "../log";
 const log = logger("mv:node-sort.spec");
 import { AstToMathJs } from "../conversion/ast-to-mathjs";
@@ -175,7 +174,7 @@ expect.extend({
           )}\n` +
           `Received: ${this.utils.printReceived(received.toString())}`
       : () => {
-          const diffString = diff(
+          const diffString = this.utils.diff(
             expectedNode.toString(),
             received.toString(),
             {

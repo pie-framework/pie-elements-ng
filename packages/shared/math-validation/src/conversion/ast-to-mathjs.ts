@@ -24,7 +24,7 @@ import { logger } from "../log";
 const log = logger("mv:ast-to-math");
 const m: any = mjs;
 
-const operators = {
+const operators: Record<string, (operands: any) => any> = {
   "+": function (operands) {
     return new m.OperatorNode("+", "add", operands);
   },
@@ -132,7 +132,7 @@ export class AstToMathJs {
    */
   constructor(private opts: AstToMathJsOpts = { number: "Fraction" }) {}
 
-  convert(tree) {
+  convert(tree: any): any {
     if (typeof tree === "number") {
       if (Number.isFinite(tree)) {
         if (this.opts.number === "Fraction") {
@@ -177,11 +177,11 @@ export class AstToMathJs {
 
       const f = operands[0];
       const args = operands[1];
-      let f_args;
+      let f_args: any;
 
       if (args[0] === "tuple")
         f_args = args.slice(1).map(
-          function (v, i) {
+          function (this: AstToMathJs, v: any) {
             return this.convert(v);
           }.bind(this)
         );
@@ -207,7 +207,7 @@ export class AstToMathJs {
       params.splice(0, 1);
       strict.splice(0, 1);
       const arg_nodes = params.map(
-        function (v, i) {
+        function (this: AstToMathJs, v: any) {
           return this.convert(v);
         }.bind(this)
       );
@@ -225,7 +225,7 @@ export class AstToMathJs {
     // if we have more than one equality operators return a Relational Node
     if (operator === "=") {
       let arg_nodes = operands.map(
-        function (v, i) {
+        function (this: AstToMathJs, v: any) {
           return this.convert(v);
         }.bind(this)
       );
@@ -249,7 +249,7 @@ export class AstToMathJs {
       operator === "ni" ||
       operator === "notni"
     ) {
-      let x, interval;
+      let x: any, interval: any;
       if (operator === "in" || operator === "notin") {
         x = operands[0];
         interval = operands[1];
@@ -298,7 +298,7 @@ export class AstToMathJs {
       operator === "superset" ||
       operator === "notsuperset"
     ) {
-      let big, small;
+      let big: any, small: any;
       if (operator === "subset" || operator === "notsubset") {
         small = operands[0];
         big = operands[1];
@@ -377,7 +377,7 @@ export class AstToMathJs {
       return new m.ArrayNode(result);
     }
 
-    if (operator == "%") {
+    if (operator === "%") {
       const dividend = this.convert(operands[0]);
       const divisor = new m.ConstantNode(100);
       const result = new m.OperatorNode("/", "divide", [dividend, divisor]);
@@ -388,7 +388,7 @@ export class AstToMathJs {
     if (operator in operators) {
       return operators[operator](
         operands.map(
-          function (v, i) {
+          function (this: AstToMathJs, v: any) {
             return this.convert(v);
           }.bind(this)
         )

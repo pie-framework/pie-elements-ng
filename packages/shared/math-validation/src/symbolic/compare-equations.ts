@@ -48,8 +48,8 @@ export const compareEquations = (
       return false;
     }
 
-    let firstEquationCoefficients: number[];
-    let secondEquationCoefficients: number[];
+    let firstEquationCoefficients!: number[];
+    let secondEquationCoefficients!: number[];
 
     if (
       hasSymbolicExponent(firstExpression) ||
@@ -107,8 +107,8 @@ export const compareEquations = (
           secondEquationCoefficients
         );
 
-        let firstRoot: MathNode = m.complex(rootsFirstEquation);
-        let secondRoot: MathNode = m.complex(rootsSecondEquation);
+        let firstRoot: any = m.complex(rootsFirstEquation);
+        let secondRoot: any = m.complex(rootsSecondEquation);
 
         if (rootsFirstEquation[0].im === 0 && rootsFirstEquation[1].im === 0) {
           return (

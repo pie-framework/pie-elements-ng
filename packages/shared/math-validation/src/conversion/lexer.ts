@@ -53,7 +53,7 @@ class lexer {
     });
   }
 
-  set_input(input) {
+  set_input(input: string) {
     if (typeof input !== "string") throw new Error("Input must be a string");
 
     this.input = input;
@@ -136,25 +136,25 @@ class lexer {
 
     // log("rule:", rule);
     // found a match, set token
-    if (rule.length > 2) {
+    if (rule!.length > 2) {
       // overwrite text by third element of rule
       const out = {
-        token_type: rule[1],
-        token_text: rule[2],
+        token_type: rule![1],
+        token_text: rule![2] as string,
         original_text: result[0],
       };
       return out;
     } else {
       // log("result: 0:", result[0]);
       return {
-        token_type: rule[1],
+        token_type: rule![1],
         token_text: result[0],
         original_text: result[0],
       };
     }
   }
 
-  unput(string) {
+  unput(string: string) {
     // add string to beginning of input and adjust location
 
     if (typeof string !== "string") throw new Error("Input must be a string");

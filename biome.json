@@ -26,6 +26,7 @@
       "!packages/elements-react",
       "!packages/lib-react",
       "!packages/shared/*/src/index.ts",
+      "!packages/shared/math-validation/demo/public",
       "!apps/*/src/lib/elements/registry.ts",
       "!apps/*/src/lib/element-imports.js",
       "!apps/*/src/lib/element-imports.d.ts",

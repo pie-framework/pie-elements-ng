@@ -1,14 +1,14 @@
-const get_tree = function (expr_or_tree) {
+const get_tree = function (expr_or_tree: any) {
   if (expr_or_tree === undefined || expr_or_tree === null) return undefined;
 
-  var tree;
+  var tree: any;
   if (expr_or_tree.tree !== undefined) tree = expr_or_tree.tree;
   else tree = expr_or_tree;
 
   return tree;
 };
 
-function* subsets(arr, m) {
+function* subsets(arr: any[], m?: number): Generator<any[]> {
   // returns an iterator over all subsets of array arr
   // up to size m
 

@@ -64,10 +64,10 @@ export const getLimit = (
   const xSecondInequality = solveLinearEquation(getCoefficients(expressionL, true));
 
   if (limitType === "inferior") {
-    return Math.min(xFirstInequality, xSecondInequality);
+    return Math.min(xFirstInequality!, xSecondInequality!);
   }
 
-  return Math.max(xFirstInequality, xSecondInequality);
+  return Math.max(xFirstInequality!, xSecondInequality!);
 };
 
 export const compareCompoundInequations = (
