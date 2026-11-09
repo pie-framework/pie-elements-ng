@@ -1,0 +1,37 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: '座標平面のグラフ',
+  axisRange: '{axis}軸：{min}から{max}まで。',
+  plottedNone: '何も描かれていません。',
+  plotted: {
+    other: '描かれたオブジェクト{count}個：{marks}。',
+  },
+  point: '点',
+  circle: '円',
+  line: '線',
+  parabola: '放物線',
+  absolute: '絶対値',
+  exponential: '指数関数',
+  polygon: '多角形',
+  ray: '半直線',
+  segment: '線分',
+  sine: 'サイン',
+  vector: 'ベクトル',
+  label: 'ラベル',
+  markLabel: '（{x}, {y}）のラベル',
+  correctMarkLabel: '（{x}, {y}）の正解ラベル',
+  undo: '元に戻す',
+  redo: 'やり直す',
+  reset: 'リセット',
+  key: '凡例',
+  keyLegend: {
+    missingRequiredLabel: '必須ラベルがありません',
+    answerKeyCorrect: '正解（解答キー）',
+    answerKeyCorrectLabel: '正解ラベル（解答キー）',
+    studentIncorrect: '生徒の不正解',
+    incorrectStudentLabel: '生徒の不正解ラベル',
+    studentCorrect: '生徒の正解',
+    studentCorrectLabel: '生徒の正解ラベル',
+  },
+} satisfies MessageCatalog;

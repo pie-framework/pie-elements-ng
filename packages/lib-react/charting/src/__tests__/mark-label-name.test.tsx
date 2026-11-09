@@ -30,9 +30,9 @@ describe('charting category label inputs', () => {
     expect(screen.getByRole('textbox', { name: 'Category 2 label' })).toHaveValue('Pears');
   });
 
-  it('names the inputs in the item language', () => {
+  it('names the inputs in the item language', async () => {
     renderChart('es_ES');
 
-    expect(screen.getByRole('textbox', { name: 'Etiqueta de la categoría 1' })).toHaveValue('Apples');
+    expect(await screen.findByRole('textbox', { name: 'Etiqueta de la categoría 1' })).toHaveValue('Apples');
   });
 });

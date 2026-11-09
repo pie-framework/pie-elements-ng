@@ -63,10 +63,10 @@ describe('ToolMenu line type buttons', () => {
     expect(screen.getByRole('button', { name: 'Dashed' })).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('takes its labels from the catalog', () => {
+  it('takes its labels from the catalog', async () => {
     render(<ToolMenu gssLineData={lineData(2)} onChange={vi.fn()} language="es" />);
 
-    expect(screen.getByRole('radio', { name: 'Línea B' })).toBeInTheDocument();
+    expect(await screen.findByRole('radio', { name: 'Línea B' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Conjunto solución' })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Discontinua' })).toHaveLength(2);
   });

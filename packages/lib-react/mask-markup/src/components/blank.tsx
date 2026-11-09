@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
@@ -9,11 +9,9 @@ import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../i18n/index.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { grey } from '@mui/material/colors';
-
-const { translator } = Translator;
 
 const log = debug('pie-lib:mask-markup:blank');
 
@@ -361,6 +359,8 @@ function DragDropBlank({
   onPlacementClick,
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
 
   const dragData = {
     id,
@@ -466,7 +466,7 @@ function DragDropBlank({
     <StyledContent
       ref={setDropNodeRef}
       role={isNativeTabStop ? 'button' : 'group'}
-      aria-label={translator.t('dragInTheBlank.blank', { lng: language, index: Number(id) + 1 })}
+      aria-label={catalogs.forLocale(language, relabel).t('blank', { index: Number(id) + 1 })}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}

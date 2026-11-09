@@ -5,9 +5,8 @@ import PropTypes from 'prop-types';
 import { Button, Radio, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
+import { catalogs } from './i18n/index.js';
 
 export class ToolMenu extends React.Component {
   static propTypes = {
@@ -20,6 +19,11 @@ export class ToolMenu extends React.Component {
   // Each radio takes its accessible name from the visible line name beside it, and the radios
   // share a group name of their own, so a second item's menu is a separate group.
   idPrefix: string = createUniqueId('gss-tool-menu');
+
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
+  t = (key) => catalogs.forLocale(this.props.language, this.relabel).t(dynamicMessageKey(key));
 
   onChangeRadioValue: any = (event) => {
     let { gssLineData, onChange } = this.props;
@@ -36,7 +40,7 @@ export class ToolMenu extends React.Component {
   };
 
   renderLineTypeButton(line, type, side) {
-    const { gssLineData, disabled, language } = this.props;
+    const { gssLineData, disabled } = this.props;
     const selected = gssLineData[`line${line}`].lineType === type;
     const state = `${selected ? 'Selected' : 'UnSelected'}${disabled ? 'Disabled' : ''}`;
     return (
@@ -49,13 +53,13 @@ export class ToolMenu extends React.Component {
         onClick={() => this.lineTypeChange(line, type)}
         className={`lineTypeButton${side}${state}`}
       >
-        {selected && <span aria-hidden="true">✔</span>} {translator.t(`graphing.${type.toLowerCase()}`, { lng: language })}
+        {selected && <span aria-hidden="true">✔</span>} {this.t(type.toLowerCase())}
       </Button>
     );
   }
 
   renderToolRadio(value) {
-    const { gssLineData, disabled, language } = this.props;
+    const { gssLineData, disabled } = this.props;
     return (
       <div className="radioFieldInner">
         <Radio
@@ -68,7 +72,7 @@ export class ToolMenu extends React.Component {
           inputProps={{ 'aria-labelledby': `${this.idPrefix}-${value}` }}
         />
         <Typography id={`${this.idPrefix}-${value}`} className="lineNameFont">
-          {translator.t(`graphing.${value}`, { lng: language })}
+          {this.t(value)}
         </Typography>
       </div>
     );
