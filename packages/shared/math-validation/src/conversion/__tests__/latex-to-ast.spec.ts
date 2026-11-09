@@ -201,3 +201,17 @@ describe("bugs in lta", () => {
     expect(out).toEqual(expected);
   });
 });
+
+describe("keepMixedNumbers", () => {
+  it.each([
+    ["2\\frac{1}{2}", ["mixed", 2, ["/", 1, 2]]],
+    ["-2\\frac{1}{2}", ["-", ["mixed", 2, ["/", 1, 2]]]],
+    ["2+\\frac{1}{2}", ["+", 2, ["/", 1, 2]]],
+  ])("%s => %j", (input, expected) => {
+    expect(new LatexToAst({ keepMixedNumbers: true }).convert(input)).toEqual(expected);
+  });
+
+  it("reads a mixed number as a sum by default", () => {
+    expect(lta.convert("2\\frac{1}{2}")).toEqual(["+", 2, ["/", 1, 2]]);
+  });
+});

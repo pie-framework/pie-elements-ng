@@ -87,15 +87,17 @@ By default - ignores spaces and parentheses as long as they do not change the me
            - ignores leading zeros: “0.1” will validate against “.1”
            - accepts commas for decimal marks. For example “1,000” will be equivalent with 1000
 
-Literal Validation offers two configuration options that can be used to validate some variety of forms for an expression:
+Literal Validation offers three configuration options that can be used to validate some variety of forms for an expression:
 
 Ignore trailing zeros option; allows the evaluation to accept zeros to the right of the decimal place “4.5” will validate against “4.50000000000000”
 Ignore order option; makes validation indifferent to the variables order, as long as it does not change operations meaning. In this case “a+7 +b*c” will validate against “7 + a+bc”, but not against “ac+7+b”; without it “a+7 +b” will not validate against “7 + a+b”
+Compare numbers by value option; a single number validates only against a single number of equal value. A number is an integer, decimal, fraction (`\frac{2}{3}` or `2/3`) or mixed number (`2\frac{1}{2}`), with at most one sign and optionally in parentheses. “4/6” will validate against “2/3” and “2.5” against “2\frac{1}{2}”, but “3+3” will not validate against “6”: any operation, constant (`\pi`), unit or percentage makes a side a non-number. Two non-numbers compare as literal.
 
 Symbolic: attempts to decide if expressions are mathematically equivalent or not
 
 By default, it offers all configurations presented for literal validation, exceeding it by quite a lot
 In order to check equivalence between 2 expressions, we have to reduce both expressions to the simplest one. Then distribute all coefficients, combine any like terms on each side of the expression, and arrange them in the same order. 
+
 
 
 ### Notes

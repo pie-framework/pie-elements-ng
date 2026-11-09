@@ -481,6 +481,8 @@ export type Opts = {
   parseLeibnizNotation: boolean;
   missingFactor: (token: Token, e: Error) => number | string;
   unknownCommandBehavior: "error" | "passthrough";
+  /** Keep a mixed number such as `2\\frac{1}{2}` as `["mixed", 2, ["/", 1, 2]]` instead of a sum. */
+  keepMixedNumbers: boolean;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -496,6 +498,7 @@ export const DEFAULT_OPTS: Opts = {
   parseLeibnizNotation: true,
   missingFactor: missingFactorDefaultBehavior,
   unknownCommandBehavior: "error",
+  keepMixedNumbers: false,
 };
 
 export class LatexToAst {
@@ -503,7 +506,7 @@ export class LatexToAst {
   private lexer: lexer;
   private token: Token;
   private opts: Opts;
-  constructor(opts?: Opts) {
+  constructor(opts?: Partial<Opts>) {
     this.opts = { ...DEFAULT_OPTS, ...opts };
 
     if (
@@ -993,7 +996,7 @@ export class LatexToAst {
         const number = parseInt(numberString, 10);
         const f = this.fraction({});
         // this is correct, to convert a mixed number to an improper fraction we have to multiply the demoninator by the whole number and add the result to the numerator
-        return ["+", number, f];
+        return this.opts.keepMixedNumbers ? ["mixed", number, f] : ["+", number, f];
       } catch (e) {
         throw new ParseError(`Mixed number parsing failed: ${e.message}`);
       }

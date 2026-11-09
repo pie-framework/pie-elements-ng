@@ -3,6 +3,7 @@ import { AstToMathJs } from "./conversion/ast-to-mathjs";
 import { isMathEqual as isSymbolicEqual, SymbolicOpts } from "./symbolic";
 import { isMathEqual as isLiteralEqual, LiteralOpts } from "./literal";
 import { differenceIsTooGreat } from "./difference";
+import { compareNumbers } from "./value";
 
 export type Latex = string;
 export type RawAst = any[];
@@ -25,6 +26,13 @@ export const latexEqual = (a: Latex, b: Latex, opts: Opts) => {
 
   if (a === b) {
     return true;
+  }
+
+  if (opts.mode === "literal" && opts.literal?.compareNumbersByValue) {
+    const byValue = compareNumbers(a, b);
+    if (byValue !== undefined) {
+      return byValue;
+    }
   }
 
   if (opts.mode === "symbolic" && isNumeric(a) && isNumeric(b)) {
