@@ -766,6 +766,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",

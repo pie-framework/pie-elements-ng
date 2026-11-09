@@ -23,6 +23,14 @@ const migratedElements = [
     dir: 'packages/elements-react/passage',
     catalogPackages: ['packages/elements-react/passage', 'packages/lib-react/render-ui'],
   },
+  {
+    dir: 'packages/elements-react/match-list',
+    catalogPackages: [
+      'packages/elements-react/match-list',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })
