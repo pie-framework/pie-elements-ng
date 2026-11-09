@@ -234,7 +234,7 @@ export const model = async (
 
   const alternates = getAlternates(filteredCorrectResponse);
   const showInstructorContent = role === 'instructor' && (mode === 'view' || mode === 'evaluate');
-  const { responseAreasToBeFilled, possibleResponses, hasUnplacedChoices } = getCompleteResponseDetails(
+  const { responseAreasToBeFilled, hasUnplacedChoices } = getCompleteResponseDetails(
     filteredCorrectResponse,
     normalizedQuestion.allowAlternateEnabled ? alternates : [],
     normalizedQuestion.choices,
@@ -264,7 +264,6 @@ export const model = async (
     autoplayAudioHeld,
     completeAudioEnabled,
     customAudioButton,
-    possibleResponses,
     responseAreasToBeFilled,
     hasUnplacedChoices,
     ...(question.allowMultiplePlacementsEnabled == null && { allowMultiplePlacementsEnabled: resolvedAllowMultiple }),
