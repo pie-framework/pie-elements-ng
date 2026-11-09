@@ -199,6 +199,10 @@
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     },
+    "@pie-framework/math-validation": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
     "@pie-lib/categorize": {
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
