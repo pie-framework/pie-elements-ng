@@ -36,9 +36,6 @@ const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapR
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const MainContainer: any = styled(UiLayout)({
   color: color.text(),
@@ -59,6 +56,8 @@ export class Main extends React.Component {
     model: PropTypes.object.isRequired,
     session: PropTypes.object.isRequired,
     onAnswersChange: PropTypes.func,
+    /** The locale the chrome follows; the item's declared language when omitted. */
+    language: PropTypes.string,
   };
 
   state = { showingCorrect: false };
@@ -91,8 +90,8 @@ export class Main extends React.Component {
       teacherInstructions,
       toolbarTools,
       markLimits,
-      language,
     } = model || {};
+    const language = this.props.language ?? model?.language;
     const size = model?.size || model?.graph || {}; // need this for models that are not processed by controller
     const marks = answersCorrected || answer || [];
     const isLabelAvailable = toolbarTools?.includes('label') || false;
@@ -103,9 +102,7 @@ export class Main extends React.Component {
     return (
       <MainContainer extraCSSRules={extraCSSRules}>
         {showTeacherInstructions && (
-          <TeacherInstructions
-            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
-          >
+          <TeacherInstructions variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </TeacherInstructions>
         )}
@@ -167,7 +164,7 @@ export class Main extends React.Component {
           <KeyLegend isLabelAvailable={isLabelAvailable} language={language}></KeyLegend>
         )}
         {showRationale && (
-          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <Collapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}

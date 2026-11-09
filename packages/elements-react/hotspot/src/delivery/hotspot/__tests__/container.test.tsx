@@ -1,7 +1,8 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { loadLocale } from '@pie-element/shared-i18n';
 
 // Konva draws on a canvas, which happy-dom lacks; the keyboard focusables render outside it. The
 // layer stands in for Konva's with a bare canvas element.
@@ -31,6 +32,9 @@ vi.mock('../circle.js', () => ({ default: recordTooltip }));
 const { Container } = await import('../container');
 
 const theme = createTheme();
+
+// The container reads its catalog synchronously; the Spanish cases need it resident.
+beforeAll(() => loadLocale('es_ES'));
 
 const shapes = {
   rectangles: [

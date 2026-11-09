@@ -27,13 +27,12 @@ const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { styled } from '@mui/material/styles';
 import { createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+
+import { catalogs } from '../../i18n/index.js';
 
 import Rectangle from './rectangle.js';
 import Polygon from './polygon.js';
 import Circle from './circle.js';
-
-const { translator } = Translator;
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -91,18 +90,18 @@ export class Container extends React.Component {
 
   // The canvas tooltip and the shape button's description both carry this text.
   getEvaluateText: any = (isCorrect, selected) => {
-    const { language } = this.props;
+    const i18n = catalogs.forLocale(this.props.language);
 
     if (selected && isCorrect) {
-      return translator.t('hotspot.correctlySelected', { lng: language });
+      return i18n.t('correctlySelected');
     }
 
     if (selected && !isCorrect) {
-      return translator.t('hotspot.shouldNotHaveBeenSelected', { lng: language });
+      return i18n.t('shouldNotHaveBeenSelected');
     }
 
     if (!selected && isCorrect) {
-      return translator.t('hotspot.shouldHaveBeenSelected', { lng: language });
+      return i18n.t('shouldHaveBeenSelected');
     }
 
     return null;
@@ -175,13 +174,14 @@ export class Container extends React.Component {
     const height = heightProp * SCALE;
 
     const sortedShapes = this.getAllShapesSorted();
+    const i18n = catalogs.forLocale(language);
 
     return (
       <BaseContainer style={{ padding: strokeWidth / 2 }}>
         {imageUrl ? (
           <ImageContainer>
             <Image
-              alt={translator.t('hotspot.image', { lng: language, count: sortedShapes.length })}
+              alt={i18n.plural('image', { count: sortedShapes.length })}
               height="auto"
               src={imageUrl}
               style={{ width, height, maxWidth: width, maxHeight: height }}
@@ -293,8 +293,7 @@ export class Container extends React.Component {
 
         {sortedShapes.map((shape, index) => {
           const selected = this.isSelected(shape);
-          const position = translator.t('hotspot.shape', {
-            lng: language,
+          const position = i18n.t('shape', {
             index: index + 1,
             total: sortedShapes.length,
           });
