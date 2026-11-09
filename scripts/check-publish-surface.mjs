@@ -1443,14 +1443,51 @@ export const collectPublishSurfaceViolations = (
   return violations;
 };
 
+const LICENSE_FILE = /^licen[cs]e(?:\.[a-z]+)?$/i;
+const normalizeLicenseText = (text) => text.replaceAll('\r\n', '\n').trimEnd();
+
+/** The repository's root LICENSE, which every publishable package ships. */
+export const readRootLicense = (root = ROOT) => {
+  const file = path.join(root, 'LICENSE');
+  if (!existsSync(file)) throw new Error(`no LICENSE at the repository root (${file})`);
+  return readFileSync(file, 'utf8');
+};
+
+/**
+ * A package packs a license file that begins with the root LICENSE text: MIT requires that text to
+ * accompany every copy, and npm packs a license file at the package root whatever `files` says. A
+ * package under further terms appends them after the root text.
+ */
+export const collectLicenseViolations = ({ dir, packedFiles }, rootLicense) => {
+  // A snapshot without packed files is reported by collectPackViolations.
+  if (!packedFiles) return [];
+  const packed = [...packedFiles].filter((filePath) => LICENSE_FILE.test(filePath)).sort();
+  if (packed.length === 0) {
+    return ['packs no LICENSE file: copy the root LICENSE into the package directory'];
+  }
+  const expected = normalizeLicenseText(rootLicense);
+  const matches = packed.some((filePath) =>
+    normalizeLicenseText(readFileSync(path.join(dir, filePath), 'utf8')).startsWith(expected)
+  );
+  return matches
+    ? []
+    : [
+        `${packed.join(', ')} does not begin with the root LICENSE text: copy the root LICENSE again`,
+      ];
+};
+
 export const collectPublishSurfaceFailures = ({
   root = ROOT,
   snapshots = createPackageSnapshots({ root, includePackedFiles: true }),
 } = {}) => {
   const failures = [];
   const context = { editorRuntime: findEditorRuntime(snapshots, root) };
+  const rootLicense = readRootLicense(root);
   for (const snapshot of snapshots) {
-    const violations = collectPublishSurfaceViolations(snapshot, context);
+    const violations = [
+      ...collectPublishSurfaceViolations(snapshot, context),
+      ...collectLicenseViolations(snapshot, rootLicense),
+    ];
     if (violations.length > 0) {
       failures.push({
         name: snapshot.pkg.name || path.basename(snapshot.dir),
