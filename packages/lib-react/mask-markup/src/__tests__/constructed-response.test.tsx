@@ -8,8 +8,8 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () =>
 const { default: ConstructedResponse } = await import('../constructed-response');
 
 // Spread, as explicit-constructed-response passes them: withMask declares only the props it reads.
-const renderResponses = (markup: string, language?: string) => {
-  const props = { markup, value: {}, onChange: vi.fn(), language };
+const renderResponses = (markup: string, language?: string, contentLanguage?: string) => {
+  const props = { markup, value: {}, onChange: vi.fn(), language, contentLanguage };
   return render(<ConstructedResponse {...props} />);
 };
 
@@ -33,7 +33,7 @@ describe('ConstructedResponse', () => {
     expect(await names()).toEqual(['Response 1 of 3', 'Response 2 of 3', 'Response 3 of 3']);
   });
 
-  it('names each response in the item language', async () => {
+  it('names each response in the interface language', async () => {
     renderResponses('<p>{{0}}, {{1}} y {{2}}</p>', 'es_ES');
 
     await waitFor(async () =>
@@ -41,8 +41,15 @@ describe('ConstructedResponse', () => {
     );
   });
 
-  it('names each response toolbar in the item language', async () => {
-    renderResponses('<p>{{0}}, {{1}} y {{2}}</p>', 'es_ES');
+  it('marks each response in the content language', async () => {
+    renderResponses('<p>{{0}}, {{1}} et {{2}}</p>', 'es_ES', 'fr');
+
+    expect(await names()).toEqual(['Respuesta 1 de 3', 'Respuesta 2 de 3', 'Respuesta 3 de 3']);
+    expect(screen.getAllByRole('textbox').map((box) => box.getAttribute('lang'))).toEqual(Array(3).fill('fr'));
+  });
+
+  it('names each response toolbar in the content language without an interface locale', async () => {
+    renderResponses('<p>{{0}}, {{1}} y {{2}}</p>', undefined, 'es_ES');
     await names();
 
     await waitFor(() => {

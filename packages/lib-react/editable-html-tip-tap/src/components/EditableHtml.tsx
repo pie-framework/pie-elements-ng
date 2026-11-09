@@ -324,7 +324,8 @@ export const EditableHtml = (props) => {
   const baseDirection = useRef('ltr');
   baseDirection.current = elementLanguageAttributes(props.language)?.dir ?? 'ltr';
 
-  // The interface locale a player publishes, which is the second language an author may mark text in.
+  // The interface locale a player publishes: the toolbar's language, and the second language an
+  // author may mark text in.
   const [interfaceLocale, setInterfaceLocale] = useState(null);
 
   // Read by the toolbar's language control, which shows when there are two or more.
@@ -621,6 +622,8 @@ export const EditableHtml = (props) => {
         ...props,
         activePlugins: activePluginsToUse,
         toolbarOpts: toolbarOptsToUse,
+        // The toolbar's chrome follows the interface locale, else the content language.
+        language: interfaceLocale ?? props.language,
       }}
       editorState={editorState}
       editor={editor}

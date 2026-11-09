@@ -1,3 +1,4 @@
+export { authoredOrDefault } from './authored-or-default.js';
 export {
   type Catalogs,
   type CatalogsOptions,

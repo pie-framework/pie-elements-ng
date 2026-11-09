@@ -49,8 +49,8 @@ import Categories from './categories.js';
 import { categoriesFirst, CHOICES_BOARD_ID } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../../i18n/index.js';
-import { alternatesNote } from './default-note.js';
 
 const log = debug('@pie-ui:categorize');
 
@@ -330,7 +330,7 @@ export class Categorize extends React.Component {
         {displayNote && (
           <StyledNote
             dangerouslySetInnerHTML={{
-              __html: sanitizeModelHtml(alternatesNote(note, language, model.language)),
+              __html: sanitizeModelHtml(authoredOrDefault(note, (locale) => catalogs.forLocale(locale).t('commonCorrectAnswerWithAlternates'), language, model.language)),
             }}
           />
         )}
