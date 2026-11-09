@@ -33,7 +33,8 @@ import {
  * - the system cancels the touch part way (`touchCancel`, as for an edge swipe or a palm): nothing
  *   is placed, nothing is left stuck mid-drag, and the next drag still works;
  * - a second finger lands during a drag: the drag carries on with the first finger and no second
- *   drag starts under the other.
+ *   drag starts under the other. The choice placed is the first finger's, in its target, and the
+ *   second finger's stays unplaced; a count of placed choices would pass either.
  *
  * And, where the element hands scrolling to dnd-kit, a drag held at the edge of the viewport scrolls
  * the page. That is the document, not an inner scroll container, because the demos have no long
@@ -51,6 +52,8 @@ import {
 
 type Session = Record<string, unknown>;
 
+type TestKey = 'drag' | 'cancel' | 'second-finger' | 'autoscroll';
+
 type DndCase = {
   element: string;
   demoId?: string;
@@ -66,23 +69,39 @@ type DndCase = {
   otherTarget: (root: Locator) => Locator;
   /** Set when dnd-kit's default autoscroll applies; Venn's own pointer code has none. */
   autoscroll?: boolean;
+  /**
+   * For an element whose placed choices do not sit in the DOM under their target (venn's tiles are
+   * drawn over the diagram, its regions empty): where the session holds the choice with this
+   * `data-tile-id`, as a string, or null when it is unplaced. `targetKey` is what `target` gives.
+   */
+  landedIn?: (session: Session, tileId: string) => string | null;
+  targetKey?: string;
   /** How many choices the session holds as placed. */
   placed: (session: Session) => number;
   /**
-   * Set when a touch drag in this element is a confirmed defect: the mechanism and the ticket. Every
-   * test of the element becomes `test.fixme` and carries both in its report annotations.
+   * Set where a touch gesture in this element is a confirmed defect, by test: the mechanism, and the
+   * ticket once it has one. That test becomes `test.fixme` and carries both in its report
+   * annotations; the element's other tests still run.
    */
-  defect?: { mechanism: string; ticket: string };
+  defects?: Partial<Record<TestKey, { mechanism: string; ticket?: string }>>;
 };
 
 const JIRA = 'https://illuminate.atlassian.net/browse/';
 
-function annotateDefect(testInfo: TestInfo, item: DndCase): void {
-  if (!item.defect) return;
-  testInfo.annotations.push(
-    { type: 'fixme', description: item.defect.mechanism },
-    { type: 'issue', description: `${JIRA}${item.defect.ticket}` }
-  );
+/** `test.fixme` for a test with a confirmed defect, else `test`, and its annotations. */
+function forDefect(item: DndCase, key: TestKey) {
+  const defect = item.defects?.[key];
+  const annotate = (testInfo: TestInfo) => {
+    if (!defect) return;
+    testInfo.annotations.push(
+      { type: 'fixme', description: defect.mechanism },
+      {
+        type: 'issue',
+        description: defect.ticket ? `${JIRA}${defect.ticket}` : 'defect ticket to be linked',
+      }
+    );
+  };
+  return { run: defect ? test.fixme : test, annotate };
 }
 
 const DRAGGABLE = '[aria-roledescription="draggable"][aria-disabled="false"]';
@@ -170,6 +189,24 @@ const CASES: DndCase[] = [
     choices: (root) => root.locator('[data-region-key="tray"] [data-tile-id]'),
     target: (root) => root.locator('[data-region-key="1"]').first(),
     otherTarget: (root) => root.locator('[data-region-key="0"]').first(),
+    landedIn: (session, tileId) => {
+      const region = ((session?.placements ?? {}) as Record<string, unknown>)[tileId];
+      return Array.isArray(region) ? region.join(',') : null;
+    },
+    targetKey: '1',
+    defects: {
+      'second-finger': {
+        mechanism:
+          "A second finger landing during a drag drops the first finger's drag. `onTilePointerDown` " +
+          '(venn-classification/src/delivery/VennClassification.svelte) calls `detachPointerDrag()` ' +
+          "on every pointerdown, which removes the first drag's window listeners, and the listeners " +
+          'it adds for the new drag do not check `pointerId`, so any finger lifting ends it. The ' +
+          "session still gains one placement, which is why a count passes: the second finger's " +
+          "choice is the one placed - observed in region 1, the first finger's target - and the " +
+          "first finger's choice stays in the tray.",
+        ticket: 'PIE-1510',
+      },
+    },
     placed: (session) =>
       Object.values((session?.placements ?? {}) as Record<string, unknown>).filter((region) =>
         Array.isArray(region)
@@ -223,6 +260,51 @@ const pointersSeen = (page: Page) =>
     ids: (window as unknown as WithPointerLog).__pointers.seen.size,
   }));
 
+/**
+ * What a choice shows, which tells it from the others: its text, or the source of its image. A
+ * placed choice shows the same, wherever it ends up.
+ */
+const fingerprint = (choice: Locator): Promise<string> =>
+  choice.evaluate(
+    (el) => (el.textContent ?? '').trim() || el.querySelector('img')?.getAttribute('src') || ''
+  );
+
+type Box = { x: number; y: number; width: number; height: number };
+
+async function boxOf(target: Locator): Promise<Box> {
+  const box = await target.boundingBox();
+  if (!box) throw new Error('a drop target has no bounding box');
+  return box;
+}
+
+/**
+ * Where, on the page, each choice that shows `print` now is: the centre of every such element.
+ * Placed choices keep their element, which moves into the target, so their centre follows them.
+ */
+const centresOf = (choices: Locator, print: string) =>
+  choices.evaluateAll(
+    (els, print) =>
+      els
+        .filter(
+          (el) =>
+            ((el.textContent ?? '').trim() ||
+              el.querySelector('img')?.getAttribute('src') ||
+              '') === print
+        )
+        .map((el) => {
+          const box = el.getBoundingClientRect();
+          return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+        }),
+    print
+  );
+
+/** Whether a point is in the box, give or take what a placed choice overhangs it by. */
+const inBox = (point: { x: number; y: number }, box: Box, margin = 24) =>
+  point.x >= box.x - margin &&
+  point.x <= box.x + box.width + margin &&
+  point.y >= box.y - margin &&
+  point.y <= box.y + box.height + margin;
+
 const signature = async (page: Page) => JSON.stringify((await getSessionState(page)) ?? {});
 
 test.describe('drag-and-drop elements under touch', () => {
@@ -230,10 +312,9 @@ test.describe('drag-and-drop elements under touch', () => {
     const title = item.demoId ? `${item.element} [demo=${item.demoId}]` : item.element;
 
     test.describe(title, () => {
-      const run = item.defect ? test.fixme : test;
-
-      run('a finger can drag a choice into a target', async ({ page }, testInfo) => {
-        annotateDefect(testInfo, item);
+      const drag = forDefect(item, 'drag');
+      drag.run('a finger can drag a choice into a target', async ({ page }, testInfo) => {
+        drag.annotate(testInfo);
         const root = await openForTouch(page, item);
         const before = await signature(page);
         const placedBefore = item.placed(await getSessionState(page));
@@ -248,10 +329,11 @@ test.describe('drag-and-drop elements under touch', () => {
         expect(item.placed(await getSessionState(page))).toBe(placedBefore + 1);
       });
 
-      run(
+      const cancel = forDefect(item, 'cancel');
+      cancel.run(
         'a drag the system cancels places nothing and leaves nothing stuck',
         async ({ page }, testInfo) => {
-          annotateDefect(testInfo, item);
+          cancel.annotate(testInfo);
           const root = await openForTouch(page, item);
           const before = await signature(page);
           const placedBefore = item.placed(await getSessionState(page));
@@ -285,44 +367,83 @@ test.describe('drag-and-drop elements under touch', () => {
         }
       );
 
-      run('a second finger during a drag starts no second drag', async ({ page }, testInfo) => {
-        annotateDefect(testInfo, item);
-        const root = await openForTouch(page, item);
-        const placedBefore = item.placed(await getSessionState(page));
+      const secondFinger = forDefect(item, 'second-finger');
+      secondFinger.run(
+        'a second finger during a drag starts no second drag',
+        async ({ page }, testInfo) => {
+          secondFinger.annotate(testInfo);
+          const root = await openForTouch(page, item);
+          const placedBefore = item.placed(await getSessionState(page));
 
-        const choices = item.choices(root);
-        await centreInViewport(choices.first(), item.target(root), item.otherTarget(root));
-        await recordPointers(page, 'pointerdown');
-        // The second finger picks up another choice and heads for another target, so a drag
-        // started under it would place a second choice.
-        await touchDragWithSecondFinger(
-          page,
-          await centerOf(choices.first()),
-          await centerOf(item.target(root)),
-          {
-            from: await centerOf(choices.nth(1)),
-            to: await centerOf(item.otherTarget(root)),
+          const choices = item.choices(root);
+          // Which choice each finger holds. They must differ, and neither be in a target yet, or the
+          // check after the drag would pass whichever landed.
+          const firstChoice = await fingerprint(choices.first());
+          const secondChoice = await fingerprint(choices.nth(1));
+          expect(firstChoice).not.toBe('');
+          expect(secondChoice).not.toBe(firstChoice);
+          // Where the targets are before anything lands in them, as a placed choice moves what is
+          // around it.
+          await centreInViewport(choices.first(), item.target(root), item.otherTarget(root));
+          // An element whose placed choices are not in the DOM under their target is read from the
+          // session, by the id on the tile.
+          const firstKey = (await choices.first().getAttribute('data-tile-id')) ?? '';
+          const secondKey = (await choices.nth(1).getAttribute('data-tile-id')) ?? '';
+          const targetBox = await boxOf(item.target(root));
+          const otherBox = await boxOf(item.otherTarget(root));
+          await recordPointers(page, 'pointerdown');
+          // The second finger picks up another choice and heads for another target, so a drag
+          // started under it would place a second choice.
+          await touchDragWithSecondFinger(
+            page,
+            await centerOf(choices.first()),
+            await centerOf(item.target(root)),
+            {
+              from: await centerOf(choices.nth(1)),
+              to: await centerOf(item.otherTarget(root)),
+            }
+          );
+
+          // Both fingers landed, as two touch pointers.
+          expect((await pointersSeen(page)).ids).toBe(2);
+          await expect
+            .poll(async () => item.placed(await getSessionState(page)), {
+              timeout: 10_000,
+            })
+            .toBe(placedBefore + 1);
+          // Settled: no late second placement, and nothing left held.
+          await page.waitForTimeout(500);
+          expect(item.placed(await getSessionState(page))).toBe(placedBefore + 1);
+          // The first finger's choice is the one in its target, and the second finger's is unplaced:
+          // in neither target, where the placed count alone would pass either choice.
+          if (item.landedIn) {
+            const session = await getSessionState(page);
+            expect(item.landedIn(session, firstKey), "the first finger's choice").toBe(
+              item.targetKey
+            );
+            expect(item.landedIn(session, secondKey), "the second finger's choice").toBeNull();
+          } else {
+            const first = await centresOf(choices, firstChoice);
+            const second = await centresOf(choices, secondChoice);
+            expect(
+              first.some((at) => inBox(at, targetBox)),
+              "the first finger's choice is in its target"
+            ).toBe(true);
+            expect(
+              second.some((at) => inBox(at, targetBox) || inBox(at, otherBox)),
+              "the second finger's choice is not placed"
+            ).toBe(false);
           }
-        );
-
-        // Both fingers landed, as two touch pointers.
-        expect((await pointersSeen(page)).ids).toBe(2);
-        await expect
-          .poll(async () => item.placed(await getSessionState(page)), {
-            timeout: 10_000,
-          })
-          .toBe(placedBefore + 1);
-        // Settled: no late second placement, and nothing left held.
-        await page.waitForTimeout(500);
-        expect(item.placed(await getSessionState(page))).toBe(placedBefore + 1);
-        await expect(root.locator('[aria-pressed="true"]')).toHaveCount(0);
-      });
+          await expect(root.locator('[aria-pressed="true"]')).toHaveCount(0);
+        }
+      );
 
       if (item.autoscroll) {
-        run(
+        const autoscroll = forDefect(item, 'autoscroll');
+        autoscroll.run(
           'a drag held at the bottom edge scrolls the page, and cancelling it places nothing',
           async ({ page }, testInfo) => {
-            annotateDefect(testInfo, item);
+            autoscroll.annotate(testInfo);
             const root = await openForTouch(page, item);
             const before = await signature(page);
 
