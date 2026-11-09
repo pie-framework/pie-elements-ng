@@ -49,3 +49,25 @@ describe('every Unicode digit system', () => {
     }
   });
 });
+
+describe('authored matching options', () => {
+  const withOptions = (label: string, options: object) => ({ ...model(label), ...options });
+
+  it('leaves every option off by default', () => {
+    expect(getScore(model('Cat'), session('cat'))).toBe(0);
+    expect(getScore(model('3/4'), session('3 / 4'))).toBe(0);
+    expect(getScore(model('café'), session('cafe'))).toBe(0);
+    expect(getScore(model('ice cream'), session('ice  cream'))).toBe(0);
+  });
+
+  it('trims an encoded trailing space', () => {
+    expect(getScore(model('cat'), session('cat&nbsp;'))).toBe(1);
+  });
+
+  it('applies each option when the author turns it on', () => {
+    expect(getScore(withOptions('Cat', { ignoreCase: true }), session('cat'))).toBe(1);
+    expect(getScore(withOptions('3/4', { ignoreSlashSpacing: true }), session('3 / 4'))).toBe(1);
+    expect(getScore(withOptions('café', { ignoreAccents: true }), session('cafe'))).toBe(1);
+    expect(getScore(withOptions('ice cream', { collapseWhitespace: true }), session('ice&nbsp; cream'))).toBe(1);
+  });
+});

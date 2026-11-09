@@ -2,6 +2,7 @@ import debug from 'debug';
 import { find, isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { decode } from 'he';
 import { contentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
+import type { NormalizeOptions } from '@pie-element/shared-controller-utils';
 import type { PieEnvironment } from '@pie-element/shared-types';
 import Translator from '@pie-lib/translator';
 import defaults from './defaults.js';
@@ -143,7 +144,7 @@ export async function model(
   );
 
   const { value = {} } = session || {};
-  const language = contentLanguage(normalizedQuestion, env);
+  const matching = matchingOptions(normalizedQuestion, contentLanguage(normalizedQuestion, env));
   const feedback =
     env.mode === 'evaluate'
       ? reduce<Choice[], Record<string, 'correct' | 'incorrect'>>(
@@ -151,7 +152,7 @@ export async function model(
           (obj, respArea, key) => {
             const chosenValue = value && value[key];
             const val =
-              !isEmpty(chosenValue) && find(respArea, (c) => matchesLabel(c.label, chosenValue, language));
+              !isEmpty(chosenValue) && find(respArea, (c) => matchesLabel(c.label, chosenValue, matching));
 
             obj[key] = getFeedback(val);
 
@@ -219,21 +220,36 @@ export async function model(
   return out;
 }
 
+// Trimmed after decoding, so an encoded trailing space such as `&nbsp;` is trimmed too.
 export const prepareVal = (html: string | undefined) => {
-  return decodeHTML(getInnerText(html).trim());
+  return decodeHTML(getInnerText(html)).trim();
 };
 
+type MatchingModel = Pick<
+  ExplicitConstructedResponseModel,
+  'ignoreCase' | 'collapseWhitespace' | 'ignoreSlashSpacing' | 'ignoreAccents'
+>;
+
+/** The normalizer options for the content language and the item's authored matching options, each off by default. */
+const matchingOptions = (model: MatchingModel | undefined, language: string | undefined): NormalizeOptions => ({
+  language,
+  ignoreCase: !!model?.ignoreCase,
+  collapseWhitespace: !!model?.collapseWhitespace,
+  ignoreSlashSpacing: !!model?.ignoreSlashSpacing,
+  ignoreAccents: !!model?.ignoreAccents,
+});
+
 /** Whether a typed value matches an authored label, compared through the shared response normalizer. */
-const matchesLabel = (label: string | undefined, typed: string | undefined, language: string | undefined) =>
-  normalizeResponse(prepareVal(label), { language }) === normalizeResponse(prepareVal(typed), { language });
+const matchesLabel = (label: string | undefined, typed: string | undefined, options: NormalizeOptions) =>
+  normalizeResponse(prepareVal(label), options) === normalizeResponse(prepareVal(typed), options);
 
 export const getScore = (
-  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup' | 'language'>,
+  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup' | 'language'> & MatchingModel,
   session: ExplicitConstructedResponseSession | undefined,
   env?: Partial<PieEnvironment>,
 ) => {
   const { value } = session || {};
-  const language = contentLanguage(config, env);
+  const matching = matchingOptions(config, contentLanguage(config, env));
 
   if (!session || isEmpty(session) || !value) {
     return 0;
@@ -246,7 +262,7 @@ export const getScore = (
     (total, respArea, key) => {
       const chosenValue = value && value[key];
 
-      if (isEmpty(chosenValue) || !find(respArea, (c) => matchesLabel(c.label, chosenValue, language))) {
+      if (isEmpty(chosenValue) || !find(respArea, (c) => matchesLabel(c.label, chosenValue, matching))) {
         return total;
       }
 
@@ -275,7 +291,7 @@ export const getLogTrace = (
   const traceLog: string[] = [];
   const { value } = session || {};
   const { choices, markup } = model || {};
-  const language = contentLanguage(model, env);
+  const matching = matchingOptions(model, contentLanguage(model, env));
   
   const responseAreas = markup ? markup.match(/\{\{(.+?)\}\}/g) : [];
   const totalAreas = responseAreas ? responseAreas.length : 0;
@@ -290,7 +306,7 @@ export const getLogTrace = (
       const studentAnswer = (value && value[areaKey]) || '';
       const correctOptions = (choices as Choices)[areaKey] || [];
       const isCorrect = !isEmpty(studentAnswer.trim()) && 
-        correctOptions.some((option) => matchesLabel(option.label, studentAnswer, language));
+        correctOptions.some((option) => matchesLabel(option.label, studentAnswer, matching));
       
       if (studentAnswer.trim()) {
         traceLog.push(`Response area ${parseInt(areaKey) + 1}: ${isCorrect ? 'CORRECT' : 'INCORRECT'}.`);
@@ -319,7 +335,7 @@ export const getLogTrace = (
         const studentAnswer = (value && value[areaKey]) || '';
         const correctOptions = (choices as Choices)[areaKey] || [];
         const isCorrect = !isEmpty(studentAnswer.trim()) && 
-          correctOptions.some((option) => matchesLabel(option.label, studentAnswer, language));
+          correctOptions.some((option) => matchesLabel(option.label, studentAnswer, matching));
         if (isCorrect) correctCount++;
       });
       
