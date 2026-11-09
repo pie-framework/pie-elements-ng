@@ -9,12 +9,15 @@ const stripTags = (html: string) =>
   html.replace(/<img\b[^>]*\balt=(["'])(.*?)\1[^>]*>/gi, ' $2 ').replace(/<[^>]*>/g, ' ');
 
 // What a screen reader is told of content that has no text of its own: an image by its alternative text,
-// and math by its `alttext`, when it has one.
+// and math by its `alttext`, when it has one. Math without one keeps its own text (`<mn>3</mn>` reads "3").
 const readAlternatives = (body: HTMLElement) => {
   body.querySelectorAll('img, math').forEach((node) => {
-    const alternative = node.tagName === 'IMG' ? node.getAttribute('alt') : node.getAttribute('alttext');
+    const alternative =
+      node.tagName === 'IMG'
+        ? (node.getAttribute('alt') ?? '')
+        : (node.getAttribute('alttext') ?? node.textContent ?? '');
 
-    node.replaceWith(` ${alternative ?? ''} `);
+    node.replaceWith(` ${alternative} `);
   });
 };
 

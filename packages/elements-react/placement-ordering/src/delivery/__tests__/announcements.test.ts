@@ -32,6 +32,10 @@ describe('announcements', () => {
     expect(toPlainText('<img src="t.png">')).toBe('');
   });
 
+  it('reads math without an alttext by its own text', () => {
+    expect(toPlainText('<math><mn>3</mn><mo>/</mo><mn>4</mn></math>')).toBe('3/4');
+  });
+
   it('counts the sorted and unsorted objects', () => {
     expect(counts).toEqual({ sorted: 2, unsorted: 3, total: 5 });
   });
