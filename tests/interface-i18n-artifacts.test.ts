@@ -51,6 +51,14 @@ const migratedElements = [
     dir: 'packages/elements-react/multi-trait-rubric',
     catalogPackages: ['packages/elements-react/multi-trait-rubric'],
   },
+  {
+    dir: 'packages/elements-react/fraction-model',
+    catalogPackages: [
+      'packages/elements-react/fraction-model',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })

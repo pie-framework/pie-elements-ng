@@ -6,6 +6,12 @@ import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import Main from './main.js';
 import { cloneDeep } from '@pie-element/shared-lodash';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import FractionModelChart from './fraction-model-chart.js';
 
 // Export FractionModelChart for use in configure
@@ -15,6 +21,10 @@ export default class FractionModel extends HTMLElement {
   constructor() {
     super();
     this._root = null;
+    // The locale the player publishes, once it answers; until then the chrome
+    // follows the item's declared language, else `en-US`.
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   set model(m) {
@@ -58,16 +68,35 @@ export default class FractionModel extends HTMLElement {
   }
 
   connectedCallback() {
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this._render();
+        }
+      });
+    }
     this._render();
   }
 
   _render() {
     if (this._model && this._session) {
+      const declaredLanguage = this._model.language;
+      // Rendered once every catalog on the render path holds the chrome language,
+      // so no English frame precedes it.
+      const language = this._interfaceLocale ?? declaredLanguage;
+      if (!isLocaleReady(language)) {
+        void loadLocale(language).then(() => this._render());
+        return;
+      }
+      stampElementLanguage(this, declaredLanguage);
+
       let model = cloneDeep(this._model);
       const el = React.createElement(Main, {
         model,
         session: this._session,
         onSessionChange: this.onSessionChange.bind(this),
+        language,
       });
 
       if (!this._root) {
@@ -81,6 +110,8 @@ export default class FractionModel extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     if (this._root) {
       this._root.unmount();
       this._root = null;
