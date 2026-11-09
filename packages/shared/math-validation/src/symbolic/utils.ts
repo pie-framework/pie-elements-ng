@@ -319,8 +319,7 @@ export const getCoefficients = (equation: MathNode, isInequality: boolean) => {
     if (isInequality) {
       equation = simplify(equation, simplifyRules);
     } else {
-      simplifyRules.push({ l: '-(n)', r: 'n' });
-      equation = simplify(equation, simplifyRules);
+      equation = simplify(equation, [...simplifyRules, { l: '-(n)', r: 'n' }]);
     }
 
     try {
