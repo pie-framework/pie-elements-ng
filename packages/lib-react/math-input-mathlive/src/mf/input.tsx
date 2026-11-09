@@ -58,6 +58,9 @@ export class Input extends React.Component {
     innerRef: PropTypes.func,
   };
 
+  /** Renames the field once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => labelMathField(this.mathField, this.props.language);
+
   constructor(props) {
     super(props);
     this.holderRef = React.createRef();
@@ -80,7 +83,7 @@ export class Input extends React.Component {
     }
 
     this.mathField = createMathField(ml);
-    labelMathField(this.mathField, this.props.language);
+    labelMathField(this.mathField, this.props.language, this.relabel);
     describeMathField(this.mathField, this.props.ariaDescribedBy);
     this.mathField.value = toMathLive(this.props.latex || '');
 
@@ -117,7 +120,7 @@ export class Input extends React.Component {
     // Belt and braces: drop anything a previous mount may have left behind.
     this.holderRef.current.replaceChildren(this.mathField);
     // Its keyboard input only exists now that it is connected.
-    labelMathField(this.mathField, this.props.language);
+    labelMathField(this.mathField, this.props.language, this.relabel);
 
     if (this.props.innerRef) {
       this.props.innerRef(this);
@@ -137,7 +140,7 @@ export class Input extends React.Component {
     const { latex, readOnly, language } = this.props;
 
     if (language !== prevProps.language) {
-      labelMathField(this.mathField, language);
+      labelMathField(this.mathField, language, this.relabel);
     }
 
     if (this.props.ariaDescribedBy !== prevProps.ariaDescribedBy) {

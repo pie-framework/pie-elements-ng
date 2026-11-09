@@ -35,11 +35,11 @@ describe('EditableHtml toolbar', () => {
     expect(document.querySelectorAll('[tabindex]:not([tabindex="-1"]):not([tabindex="0"])')).toHaveLength(0);
   });
 
-  it('takes its name from the translator in the given language', async () => {
+  it('takes its name from the catalog of the given language once it loads', async () => {
     render(editor({ language: 'es_ES' }));
     await textbox();
 
-    expect(toolbar()).toHaveAttribute('aria-label', 'Herramientas de edición');
+    await waitFor(() => expect(toolbar()).toHaveAttribute('aria-label', 'Herramientas de edición'));
   });
 
   it.each([
@@ -49,8 +49,9 @@ describe('EditableHtml toolbar', () => {
     render(editor({ language, activePlugins: ['bold', 'italic', 'bulleted-list', 'undo', 'redo'] }));
     await textbox();
 
+    const labels = () => [...toolbar().querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
+    await waitFor(() => expect(labels()).toEqual([...names, done]));
     const buttons = [...toolbar().querySelectorAll('button')];
-    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([...names, done]);
     // The done button is an icon with no tooltip.
     expect(buttons.map((b) => b.getAttribute('title'))).toEqual([...names, null]);
   });

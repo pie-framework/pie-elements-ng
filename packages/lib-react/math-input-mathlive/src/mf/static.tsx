@@ -87,6 +87,9 @@ export default class Static extends React.Component {
     getFieldName: () => {},
   };
 
+  /** Renames the field once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => labelMathField(this.mathField, this.props.language);
+
   constructor(props) {
     super(props);
     this.holderRef = React.createRef();
@@ -124,7 +127,7 @@ export default class Static extends React.Component {
     }
 
     this.mathField = createMathField(ml);
-    labelMathField(this.mathField, this.props.language);
+    labelMathField(this.mathField, this.props.language, this.relabel);
     describeMathField(this.mathField, this.props.ariaDescribedBy);
     this.mathField.readOnly = true;
     this.mathField.mathVirtualKeyboardPolicy = 'manual';
@@ -156,7 +159,7 @@ export default class Static extends React.Component {
     // Belt and braces: drop anything a previous mount may have left behind.
     this.holderRef.current.replaceChildren(this.mathField);
     // Its keyboard input only exists now that it is connected, and connecting resets the caret.
-    labelMathField(this.mathField, this.props.language);
+    labelMathField(this.mathField, this.props.language, this.relabel);
     this.parkCaret();
 
     this.createLiveRegion();
@@ -169,7 +172,7 @@ export default class Static extends React.Component {
     }
 
     if (this.mathField && prevProps.language !== this.props.language) {
-      labelMathField(this.mathField, this.props.language);
+      labelMathField(this.mathField, this.props.language, this.relabel);
     }
 
     if (this.mathField && prevProps.ariaDescribedBy !== this.props.ariaDescribedBy) {

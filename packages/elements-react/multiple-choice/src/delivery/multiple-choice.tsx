@@ -394,12 +394,7 @@ export class MultipleChoice extends React.Component {
         {teacherInstructions && (
           <TeacherInstructions>
             {!animationsDisabled ? (
-              <Collapsible
-                labels={{
-                  hidden: i18n.t('showTeacherInstructions'),
-                  visible: i18n.t('hideTeacherInstructions'),
-                }}
-              >
+              <Collapsible variant="teacherInstructions" language={language}>
                 {teacherInstructionsDiv}
               </Collapsible>
             ) : (

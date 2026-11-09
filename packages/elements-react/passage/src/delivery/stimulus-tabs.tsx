@@ -204,7 +204,9 @@ class StimulusTabs extends React.Component {
   tabButtonId: any = (tabId) => `${this.idPrefix}-button-${tabId}`;
 
   // The chrome language the element resolved, else the item's.
-  i18n = () => catalogs.forLocale(this.props.language ?? this.props.model?.language);
+  language = () => this.props.language ?? this.props.model?.language;
+
+  i18n = () => catalogs.forLocale(this.language());
 
   tabPanelId: any = (tabId) => `${this.idPrefix}-tabpanel-${tabId}`;
 
@@ -344,12 +346,7 @@ class StimulusTabs extends React.Component {
     }
 
     return (
-      <Collapsible
-        labels={{
-          hidden: this.i18n().t('showTeacherInstructions'),
-          visible: this.i18n().t('hideTeacherInstructions'),
-        }}
-      >
+      <Collapsible variant="teacherInstructions" language={this.language()}>
         {teacherInstructionsDiv}
       </Collapsible>
     );

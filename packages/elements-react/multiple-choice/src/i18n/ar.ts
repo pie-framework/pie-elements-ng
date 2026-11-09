@@ -15,8 +15,6 @@ export default {
     many: 'يُسمح بـ{count} إجابةً فقط.',
     other: 'يُسمح بـ{count} إجابة فقط.',
   },
-  showTeacherInstructions: 'عرض تعليمات المعلم',
-  hideTeacherInstructions: 'إخفاء تعليمات المعلم',
   answerChoicesA11y: 'خيارات الإجابة',
   partAnswerChoicesA11y: '{partLabel}، خيارات الإجابة',
   pickTheAnswerBelowA11y: 'اختر الإجابة أدناه',

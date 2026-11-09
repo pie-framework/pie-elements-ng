@@ -1,6 +1,4 @@
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 /**
  * Names a `<math-field>`. MathLive falls back to an untranslated "math input field" when the
@@ -14,13 +12,20 @@ const { translator } = Translator;
  * The field is a group around that textbox. With MathLive's own `math` role, which it sets
  * through ElementInternals, a focusable field holding a focusable textbox is a nested
  * interactive control.
+ *
+ * The name follows `language`. A locale that is not resident names the field in English and
+ * starts loading; `onLoad` runs once it settles, so a component passes its own relabel there.
  */
-export function labelMathField(mathField: Element | null | undefined, language?: string): void {
+export function labelMathField(
+  mathField: Element | null | undefined,
+  language?: string,
+  onLoad?: () => void,
+): void {
   if (!mathField) {
     return;
   }
 
-  const name = translator.t('mathInput.enterAnswer', { lng: language });
+  const name = catalogs.forLocale(language, onLoad).t('enterAnswerA11y');
 
   mathField.setAttribute('role', 'group');
   mathField.setAttribute('aria-label', name);
