@@ -57,17 +57,20 @@ describe('math-inline answer blocks', () => {
     const first = render(item('view', ['12', '34'])).container;
     const second = render(item('view', ['56', '78'])).container;
 
-    // MathLive renders the static math once it has loaded.
+    // MathLive renders the static math once it has loaded, and each item is its own root, which
+    // React may commit in a later task than the other's.
     await waitFor(() =>
       expect([answerBlock(first, 'r1'), answerBlock(first, 'r2')]).toEqual([
         expect.stringContaining('12'),
         expect.stringContaining('34'),
       ]), LOAD,
     );
-    expect([answerBlock(second, 'r1'), answerBlock(second, 'r2')]).toEqual([
-      expect.stringContaining('56'),
-      expect.stringContaining('78'),
-    ]);
+    await waitFor(() =>
+      expect([answerBlock(second, 'r1'), answerBlock(second, 'r2')]).toEqual([
+        expect.stringContaining('56'),
+        expect.stringContaining('78'),
+      ]), LOAD,
+    );
 
     // Both answer blocks are prompts of one field, which the instructions describe.
     for (const root of [render(item('gather', ['', ''])).container, render(item('gather', ['', ''])).container]) {
