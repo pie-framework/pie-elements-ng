@@ -247,7 +247,7 @@ describe('video-stimulus delivery', () => {
     element.addEventListener('session-changed', sessionChanged);
     element.model = viewModel();
     expect(element.shadowRoot).toBeNull();
-    expect(element.hasAttribute('lang')).toBe(false);
+    expect(element.getAttribute('lang')).toBe('en');
     expect(modelSet).toHaveBeenCalledTimes(1);
     expect(sessionChanged).not.toHaveBeenCalled();
   });

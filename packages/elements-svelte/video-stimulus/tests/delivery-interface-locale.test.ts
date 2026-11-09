@@ -101,6 +101,7 @@ describe('video-stimulus interface locale', () => {
     const element = render({ ...QUESTION, language: 'es-MX' });
 
     await vi.waitFor(() => expect(toggleLabel(element)).toBe('Mostrar transcripción'));
+    expect(element.getAttribute('lang')).toBe('es-MX');
     expect(element.querySelector('.video-stimulus')?.getAttribute('lang')).toBe('es-MX');
   });
 

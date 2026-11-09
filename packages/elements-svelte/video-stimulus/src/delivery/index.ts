@@ -1,4 +1,4 @@
-import { subscribeInterfaceLocale } from '@pie-element/shared-i18n';
+import { stampElementLanguage, subscribeInterfaceLocale } from '@pie-element/shared-i18n';
 import { ModelSetEvent } from '@pie-lib/delivery-events-svelte';
 import VideoStimulusComponent from './VideoStimulus.svelte';
 import type { VideoStimulusViewModel } from '../types.js';
@@ -18,7 +18,9 @@ const GeneratedElement = (
 /**
  * While connected, the element follows the locale a player publishes through
  * `interfaceLocaleContext` and hands it to the component's `interfaceLocale`
- * prop, which stays unset with no player.
+ * prop, which stays unset with no player. The host carries `lang` and `dir`
+ * for `model.language`, the item's declared language, and none when the item
+ * declares none.
  */
 class VideoStimulusElement extends GeneratedElement {
   private currentModel: VideoStimulusViewModel | undefined;
@@ -28,6 +30,7 @@ class VideoStimulusElement extends GeneratedElement {
     this.currentModel = nextModel;
     // @ts-expect-error Svelte's generated HTMLElement subclass has an untyped model accessor.
     super.model = nextModel;
+    stampElementLanguage(this, nextModel?.language);
     this.dispatchEvent(
       new ModelSetEvent(this.tagName.toLowerCase(), true, nextModel !== undefined)
     );
