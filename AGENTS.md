@@ -110,7 +110,7 @@ No Svelte type check runs in the build, the hooks or CI; the `.ts` files of Svel
 5. E2E tests pass: `bun run test:e2e`. CI runs them only on manual dispatch.
 6. Accessibility tests pass: `bun run test:a11y`. CI runs them on every pull request without blocking the merge.
 
-The lefthook pre-commit hook runs `lint:fix`, `scripts/type-check-staged.mjs` and step 2. The pre-push gate (`scripts/pre-push-gate.mjs`) runs steps 2 to 4, adding `--check-peer-gaps --fail-on-peer` to step 2. CI runs `bun run lint` (step 1 without the element contracts) with `verify:no-local-paths` and `check:repository-metadata`, then steps 2 to 4.
+The lefthook pre-commit hook runs step 1 on the staged files, `scripts/type-check-staged.mjs` and step 2. The pre-push gate (`scripts/pre-push-gate.mjs`) runs steps 2 to 4, adding `--check-peer-gaps --fail-on-peer` to step 2. CI runs `bun run lint` (step 1 without the element contracts) with `verify:no-local-paths` and `check:repository-metadata`, then steps 2 to 4.
 
 ### Documentation-only changes
 
