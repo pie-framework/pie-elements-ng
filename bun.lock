@@ -1199,12 +1199,12 @@
       "version": "0.3.7",
       "dependencies": {
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
       "devDependencies": {
-        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-test-utils": "workspace:*",
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "svelte": "^5.57.3",
@@ -1218,13 +1218,13 @@
       "version": "0.1.11",
       "dependencies": {
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
-        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/config-ui-svelte": "workspace:*",
@@ -1242,13 +1242,13 @@
       "name": "@pie-element/venn-classification",
       "version": "0.1.8",
       "dependencies": {
+        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
-        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/config-ui-svelte": "workspace:*",
@@ -1267,12 +1267,12 @@
       "name": "@pie-element/video-stimulus",
       "version": "0.1.6",
       "dependencies": {
+        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
-        "@pie-element/shared-i18n": "workspace:*",
         "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/media-svelte": "workspace:*",
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
