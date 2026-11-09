@@ -186,8 +186,9 @@ export async function model(
     }
   });
 
-  // The accepted answers reach the browser only once it may show them; delivery reads them for
-  // the correct-answer view alone. maxLengthPerChoice above is sized from them beforehand.
+  // The accepted answers reach the browser only once it may show them; delivery reads them, and
+  // `showNote`, for the correct-answer view alone. `maxLengthPerChoice` is sized from them, so it
+  // goes along only when it caps the input; uncapped, the input takes 25 characters.
   const includeAnswers = env.mode === 'evaluate' || env.role === 'instructor';
 
   const out = {
@@ -199,7 +200,7 @@ export async function model(
     feedback,
     language: normalizedQuestion.language,
     markup: normalizedQuestion.markup,
-    maxLengthPerChoice,
+    maxLengthPerChoice: includeAnswers || maxLengthPerChoiceEnabled ? maxLengthPerChoice : [],
     maxLengthPerChoiceEnabled,
     note,
     // normalize's defaults cover a missing key, but a key present as undefined/null overwrites
@@ -208,7 +209,7 @@ export async function model(
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : defaults.prompt,
     rationale: defaults.rationale,
     responseCorrect: env.mode === 'evaluate' ? getScore(normalizedQuestion, session, env) === 1 : undefined,
-    showNote,
+    showNote: includeAnswers && showNote,
     teacherInstructions: defaults.teacherInstructions,
     responseAreaInputConfiguration: normalizedQuestion.responseAreaInputConfiguration,
     extraCSSRules: normalizedQuestion.extraCSSRules,

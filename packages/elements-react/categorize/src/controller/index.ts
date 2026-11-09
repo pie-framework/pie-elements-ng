@@ -254,7 +254,8 @@ export const model = async (
     rowLabels,
     note,
     env,
-    showNote: alternates && alternates.length > 0,
+    // Delivery shows the note beside the correct answer alone, and it tells that alternates exist.
+    showNote: (mode === 'evaluate' || role === 'instructor') && alternates && alternates.length > 0,
     correctResponse: mode === 'evaluate' ? filteredCorrectResponse : undefined,
     language,
     extraCSSRules,
