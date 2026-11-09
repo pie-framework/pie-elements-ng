@@ -15,6 +15,14 @@ import { describeMathField, labelMathField } from './field-label.js';
 import { toMathLive, fromMathLive, keyToAction, KEYSTROKES } from '../latex-bridge.js';
 import { trackWholeAtomSelection } from '../selection.js';
 import { trackLongDivision } from '../longdiv.js';
+import { keepCaretWhileKeypadFocused } from './inactive-caret.js';
+
+// MathLive's Tab and Shift+Tab group navigation. Tab still accepts a suggestion while a latex
+// command is typed (`ifMode: 'latex'`).
+const TAB_NAVIGATION = new Set(['[Tab]', 'shift+[Tab]']);
+
+const withoutTabNavigation = (keybindings = []) =>
+  keybindings.filter(({ key, ifMode }) => !(TAB_NAVIGATION.has(key) && ifMode !== 'latex'));
 
 const log = debug('pie-lib:math-input-mathlive:input');
 
@@ -115,12 +123,19 @@ export class Input extends React.Component {
     // MathLive misdraws long division; correct it after every render.
     this.untrackLongDivision = trackLongDivision(this.mathField);
 
+    // MathLive hides the caret on blur; keep it while a keypad button has focus.
+    this.stopKeepingCaret = keepCaretWhileKeypadFocused(this.mathField);
+
     this.mathField.addEventListener('input', this.onInputEdit);
 
     // Belt and braces: drop anything a previous mount may have left behind.
     this.holderRef.current.replaceChildren(this.mathField);
     // Its keyboard input only exists now that it is connected.
     labelMathField(this.mathField, this.props.language, this.relabel);
+    // Tab moves focus on, keeping the insertion point, so a keypad button can insert there.
+    // MathLive's own Tab first walks the cursor through the expression's groups to its end. The
+    // keybindings can only be read once the field is connected.
+    this.mathField.keybindings = withoutTabNavigation(this.mathField.keybindings);
 
     if (this.props.innerRef) {
       this.props.innerRef(this);
@@ -181,6 +196,11 @@ export class Input extends React.Component {
     if (this.untrackLongDivision) {
       this.untrackLongDivision();
       this.untrackLongDivision = undefined;
+    }
+
+    if (this.stopKeepingCaret) {
+      this.stopKeepingCaret();
+      this.stopKeepingCaret = undefined;
     }
 
     if (this.mathField) {

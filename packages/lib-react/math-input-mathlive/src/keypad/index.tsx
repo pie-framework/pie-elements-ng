@@ -14,6 +14,7 @@ import { sortKeys } from './keys-layout.js';
 import { commonKeyboardStyles, rootIndexStyles } from '../mf/common-styles.js';
 import { loadMathLive, latexToMarkup } from '../mathlive-instance.js';
 import { fixLongDivisionWhenReady } from '../longdiv.js';
+import { KEYPAD_ATTRIBUTE } from '../mf/inactive-caret.js';
 
 const log = debug('pie-lib:math-input-mathlive:keypad');
 
@@ -388,6 +389,7 @@ export class KeyPad extends React.Component {
     return (
       <KeyPadContainer
         ref={this.keypadRef}
+        {...{ [KEYPAD_ATTRIBUTE]: '' }}
         className={[className, mode].filter(Boolean).join(' ')}
         style={style}
         onFocus={onFocus}
