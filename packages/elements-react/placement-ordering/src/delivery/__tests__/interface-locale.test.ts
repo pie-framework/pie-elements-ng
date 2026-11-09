@@ -63,7 +63,7 @@ describe('placement-ordering interface locale', () => {
     const { el } = mount(model, 'es');
     await vi.waitFor(() => expect(el.textContent).toContain('Mostrar instrucciones para el maestro'));
     expect(el.textContent).toContain(SPANISH_NOTE);
-    expect(document.body.textContent).toContain('Presiona Espacio o Intro para tomar esta opción de respuesta.');
+    await vi.waitFor(() => expect(document.body.textContent).toContain('Presiona Espacio o Intro para tomar esta opción de respuesta.'));
   });
 
   it('relabels when the player publishes another locale', async () => {
@@ -92,7 +92,7 @@ describe('placement-ordering interface locale', () => {
   it('renders English when neither declares a locale', async () => {
     const { el } = mount(model);
     await vi.waitFor(() => expect(el.textContent).toContain(ENGLISH_NOTE));
-    expect(document.body.textContent).toContain('Press Space or Enter to pick up this answer choice.');
+    await vi.waitFor(() => expect(document.body.textContent).toContain('Press Space or Enter to pick up this answer choice.'));
   });
 });
 
