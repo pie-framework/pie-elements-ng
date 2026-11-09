@@ -270,10 +270,11 @@ class Response extends React.Component {
   };
 
   render() {
-    const { mode, defaultResponse, index, response, cAllowTrailingZeros, cIgnoreOrder, error } = this.props;
+    const { mode, defaultResponse, index, response, cAllowTrailingZeros, cIgnoreOrder, cCompareNumbersByValue, error } =
+      this.props;
 
     const { showKeypad } = this.state;
-    const { validation, answer, alternates, ignoreOrder, allowTrailingZeros } = response;
+    const { validation, answer, alternates, ignoreOrder, allowTrailingZeros, compareNumbersByValue } = response;
     const hasAlternates = Object.keys(alternates || {}).length > 0;
     const classNames = {
       editor: 'response-editor',
@@ -299,8 +300,6 @@ class Response extends React.Component {
               >
                 <MenuItem value="literal">Literal Validation</MenuItem>
                 <MenuItem value="symbolic">Symbolic Validation</MenuItem>
-                {/* Advanced Multi scores the whole expression, which value validation always rejects. */}
-                {(defaultResponse || validation === 'value') && <MenuItem value="value">Value Validation</MenuItem>}
               </Select>
             </SelectContainer>
           </TitleBar>
@@ -324,6 +323,18 @@ class Response extends React.Component {
                   label={cIgnoreOrder.label}
                   control={
                     <CustomColorCheckbox checked={ignoreOrder} onChange={this.onLiteralOptionsChange('ignoreOrder')} />
+                  }
+                />
+              )}
+
+              {cCompareNumbersByValue?.enabled && (
+                <FormControlLabel
+                  label={cCompareNumbersByValue.label}
+                  control={
+                    <CustomColorCheckbox
+                      checked={!!compareNumbersByValue}
+                      onChange={this.onLiteralOptionsChange('compareNumbersByValue')}
+                    />
                   }
                 />
               )}
