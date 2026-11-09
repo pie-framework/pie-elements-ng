@@ -1,3 +1,14 @@
+/*
+ * Copyright 2014-2017 by
+ *  Jim Fowler <kisonecat@gmail.com>
+ *  Duane Nykamp <nykamp@umn.edu>
+ *
+ * Derived from release 2.0.0-alpha26 of the math-expressions library
+ * (https://github.com/kisonecat/math-expressions), which is licensed under GPL-3.0 or Apache-2.0.
+ * Used here under the Apache License, Version 2.0 (see LICENSE in this package), and changed for
+ * this package.
+ */
+
 const get_tree = (expr_or_tree: any) => {
   if (expr_or_tree === undefined || expr_or_tree === null) return undefined;
   return expr_or_tree.tree !== undefined ? expr_or_tree.tree : expr_or_tree;

@@ -9,7 +9,7 @@ latexEqual('\\frac{4}{6}', '\\frac{2}{3}', { mode: 'symbolic' }); // true
 latexEqual('a+7+b', '7+a+b', { mode: 'literal', literal: { ignoreOrder: true } }); // true
 ```
 
-The package is ES modules only. LaTeX is parsed into an AST (`src/conversion/latex-to-ast.ts`), converted to a mathjs expression tree (`src/conversion/ast-to-mathjs.ts`), and compared there. Both converters derive from the math-expressions library and keep its GPL-3.0-or-later headers.
+The package is ES modules only. LaTeX is parsed into an AST (`src/conversion/latex-to-ast.ts`), converted to a mathjs expression tree (`src/conversion/ast-to-mathjs.ts`), and compared there. Both converters derive from the math-expressions library and are used under its Apache-2.0 license; `LICENSE` holds the terms.
 
 ## Modes
 
