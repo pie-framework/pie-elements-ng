@@ -34,6 +34,12 @@ const renderUi =
     : renderUiNamespaceAny;
 const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import CategorizeComponent from './categorize/index.js';
 
 export default class Categorize extends HTMLElement {
@@ -53,6 +59,11 @@ export default class Categorize extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // The locale the player publishes, once it answers; null until then. While
+    // it is null the chrome follows the item's declared language (published,
+    // else `model.language`, else `en-US`; permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   _scheduleMathRender: any = () => {
@@ -233,6 +244,14 @@ export default class Categorize extends HTMLElement {
   }
 
   connectedCallback() {
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this.render();
+        }
+      });
+    }
     this._initMathObserver();
     
     this._promptAudioWatcher.connect();
@@ -242,6 +261,8 @@ export default class Categorize extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     this._disconnectMathObserver();
     
     this._promptAudioWatcher.disconnect();
@@ -254,6 +275,18 @@ export default class Categorize extends HTMLElement {
 
   render() {
     if (this._model && this._session) {
+      // The chrome speaks the locale the player publishes, else the item's
+      // declared language, else `en-US`. Rendered once every catalog on the
+      // render path holds it, so no English frame precedes it. The declared
+      // language loads too: a stored default note is compared against it.
+      const language = this._interfaceLocale ?? this._model.language;
+      if (!isLocaleReady(language) || !isLocaleReady(this._model.language)) {
+        void Promise.all([loadLocale(language), loadLocale(this._model.language)]).then(() => this.render());
+        return;
+      }
+      // The host names the content language; the chrome roots carry `language`.
+      stampElementLanguage(this, this._model.language);
+
       const el = React.createElement(CategorizeComponent, {
         model: this._model,
         session: this._session,
@@ -261,6 +294,7 @@ export default class Categorize extends HTMLElement {
         onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
         pauseMathObserver: this.pauseMathObserver,
         resumeMathObserver: this.resumeMathObserver,
+        language,
       });
 
       if (!this._root) {
