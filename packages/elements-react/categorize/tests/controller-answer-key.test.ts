@@ -15,4 +15,20 @@ describe('answer key in the view model', () => {
     expect(out).not.toHaveProperty('possibleResponses');
     expect(JSON.stringify(out)).not.toContain('"category":"c1"');
   });
+
+  it('says alternates exist only beside the correct answer', async () => {
+    const withAlternate = {
+      ...question,
+      allowAlternateEnabled: true,
+      correctResponse: [
+        { category: 'c1', choices: ['ch1'], alternateResponses: [['ch2']] },
+        { category: 'c2', choices: ['ch2'], alternateResponses: [['ch1']] },
+      ],
+    };
+    const session = { id: '1', answers: [] };
+    const gathering: any = await model(withAlternate as any, session as any, { mode: 'gather', role: 'student' });
+    const evaluating: any = await model(withAlternate as any, session as any, { mode: 'evaluate', role: 'student' });
+    expect(gathering.showNote).toBe(false);
+    expect(evaluating.showNote).toBe(true);
+  });
 });
