@@ -12,7 +12,7 @@ import { Axes, AxisPropTypes } from './axis/index.js';
 import Grid from './grid.js';
 import { LabelType } from './labels.js';
 import Bg from './bg.js';
-import { isDuplicatedMark } from './utils.js';
+import { isDuplicatedMark, markLimitReached } from './utils.js';
 import { catalogs } from './i18n/index.js';
 
 const log = debug('pie-lib:graphing:graph');
@@ -45,7 +45,8 @@ export const graphPropTypes = {
   title: PropTypes.string,
   tools: PropTypes.array,
   limitLabeling: PropTypes.bool,
-  // the most marks of each tool type a student can place, keyed by tool type; a tool without one is unlimited
+  // the most marks of each tool type a student can place, keyed by tool type; a tool without one, or
+  // with 0, is unlimited
   markLimits: PropTypes.objectOf(PropTypes.number),
   language: PropTypes.string,
 };
@@ -207,9 +208,8 @@ export class Graph extends React.Component {
     const buildingMark = marks.filter((m) => m.building)[0];
     let updatedMark;
     const continuesMark = buildingMark && buildingMark.type === currentTool.type;
-    const limit = this.props.markLimits?.[currentTool.type];
 
-    if (!continuesMark && Number.isFinite(limit) && marks.filter((m) => m.type === currentTool.type).length >= limit) {
+    if (!continuesMark && markLimitReached(marks, this.props.markLimits, currentTool.type)) {
       return;
     }
 

@@ -26,6 +26,7 @@ export default {
   undo: 'Annuler',
   redo: 'Rétablir',
   reset: 'Réinitialiser',
+  markLimitReached: '{tool} : limite de {limit} atteinte. Impossible d’en placer davantage.',
   key: 'Légende',
   keyLegend: {
     missingRequiredLabel: 'Étiquette obligatoire manquante',

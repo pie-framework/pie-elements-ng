@@ -26,6 +26,7 @@ export default {
   undo: 'Desfazer',
   redo: 'Refazer',
   reset: 'Redefinir',
+  markLimitReached: '{tool}: limite de {limit} atingido. Não é possível colocar mais.',
   key: 'Legenda',
   keyLegend: {
     missingRequiredLabel: 'Rótulo obrigatório ausente',

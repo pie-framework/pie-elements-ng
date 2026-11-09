@@ -24,6 +24,7 @@ export default {
   undo: '실행 취소',
   redo: '다시 실행',
   reset: '초기화',
+  markLimitReached: '{tool}: 최대 {limit}개에 도달했습니다. 더 이상 배치할 수 없습니다.',
   key: '범례',
   keyLegend: {
     missingRequiredLabel: '필수 레이블 누락',

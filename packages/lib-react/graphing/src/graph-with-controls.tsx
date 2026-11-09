@@ -5,11 +5,14 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { isString, uniq } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
 
 import ToolMenu from './tool-menu.js';
 import Graph, { graphPropTypes } from './graph.js';
 import UndoRedo from './undo-redo.js';
 import { allTools, toolsArr } from './tools/index.js';
+import { markLimitReached } from './utils.js';
+import { catalogs } from './i18n/index.js';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -30,6 +33,13 @@ const StyledControls: any = styled('div')(({ theme }) => ({
   },
   border: `1px solid ${color.primaryLight()}`,
   borderBottom: 'none'
+}));
+
+const StyledStatus: any = styled('div')(({ theme }) => ({
+  color: color.text(),
+  '&:not(:empty)': {
+    paddingTop: theme.spacing(1),
+  },
 }));
 
 const StyledAccordion: any = styled(Accordion)({
@@ -126,6 +136,9 @@ export class GraphWithControls extends React.Component {
     }
   }
 
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   changeCurrentTool = (tool, tools) =>
     this.setState({ currentTool: tools.find((t) => t.type === tool), labelModeEnabled: tool === 'label' });
 
@@ -180,6 +193,16 @@ export class GraphWithControls extends React.Component {
     if (!currentTool || !toolIsAvailable(tools, currentTool)) {
       currentTool = getAvailableTool(tools);
     }
+
+    // the same check Graph places marks by, so the line shows exactly when a click places nothing
+    const i18n = catalogs.forLocale(language, this.relabel);
+    const limitStatus =
+      !disabled && currentTool && markLimitReached(marks, markLimits, currentTool.type)
+        ? i18n.t('markLimitReached', {
+            limit: markLimits[currentTool.type],
+            tool: i18n.t(dynamicMessageKey(currentTool.type)).trim(),
+          })
+        : null;
 
     const graphActions = (
       <React.Fragment>
@@ -239,6 +262,8 @@ export class GraphWithControls extends React.Component {
           markLimits={markLimits}
           language={language}
         />
+
+        <StyledStatus role="status">{limitStatus}</StyledStatus>
       </StyledGraphContainer>
     );
   }

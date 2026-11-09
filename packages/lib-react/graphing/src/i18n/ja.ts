@@ -24,6 +24,7 @@ export default {
   undo: '元に戻す',
   redo: 'やり直す',
   reset: 'リセット',
+  markLimitReached: '{tool}：上限の{limit}個に達しました。これ以上配置できません。',
   key: '凡例',
   keyLegend: {
     missingRequiredLabel: '必須ラベルがありません',

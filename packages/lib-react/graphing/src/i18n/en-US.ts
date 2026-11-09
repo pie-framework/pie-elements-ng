@@ -28,6 +28,8 @@ export default {
   undo: 'Undo',
   redo: 'Redo',
   reset: 'Reset',
+  /** Status line once the student has placed as many marks with the current tool as its limit allows. */
+  markLimitReached: '{tool}: limit of {limit} reached. No more can be placed.',
   /** Title of the evaluate legend. */
   key: 'Key',
   keyLegend: {
