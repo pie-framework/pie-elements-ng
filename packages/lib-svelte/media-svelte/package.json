@@ -27,6 +27,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "dompurify": "^3.4.17",

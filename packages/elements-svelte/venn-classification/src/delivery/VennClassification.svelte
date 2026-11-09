@@ -4,6 +4,7 @@
     props: {
       model: { type: 'Object' },
       session: { type: 'Object' },
+      interfaceLocale: { type: 'String' },
       onSessionChange: {}
     }
   }}
@@ -17,7 +18,9 @@ import Tile from './Tile.svelte';
 import { tileAccessibleName, tileStatusName, type TileVerdict } from './tile-accessible-name.js';
 import Tray from './Tray.svelte';
 import TeacherInstructions from './TeacherInstructions.svelte';
-import { t, tCommon } from '../i18n.js';
+import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
+import { residentLanguage } from './resident-language.svelte.js';
 import {
   buildLayout2Set,
   diagramCssWidth,
@@ -69,6 +72,8 @@ type ViewModel = {
 let props = $props<{
   model?: ViewModel;
   session?: VennClassificationSession;
+  /** The locale the player publishes; the element shell sets it. */
+  interfaceLocale?: string;
   onSessionChange?: (session: VennClassificationSession) => void;
 }>();
 
@@ -117,7 +122,15 @@ const circles = $derived<VennClassificationModel['circles']>(
   (props?.model?.circles ?? DEFAULT_CIRCLES) as VennClassificationModel['circles']
 );
 const circleCountSupported = $derived(circles.length === SUPPORTED_CIRCLES);
-const language = $derived<string | undefined>(props?.model?.language);
+// The chrome, composed region names included, speaks the locale the player
+// publishes, else the item's declared language, else `en-US`, and renders once
+// that locale's catalogs are resident.
+const chromeLanguage = residentLanguage(() =>
+  props?.model ? props.interfaceLocale || props.model.language || undefined : null
+);
+const language = $derived(chromeLanguage.current ?? undefined);
+const i18n = $derived(catalogs.forLocale(language));
+const chromeLanguageAttributes = $derived(elementLanguageAttributes(language));
 
 const modelShape = $derived<VennClassificationModel>({
   circles,
@@ -256,9 +269,7 @@ function regionByKey(key: string): RegionLayout | undefined {
 }
 
 function targetLabel(key: string): string {
-  return key === 'tray'
-    ? t('tray', language)
-    : (regionByKey(key)?.label ?? t('unknownTarget', language));
+  return key === 'tray' ? i18n.t('tray') : (regionByKey(key)?.label ?? i18n.t('unknownTarget'));
 }
 
 function clearHeld() {
@@ -283,14 +294,14 @@ function dropTile(tile: VennTile, targetKey: string | null) {
   const placement =
     targetKey === 'tray' ? null : targetKey === null ? undefined : regionByKey(targetKey)?.region;
   if (placement === undefined || isSamePlacement(props?.session, tile.id, placement)) {
-    announce(t('cancelled', language));
+    announce(i18n.t('cancelled'));
     return;
   }
   commitPlacement(tile.id, placement);
   announce(
     placement === null
-      ? t('returnedToTray', language, { name })
-      : t('placedIn', language, { name, target: targetLabel(targetKey as string) })
+      ? i18n.t('returnedToTray', { name })
+      : i18n.t('placedIn', { name, target: targetLabel(targetKey as string) })
   );
 }
 
@@ -304,7 +315,7 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   keyboardFocusKey = null;
   dragPos = { x: e.clientX, y: e.clientY };
   hoveredRegionKey = resolveHoverKeyFromPointer(e.clientX, e.clientY);
-  announce(t('pickedUp', language, { name: tileAccessibleName(tile, language) }));
+  announce(i18n.t('pickedUp', { name: tileAccessibleName(tile, language) }));
 
   const onMove = (ev: PointerEvent) => {
     dragPos = { x: ev.clientX, y: ev.clientY };
@@ -324,7 +335,7 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   const onCancel = () => {
     detach();
     clearHeld();
-    announce(t('cancelled', language));
+    announce(i18n.t('cancelled'));
   };
   const detach = () => {
     window.removeEventListener('pointermove', onMove);
@@ -385,7 +396,7 @@ function activateTile(tile: VennTile) {
     heldTileId = tile.id;
     keyboardFocusKey = startKey;
     announce(
-      t('pickedUpWithKeyboard', language, {
+      i18n.t('pickedUpWithKeyboard', {
         name: tileAccessibleName(tile, language),
         target: targetLabel(startKey ?? ''),
       })
@@ -427,7 +438,7 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
   if (e.key === 'Escape' && heldTileId === tile.id) {
     e.preventDefault();
     clearHeld();
-    announce(t('cancelled', language));
+    announce(i18n.t('cancelled'));
     return;
   }
 
@@ -447,7 +458,7 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
       e.key === 'ArrowLeft' || e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey) ? -1 : 1;
     idx = (idx + delta + navigableTargets.length) % navigableTargets.length;
     keyboardFocusKey = navigableTargets[idx];
-    announce(t('dropTarget', language, { target: targetLabel(keyboardFocusKey) }));
+    announce(i18n.t('dropTarget', { target: targetLabel(keyboardFocusKey) }));
   }
 }
 
@@ -457,7 +468,7 @@ function onRootFocusOut(e: FocusEvent) {
   const next = e.relatedTarget as Node | null;
   if (next && containerEl?.contains(next)) return;
   clearHeld();
-  announce(t('cancelled', language));
+  announce(i18n.t('cancelled'));
 }
 
 function tileVerdict(id: string): TileVerdict | null {
@@ -488,6 +499,7 @@ $effect(() => {
   const __ = (modelShape as VennClassificationModel).tiles?.length ?? 0;
   void _;
   void __;
+  void chromeLanguage.current;
   tick().then(typeset);
 });
 
@@ -518,6 +530,7 @@ const draggedTile = $derived<VennTile | null>(
 );
 </script>
 
+{#if chromeLanguage.current !== null}
 <div class="venn-root" bind:this={containerEl} onfocusout={onRootFocusOut}>
   {#if props?.model?.teacherInstructions}
     <TeacherInstructions html={props.model.teacherInstructions} language={language} />
@@ -532,6 +545,7 @@ const draggedTile = $derived<VennTile | null>(
       type="button"
       class="toggle-correct"
       aria-pressed={showCorrect}
+      {...chromeLanguageAttributes}
       onclick={() => (showCorrect = !showCorrect)}
     >
       {#if showCorrect}
@@ -562,14 +576,14 @@ const draggedTile = $derived<VennTile | null>(
         </svg>
       {/if}
       <span class="toggle-label">
-        {tCommon(showCorrect ? 'hideCorrectAnswer' : 'showCorrectAnswer', language)}
+        {i18n.t(showCorrect ? 'hideCorrectAnswer' : 'showCorrectAnswer')}
       </span>
     </button>
   {/if}
 
   {#if !layout}
-    <div class="venn-error" role="alert">
-      {t('unsupportedCircles', language, { count: circles.length, supported: SUPPORTED_CIRCLES })}
+    <div class="venn-error" role="alert" {...chromeLanguageAttributes}>
+      {i18n.plural('unsupportedCircles', { count: circles.length, supported: SUPPORTED_CIRCLES })}
     </div>
   {:else}
     <div
@@ -746,7 +760,7 @@ const draggedTile = $derived<VennTile | null>(
 
     <Tray
       isDropTarget={hoveredRegionKey === 'tray' || (heldTileId !== null && keyboardFocusKey === 'tray')}
-      label={t('tray', language)}
+      label={i18n.t('tray')}
     >
       {#each trayTiles as tile (tile.id)}
         <Tile
@@ -793,8 +807,9 @@ const draggedTile = $derived<VennTile | null>(
   {/if}
 
   <!-- Visually hidden live region for a11y announcements -->
-  <div class="sr-only" aria-live="polite" aria-atomic="true" bind:this={liveRegion}></div>
+  <div class="sr-only" aria-live="polite" aria-atomic="true" {...chromeLanguageAttributes} bind:this={liveRegion}></div>
 </div>
+{/if}
 
 <style>
   .venn-root {

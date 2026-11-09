@@ -23,6 +23,25 @@ const migratedElements = [
     dir: 'packages/elements-react/passage',
     catalogPackages: ['packages/elements-react/passage', 'packages/lib-react/render-ui'],
   },
+  {
+    dir: 'packages/elements-svelte/simple-cloze',
+    catalogPackages: ['packages/elements-svelte/simple-cloze'],
+  },
+  {
+    dir: 'packages/elements-svelte/mc-populated-blank',
+    catalogPackages: ['packages/elements-svelte/mc-populated-blank'],
+  },
+  {
+    dir: 'packages/elements-svelte/venn-classification',
+    catalogPackages: ['packages/elements-svelte/venn-classification'],
+  },
+  {
+    dir: 'packages/elements-svelte/video-stimulus',
+    catalogPackages: [
+      'packages/elements-svelte/video-stimulus',
+      'packages/lib-svelte/media-svelte',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })
@@ -67,13 +86,18 @@ describe('migrated catalog packages', () => {
     );
   });
 
-  test.each(catalogPackages)('%s keeps every loader eager for webpack builds', (packageDir) => {
-    const built = readFileSync(join(root, packageDir, 'dist/i18n/index.js'), 'utf-8');
-    const loaders = built.match(/import\(/g) ?? [];
-    const eager = built.match(/import\(\s*\/\*\s*webpackMode:\s*"eager"\s*\*\//g) ?? [];
-    expect(loaders.length).toBeGreaterThan(0);
-    expect(eager).toHaveLength(loaders.length);
-  });
+  // A Svelte element's npm lanes are self-contained bundles that inline every catalog, so no
+  // locale loader reaches a webpack build and there is no dist/i18n/index.js to check.
+  test.each(catalogPackages.filter((dir) => !dir.startsWith('packages/elements-svelte/')))(
+    '%s keeps every loader eager for webpack builds',
+    (packageDir) => {
+      const built = readFileSync(join(root, packageDir, 'dist/i18n/index.js'), 'utf-8');
+      const loaders = built.match(/import\(/g) ?? [];
+      const eager = built.match(/import\(\s*\/\*\s*webpackMode:\s*"eager"\s*\*\//g) ?? [];
+      expect(loaders.length).toBeGreaterThan(0);
+      expect(eager).toHaveLength(loaders.length);
+    }
+  );
 });
 
 describe.each(migratedElements)('$dir delivery bundles', ({ dir, catalogPackages }) => {
