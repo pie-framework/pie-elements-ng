@@ -68,6 +68,16 @@ const migratedElements = [
       'packages/lib-react/graphing-solution-set',
     ],
   },
+  {
+    dir: 'packages/elements-react/math-templated',
+    catalogPackages: [
+      'packages/elements-react/math-templated',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/mask-markup',
+      'packages/lib-react/math-input-mathlive',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })
