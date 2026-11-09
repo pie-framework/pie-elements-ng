@@ -84,12 +84,12 @@ const MaskedInput = (props) => (node, data) => {
           correct: isCorrect,
           incorrect: isIncorrect,
         })}
-        // The mask re-renders this once the language's catalog lands (see withMask).
+        // In the interface language; the mask re-renders this once its catalog lands (see withMask).
         ariaLabel={catalogs.forLocale(props.language).t('response', {
           index: ids.indexOf(dataset.id) + 1,
           total: ids.length,
         })}
-        language={props.language}
+        language={props.contentLanguage}
       />
     );
   }

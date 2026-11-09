@@ -12,11 +12,16 @@
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { toPlainText } from '../controller/plain-text';
-import { t } from '../i18n';
+import { catalogs } from '../i18n/index.js';
+import { residentLanguage } from '../delivery/resident-language.svelte.js';
 
 // Print players set `options` ({ role }) and the authored model, not a
 // controller view model, so answer visibility is decided here.
 let { model = null, options = null }: { model?: any; options?: any } = $props();
+
+// Print follows the item's declared language, and renders once its catalogs are resident.
+const language = residentLanguage(() => (model ? model.language || undefined : null));
+const i18n = $derived(catalogs.forLocale(language.current));
 
 const isInstructor = $derived(options?.role === 'instructor');
 const prompt = $derived(
@@ -46,6 +51,7 @@ $effect(() => {
 });
 </script>
 
+{#if language.current !== null}
 <div class="simple-cloze-print">
   {#if teacherInstructions}
     <div class="simple-cloze-print-teacher-instructions">{@html sanitizeModelHtml(teacherInstructions)}</div>
@@ -57,13 +63,14 @@ $effect(() => {
 
   <div class="simple-cloze-print-response">
     {#if showAnswerKey}
-      <span class="simple-cloze-print-key-label">{t('printCorrectAnswer', model?.language)}</span>
+      <span class="simple-cloze-print-key-label">{i18n.t('printCorrectAnswer')}</span>
       <span class="simple-cloze-print-blank simple-cloze-print-blank--key">{correctAnswer}</span>
     {:else}
-      <span class="simple-cloze-print-blank" role="img" aria-label={t('printAnswerBlank', model?.language)}></span>
+      <span class="simple-cloze-print-blank" role="img" aria-label={i18n.t('printAnswerBlank')}></span>
     {/if}
   </div>
 </div>
+{/if}
 
 <style>
   /* Self-contained: print players ship no Tailwind or CSS reset. */

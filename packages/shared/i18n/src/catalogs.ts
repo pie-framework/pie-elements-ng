@@ -82,6 +82,11 @@ export interface Catalogs<C extends MessageCatalog> {
   load(locale: string): Promise<void>;
 }
 
+/** A locale argument as a tag; a value that is not a non-blank string, an array say, is none. */
+function requestedTag(locale: unknown): string | undefined {
+  return typeof locale === 'string' && locale.trim() ? locale : undefined;
+}
+
 /** Define one package's catalogs and register them on the page. */
 export function defineCatalogs<C extends MessageCatalog>(options: CatalogsOptions<C>): Catalogs<C> {
   const loaders = options.loaders ?? {};
@@ -99,7 +104,7 @@ export function defineCatalogs<C extends MessageCatalog>(options: CatalogsOption
   const failed = new Set<string>();
 
   const view = (locale?: string | null): SimpleI18n<C> => {
-    const tag = locale || DEFAULT_LOCALE;
+    const tag = requestedTag(locale) ?? DEFAULT_LOCALE;
     let cached = views.get(tag);
     if (!cached) {
       cached = root.withLocale(tag);
@@ -112,10 +117,11 @@ export function defineCatalogs<C extends MessageCatalog>(options: CatalogsOption
     packageName: options.packageName,
     locales: [DEFAULT_LOCALE, ...Object.keys(loaders)],
     forLocale: (locale, onLoad) => {
-      if (onLoad && locale && catalogs.needsLoad(locale)) {
-        void catalogs.load(locale).then(onLoad);
+      const tag = requestedTag(locale);
+      if (onLoad && tag && catalogs.needsLoad(tag)) {
+        void catalogs.load(tag).then(onLoad);
       }
-      return view(locale);
+      return view(tag);
     },
     needsLoad: (locale) => !failed.has(locale) && root.needsLoad(locale),
     load: (locale) => {
@@ -135,12 +141,7 @@ export function defineCatalogs<C extends MessageCatalog>(options: CatalogsOption
       }
       return load;
     },
-    addCustomMessages: (locale, messages) => {
-      root.addCustomMessages(locale, messages);
-      // A view resolved its tag against the locales known when it was made; messages for a
-      // new tag can change that resolution.
-      views.clear();
-    },
+    addCustomMessages: (locale, messages) => root.addCustomMessages(locale, messages),
   };
   registry.sets.add(catalogs);
   return catalogs;
@@ -148,17 +149,19 @@ export function defineCatalogs<C extends MessageCatalog>(options: CatalogsOption
 
 /** Whether every catalog set on the page renders `locale` without a load. */
 export function isLocaleReady(locale: string | null | undefined): boolean {
-  if (!locale) return true;
+  const tag = requestedTag(locale);
+  if (!tag) return true;
   for (const set of pageRegistry().sets) {
-    if (set.needsLoad(locale)) return false;
+    if (set.needsLoad(tag)) return false;
   }
   return true;
 }
 
 /** Load `locale` for every catalog set on the page. Never rejects; a failure renders English. */
 export async function loadLocale(locale: string | null | undefined): Promise<void> {
-  if (!locale) return;
-  await Promise.all([...pageRegistry().sets].map((set) => set.load(locale)));
+  const tag = requestedTag(locale);
+  if (!tag) return;
+  await Promise.all([...pageRegistry().sets].map((set) => set.load(tag)));
 }
 
 /**

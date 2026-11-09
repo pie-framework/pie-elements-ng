@@ -38,9 +38,7 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { findSectionsInSolutionSet, findSelectedSection, checkIfLinesAreAdded } from './utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const MainContainer: any = styled(UiLayout)({
   color: color.text(),
@@ -61,6 +59,8 @@ export class Main extends React.Component {
     model: PropTypes.object.isRequired,
     session: PropTypes.object.isRequired,
     onAnswersChange: PropTypes.func,
+    /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+    language: PropTypes.string,
   };
 
   state = {
@@ -98,8 +98,7 @@ export class Main extends React.Component {
     this.setState({
       dialog: {
         open: true,
-        title: 'Warning',
-        text: `This will remove all the elements added on the graph and reset graph to original state. Are you sure you want to continue?`,
+        text: 'resetWarning',
         onConfirm: () => {
           // Reset the graph to original state
           session.answer = [];
@@ -159,8 +158,7 @@ export class Main extends React.Component {
         this.setState({
           dialog: {
             open: true,
-            title: 'Warning',
-            text: 'Please define the line(s) and then select a solution set for the item.',
+            text: 'defineLinesFirst',
             onConfirm: () => this.handleAlertDialog(false),
           },
         });
@@ -175,14 +173,13 @@ export class Main extends React.Component {
         this.setState({
           dialog: {
             open: true,
-            title: 'Warning',
-            text: 'Changing a line after adding a solution set will clear your selected solution set. Click \'Clear Solution Set\' to change the line. Otherwise, click \'Cancel\'.',
+            text: 'lineChangeWarning',
             onConfirm: () => {
               session.answer = session.answer.filter((mark) => mark.type !== 'polygon');
               this.handleGssDataChange(gssData, session);
               this.handleAlertDialog(false);
             },
-            onConfirmText: 'CLEAR SOLUTION SET',
+            confirm: 'clearSolutionSet',
             onClose: () => {
               gssData.selectedTool = oldSelectedTool;
               this.handleGssDataChange(gssData, session);
@@ -216,8 +213,7 @@ export class Main extends React.Component {
       this.setState({
         dialog: {
           open: true,
-          title: 'Warning',
-          text: 'Please add Line A to the graph before adding Line B',
+          text: 'addLineAFirst',
           onConfirm: () => this.handleAlertDialog(false),
         },
       });
@@ -227,8 +223,7 @@ export class Main extends React.Component {
       this.setState({
         dialog: {
           open: true,
-          title: 'Warning',
-          text: 'Please add Line B to the graph before switching to Line A',
+          text: 'addLineBFirst',
           onConfirm: () => this.handleAlertDialog(false),
         },
       });
@@ -236,6 +231,9 @@ export class Main extends React.Component {
     }
     setGssData(gssData, session);
   };
+
+  /** Re-renders once the chrome language's catalog lands, for a host that did not preload it. */
+  relabel = () => this.forceUpdate();
 
   /*
    * Render the component
@@ -263,10 +261,11 @@ export class Main extends React.Component {
       title,
       titleEnabled,
       teacherInstructions,
-      language,
       gssLineData,
       gssData,
     } = model || {};
+    const language = this.props.language ?? model?.language;
+    const i18n = catalogs.forLocale(language, this.relabel);
     const marks = answersCorrected || answer || [];
     const showRationale = model.rationale && (hasText(model.rationale) || hasMedia(model.rationale));
     const showTeacherInstructions =
@@ -274,9 +273,7 @@ export class Main extends React.Component {
     return (
       <MainContainer extraCSSRules={extraCSSRules}>
         {showTeacherInstructions && (
-          <TeacherInstructions
-            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
-          >
+          <TeacherInstructions variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </TeacherInstructions>
         )}
@@ -335,17 +332,18 @@ export class Main extends React.Component {
           />
         )}
         {showRationale && (
-          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <Collapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}
         <AlertDialog
           open={dialog.open}
-          title={dialog.title}
-          text={dialog.text}
+          title={i18n.t('warningTitle')}
+          text={dialog.text && i18n.t(dialog.text)}
           onClose={dialog.onClose}
           onConfirm={dialog.onConfirm}
-          onConfirmText={dialog.onConfirmText ? dialog.onConfirmText : 'OK'}
+          onConfirmText={i18n.t(dialog.confirm ?? 'confirm')}
+          onCloseText={i18n.t('cancel')}
         />
       </MainContainer>
     );

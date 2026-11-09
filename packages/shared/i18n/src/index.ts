@@ -1,3 +1,4 @@
+export { authoredOrDefault } from './authored-or-default.js';
 export {
   type Catalogs,
   type CatalogsOptions,
@@ -8,6 +9,7 @@ export {
 } from './catalogs.js';
 export {
   canonicalLanguageTag,
+  chromeLanguageAttributes,
   elementLanguageAttributes,
   type LanguageAttributes,
   stampElementLanguage,

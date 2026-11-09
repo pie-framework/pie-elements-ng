@@ -44,9 +44,9 @@ import { ResponseTypes } from './utils.js';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
 import { color, createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 import { isComposingKeyEvent, sanitizeModelHtml } from '@pie-element/shared-utils';
-const { translator } = Translator;
+import { authoredOrDefault } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 const NEWLINE_LATEX = /\\newline/g;
 const REGEX = /{{response}}/gm;
@@ -146,6 +146,8 @@ export class Main extends React.Component {
     session: PropTypes.object.isRequired,
     onSessionChange: PropTypes.func,
     model: PropTypes.object.isRequired,
+    /** The chrome language: the player's interface locale, else the declared language. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -181,18 +183,6 @@ export class Main extends React.Component {
       this.setState({
         session: { ...nextSession, answers: parseAnswers(nextSession, this.props.model) },
       });
-    }
-
-    // check if the note is the default one for prev language and change to the default one for new language
-    // this check is necessary in order to diferanciate between default and authour defined note
-    // and only change between languages for default ones
-    if (
-      config.note &&
-      config.language &&
-      config.language !== nextConfig.language &&
-      config.note === translator.t('mathInline.primaryCorrectWithAlternates', { lng: config.language })
-    ) {
-      config.note = translator.t('mathInline.primaryCorrectWithAlternates', { lng: nextConfig.language });
     }
 
     if ((config.env && config.env.mode !== 'evaluate') || (nextConfig.env && nextConfig.env.mode !== 'evaluate')) {
@@ -238,7 +228,7 @@ export class Main extends React.Component {
     const sameModel = isEqual(this.props.model, nextProps.model);
     const sameState = isEqual(this.state, nextState);
 
-    return !sameModel || !sameState;
+    return !sameModel || !sameState || this.props.language !== nextProps.language;
   }
 
   componentDidMount() {
@@ -260,7 +250,7 @@ export class Main extends React.Component {
 
   renderInstructions: any = () => (
     <span id={this.instructionsId()} className="sr-only">
-      {translator.t('mathInline.keypadInstructions', { lng: this.props.model?.language })}
+      {catalogs.forLocale(this.props.language).t('keypadInstructions')}
     </span>
   );
 
@@ -523,7 +513,8 @@ export class Main extends React.Component {
   }
 
   render() {
-    const { model } = this.props;
+    const { model, language } = this.props;
+    const i18n = catalogs.forLocale(language);
     const { activeAnswerBlock, showCorrect, session, tooltipContainerRef } = this.state;
     const {
       config,
@@ -537,7 +528,6 @@ export class Main extends React.Component {
       animationsDisabled,
       printMode,
       alwaysShowCorrect,
-      language,
     } = model || {};
 
     if (!config) {
@@ -546,7 +536,7 @@ export class Main extends React.Component {
 
     const {
       showNote,
-      note,
+      note: storedNote,
       prompt,
       responses,
       responseType,
@@ -554,7 +544,9 @@ export class Main extends React.Component {
       customKeys,
       env: { mode, role } = {},
     } = config || {};
-    const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
+    const note = authoredOrDefault(storedNote, (locale) => catalogs.forLocale(locale).t('primaryCorrectWithAlternates'), language, model.language);
+    const authoredNote = note === i18n.t('primaryCorrectWithAlternates') ? undefined : note;
+    const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote;
     const emptyResponse = isEmpty(responses);
     const showCorrectAnswerToggle = !emptyResponse && correctness && correctness.correctness !== 'correct';
     const tooltipModeEnabled = disabled && correctness;
@@ -589,13 +581,13 @@ export class Main extends React.Component {
     const midContent = (
       <MainContent>
         {mode === 'gather' && (
-          <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+          <SrOnly>{i18n.t('mathEquationResponseQuestion')}</SrOnly>
         )}
 
         {viewMode &&
           showTeacherInstructions &&
           (!animationsDisabled ? (
-            <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
+            <StyledCollapsible variant="teacherInstructions" language={language}>
               <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(teacherInstructions) }} />
             </StyledCollapsible>
           ) : (
@@ -736,12 +728,21 @@ export class Main extends React.Component {
           </Readable>
         )}
 
-        {viewMode && displayNote && <Note dangerouslySetInnerHTML={{ __html: `<strong>Note:</strong> ${sanitizeModelHtml(note)}` }} />}
+        {viewMode && displayNote && (
+          <Note
+            dangerouslySetInnerHTML={{
+              // The default carries its own label.
+              __html: authoredNote
+                ? `<strong>${i18n.t('noteLabel')}</strong> ${sanitizeModelHtml(authoredNote)}`
+                : sanitizeModelHtml(note),
+            }}
+          />
+        )}
 
         {viewMode &&
           showRationale &&
           (!animationsDisabled ? (
-            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+            <Collapsible variant="rationale" language={language}>
               <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(rationale) }} />
             </Collapsible>
           ) : (
@@ -807,10 +808,8 @@ export class Main extends React.Component {
                 {showTeacherInstructions && (
                   <StyledCollapsible
                     key="collapsible-teacher-instructions"
-                    labels={{
-                      hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-                      visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-                    }}
+                    variant="teacherInstructions"
+                    language={language}
                   >
                     <PreviewPrompt prompt={teacherInstructions} />
                   </StyledCollapsible>
@@ -818,10 +817,7 @@ export class Main extends React.Component {
                 {displayNote && hasText(note) && (
                   <StyledCollapsible
                     key="collapsible-note"
-                    labels={{
-                      hidden: translator.t('common:showNote', { lng: language }),
-                      visible: translator.t('common:hideNote', { lng: language }),
-                    }}
+                    labels={{ hidden: i18n.t('showNote'), visible: i18n.t('hideNote') }}
                   >
                     <PreviewPrompt prompt={note} />
                   </StyledCollapsible>
@@ -830,10 +826,8 @@ export class Main extends React.Component {
                 {showRationale && (
                   <StyledCollapsible
                     key="collapsible-rationale"
-                    labels={{
-                      hidden: translator.t('common:showRationale', { lng: language }),
-                      visible: translator.t('common:hideRationale', { lng: language }),
-                    }}
+                    variant="rationale"
+                    language={language}
                   >
                     <PreviewPrompt prompt={rationale} />
                   </StyledCollapsible>

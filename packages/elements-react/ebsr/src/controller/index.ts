@@ -2,13 +2,10 @@ import defaults from './defaults.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import { isResponseCorrect } from './utils.js';
 import { get, isEmpty } from '@pie-element/shared-lodash';
-import Translator from '@pie-lib/translator';
 import type { Choice, MultipleChoiceConfiguration, MultipleChoiceSession } from '@pie-element/multiple-choice';
 import type { MultipleChoiceValidationErrors } from '@pie-element/multiple-choice/controller';
 import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
 import type { EbsrConfiguration, EbsrModel, EbsrPart, EbsrSession } from '../types.js';
-
-const { translator } = Translator;
 
 type PartKey = 'partA' | 'partB';
 
@@ -29,7 +26,6 @@ type PartView = Omit<EbsrPart, 'choices' | 'prompt' | 'teacherInstructions'> & {
   disabled: boolean;
   complete: { min: number };
   responseCorrect: boolean | undefined;
-  partLabel?: string;
   prompt?: string | null;
   teacherInstructions?: string | null;
 };
@@ -97,12 +93,13 @@ type NormalizeInput = Omit<EbsrModel, 'partA' | 'partB'> & {
   partB?: Partial<EbsrPart>;
 };
 
+// A part that declares no language takes the item's, which ebsr has always read from part A too.
 export const normalize = ({ partA = {}, partB = {}, language, ...question }: NormalizeInput) => ({
   ...defaults,
   ...question,
   language,
   partA: normalizePart(partA, { ...defaults.partA, language }),
-  partB: normalizePart(partB, { ...defaults.partB, language }),
+  partB: normalizePart(partB, { ...defaults.partB, language: language ?? partA.language }),
 });
 
 /**
@@ -170,21 +167,6 @@ export async function model(
     }
   }
 
-  if (normalizedQuestion.partLabels) {
-    const language = normalizedQuestion.language;
-    partA.partLabel = translator.t('ebsr.part', {
-      lng: language,
-      index: normalizedQuestion.partLabelType === 'Letters' ? 'A' : '1',
-    });
-    partB.partLabel = translator.t('ebsr.part', {
-      lng: language,
-      index: normalizedQuestion.partLabelType === 'Letters' ? 'B' : '2',
-    });
-  } else {
-    partA.partLabel = undefined;
-    partB.partLabel = undefined;
-  }
-
   if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
     partA.teacherInstructions = normalizedQuestion.partA.teacherInstructionsEnabled
       ? normalizedQuestion.partA.teacherInstructions
@@ -212,6 +194,9 @@ export async function model(
       mode: env.mode,
       extraCSSRules: normalizedQuestion.extraCSSRules,
       language: normalizedQuestion.language,
+      // Delivery labels the parts in the chrome language.
+      partLabels: normalizedQuestion.partLabels,
+      partLabelType: normalizedQuestion.partLabelType,
       partA,
       partB,
     });

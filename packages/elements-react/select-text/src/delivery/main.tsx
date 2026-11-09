@@ -41,9 +41,6 @@ import { styled } from '@mui/material/styles';
 import generateModel from './utils.js';
 
 import debug from 'debug';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const log = debug('@pie-ui:select-text');
 
@@ -72,6 +69,8 @@ const Types = {
   session: PropTypes.object,
   onSelectionChange: PropTypes.func.isRequired,
   eliminatedTokens: PropTypes.arrayOf(PropTypes.shape({ start: PropTypes.number, end: PropTypes.number })),
+  /** The locale the chrome follows; the item's declared language when omitted. */
+  language: PropTypes.string,
 };
 
 export class Main extends React.Component {
@@ -125,6 +124,7 @@ export class Main extends React.Component {
   render() {
     const { session, onSelectionChange, eliminatedTokens } = this.props;
     const { showCorrectAnswer, model } = this.state;
+    const language = this.props.language ?? model.language;
     const { env, extraCSSRules } = model;
     const { mode } = env || {};
 
@@ -139,9 +139,7 @@ export class Main extends React.Component {
       <StyledUiLayout extraCSSRules={extraCSSRules} containerRef={this.containerRef}>
         {showTeacherInstructions &&
           (!model.animationsDisabled ? (
-            <StyledCollapsible
-              labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model.language }) }}
-            >
+            <StyledCollapsible variant="teacherInstructions" language={language}>
               <PreviewPrompt prompt={model.teacherInstructions} />
             </StyledCollapsible>
           ) : (
@@ -159,7 +157,7 @@ export class Main extends React.Component {
             show={model.disabled && model.incorrect}
             toggled={showCorrectAnswer}
             onToggle={this.toggleShowCorrect}
-            language={model.language}
+            language={language}
           />
         )}
 
@@ -185,16 +183,14 @@ export class Main extends React.Component {
           highlightChoices={model.highlightChoices}
           maxNoOfSelections={model.maxSelections}
           animationsDisabled={model.animationsDisabled}
-          language={model.language}
+          language={language}
           eliminatedTokens={eliminatedTokens}
         />
-        {mode === 'evaluate' && <Legend language={model.language} showOnlyCorrect={showCorrectAnswer} />}
+        {mode === 'evaluate' && <Legend language={language} showOnlyCorrect={showCorrectAnswer} />}
 
         {showRationale &&
           (!model.animationsDisabled ? (
-            <StyledCollapsible
-              labels={{ hidden: translator.t('common:showRationale', { lng: model.language }), visible: translator.t('common:hideRationale', { lng: model.language }) }}
-            >
+            <StyledCollapsible variant="rationale" language={language}>
               <PreviewPrompt prompt={model.rationale} />
             </StyledCollapsible>
           ) : (
@@ -241,6 +237,7 @@ export default class Stateful extends React.Component {
         session={session}
         onSelectionChange={this.change}
         eliminatedTokens={this.props.eliminatedTokens}
+        language={this.props.language}
       />
     );
   }

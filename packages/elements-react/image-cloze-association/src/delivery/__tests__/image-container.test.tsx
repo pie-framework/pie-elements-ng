@@ -1,5 +1,6 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { DndContext } from '@dnd-kit/core';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -7,6 +8,9 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ImageContainer from '../image-container';
 
 const theme = createTheme();
+
+// The components read their catalogs synchronously; the Spanish cases need them resident.
+beforeAll(() => loadLocale('es_ES'));
 
 const responseContainers = [0, 1, 2].map((index) => ({
   id: `rc-${index}`,
