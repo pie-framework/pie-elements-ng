@@ -37,6 +37,19 @@ interface Fixtures {
     hostMessages: MessageCatalog;
     expected: Record<string, string>;
   };
+  scenarios: {
+    name: string;
+    locale: string;
+    source: MessageCatalog;
+    shipped: Record<string, MessageCatalog>;
+    hostMessages: Record<string, MessageCatalog>;
+    expected: {
+      locale: string;
+      direction: 'ltr' | 'rtl';
+      t: Record<string, string>;
+      plural: { key: string; count: number; expected: string }[];
+    };
+  }[];
 }
 
 const fixtures = fixturesJson as unknown as Fixtures;
@@ -55,6 +68,16 @@ async function catalogsFor(
   shipped: Record<string, MessageCatalog>,
   hostMessages?: MessageCatalog
 ) {
+  return scenarioCatalogs(locale, source, shipped, hostMessages ? { [locale]: hostMessages } : {});
+}
+
+/** As `catalogsFor`, with host messages registered under each tag exactly as the fixture writes it. */
+async function scenarioCatalogs(
+  locale: string,
+  source: MessageCatalog,
+  shipped: Record<string, MessageCatalog>,
+  hostMessages: Record<string, MessageCatalog>
+) {
   const packageName = `conformance-${packageCounter++}`;
   const loaders = Object.fromEntries(
     Object.entries(shipped)
@@ -62,7 +85,9 @@ async function catalogsFor(
       .map(([tag, catalog]) => [tag, async () => ({ default: catalog })])
   );
   const catalogs = defineCatalogs({ packageName, source, loaders });
-  if (hostMessages) registerMessages(packageName, locale, hostMessages);
+  for (const [tag, messages] of Object.entries(hostMessages)) {
+    registerMessages(packageName, tag, messages);
+  }
   await loadLocale(locale);
   return catalogs.forLocale(locale);
 }
@@ -74,9 +99,15 @@ describe('i18n conformance', () => {
     }
   });
 
-  it('catalog match: script-aware lookup, then widening within the script', () => {
+  it('catalog match: script-aware lookup, then widening within the script', async () => {
     for (const { locale, available, expected } of fixtures.catalogMatch) {
-      const i18n = new SimpleI18n({ source: {}, availableLocales: available, locale });
+      // Loaded, because a view names a catalog locale only once its catalog is resident.
+      const i18n = new SimpleI18n({
+        source: {},
+        availableLocales: available,
+        loadCatalog: async () => ({}),
+      });
+      await i18n.setLocale(locale);
       expect(i18n.getLocale(), `${locale} in ${available.join(', ')}`).toBe(expected);
     }
   });
@@ -110,4 +141,19 @@ describe('i18n conformance', () => {
       expect(t.t(key as never), key).toBe(value);
     }
   });
+
+  it.each(fixtures.scenarios.map((scenario) => [scenario.name, scenario] as const))(
+    'scenario: %s',
+    async (_name, { locale, source, shipped, hostMessages, expected }) => {
+      const t = await scenarioCatalogs(locale, source, shipped, hostMessages);
+      expect(t.getLocale(), 'locale').toBe(expected.locale);
+      expect(t.getDirection(), 'direction').toBe(expected.direction);
+      for (const [key, value] of Object.entries(expected.t)) {
+        expect(t.t(key as never), key).toBe(value);
+      }
+      for (const { key, count, expected: text } of expected.plural) {
+        expect(t.plural(key as never, { count }), `${key} ${count}`).toBe(text);
+      }
+    }
+  );
 });

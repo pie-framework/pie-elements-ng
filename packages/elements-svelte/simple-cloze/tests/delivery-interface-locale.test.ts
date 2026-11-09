@@ -78,6 +78,16 @@ describe('simple-cloze interface locale', () => {
     await vi.waitFor(() => expect(toggleLabel(element)).toBe('Juist antwoord weergeven'));
   });
 
+  it('names English on the chrome for a player locale nothing ships', async () => {
+    const { player } = mountPlayer('he');
+    const element = await render(QUESTION, player);
+
+    await vi.waitFor(() => expect(toggleLabel(element)).toBe('Show correct answer'));
+    const toggle = element.querySelector('.simple-cloze-toggle');
+    expect(toggle?.getAttribute('lang')).toBe('en-US');
+    expect(toggle?.getAttribute('dir')).toBe('ltr');
+  });
+
   it('stamps no lang for an item that declares no language', async () => {
     const { player } = mountPlayer('es');
     const element = await render(QUESTION, player);

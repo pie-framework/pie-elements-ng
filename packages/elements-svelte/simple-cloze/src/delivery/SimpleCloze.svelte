@@ -13,7 +13,7 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { chromeLanguageAttributes as servedLanguageAttributes } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 import { residentLanguage } from './resident-language.svelte.js';
 import TeacherInstructions from './TeacherInstructions.svelte';
@@ -37,7 +37,7 @@ const language = residentLanguage(() =>
   model ? interfaceLocale || model.language || undefined : null
 );
 const i18n = $derived(catalogs.forLocale(language.current));
-const chromeLanguageAttributes = $derived(elementLanguageAttributes(language.current));
+const chromeLanguageAttributes = $derived(servedLanguageAttributes(i18n, language.current));
 
 // Per-instance ids: a page can hold several instances, and several versions of
 // this element, each with its own Svelte runtime.

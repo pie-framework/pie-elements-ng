@@ -2,6 +2,7 @@
 // DOMPurify under happy-dom drops allowed block elements such as <p>.
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
+import { loadLocale } from '@pie-element/shared-i18n';
 import TranscriptDefault, { Transcript } from '../src/index.js';
 import type { TranscriptProps } from '../src/types.js';
 
@@ -54,7 +55,8 @@ describe('Transcript', () => {
     expect(document.activeElement).not.toBe(region);
   });
 
-  it('separates localized controls from inherited transcript content language', () => {
+  it('separates localized controls from inherited transcript content language', async () => {
+    await loadLocale('es-ES');
     const target = mountTranscript({
       transcript: { plainText: 'English transcript' },
       label: 'Transcripción del video',
@@ -66,9 +68,22 @@ describe('Transcript', () => {
 
     expect(target.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
     expect(target.querySelector('button')?.textContent?.trim()).toBe('Cerrar transcripción');
-    expect(target.querySelector('button')?.getAttribute('lang')).toBe('es-ES');
+    // The controls name the catalog their strings are served from.
+    expect(target.querySelector('button')?.getAttribute('lang')).toBe('es');
     expect(target.querySelector('section')?.getAttribute('lang')).toBe('en-US');
     expect(target.querySelector('section')?.hidden).toBe(false);
+  });
+
+  it('names English on the controls for a chrome language nothing ships', () => {
+    const target = mountTranscript({
+      transcript: { plainText: 'English transcript' },
+      label: 'Video transcript',
+      language: 'he',
+    });
+
+    expect(target.querySelector('button')?.textContent?.trim()).toBe('Show transcript');
+    expect(target.querySelector('button')?.getAttribute('lang')).toBe('en-US');
+    expect(target.querySelector('button')?.getAttribute('dir')).toBe('ltr');
   });
 
   it('uses sanitized inline HTML before plain text and an external link', () => {

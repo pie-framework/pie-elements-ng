@@ -49,7 +49,8 @@ The TSX hardcoded-string scanner joins step 3 as an advisory per-package check o
 
 Learner-facing strings still outside any catalog:
 - the math keypad in each `math-input` library, about 87 strings, and `math-toolbar`;
-- `@pie-lib/drag`'s dnd-kit screen-reader announcements.
+- `@pie-lib/drag`'s dnd-kit screen-reader announcements;
+- the default feedback, `Correct`, `Incorrect`, `Nearly` and `You have not entered a response`, in `@pie-element/shared-feedback` and the ebsr, explicit-constructed-response, multiple-choice, math-inline and number-line defaults: controllers produce it and have no interface locale, so localizing it is a design decision of its own.
 
 `Collapsible` renders its labels without their own `lang` and `dir`.
 

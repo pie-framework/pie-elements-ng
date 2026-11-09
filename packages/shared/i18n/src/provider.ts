@@ -11,7 +11,9 @@
  */
 
 import {
+  canonicalLanguageTag,
   findBestLanguageMatch,
+  languageTagLookupSequence,
   languageTagScriptsMatch,
   normalizeLanguageTag,
   toLanguageTag,
@@ -85,10 +87,21 @@ export function localeDirection(locale: string): TextDirection {
   return RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr';
 }
 
+/** A request's tag in BCP-47 syntax; anything that is not a non-blank string is no request. */
+function requestedTag(locale: unknown): string {
+  return (typeof locale === 'string' && toLanguageTag(locale)) || DEFAULT_LOCALE;
+}
+
 /**
  * Catalogs are BCP-47 keyed and resolved through RFC 4647 lookup, and plural categories come
  * from `Intl.PluralRules`. Never writes `lang` or `dir` anywhere: stamping is the component's
  * job, on its own host.
+ *
+ * A request resolves twice. The catalog locale is resolved against shipped catalogs only, the
+ * loader's declared tags and what is resident, so it alone decides what loads. Host messages are
+ * keyed by normalized tag and found along the request's own truncation chain. A lookup reads host
+ * messages for that chain, the catalog locale's catalog, then the fallback locale's pair: a host
+ * override for `es-MX` layers over a shipped `es` instead of hiding it.
  */
 export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
   implements I18nServiceApi<NestedKeys<C>>
@@ -96,12 +109,18 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
   /** Shared across instances and views: `Intl.PluralRules` is not cheap. */
   private static readonly pluralRules = new Map<string, Intl.PluralRules>();
 
-  private locale: string;
+  /** The requested tag, in BCP-47 syntax. */
+  private requested: string;
+  /** The shipped catalog serving the request, resident or not; `undefined` when none does. */
+  private catalogLocale: string | undefined;
   private readonly fallbackLocale: string;
   /** Shared by reference with every `withLocale` view. */
   private catalogs: Map<string, MessageCatalog>;
+  /** Keyed by normalized tag, so `ES`, `es_ES` and `es-es` reach one set. */
   private customMessages: Record<string, MessageCatalog>;
   private loading: Map<string, Promise<void>>;
+  /** Counts `setLocale` calls, so a slow load cannot overwrite a later request. */
+  private requests = 0;
   private readonly listeners = new Set<() => void>();
   private readonly config: I18nConfig<C>;
 
@@ -109,79 +128,92 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
     this.config = { ...config };
     this.fallbackLocale = toLanguageTag(config.fallbackLocale) || DEFAULT_LOCALE;
     this.catalogs = new Map([[DEFAULT_LOCALE, config.source as MessageCatalog]]);
-    this.customMessages = { ...(config.customMessages ?? {}) };
+    this.customMessages = {};
+    for (const [locale, messages] of Object.entries(config.customMessages ?? {})) {
+      this.mergeCustomMessages(locale, messages);
+    }
     this.loading = new Map();
-    this.locale = this.resolveLocaleTag(config.locale) ?? DEFAULT_LOCALE;
-  }
-
-  getLocale(): string {
-    return this.locale;
+    this.requested = requestedTag(config.locale);
+    this.catalogLocale = this.resolveCatalogLocale(this.requested);
   }
 
   /**
-   * Resolve the request against the catalogs this provider can serve, load the winner if it is
-   * not resident, then notify, in that order, so a re-render reads a catalog already in place.
+   * The locale the strings are served in: the catalog locale once resident, else the host-message
+   * locale when host messages cover the request, else the fallback. A request nothing serves
+   * reports the fallback, so a chrome root stamped from it never names a language its text is
+   * not in.
+   */
+  getLocale(): string {
+    if (this.catalogLocale !== undefined && this.catalogs.has(this.catalogLocale)) {
+      return this.catalogLocale;
+    }
+    const host = this.hostMessageLocale(this.requested);
+    return host === undefined ? this.fallbackLocale : (canonicalLanguageTag(host) ?? host);
+  }
+
+  /**
+   * Resolve the request against the shipped catalogs, load the winner if it is not resident,
+   * then notify, in that order, so a re-render reads a catalog already in place. The last call
+   * wins: a call whose load finishes after a later call's leaves the locale to that later call.
    */
   async setLocale(locale: string): Promise<void> {
-    const resolved = this.resolveLocaleTag(locale);
-    if (!resolved) {
-      // A locale nobody ships is legitimate: the host may supply messages for it. Honour the
-      // tag and let the fallback chain cover what those messages omit.
-      this.locale = toLanguageTag(locale) || DEFAULT_LOCALE;
-      this.notify();
-      return;
-    }
-
-    await this.ensureLoaded(resolved);
-    this.locale = resolved;
+    const request = ++this.requests;
+    const requested = requestedTag(locale);
+    const catalogLocale = this.resolveCatalogLocale(requested);
+    if (catalogLocale !== undefined) await this.ensureLoaded(catalogLocale);
+    if (request !== this.requests) return;
+    this.requested = requested;
+    this.catalogLocale = catalogLocale;
     this.notify();
   }
 
   t(key: NestedKeys<C> | DynamicMessageKey, values?: InterpolationValues): string {
-    const message = this.lookup(key);
+    const message = this.resolveMessage(key);
     if (message === undefined) {
-      this.config.onMissingKey?.(key, this.locale);
+      this.config.onMissingKey?.(key, this.getLocale());
       return key;
     }
-    return interpolate(message, values, this.locale);
+    return interpolate(message, values, this.getLocale());
   }
 
-  /** A category the catalog does not carry resolves to `other`. */
+  /**
+   * Each category resolves through the sources in lookup order: the first that carries the
+   * selected category, then the first that carries `other`. A host override of one category
+   * leaves the others to the catalog.
+   */
   plural(key: NestedKeys<C> | DynamicMessageKey, options: PluralOptions): string {
-    const group = this.lookupNode(key);
-    if (group === undefined || !isPluralGroup(group)) {
-      return this.t(key, options);
+    const message = this.resolveMessage(key, this.selectPluralCategory(options.count));
+    if (message === undefined) {
+      this.config.onMissingKey?.(key, this.getLocale());
+      return key;
     }
-    const category = this.selectPluralCategory(options.count);
-    const form = group[category] ?? group.other;
-    return interpolate(form, options, this.locale);
+    return interpolate(message, options, this.getLocale());
   }
 
   getDirection(): TextDirection {
-    return localeDirection(this.locale);
+    return localeDirection(this.getLocale());
   }
 
   /** Resident catalogs, whatever the loader declares, and any locale with host messages. */
   getAvailableLocales(): string[] {
     const tags = new Set<string>([
-      ...this.catalogs.keys(),
-      ...(this.config.availableLocales ?? []),
-      ...Object.keys(this.customMessages),
+      ...this.shippedLocales(),
+      ...Object.keys(this.customMessages).map((tag) => canonicalLanguageTag(tag) ?? tag),
     ]);
     return [...tags];
   }
 
   isLocaleLoaded(locale: string): boolean {
-    const resolved = this.resolveLocaleTag(locale);
+    const resolved = this.resolveCatalogLocale(requestedTag(locale));
     return resolved !== undefined && this.catalogs.has(resolved);
   }
 
   /**
-   * Whether `setLocale(locale)` would load anything: false once the shipped catalog is resident,
-   * and for a locale nothing ships, which the fallback chain answers synchronously.
+   * Whether `setLocale(locale)` would load anything: false once the shipped catalog serving it is
+   * resident, and for a locale nothing ships, which the fallback chain answers synchronously.
    */
   needsLoad(locale: string): boolean {
-    const resolved = this.resolveLocaleTag(locale);
+    const resolved = this.resolveCatalogLocale(requestedTag(locale));
     return (
       resolved !== undefined &&
       !this.catalogs.has(resolved) &&
@@ -197,13 +229,12 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
   }
 
   hasKey(key: NestedKeys<C> | DynamicMessageKey): boolean {
-    return this.lookup(key) !== undefined;
+    return this.resolveMessage(key) !== undefined;
   }
 
   /** Deep-merged, so a deployment overrides a single label without restating a catalog. */
   addCustomMessages(locale: string, messages: MessageCatalog): void {
-    const tag = toLanguageTag(locale);
-    this.customMessages[tag] = deepMerge(this.customMessages[tag] ?? {}, messages);
+    this.mergeCustomMessages(locale, messages);
     this.notify();
   }
 
@@ -213,20 +244,24 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
    * each.
    */
   withLocale(locale: string): SimpleI18n<C> {
-    const resolved = this.resolveLocaleTag(locale) ?? toLanguageTag(locale);
-    if (resolved === this.locale) return this;
+    const requested = requestedTag(locale);
+    if (normalizeLanguageTag(requested) === normalizeLanguageTag(this.requested)) return this;
 
-    const view = new SimpleI18n<C>({ ...this.config, locale: resolved });
-    view.locale = resolved || DEFAULT_LOCALE;
+    const view = new SimpleI18n<C>({
+      ...this.config,
+      customMessages: undefined,
+      locale: requested,
+    });
     view.catalogs = this.catalogs;
     view.customMessages = this.customMessages;
     view.loading = this.loading;
+    view.catalogLocale = view.resolveCatalogLocale(requested);
     return view;
   }
 
   formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
     try {
-      return new Intl.NumberFormat(this.locale, options).format(value);
+      return new Intl.NumberFormat(this.getLocale(), options).format(value);
     } catch {
       return new Intl.NumberFormat(DEFAULT_LOCALE, options).format(value);
     }
@@ -234,7 +269,7 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
 
   formatDate(date: Date, options?: Intl.DateTimeFormatOptions): string {
     try {
-      return new Intl.DateTimeFormat(this.locale, options).format(date);
+      return new Intl.DateTimeFormat(this.getLocale(), options).format(date);
     } catch {
       return new Intl.DateTimeFormat(DEFAULT_LOCALE, options).format(date);
     }
@@ -242,8 +277,6 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
 
   /** Load a declared locale's catalog once, however many views ask concurrently. */
   private async ensureLoaded(resolved: string): Promise<void> {
-    // The loader is asked only for tags it declares; a tag that resolved through host messages
-    // alone has nothing to load.
     if (this.catalogs.has(resolved) || !this.config.availableLocales?.includes(resolved)) {
       return;
     }
@@ -261,14 +294,19 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
     }
   }
 
+  /** Tags a catalog ships for: what is resident and what the loader declares. */
+  private shippedLocales(): string[] {
+    return [...new Set([...this.catalogs.keys(), ...(this.config.availableLocales ?? [])])];
+  }
+
   /**
-   * Script-aware RFC 4647 lookup first, so `es-MX` reaches an `es` catalog; then primary-subtag
-   * widening, so a bare `es` or a POSIX `es_ES` reaches a regional catalog. Widening stays within
-   * the request's script: `zh` never reaches `zh-TW`, and `sr-Latn` may reach `sr-ME`.
+   * Script-aware RFC 4647 lookup over the shipped catalogs first, so `es-MX` reaches an `es`
+   * catalog; then primary-subtag widening, so a bare `es` or a POSIX `es_ES` reaches a regional
+   * catalog. Widening stays within the request's script: `zh` never reaches `zh-TW`, and
+   * `sr-Latn` may reach `sr-ME`.
    */
-  private resolveLocaleTag(locale: string | null | undefined): string | undefined {
-    if (!locale) return undefined;
-    const available = this.getAvailableLocales();
+  private resolveCatalogLocale(locale: string): string | undefined {
+    const available = this.shippedLocales();
     const exactOrPrefix = findBestLanguageMatch(locale, available);
     if (exactOrPrefix) return exactOrPrefix;
 
@@ -279,6 +317,17 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
         normalizeLanguageTag(candidate).split('-')[0] === requestedLanguage &&
         languageTagScriptsMatch(locale, candidate)
     );
+  }
+
+  /** The most specific host-message tag on the request's truncation chain, normalized. */
+  private hostMessageLocale(locale: string): string | undefined {
+    return languageTagLookupSequence(locale).find((tag) => this.customMessages[tag] !== undefined);
+  }
+
+  private mergeCustomMessages(locale: string, messages: MessageCatalog): void {
+    const tag = normalizeLanguageTag(locale);
+    if (!tag) return;
+    this.customMessages[tag] = deepMerge(this.customMessages[tag] ?? {}, messages);
   }
 
   private async loadCatalog(locale: string): Promise<void> {
@@ -292,38 +341,49 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
     }
   }
 
-  /** Host overrides for the active locale win, then its catalog, then the fallback pair. */
-  private lookupNode(key: string): MessageNode | undefined {
-    const sources = [
-      this.customMessages[this.locale],
-      this.catalogs.get(this.locale),
-      this.customMessages[this.fallbackLocale],
+  /**
+   * Host messages along the request's truncation chain, the catalog locale's catalog, then host
+   * messages and the catalog for the fallback locale.
+   */
+  private sources(): (MessageCatalog | undefined)[] {
+    return [
+      ...languageTagLookupSequence(this.requested).map((tag) => this.customMessages[tag]),
+      this.catalogLocale === undefined ? undefined : this.catalogs.get(this.catalogLocale),
+      this.customMessages[normalizeLanguageTag(this.fallbackLocale)],
       this.catalogs.get(this.fallbackLocale),
     ];
-    for (const source of sources) {
-      const hit = readPath(source, key);
-      if (hit !== undefined) return hit;
-    }
-    return undefined;
   }
 
-  private lookup(key: string): string | undefined {
-    const node = this.lookupNode(key);
-    if (typeof node === 'string') return node;
-    // A plural group resolves to its `other` form; a namespace is a miss.
-    if (node !== undefined && isPluralGroup(node)) return node.other;
-    return undefined;
+  /**
+   * The text for `key`. The first source that has it decides its shape: a string is the text, and
+   * a plural group resolves `category`, else `other`, across every source's plural group in
+   * lookup order. Namespaces are skipped.
+   */
+  private resolveMessage(key: string, category?: keyof PluralTranslation): string | undefined {
+    const groups: PluralTranslation[] = [];
+    for (const source of this.sources()) {
+      const node = readPath(source, key);
+      if (typeof node === 'string') {
+        if (groups.length === 0) return node;
+      } else if (node !== undefined && isPluralGroup(node)) {
+        groups.push(node);
+      }
+    }
+    const form = (name: keyof PluralTranslation) =>
+      groups.find((group) => typeof group[name] === 'string')?.[name];
+    return (category === undefined ? undefined : form(category)) ?? form('other');
   }
 
   private selectPluralCategory(count: number): keyof PluralTranslation {
-    let rules = SimpleI18n.pluralRules.get(this.locale);
+    const locale = this.getLocale();
+    let rules = SimpleI18n.pluralRules.get(locale);
     if (!rules) {
       try {
-        rules = new Intl.PluralRules(this.locale);
+        rules = new Intl.PluralRules(locale);
       } catch {
         return count === 1 ? 'one' : 'other';
       }
-      SimpleI18n.pluralRules.set(this.locale, rules);
+      SimpleI18n.pluralRules.set(locale, rules);
     }
     return rules.select(count) as keyof PluralTranslation;
   }

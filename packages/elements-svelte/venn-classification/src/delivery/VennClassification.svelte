@@ -18,7 +18,7 @@ import Tile from './Tile.svelte';
 import { tileAccessibleName, tileStatusName, type TileVerdict } from './tile-accessible-name.js';
 import Tray from './Tray.svelte';
 import TeacherInstructions from './TeacherInstructions.svelte';
-import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { chromeLanguageAttributes as servedLanguageAttributes } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 import { residentLanguage } from './resident-language.svelte.js';
 import {
@@ -130,7 +130,7 @@ const chromeLanguage = residentLanguage(() =>
 );
 const language = $derived(chromeLanguage.current ?? undefined);
 const i18n = $derived(catalogs.forLocale(language));
-const chromeLanguageAttributes = $derived(elementLanguageAttributes(language));
+const chromeLanguageAttributes = $derived(servedLanguageAttributes(i18n, language));
 
 const modelShape = $derived<VennClassificationModel>({
   circles,
