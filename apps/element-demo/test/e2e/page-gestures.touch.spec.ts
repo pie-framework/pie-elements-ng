@@ -22,7 +22,7 @@ import { assertTouchEnabled, touchDrag, touchPinch } from './touch-helpers';
  * an accessibility concern (WCAG 1.4.4, 1.4.10).
  *
  * So, for each element, on the deliver route laid out as a scrolling host page
- * (`layout=page`), under the `touch` project only (see playwright.config.ts):
+ * (`layout=page`), under the `touch` project only: `touch-phone` skips it (see playwright.config.ts):
  *
  * - a vertical swipe that starts on a surface of the element, away from any
  *   handle, scrolls the page and leaves the session alone;
