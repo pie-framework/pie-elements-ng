@@ -6,48 +6,57 @@ Rollout for the [interface i18n PRD](../PRD.md). An element migrates together wi
 
 **Phase 1** (done): `@pie-element/shared-i18n`, the catalog gate in `bun run lint`, the artifact assertion, and `@pie-lib/render-ui`, `@pie-lib/correct-answer-toggle` and `@pie-element/multiple-choice`. Multiple-choice is about 79% of production items, and the two libraries sit on nearly every element's render path. Chrome follows `model.language`, as under the translator, except in the IIFE, which ships English.
 
-**Phase 2**: the interface-locale channel and the shared labels.
-- pie-players (done, pie-players #808): `interfaceLocaleContext` in `@pie-players/pie-context`, answered by the item and section players from `locale`, released in `@pie-players/pie-context` 1.0.0-beta.6; the subscriber imports it.
-- Here (done): `subscribeInterfaceLocale` in `@pie-element/shared-i18n`, the transitional precedence (published, else `model.language`, else `en-US`) in multiple-choice — which now passes the resolved locale into the React tree, so the region label, SR heading, selection counts and the toggle all follow it — and `lang`/`dir` on the toggle's root from its `language` prop.
-- Still open in Phase 2: `Collapsible` gains teacher-instructions and rationale variants. Multiple-choice keeps those labels in its own catalog until then; the next element would otherwise copy them.
+**Phase 2** (done): the interface-locale channel and the shared labels.
+- pie-players (pie-players #808, #974): `interfaceLocaleContext` in `@pie-players/pie-context`, answered by the item and section players once a host chooses a locale.
+- Here: `subscribeInterfaceLocale` in `@pie-element/shared-i18n` and the precedence in multiple-choice; `Collapsible` gained `teacherInstructions` and `rationale` variants that own the four toggle labels (#629).
 
-**Phase 3**: elements in usage order. Shares are of production items; the delivery hour sampled ranks the head the same way, with passage second.
+**Phase 3** (done): every delivery element, each with the libraries it renders through.
 
-| Order | Element (share)                                                                                                                                                                                                                                                    | Libraries it brings                                            | Package-specific work                                                                                                                                                                                                                                      |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | extended-text-entry (9.4%)                                                                                                                                                                                                                                         | `editable-html-tip-tap`                                        |                                                                                                                                                                                                                                                            |
-| 2     | rubric (8.9%)                                                                                                                                                                                                                                                      |                                                                | complex-rubric (2.3%) has no calls of its own and loses i18next once render-ui has                                                                                                                                                                         |
-| 3     | passage                                                                                                                                                                                                                                                            |                                                                | hardcoded `'Passage'` region name and tab label                                                                                                                                                                                                            |
-| 4     | explicit-constructed-response (3.7%)                                                                                                                                                                                                                               | `mask-markup`                                                  | stored-default note normalization                                                                                                                                                                                                                          |
-| 5     | inline-dropdown (1.9%)                                                                                                                                                                                                                                             |                                                                |                                                                                                                                                                                                                                                            |
-| 6     | math-inline (1.8%)                                                                                                                                                                                                                                                 | `math-input`                                                   | stored-default note normalization                                                                                                                                                                                                                          |
-| 7     | ebsr (1.1%)                                                                                                                                                                                                                                                        | multiple-choice, done                                          | drop the `partA.language` fallback                                                                                                                                                                                                                         |
-| 8     | drag-in-the-blank (1.0%)                                                                                                                                                                                                                                           |                                                                |                                                                                                                                                                                                                                                            |
-| 9     | the rest, by share: select-text, match, drawing-response, hotspot, placement-ordering, categorize, graphing, image-cloze-association, charting, match-list, number-line, math-templated, matrix, likert, multi-trait-rubric, fraction-model, graphing-solution-set | `text-select`, `graphing`, `charting`, `graphing-solution-set` | note swap removal (placement-ordering, categorize); plural groups for `count === 1` (number-line) and `reachedLimit_other` (image-cloze-association); hardcoded strings (match, placement-ordering, match-list, multi-trait-rubric, graphing-solution-set) |
-| 10    | simple-cloze, mc-populated-blank, venn-classification                                                                                                                                                                                                              |                                                                | `src/i18n.ts` shim becomes a `$derived` view; drop mc-populated-blank's `locale` fallback                                                                                                                                                                  |
-| 11    | video-stimulus                                                                                                                                                                                                                                                     |                                                                | its own `en`/`es` tables become catalogs; `uiText` becomes `registerMessages` or stays a model override                                                                                                                                                    |
+| PR   | Packages                                                                                                                                                    |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #629 | `render-ui` (`Collapsible`, adopted by multiple-choice, passage and math-inline), `editable-html-tip-tap`, `math-input`, `math-input-mathlive`              |
+| #630 | `mask-markup` (serving ECR, inline-dropdown, drag-in-the-blank and math-templated), `text-select`, `graphing`, `charting`, `graphing-solution-set`          |
+| #631 | select-text, match, drawing-response, hotspot, placement-ordering, categorize, graphing, image-cloze-association, charting                                  |
+| #632 | extended-text-entry, rubric, explicit-constructed-response, inline-dropdown, math-inline, ebsr, drag-in-the-blank                                           |
+| #633 | simple-cloze, mc-populated-blank, venn-classification, video-stimulus, with `delivery-events-svelte` and `media-svelte`                                     |
+| #634 | match-list, number-line, math-templated, matrix, likert, multi-trait-rubric, fraction-model, graphing-solution-set                                          |
+| #635 | complex-rubric; one alternates-note helper in `@pie-element/shared-i18n`; interface and content language split in `mask-markup` and `editable-html-tip-tap` |
 
-**Phase 4**: deprecate `@pie-lib/translator` 5.x once nothing here depends on it, and drop the `model.language` fallback (PRD open question). pie-lib publishes 4.x under the same name and the legacy elements pin it, so the deprecation names the 5.x range.
+Findings that corrected the plan:
+- complex-rubric embeds rubric and multi-trait-rubric and forwards the item's `language` into their models unless they declare their own; it has no catalog of its own.
+- charting's limit message is `reachedLimit`, a plural group like image-cloze-association's.
+- graphing-solution-set's hardcoded strings live in the element; its line style `'Solid'` is a data value and stays untranslated.
+- The `Collapsible` labels moved for React elements. The Svelte elements keep their toggle labels in their own catalogs.
+- video-stimulus keeps `uiText` as a model override and no longer defaults `language` to `en`.
+
+**Phase 4** (open, maintainer-run): deprecate `@pie-lib/translator` 5.x. No delivery code here imports it; categorize's authoring view is its last dependent. The `model.language` fallback stays ([Interface locale](../PRD.md#interface-locale)). pie-lib publishes 4.x under the same name and the legacy elements pin it, so the deprecation names the 5.x range.
 
 ## Per-package checklist
 
-1. `src/i18n/` with `en-US.ts`, `es.ts` carried from the translator's namespace, `index.ts` with eager loaders, and `catalog-manifest.json` marking `es` reviewed. Write the snapshot with `bun scripts/write-i18n-english-snapshot.mjs packages/<group>/<pkg>/src/i18n es`.
+1. `src/i18n/` with `en-US.ts`, one file per shipped locale, `index.ts` with eager loaders, and `catalog-manifest.json`. The inventory is 14 locales besides the `en-US` source: `es`, reviewed and carried from the translator where it had the key, new keys marked `awaitingReview`; and `th-TH`, `en-GB`, `en-AU`, `fr`, `ar`, `pt`, `ko`, `ja`, `zh`, `cy`, `sv`, `nl-NL` and `ro`, generated against the register and terminology briefs in pie-players `packages/pie-i18n-generated/briefs/`. `ar` and `cy` carry their full CLDR plural sets. Write the snapshot with `bun scripts/write-i18n-english-snapshot.mjs packages/<group>/<pkg>/src/i18n es`.
 2. Replace every `translator.t(` with `forLocale(language).t(key)`; `count === 1` branches and explicit `_one`/`_other` keys become plural groups.
 3. Move the package's hardcoded learner-facing English into the catalog, translated.
-4. The custom element preloads in `_rerender` and calls `stampElementLanguage` in place of `setLangAttribute`.
+4. The custom element subscribes to the interface locale, holds its render until `isLocaleReady`, and calls `stampElementLanguage` in place of `setLangAttribute`. A Svelte element gets both from `defineDeliveryElement` in `@pie-lib/delivery-events-svelte`.
 5. Remove `@pie-lib/translator` from `package.json` once no call remains.
 6. Add the element to `migratedElements` in `tests/interface-i18n-artifacts.test.ts`.
-7. Tests: a Spanish render, a language change after first render, and an undeclared item stamping no `lang`.
+7. Tests: a Spanish render, a language change after first render, an undeclared item stamping no `lang`, and a Spanish-declaring item with no player rendering Spanish chrome.
 8. A changeset per package touched.
 9. Green: `bun run lint`, `bun run verify:dependency-integrity --fail-on-hoist`, `bun run build`, `bun run test`, `bunx tsc --noEmit -p <pkg>`.
 
-The TSX hardcoded-string scanner joins step 3 as an advisory per-package check once written. It blocks only after Phase 3, when every package is clean.
+The TSX hardcoded-string scanner joins step 3 as an advisory per-package check once written. It can block once the remaining English below is moved.
+
+## Remaining English
+
+Learner-facing strings still outside any catalog:
+- the math keypad in each `math-input` library, about 87 strings, and `math-toolbar`;
+- `@pie-lib/drag`'s dnd-kit screen-reader announcements;
+- the default feedback, `Correct`, `Incorrect`, `Nearly` and `You have not entered a response`, in `@pie-element/shared-feedback` and the ebsr, explicit-constructed-response, multiple-choice, math-inline and number-line defaults: controllers produce it and have no interface locale, so localizing it is a design decision of its own.
+
+`Collapsible` renders its labels without their own `lang` and `dir`.
 
 ## Translator coexistence
 
-`@pie-lib/translator` stays untouched until Phase 4, and its catalogs keep every namespace, so an unmigrated element renders as it does today. Both engines coexist on one page: each unmigrated bundle carries its own i18next singleton, and every engine copy shares the page registry. A migrated library under an unmigrated element receives the same `language` prop it did before, loads the locale itself, and renders one English frame first. A string a package moves to its own catalog is not removed from the translator, whose other dependents may still render it.
-
-Every IIFE build ships English for the libraries too, so a Spanish item in an unmigrated element's IIFE renders the migrated libraries' chrome in English and the element's own translator strings in Spanish. No current content reaches that case ([IIFE](../PRD.md#iife)).
+`@pie-lib/translator` is untouched, and its catalogs keep every namespace for the legacy pie-elements that pin 4.x. Categorize's authoring view is its only remaining dependent here, so no delivery bundle carries i18next.
 
 ## Bytes
 

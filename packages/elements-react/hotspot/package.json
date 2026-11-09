@@ -2,6 +2,7 @@
   "name": "@pie-element/hotspot",
   "version": "12.0.7",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -13,7 +14,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "konva": "8.3.0",
     "prop-types": "^15.8.1",
     "react-konva": "^18.2.14",

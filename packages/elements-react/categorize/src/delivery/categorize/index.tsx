@@ -42,7 +42,6 @@ const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewProm
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import Translator from '@pie-lib/translator';
 import { AlertDialog } from '@pie-lib/config-ui';
 import Choices from './choices.js';
 import Choice from './choice.js';
@@ -50,8 +49,9 @@ import Categories from './categories.js';
 import { categoriesFirst, CHOICES_BOARD_ID } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
+import { catalogs } from '../../i18n/index.js';
 
-const { translator } = Translator;
 const log = debug('@pie-ui:categorize');
 
 // A click that lands right after a real drag gesture ends (a pointer drag-and-drop, or
@@ -96,6 +96,8 @@ export class Categorize extends React.Component {
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    /** The locale the chrome follows; the item's declared language when omitted. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -189,22 +191,7 @@ export class Categorize extends React.Component {
     }
   };
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { model } = this.props;
-    const { model: nextModel } = nextProps;
-
-    // check if the note is the default one for prev language and change to the default one for new language
-    // this check is necessary in order to diferanciate between default and authour defined note
-    // and only change between languages for default ones
-    if (
-      model.note &&
-      model.language &&
-      model.language !== nextModel.language &&
-      model.note === translator.t('common:commonCorrectAnswerWithAlternates', { lng: model.language })
-    ) {
-      model.note = translator.t('common:commonCorrectAnswerWithAlternates', { lng: nextModel.language });
-    }
-
+  UNSAFE_componentWillReceiveProps() {
     this.setState({ showCorrect: false });
   }
 
@@ -247,12 +234,13 @@ export class Categorize extends React.Component {
       note,
       showNote,
       env,
-      language,
       maxChoicesPerCategory,
       autoplayAudioEnabled,
       autoplayAudioHeld,
       customAudioButton,
     } = model;
+    const language = this.props.language ?? model.language;
+    const i18n = catalogs.forLocale(language);
     const { mode, role } = env || {};
     const choicePosition = choicesPosition || 'above';
 
@@ -274,19 +262,10 @@ export class Categorize extends React.Component {
     const nbOfRows = (categories && Math.ceil(categories.length / categoriesPerRow)) || 0;
     const existAlternate = this.existAlternateResponse(correctResponse) || false;
     const displayNote =
-      (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note && existAlternate;
-    const alertMessage = translator.t('translation:categorize:limitMaxChoicesPerCategory', {
-      lng: model.language,
-      maxChoicesPerCategory,
-    });
-
-    const alertTitle = translator.t('common:warning', {
-      lng: model.language,
-    });
-
-    const onCloseText = translator.t('common:cancel', {
-      lng: model.language,
-    });
+      (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && existAlternate;
+    const alertMessage = i18n.t('limitMaxChoicesPerCategory', { maxChoicesPerCategory });
+    const alertTitle = i18n.t('warning');
+    const onCloseText = i18n.t('cancel');
 
     const showRationale = model.rationale && (hasText(model.rationale) || hasMedia(model.rationale));
     const showTeacherInstructions =
@@ -296,12 +275,7 @@ export class Categorize extends React.Component {
       <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
           <React.Fragment>
-            <StyledCollapsible
-              labels={{
-                hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-                visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-              }}
-            >
+            <StyledCollapsible variant="teacherInstructions" language={language}>
               <PreviewPrompt prompt={model.teacherInstructions} />
             </StyledCollapsible>
           </React.Fragment>
@@ -356,13 +330,13 @@ export class Categorize extends React.Component {
         {displayNote && (
           <StyledNote
             dangerouslySetInnerHTML={{
-              __html: sanitizeModelHtml(note),
+              __html: sanitizeModelHtml(authoredOrDefault(note, (locale) => catalogs.forLocale(locale).t('commonCorrectAnswerWithAlternates'), language, model.language)),
             }}
           />
         )}
 
         {showRationale && (
-          <StyledCollapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <StyledCollapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={model.rationale} />
           </StyledCollapsible>
         )}
@@ -397,6 +371,8 @@ class CategorizeProvider extends React.Component {
     onShowCorrectToggle: PropTypes.func.isRequired,
     pauseMathObserver: PropTypes.func,
     resumeMathObserver: PropTypes.func,
+    /** The locale the chrome follows; the item's declared language when omitted. */
+    language: PropTypes.string,
   };
 
   constructor(props) {

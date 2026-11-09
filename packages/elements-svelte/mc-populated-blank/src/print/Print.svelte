@@ -11,7 +11,8 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import McPopulatedBlank from '../delivery/McPopulatedBlank.svelte';
-import { t as translate } from '../delivery/i18n';
+import { catalogs } from '../i18n/index.js';
+import { residentLanguage } from '../delivery/resident-language.svelte.js';
 import { preparePrint, type PrintView } from './preparePrint';
 
 let { model = null, options = null }: { model?: any; options?: any } = $props();
@@ -34,10 +35,15 @@ $effect(() => {
   };
 });
 
-const t = (key: string) => translate(key, (view?.model.language as string) || undefined);
+// Print follows the item's declared language, and renders once its catalogs are resident.
+const language = residentLanguage(() =>
+  view ? (view.model.language as string | undefined) || undefined : null
+);
+const i18n = $derived(catalogs.forLocale(language.current));
+const t = (key: 'printAudio' | 'printTranscript') => i18n.t(key);
 </script>
 
-{#if view}
+{#if view && language.current !== null}
   <div class="mpb-print">
     {#if view.teacherInstructions}
       <div class="mpb-print-block mpb-print-teacher-instructions">{@html sanitizeModelHtml(view.teacherInstructions)}</div>

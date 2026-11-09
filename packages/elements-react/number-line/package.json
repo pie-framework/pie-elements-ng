@@ -2,6 +2,7 @@
   "name": "@pie-element/number-line",
   "version": "14.0.7",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -16,7 +17,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
     "mathjs": "^13.2.3",

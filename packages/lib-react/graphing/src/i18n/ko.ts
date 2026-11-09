@@ -1,0 +1,37 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: '좌표평면 그래프',
+  axisRange: '{axis}축은 {min}부터 {max}까지입니다.',
+  plottedNone: '그려진 개체가 없습니다.',
+  plotted: {
+    other: '그려진 개체 {count}개: {marks}.',
+  },
+  point: '점',
+  circle: '원',
+  line: '선',
+  parabola: '포물선',
+  absolute: '절댓값',
+  exponential: '지수 함수',
+  polygon: '다각형',
+  ray: '반직선',
+  segment: '선분',
+  sine: '사인',
+  vector: '벡터',
+  label: '레이블',
+  markLabel: '({x}, {y})의 레이블',
+  correctMarkLabel: '({x}, {y})의 정답 레이블',
+  undo: '실행 취소',
+  redo: '다시 실행',
+  reset: '초기화',
+  key: '범례',
+  keyLegend: {
+    missingRequiredLabel: '필수 레이블 누락',
+    answerKeyCorrect: '정답 키 기준 정답',
+    answerKeyCorrectLabel: '정답 키 기준 정답 레이블',
+    studentIncorrect: '학생 오답',
+    incorrectStudentLabel: '학생의 잘못된 레이블',
+    studentCorrect: '학생 정답',
+    studentCorrectLabel: '학생의 올바른 레이블',
+  },
+} satisfies MessageCatalog;

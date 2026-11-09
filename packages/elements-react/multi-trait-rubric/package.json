@@ -2,6 +2,7 @@
   "name": "@pie-element/multi-trait-rubric",
   "version": "9.0.7",
   "description": "React implementation of multi-trait-rubric element",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -13,7 +14,7 @@
     "@mui/material": "^7.3.4",
     "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "clsx": "^2.1.1",
     "prop-types": "^15.8.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

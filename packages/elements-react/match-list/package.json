@@ -2,6 +2,7 @@
   "name": "@pie-element/match-list",
   "version": "8.0.7",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -17,6 +18,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "@pie-element/shared-lodash": "workspace:*",

@@ -288,6 +288,10 @@ export class Main extends React.Component<MainProps, State> {
       maxImageWidth = {},
       maxImageHeight = {},
       maxLengthPerChoice = {},
+      ignoreCase = {},
+      collapseWhitespace = {},
+      ignoreSlashSpacing = {},
+      ignoreAccents = {},
       maxResponseAreas,
       partialScoring = {},
       playerSpellCheck = {},
@@ -335,6 +339,10 @@ export class Main extends React.Component<MainProps, State> {
     const panelSettings = {
       partialScoring: partialScoring.settings && toggle(partialScoring.label),
       maxLengthPerChoiceEnabled: maxLengthPerChoice.settings && toggle(maxLengthPerChoice.label),
+      ignoreCase: ignoreCase.settings && toggle(ignoreCase.label),
+      collapseWhitespace: collapseWhitespace.settings && toggle(collapseWhitespace.label),
+      ignoreSlashSpacing: ignoreSlashSpacing.settings && toggle(ignoreSlashSpacing.label),
+      ignoreAccents: ignoreAccents.settings && toggle(ignoreAccents.label),
       'language.enabled': language.settings && toggle(language.label, true),
       language: language.settings && language.enabled && dropdown(languageChoices.label, languageChoices.options),
       'responseAreaInputConfiguration.inputConfiguration.characters.disabled':

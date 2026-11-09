@@ -1,5 +1,6 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { render, screen, within } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
@@ -10,6 +11,9 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () =>
 const Root = (await import('../root')).ImageClozeAssociationComponent as React.ComponentType<Record<string, unknown>>;
 
 const theme = createTheme();
+
+// The components read their catalogs synchronously; the Spanish cases need them resident.
+beforeAll(() => loadLocale('es_ES'));
 
 const sun = '<img alt="" src="sun.png"/>';
 const moon = '<img alt="" src="moon.png"/>';

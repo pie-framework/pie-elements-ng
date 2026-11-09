@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MathToolbar } from '@pie-lib/math-toolbar';
-import { mq } from '@pie-lib/math-input';
+import { mq } from '@pie-lib/math-input-mathlive';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { color, createUniqueId } from '@pie-lib/render-ui';
@@ -27,13 +27,6 @@ const Static: any = styled('div', {
   fontSize: '1rem',
   padding: isCorrect || isIncorrect ? theme.spacing(1) : theme.spacing(0.5),
   letterSpacing: (isCorrect || isIncorrect) ? '0.5px' : 'normal',
-  '& > .mq-math-mode': {
-    '& > .mq-hasCursor': {
-      '& > .mq-cursor': {
-        display: 'none',
-      },
-    },
-  },
 }));
 
 // CSS for MathToolbar classNames (used as strings)
@@ -52,7 +45,7 @@ if (typeof document !== 'undefined') {
         text-align: left;
         padding: 8px;
       }
-      .response-editor.mq-math-mode {
+      .response-editor math-field {
         border: 1px solid ${color.primaryLight()};
       }
     `;

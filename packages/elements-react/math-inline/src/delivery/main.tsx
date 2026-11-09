@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { mq, HorizontalKeypad, updateSpans, registerEmbed, applyStaticMath } from '@pie-lib/math-input';
+import { mq, HorizontalKeypad, updateSpans, answerBlockLatex, fieldIds } from '@pie-lib/math-input-mathlive';
 import { Feedback as FeedbackImport, Collapsible as CollapsibleImport, Readable as ReadableImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -44,10 +44,9 @@ import { ResponseTypes } from './utils.js';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
 import { color, createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 import { isComposingKeyEvent, sanitizeModelHtml } from '@pie-element/shared-utils';
-const { translator } = Translator;
-let registered = false;
+import { authoredOrDefault } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 const NEWLINE_LATEX = /\\newline/g;
 const REGEX = /{{response}}/gm;
@@ -110,7 +109,7 @@ function prepareForStatic(model, state) {
         }
 
         if (disabled) {
-          return `\\embed{answerBlock}[r${answerBlocks++}]`;
+          return answerBlockLatex(`r${answerBlocks++}`, answer && answer.value);
         }
 
         return `\\MathQuillMathField[r${answerBlocks++}]{${(answer && answer.value) || ''}}`;
@@ -147,6 +146,8 @@ export class Main extends React.Component {
     session: PropTypes.object.isRequired,
     onSessionChange: PropTypes.func,
     model: PropTypes.object.isRequired,
+    /** The chrome language: the player's interface locale, else the declared language. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -163,74 +164,11 @@ export class Main extends React.Component {
     this.instructionsIdPrefix = createUniqueId('math-inline-instructions');
   }
 
-  UNSAFE_componentWillMount() {
-    if (typeof window !== 'undefined') {
-      if (!registered) {
-        // The embed is registered once for every item on the page, so it marks each block by its
-        // response id rather than taking it as a DOM id, which a second item would repeat.
-        registerEmbed('answerBlock', (data) => {
-          const classNames = getBlockClassNames();
-          return {
-            htmlString: `<div class="${classNames.blockContainer}">
-                <div class="${classNames.blockResponse}" data-answer-block-index="${data}">R</div>
-                <div class="${classNames.blockMath}">
-                  <span data-answer-block="${data}"></span>
-                </div>
-              </div>`,
-            text: () => 'text',
-            latex: () => `\\embed{answerBlock}[${data}]`,
-          };
-        });
-
-        registered = true;
-      }
-    }
-  }
-
+  // Answer blocks are part of the static latex (see prepareForStatic); only the prompt's MathJax
+  // needs rendering after an update.
   handleAnswerBlockDomUpdate: any = () => {
-    const { model } = this.props;
-    const { session, showCorrect } = this.state;
-    const answers = session.answers;
-
-    if (this.root && model.disabled && !showCorrect) {
-      Object.keys(answers).forEach((answerId) => {
-        const el = this.root.querySelector(`[data-answer-block="${answerId}"]`);
-        const indexEl = this.root.querySelector(`[data-answer-block-index="${answerId}"]`);
-        // const correct = model.correctness && model.correctness.correct;
-
-        if (el) {
-          const answer = answers[answerId];
-
-          applyStaticMath(el, (answer && answer.value) || '');
-
-          if (!model.view) {
-            // for now, we're not going to be showing individual response correctness
-            // TODO re-attach the classes once we are
-            // el.parentElement.parentElement.classList.add(
-            //   correct ? 'correct' : 'incorrect'
-            // );
-          } else {
-            el.parentElement.parentElement.classList.remove('correct');
-            el.parentElement.parentElement.classList.remove('incorrect');
-          }
-
-          // For now, we're not going to be indexing response blocks
-          // TODO go back to indexing once we support individual response correctness
-          // indexEl.textContent = `R${idx + 1}`;
-          indexEl.textContent = 'R';
-        }
-      });
-    }
-
     renderMath(this.root);
   };
-
-  countResponseOccurrences(expression) {
-    const pattern = /\{\{response\}\}/g;
-    const matches = expression?.match(pattern);
-
-    return matches ? matches.length : 0;
-  }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { config } = this.props.model;
@@ -247,28 +185,12 @@ export class Main extends React.Component {
       });
     }
 
-    // check if the note is the default one for prev language and change to the default one for new language
-    // this check is necessary in order to diferanciate between default and authour defined note
-    // and only change between languages for default ones
-    if (
-      config.note &&
-      config.language &&
-      config.language !== nextConfig.language &&
-      config.note === translator.t('mathInline.primaryCorrectWithAlternates', { lng: config.language })
-    ) {
-      config.note = translator.t('mathInline.primaryCorrectWithAlternates', { lng: nextConfig.language });
-    }
-
     if ((config.env && config.env.mode !== 'evaluate') || (nextConfig.env && nextConfig.env.mode !== 'evaluate')) {
       this.setState({ ...this.state.session, showCorrect: false });
     }
 
     if (nextConfig.alwaysShowCorrect) {
       this.setState({ showCorrect: true });
-    }
-
-    if (this.countResponseOccurrences(config.expression) < this.countResponseOccurrences(nextConfig.expression)) {
-      setTimeout(() => this.updateAria(), 100);
     }
 
     if (
@@ -293,7 +215,7 @@ export class Main extends React.Component {
         (state) => ({
           session: {
             ...state.session,
-            completeAnswer: this.mqStatic && this.mqStatic.mathField.latex(),
+            completeAnswer: this.mqStatic && this.mqStatic.latex(),
             answers: newAnswers,
           },
         }),
@@ -306,58 +228,31 @@ export class Main extends React.Component {
     const sameModel = isEqual(this.props.model, nextProps.model);
     const sameState = isEqual(this.state, nextState);
 
-    return !sameModel || !sameState;
+    return !sameModel || !sameState || this.props.language !== nextProps.language;
   }
 
   componentDidMount() {
     this.handleAnswerBlockDomUpdate();
-    this.updateAria();
     setTimeout(() => renderMath(this.root), 100);
+    // The first click on an answer block lands before MathLive reports its focus,
+    // so the listener has to be there already.
+    this.focusedAnswerBlock = 'r1';
+    this.listenForKeypadOpen();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate() {
     this.handleAnswerBlockDomUpdate();
-
-    const prevResponseType = prevProps.model?.config?.responseType;
-    const currentResponseType = this.props.model?.config?.responseType;
-
-    if (prevResponseType !== currentResponseType || prevProps.model?.language !== this.props.model?.language) {
-      this.updateAria();
-    }
   }
 
-  updateAria: any = () => {
-    if (this.root) {
-      // Update aria-hidden for .mq-selectable elements
-      const selectableElements = this.root.querySelectorAll('.mq-selectable');
-      selectableElements.forEach((elem) => elem.setAttribute('aria-hidden', 'true'));
+  // The answer field is named by @pie-lib/math-input-mathlive and described by the keypad
+  // instructions, rendered next to it (see renderInstructions).
+  instructionsId: any = () => `${this.instructionsIdPrefix}-advanced`;
 
-      // Describe the keypad shortcuts on each textarea; @pie-lib/math-input names it
-      const instructions = translator.t('mathInline.keypadInstructions', { lng: this.props.model?.language });
-      const textareaElements = this.root.querySelectorAll('textarea');
-      textareaElements.forEach((elem, index) => {
-        const instructionsId = `${this.instructionsIdPrefix}-${index}`;
-
-        // Find the parent element that contains the textarea
-        const parent = elem.closest('.mq-textarea');
-
-        if (parent) {
-          // Create or find the instructions element within the parent
-          let instructionsElement = parent.querySelector(`#${instructionsId}`);
-
-          if (!instructionsElement) {
-            instructionsElement = document.createElement('span');
-            instructionsElement.id = instructionsId;
-            instructionsElement.className = 'sr-only';
-            parent.insertBefore(instructionsElement, elem);
-          }
-
-          instructionsElement.textContent = instructions;
-          elem.setAttribute('aria-describedby', instructionsId);
-        }
-      });
-    }
-  };
+  renderInstructions: any = () => (
+    <span id={this.instructionsId()} className="sr-only">
+      {catalogs.forLocale(this.props.language).t('keypadInstructions')}
+    </span>
+  );
 
   focusFirstKeypadElement: any = () => {
     setTimeout(() => {
@@ -373,14 +268,17 @@ export class Main extends React.Component {
     }, 0);
   };
 
-  handleKeyDown: any = (event, id) => {
+  handleKeyDown: any = (event) => {
+    const id = this.focusedAnswerBlock;
+    const holder = this.mqStatic?.holderRef?.current;
     const isTrigerredFromActualPieElement = isChildOfCurrentPieElement(event.target, this.root);
-    const isAnswerInputFocused =
-      this.mqStatic && this.mqStatic.inputRef?.current
-        ? this.mqStatic.inputRef?.current.contains(document.activeElement)
-        : !!document.activeElement?.closest('.mq-editable-field');
     const { key, type } = event;
     const isClickOrTouchEvent = type === 'click' || type === 'touchstart';
+    // MathLive focuses the field after the click event, so a click is judged by
+    // where it landed rather than by what has focus.
+    const isAnswerInputFocused = holder
+      ? holder.contains(document.activeElement) || (isClickOrTouchEvent && holder.contains(event.target))
+      : document.activeElement?.tagName === 'MATH-FIELD';
 
     if (isAnswerInputFocused && (key === 'ArrowDown' || isClickOrTouchEvent)) {
       if (this.state.activeAnswerBlock !== id && isTrigerredFromActualPieElement) {
@@ -398,22 +296,29 @@ export class Main extends React.Component {
   };
 
   onSubFieldFocus: any = (id) => {
+    // The keypad follows the block that has the caret.
+    this.focusedAnswerBlock = id;
+    this.listenForKeypadOpen();
+  };
+
+  listenForKeypadOpen: any = () => {
     if (!this.handleEvent) {
       this.handleEvent = (event) => {
-        this.handleKeyDown(event, id);
+        this.handleKeyDown(event);
       };
 
       document.addEventListener('keydown', this.handleEvent);
-      document.addEventListener('click', this.handleEvent);
-      document.addEventListener('touchstart', this.handleEvent);
+      // Captured: MathLive stops a click on the answer field inside its shadow root.
+      document.addEventListener('click', this.handleEvent, true);
+      document.addEventListener('touchstart', this.handleEvent, true);
     }
   };
 
   cleanupKeyDownListener: any = () => {
     if (this.handleEvent) {
       document.removeEventListener('keydown', this.handleEvent);
-      document.removeEventListener('click', this.handleEvent);
-      document.removeEventListener('touchstart', this.handleEvent);
+      document.removeEventListener('click', this.handleEvent, true);
+      document.removeEventListener('touchstart', this.handleEvent, true);
       this.handleEvent = null;
     }
   };
@@ -502,7 +407,7 @@ export class Main extends React.Component {
         (state) => ({
           session: {
             ...state.session,
-            completeAnswer: this.mqStatic && this.mqStatic.mathField.latex(),
+            completeAnswer: this.mqStatic && this.mqStatic.latex(),
             answers: {
               ...state.session.answers,
               [name]: { value: subfieldValue },
@@ -608,7 +513,8 @@ export class Main extends React.Component {
   }
 
   render() {
-    const { model } = this.props;
+    const { model, language } = this.props;
+    const i18n = catalogs.forLocale(language);
     const { activeAnswerBlock, showCorrect, session, tooltipContainerRef } = this.state;
     const {
       config,
@@ -622,7 +528,6 @@ export class Main extends React.Component {
       animationsDisabled,
       printMode,
       alwaysShowCorrect,
-      language,
     } = model || {};
 
     if (!config) {
@@ -631,7 +536,7 @@ export class Main extends React.Component {
 
     const {
       showNote,
-      note,
+      note: storedNote,
       prompt,
       responses,
       responseType,
@@ -639,13 +544,16 @@ export class Main extends React.Component {
       customKeys,
       env: { mode, role } = {},
     } = config || {};
-    const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
+    const note = authoredOrDefault(storedNote, (locale) => catalogs.forLocale(locale).t('primaryCorrectWithAlternates'), language, model.language);
+    const authoredNote = note === i18n.t('primaryCorrectWithAlternates') ? undefined : note;
+    const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote;
     const emptyResponse = isEmpty(responses);
     const showCorrectAnswerToggle = !emptyResponse && correctness && correctness.correctness !== 'correct';
     const tooltipModeEnabled = disabled && correctness;
     const additionalKeys = generateAdditionalKeys(customKeys);
     const correct = correctness && correctness.correct;
     const staticLatex = prepareForStatic(model, this.state) || '';
+    const answerFieldShown = fieldIds(staticLatex).length > 0;
     const viewMode = disabled && !correctness;
     const studentPrintMode = printMode && !alwaysShowCorrect;
     const showRationale = rationale && (hasText(rationale) || hasMedia(rationale));
@@ -673,13 +581,13 @@ export class Main extends React.Component {
     const midContent = (
       <MainContent>
         {mode === 'gather' && (
-          <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+          <SrOnly>{i18n.t('mathEquationResponseQuestion')}</SrOnly>
         )}
 
         {viewMode &&
           showTeacherInstructions &&
           (!animationsDisabled ? (
-            <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
+            <StyledCollapsible variant="teacherInstructions" language={language}>
               <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(teacherInstructions) }} />
             </StyledCollapsible>
           ) : (
@@ -796,6 +704,8 @@ export class Main extends React.Component {
                     )}
                   >
                     <div>
+                      {/* Instructions for the answer field, so only where there is one to type into. */}
+                      {answerFieldShown && this.renderInstructions()}
                       <mq.Static
                         className="static-math"
                         ref={(mqStatic) => {
@@ -803,6 +713,7 @@ export class Main extends React.Component {
                         }}
                         latex={staticLatex}
                         language={language}
+                        ariaDescribedBy={answerFieldShown ? this.instructionsId() : undefined}
                         onSubFieldChange={this.subFieldChanged}
                         getFieldName={this.getFieldName}
                         setInput={this.setInput}
@@ -817,12 +728,21 @@ export class Main extends React.Component {
           </Readable>
         )}
 
-        {viewMode && displayNote && <Note dangerouslySetInnerHTML={{ __html: `<strong>Note:</strong> ${sanitizeModelHtml(note)}` }} />}
+        {viewMode && displayNote && (
+          <Note
+            dangerouslySetInnerHTML={{
+              // The default carries its own label.
+              __html: authoredNote
+                ? `<strong>${i18n.t('noteLabel')}</strong> ${sanitizeModelHtml(authoredNote)}`
+                : sanitizeModelHtml(note),
+            }}
+          />
+        )}
 
         {viewMode &&
           showRationale &&
           (!animationsDisabled ? (
-            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+            <Collapsible variant="rationale" language={language}>
               <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(rationale) }} />
             </Collapsible>
           ) : (
@@ -888,10 +808,8 @@ export class Main extends React.Component {
                 {showTeacherInstructions && (
                   <StyledCollapsible
                     key="collapsible-teacher-instructions"
-                    labels={{
-                      hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-                      visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-                    }}
+                    variant="teacherInstructions"
+                    language={language}
                   >
                     <PreviewPrompt prompt={teacherInstructions} />
                   </StyledCollapsible>
@@ -899,10 +817,7 @@ export class Main extends React.Component {
                 {displayNote && hasText(note) && (
                   <StyledCollapsible
                     key="collapsible-note"
-                    labels={{
-                      hidden: translator.t('common:showNote', { lng: language }),
-                      visible: translator.t('common:hideNote', { lng: language }),
-                    }}
+                    labels={{ hidden: i18n.t('showNote'), visible: i18n.t('hideNote') }}
                   >
                     <PreviewPrompt prompt={note} />
                   </StyledCollapsible>
@@ -911,10 +826,8 @@ export class Main extends React.Component {
                 {showRationale && (
                   <StyledCollapsible
                     key="collapsible-rationale"
-                    labels={{
-                      hidden: translator.t('common:showRationale', { lng: language }),
-                      visible: translator.t('common:hideRationale', { lng: language }),
-                    }}
+                    variant="rationale"
+                    language={language}
                   >
                     <PreviewPrompt prompt={rationale} />
                   </StyledCollapsible>
@@ -943,51 +856,15 @@ export class Main extends React.Component {
   }
 }
 
-// Helper function to get class names for HTML string generation
-const getBlockClassNames = () => {
-  return {
-    blockContainer: 'block-container',
-    blockResponse: 'block-response',
-    blockMath: 'block-math',
-  };
-};
-
-// CSS for block classes used in HTML string generation
+// CSS for the answer blocks drawn by answerBlockLatex, and for the keypad instructions
 if (typeof document !== 'undefined') {
   const styleId = 'math-inline-block-styles';
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
-      .block-container {
-        margin: 8px !important;
-        display: inline-flex;
-        border: 2px solid grey !important;
-      }
-      .block-response {
+      [data-answer-block-index] {
         color: grey;
-        background: #f5f5f5;
-        font-size: 0.8rem !important;
-        padding: 4px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-right: 2px solid #bdbdbd !important;
-        flex-shrink: 0;
-        flex-grow: 0;
-        flex-basis: auto;
-      }
-      .block-math {
-        color: ${color.text()};
-        background-color: ${color.background()};
-        padding: 4px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-grow: 1;
-      }
-      .block-math > .mq-math-mode > .mq-hasCursor > .mq-cursor {
-        display: none;
       }
       .sr-only {
         position: absolute;
@@ -996,9 +873,6 @@ if (typeof document !== 'undefined') {
         width: 1px;
         height: 1px;
         overflow: hidden;
-      }
-      .static-math > .mq-root-block > .mq-editable-field {
-        border-color: ${color.text()};
       }
     `;
     document.head.appendChild(style);
@@ -1063,64 +937,11 @@ const Expression: any = styled('div', {
     ...(printCorrect && {
       border: `2px solid ${color.correct()} !important`,
     }),
-    '& .mq-math-mode': {
-      '& .mq-root-block': {
-        paddingRight: '0 !important',
-        paddingLeft: '0 !important',
-        '& .mq-editable-field': {
-          minWidth: '10px',
-          padding: theme.spacing(0.4),
-        },
-      },
-      '& sup': {
-        top: 0,
-      },
-    },
   };
 });
 
 const InputAndKeypadContainer: any = styled('div')({
   position: 'relative',
-  '& .mq-overarrow-inner': {
-    border: 'none !important',
-    padding: '0 !important',
-  },
-  '& .mq-overarrow-inner-right': {
-    display: 'none !important',
-  },
-  '& .mq-overarrow-inner-left': {
-    display: 'none !important',
-  },
-  '& .mq-overarrow.mq-arrow-both': {
-    minWidth: '1.23em',
-    '& *': {
-      lineHeight: '1 !important',
-    },
-    '&:before': {
-      top: '-0.4em',
-      left: '-1px',
-    },
-    '&:after': {
-      top: '-2.4em',
-      right: '-1px',
-    },
-    '&.mq-empty:after': {
-      top: '-0.45em',
-    },
-  },
-  '& .mq-overarrow.mq-arrow-right': {
-    '&:before': {
-      top: '-0.4em',
-      right: '-1px',
-    },
-  },
-  '& .mq-longdiv-inner': {
-    borderTop: '1px solid !important',
-    paddingTop: '1.5px !important',
-  },
-  '& .mq-parallelogram': {
-    lineHeight: 0.85,
-  },
 });
 
 const PrintContainer: any = styled('div')(({ theme }) => ({

@@ -176,10 +176,10 @@ describe('chart mark sliders', () => {
     expect(screen.getByRole('slider', { name: 'Category 1' })).toBeInTheDocument();
   });
 
-  it('are named by position in the item language', () => {
+  it('are named by position in the item language', async () => {
     renderChart({ initial: [{ label: '', value: 1, interactive: true }], language: 'es_ES' });
 
-    expect(screen.getByRole('slider', { name: 'Categoría 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('slider', { name: 'Categoría 1' })).toBeInTheDocument();
   });
 
   it('are sliders for every category while the author defines the chart', () => {
@@ -216,10 +216,10 @@ describe('fraction category labels', () => {
     expect(screen.getByRole('textbox', { name: 'Category 1 label' })).toHaveValue('1/2');
   });
 
-  it('are named in the item language', () => {
+  it('are named in the item language', async () => {
     renderChart({ initial: fraction(true), language: 'es_ES' });
 
-    expect(screen.getByRole('button', { name: 'Etiqueta de la categoría 1: 1/2' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Etiqueta de la categoría 1: 1/2' })).toBeInTheDocument();
   });
 
   it('are no control when the label is not editable', () => {

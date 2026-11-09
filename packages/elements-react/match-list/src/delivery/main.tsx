@@ -43,6 +43,7 @@ import { findKey, isUndefined } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer, buildDragId } from './answer.js';
+import { catalogs } from '../i18n/index.js';
 
 // A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
 // the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
@@ -102,6 +103,8 @@ export class Main extends React.Component {
     onSessionChange: PropTypes.func,
     model: PropTypes.object.isRequired,
     prompt: PropTypes.string,
+    /** The interface locale the custom element resolved; the chrome speaks it. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -386,21 +389,18 @@ export class Main extends React.Component {
 
   render() {
     const { showCorrectAnswer } = this.state;
-    const { model, session } = this.props;
+    const { model, session, language } = this.props;
     const { config, mode } = model;
-    const { prompt, language } = config;
+    const { prompt } = config;
+    const i18n = catalogs.forLocale(language);
 
     // Helpers for accessible announcements
     const getChoiceLabel = (answerId) => {
       const answer = config.answers.find((a) => String(a.id) === String(answerId));
+      // Strip HTML tags for screen reader
+      const text = answer?.title ? answer.title.replace(/<[^>]*>/g, '').trim() : '';
 
-      if (answer?.title) {
-        // Strip HTML tags for screen reader
-        const text = answer.title.replace(/<[^>]*>/g, '').trim();
-        return text || `Answer ${answerId}`;
-      }
-
-      return `Answer ${answerId}`;
+      return text || i18n.t('answerA11y', { id: String(answerId) });
     };
 
     // Read the dragged choice off the tile's own drag data rather than parsing it back
@@ -412,7 +412,7 @@ export class Main extends React.Component {
       const overData = over?.data?.current;
 
       if (overData?.type === 'choices-pool' || over?.id === 'choices-pool') {
-        return { label: 'Choices list', choiceId: null };
+        return { label: i18n.t('choicesListA11y'), choiceId: null };
       }
 
       // Prefer the droppable's own data; fall back to the id for a droppable registered
@@ -420,8 +420,8 @@ export class Main extends React.Component {
       const promptId = overData?.promptId != null ? overData.promptId : String(over?.id).replace(/^drop-/, '');
       const promptItem = config.prompts.find((p) => String(p.id) === String(promptId));
       const label = promptItem?.title
-        ? `Response area for ${promptItem.title.replace(/<[^>]*>/g, '').trim()}`
-        : `Response area ${promptId}`;
+        ? i18n.t('responseAreaForA11y', { prompt: promptItem.title.replace(/<[^>]*>/g, '').trim() })
+        : i18n.t('responseAreaA11y', { id: String(promptId) });
       const choiceId = session.value?.[promptId];
 
       return { label, choiceId: choiceId != null ? choiceId : null };
@@ -429,30 +429,30 @@ export class Main extends React.Component {
 
     const announcements = {
       onDragStart({ active }) {
-        return `Picked up ${getDraggedLabel(active)}. Use Tab to move between response areas, then press Space or Enter to drop.`;
+        return i18n.t('pickedUpA11y', { choice: getDraggedLabel(active) });
       },
 
       onDragOver({ active, over }) {
         if (!over) {
-          return `${getDraggedLabel(active)} is not over a response area.`;
+          return i18n.t('notOverResponseAreaA11y', { choice: getDraggedLabel(active) });
         }
 
         const target = getDropTargetLabel(over);
-        const content = target.choiceId ? `Currently contains ${getChoiceLabel(target.choiceId)}.` : 'Currently empty.';
-
-        return `Over ${target.label}. ${content}`;
+        return target.choiceId
+          ? i18n.t('overFilledA11y', { target: target.label, choice: getChoiceLabel(target.choiceId) })
+          : i18n.t('overEmptyA11y', { target: target.label });
       },
 
       onDragEnd({ active, over }) {
         if (!over) {
-          return `${getDraggedLabel(active)} was returned to its original position.`;
+          return i18n.t('returnedA11y', { choice: getDraggedLabel(active) });
         }
 
-        return `Dropped ${getDraggedLabel(active)} in ${getDropTargetLabel(over).label}.`;
+        return i18n.t('droppedA11y', { choice: getDraggedLabel(active), target: getDropTargetLabel(over).label });
       },
 
       onDragCancel({ active }) {
-        return `Cancelled. ${getDraggedLabel(active)} was returned to its original position.`;
+        return i18n.t('cancelledA11y', { choice: getDraggedLabel(active) });
       },
     };
 
@@ -466,9 +466,9 @@ export class Main extends React.Component {
         onDragCancel={this.onDragCancel}
         modifiers={[restrictToWindowEdges]}
         accessibility={{
+          announcements,
           screenReaderInstructions: {
-            draggable:
-              'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel. You can also click an answer choice to select it, then click a response area to place it there.',
+            draggable: i18n.t('dragInstructionsA11y'),
           },
         }}
       >

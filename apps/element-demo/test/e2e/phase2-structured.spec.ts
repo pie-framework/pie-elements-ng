@@ -69,9 +69,11 @@ async function interactStructured(page: Page, element: string, root: Locator) {
   }
 
   if (element === 'math-inline' || element === 'math-templated') {
-    const mq = root.locator('.mq-editable-field').first();
-    if (await mq.isVisible().catch(() => false)) {
-      await mq.click();
+    const field = root.locator('math-field').first();
+    if (await field.isVisible().catch(() => false)) {
+      await field.click();
+      // MathLive takes focus a moment after the click; keys typed before then are lost.
+      await expect(field).toBeFocused();
       await page.keyboard.type('1');
       return;
     }

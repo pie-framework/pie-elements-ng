@@ -6,9 +6,6 @@ import styled from 'styled-components';
 
 import ChoiceInput from './ChoiceInput.js';
 import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, useUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -93,13 +90,7 @@ const Matrix = (props) => {
   return (
     <MatrixWrapper>
       {teacherInstructions && (
-        <TeacherInstructions
-          className={teacherInstructions}
-          labels={{
-            hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-            visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-          }}
-        >
+        <TeacherInstructions className={teacherInstructions} variant="teacherInstructions" language={language}>
           <PreviewPrompt prompt={teacherInstructions} />
         </TeacherInstructions>
       )}

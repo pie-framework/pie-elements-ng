@@ -217,7 +217,7 @@ describe('video-stimulus delivery', () => {
     expect(target.querySelector('[role="alert"]')).toBeNull();
   });
 
-  it('keeps learner UI and authored media languages distinct', () => {
+  it('keeps learner UI and authored media languages distinct', async () => {
     const candidate = authoredModel();
     candidate.language = 'es-MX';
     candidate.media.lang = 'en-US';
@@ -225,7 +225,9 @@ describe('video-stimulus delivery', () => {
     candidate.uiText = { showTranscript: '   ' };
     const { target } = mountComponent(buildViewModel(candidate, undefined, { mode: 'view' }));
 
-    expect(target.querySelector('.video-stimulus')?.getAttribute('lang')).toBe('es-MX');
+    await vi.waitFor(() =>
+      expect(target.querySelector('.video-stimulus')?.getAttribute('lang')).toBe('es-MX')
+    );
     expect(target.querySelector('figcaption')?.getAttribute('lang')).toBe('en-US');
     expect(target.querySelector('.media-transcript__toggle')).toHaveTextContent(
       'Mostrar transcripción'
@@ -245,7 +247,7 @@ describe('video-stimulus delivery', () => {
     element.addEventListener('session-changed', sessionChanged);
     element.model = viewModel();
     expect(element.shadowRoot).toBeNull();
-    expect(element.hasAttribute('lang')).toBe(false);
+    expect(element.getAttribute('lang')).toBe('en');
     expect(modelSet).toHaveBeenCalledTimes(1);
     expect(sessionChanged).not.toHaveBeenCalled();
   });

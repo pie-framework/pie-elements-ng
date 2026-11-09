@@ -49,10 +49,10 @@ describe('Blank', () => {
     expect(getComputedStyle(screen.getByRole('button', { name: 'Blank 2' })).lineHeight).toBe('normal');
   });
 
-  it('names an empty blank in the item language', () => {
+  it('names an empty blank in the item language', async () => {
     renderBlank({ language: 'es_ES' });
 
-    expect(screen.getByRole('button', { name: 'Espacio en blanco 2' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Espacio en blanco 2' })).toBeInTheDocument();
   });
 
   it('is a named group that leaves its tab stop to the answer it holds', () => {

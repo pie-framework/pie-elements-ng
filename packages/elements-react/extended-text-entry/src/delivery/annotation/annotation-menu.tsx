@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Popover } from '@mui/material';
 import { color } from '@pie-lib/render-ui';
+import { catalogs } from '../../i18n/index.js';
 
 const StyledPopover: any = styled(Popover)({
   '& .MuiPaper-root': {
@@ -97,11 +98,14 @@ class AnnotationMenu extends React.Component {
     onEdit: PropTypes.func,
     onWrite: PropTypes.func,
     onAnnotate: PropTypes.func,
+    /** The chrome language of the button labels. */
+    language: PropTypes.string,
   };
 
   render() {
-    const { anchorEl, annotations, isNewAnnotation, onAnnotate, onClose, onEdit, onDelete, onWrite, open } =
+    const { anchorEl, annotations, isNewAnnotation, language, onAnnotate, onClose, onEdit, onDelete, onWrite, open } =
       this.props;
+    const i18n = catalogs.forLocale(language);
 
     return (
       <StyledPopover
@@ -133,25 +137,25 @@ class AnnotationMenu extends React.Component {
           </AnnotationsWrapper>
           <ControlsWrapper>
             <Button onClick={onClose}>
-              Cancel
+              {i18n.t('annotation.cancel')}
             </Button>
             <Button style={{ pointerEvents: 'none' }} />
             {isNewAnnotation ? (
               <React.Fragment>
                 <Button variant="positive" onClick={() => onWrite('positive')}>
-                  Write
+                  {i18n.t('annotation.write')}
                 </Button>
                 <Button variant="negative" onClick={() => onWrite('negative')}>
-                  Write
+                  {i18n.t('annotation.write')}
                 </Button>
               </React.Fragment>
             ) : (
               <React.Fragment>
                 <Button onClick={onDelete}>
-                  Delete
+                  {i18n.t('annotation.delete')}
                 </Button>
                 <Button onClick={onEdit}>
-                  Edit
+                  {i18n.t('annotation.edit')}
                 </Button>
               </React.Fragment>
             )}

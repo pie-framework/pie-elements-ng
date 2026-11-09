@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import AnswerFraction from './answer-fraction.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import FractionModelChart from './fraction-model-chart.js';
+import { catalogs } from '../i18n/index.js';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
@@ -53,6 +54,8 @@ export class Main extends React.Component {
     model: PropTypes.object,
     session: PropTypes.object,
     onSessionChange: PropTypes.func.isRequired,
+    /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -65,7 +68,6 @@ export class Main extends React.Component {
       showCorrect: false,
       answerChangeDialog: {
         open: false,
-        text: '',
       },
     };
     this.callOnSessionChange();
@@ -112,7 +114,6 @@ export class Main extends React.Component {
           open: true,
           oldSession: oldSession,
           newSession: newSession,
-          text: 'Changing either the Number of Models or Parts per Model will remove added answer. Are you sure you want to continue?',
         },
       });
     } else {
@@ -159,10 +160,15 @@ export class Main extends React.Component {
     return Math.floor(Math.random() * 10000);
   };
 
+  /** Re-renders once the chrome language's catalog lands, for a host that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   render() {
     const { model } = this.props;
     const { showCorrect, session, answerChangeDialog } = this.state;
-    const { prompt, title, correctness = {}, extraCSSRules, language } = model;
+    const { prompt, title, correctness = {}, extraCSSRules } = model;
+    const language = this.props.language ?? model.language;
+    const i18n = catalogs.forLocale(language, this.relabel);
     const showCorrectAnswerToggle = correctness.correctness && correctness.correctness !== 'correct';
     const fractionModelChartKey = this.generateRandomKey();
 
@@ -187,6 +193,7 @@ export class Main extends React.Component {
             disabled={model.view}
             onAnswerChange={this.onAnswerChange}
             answers={session.answers}
+            language={language}
           />
 
           <FractionModelChart
@@ -215,8 +222,8 @@ export class Main extends React.Component {
 
           <AlertDialog
             open={answerChangeDialog.open}
-            title="Warning"
-            text={answerChangeDialog.text}
+            title={i18n.t('warningTitle')}
+            text={i18n.t('answerChangeWarning')}
             onConfirm={() => {
               let newSession = this.state.answerChangeDialog.newSession;
               newSession.answers.response = [];
@@ -237,8 +244,8 @@ export class Main extends React.Component {
                 this.callOnSessionChange,
               );
             }}
-            onConfirmText={'OK'}
-            onCloseText={'Cancel'}
+            onConfirmText={i18n.t('confirm')}
+            onCloseText={i18n.t('cancel')}
           />
         </ModelPreview>
       </UiLayout>

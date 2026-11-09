@@ -1,6 +1,6 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-import { t } from './i18n';
+import { catalogs } from '../i18n/index.js';
 
 interface Choice {
   id: string;
@@ -32,6 +32,9 @@ let {
   radioGroupName: string;
   language?: string;
 } = $props();
+
+/** `language` is the chrome language, resident before this renders. */
+const i18n = $derived(catalogs.forLocale(language));
 </script>
 
 <div
@@ -47,7 +50,7 @@ let {
         {#if choiceMode === 'image' && choice.imageUrl}
           <img
             src={choice.imageUrl}
-            alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
+            alt={choice.imageAlt || i18n.t('choiceImage', { id: choice.id })}
             class="choice-image pie-choice-image"
             style="max-width:min(100%, var(--mpb-choice-image-max-width, 9.375rem));max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
@@ -79,7 +82,7 @@ let {
       {#if choiceMode === 'image' && choice.imageUrl}
         <img
           src={choice.imageUrl}
-          alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
+          alt={choice.imageAlt || i18n.t('choiceImage', { id: choice.id })}
           class="choice-image pie-choice-image"
           style="max-height:var(--mpb-choice-image-max-height, 5rem);"
         />

@@ -2,6 +2,7 @@
   "name": "@pie-element/venn-classification",
   "version": "0.1.8",
   "description": "Venn diagram classification PIE element (Svelte 5) with 2-set classification, tile tray, optional tile images, pointer + keyboard placement, and MathJax-rendered math tile labels",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -81,6 +82,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*"
@@ -91,7 +93,6 @@
     "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/config-ui-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tiptap/core": "3.32.0",
     "@tiptap/pm": "3.32.0",
