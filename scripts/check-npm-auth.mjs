@@ -2,8 +2,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createNpmAuthEnvironment } from './npm-auth-env.mjs';
 
 const REGISTRY = 'https://registry.npmjs.org/';
-// This repo publishes under two scopes; both must be writable for a release to complete.
-const SCOPES = ['pie-element', 'pie-lib'];
+// This repo publishes under these scopes; each must be writable for a release to complete.
+const SCOPES = ['pie-element', 'pie-lib', 'pie-framework'];
 const INTERACTIVE_TTY = Boolean(process.stdin.isTTY && process.stdout.isTTY);
 const TOKEN_FROM_ENV = String(process.env.NPM_TOKEN || process.env.NODE_AUTH_TOKEN || '').trim();
 const HAS_TOKEN_FROM_ENV = TOKEN_FROM_ENV.length > 0;
