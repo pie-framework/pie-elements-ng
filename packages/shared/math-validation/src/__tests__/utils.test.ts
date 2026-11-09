@@ -1,6 +1,6 @@
 import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
 import { LatexToAst } from '../conversion/latex-to-ast.js';
-import { simplify } from '../symbolic/index.js';
+import { simplify } from '../symbolic/simplify.js';
 
 import {
   getVariables,

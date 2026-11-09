@@ -2,7 +2,7 @@ import { mathjs } from '../mathjs.js';
 import type { MathNode } from 'mathjs';
 import {
   getVariables,
-  equationsHaveTheSameVariables,
+  haveSameElements,
   getCoefficients,
   solveLinearEquation,
   transformEqualityInExpression,
@@ -14,12 +14,6 @@ import {
 } from './utils.js';
 
 const m: any = mathjs;
-
-const compareCoefficients = (firstEqCoeff: number[], secondEqCoeff: number[]) =>
-  Array.isArray(firstEqCoeff) &&
-  Array.isArray(secondEqCoeff) &&
-  firstEqCoeff.length === secondEqCoeff.length &&
-  firstEqCoeff.every((val, index) => val === secondEqCoeff[index]);
 
 export const compareEquations = (
   firstEquation: MathNode,
@@ -39,7 +33,7 @@ export const compareEquations = (
     let firstEquationVariablesName = getVariables(firstExpression);
     let secondEquationVariablesName = getVariables(secondExpression);
 
-    if (!equationsHaveTheSameVariables(firstEquationVariablesName, secondEquationVariablesName)) {
+    if (!haveSameElements(firstEquationVariablesName, secondEquationVariablesName)) {
       return false;
     }
 
@@ -61,7 +55,7 @@ export const compareEquations = (
       secondEquationCoefficients = getCoefficients(secondExpression, isInequality);
 
       // if coefficients are equal, there is no need for further calculations => equations are equivalent
-      if (compareCoefficients(firstEquationCoefficients, secondEquationCoefficients)) {
+      if (haveSameElements(firstEquationCoefficients, secondEquationCoefficients)) {
         return true;
       }
 

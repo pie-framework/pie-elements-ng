@@ -1,19 +1,18 @@
 import { logger } from '../log.js';
-import { mathjs } from '../mathjs.js';
-import { all, create, type MathNode } from 'mathjs';
+import { mathjs, numeric } from '../mathjs.js';
+import type { MathNode } from 'mathjs';
 import { sort } from '../node-sort.js';
+import { simplify } from './simplify.js';
 import { compareEquations } from './compare-equations.js';
 import { compareCompoundInequations } from './compare-compound-inequations.js';
 
 const m: any = mathjs;
 const log = logger('mv:symbolic');
+const { rationalize } = mathjs;
 
 // an angle counts as k quarter turns (90°, 180°, ...) only when it is one up to floating-point error,
 // which keeps angles that are only close, like 89.9999°, 1.5708 or 9090.001°, from being matched
 const ANGLE_TOLERANCE = 1e-9;
-
-// angles are evaluated as plain numbers, the Fraction config used elsewhere cannot represent pi
-const numeric: any = create(all);
 
 // tolerances for floating-point noise from trig functions, pi and angle conversions (PIE-905);
 // the noise grows with the angle, e.g. sin(2pi) = -2.4e-16, sin(200pi) = 3.9e-15, tan(36045°) - 1 = -5.4e-14,
@@ -22,66 +21,6 @@ const RELATIVE_EPSILON = 1e-13;
 // floor for comparisons with 0, where a relative tolerance alone would require an exact match;
 // it covers residues such as sin(200pi) and cos(100.5pi) while still rejecting 0 vs 0.0000000000001
 const ABSOLUTE_EPSILON = 1e-14;
-
-export type { SymbolicOpts } from '../options.js';
-
-const { simplify: ms, rationalize } = mathjs;
-
-const SIMPLIFY_RULES = [
-  { l: 'n1^(1/n2)', r: 'nthRoot(n1, n2)' },
-  { l: 'sqrt(n1)', r: 'nthRoot(n1, 2)' },
-  { l: 'nthRoot(-1, 2)', r: 'i' },
-  { l: '(v1-v2)/n', r: 'v1/n-v2/n' },
-  { l: '(v1-n)/n', r: 'v1/n-1' },
-  { l: 'n/n1-c1', r: '(n-c1*n1)/n1' },
-  { l: 'i^2', r: '-1' },
-  { l: 'pi', r: '3.141592653589793' },
-  { l: 'n/(n*n1)', r: '1/n1' },
-  { l: 'c1/(c2*(n3))', r: '(c1/c2)*(1/n3)' },
-  { l: 'n1/(n(n+1)+1(n+1))', r: 'n1/((n+1)^2)' },
-
-  // perfect square formula
-  { l: '(n1 + n2) ^ 2', r: '(n1 ^ 2) + 2*n1*n2 + (n2 ^ 2)' },
-
-  { l: 'tzn(n1, n2)', r: 'n1' },
-  { l: 'n1/(-n2)', r: '-(n1/n2)' },
-  { l: 'sin(n*pi)', r: '0' },
-
-  // logarithm rules
-  { l: 'log(n1*n2, n3)', r: 'log(n1, n3)+log(n2,n3)' },
-  { l: 'log(n1/n2, n3)', r: 'log(n1, n3)-log(n2,n3)' },
-  { l: 'log(n1^n2, n3)', r: 'n2*log(n1,n3)' },
-
-  // trigonometry: defining relations for tangent, cotangent, secant, and cosecant in terms of sine and cosine
-  { l: 'sin(n)/cos(n)', r: 'tan(n)' },
-  { l: 'csc(n)', r: '1/sin(n)' },
-  { l: 'sec(n)', r: '1/cos(n)' },
-  { l: 'cot(n)', r: '1/tan(n)', r1: 'cos(n)/sin(n)' },
-  { l: '1/tan(n)', r: 'cos(n)/sin(n)' },
-
-  // TO DO: the Pythagorean formula for sines and cosines.
-
-  // inverse trigonometric functions relations
-  { l: 'n1 == asin(n)', r: 'n == sin(n1)' },
-  { l: 'n1 == acos(n)', r: 'n == cos(n1)' },
-  { l: 'n1 == atan(n)', r: 'n == tan(n1)' },
-  { l: 'n1 == acot(n)', r: 'n == cot(n1)' },
-  { l: 'n1 == asec(n)', r: 'n == sec(n1)' },
-  { l: 'n1 == acsc(n)', r: 'n == csc(n1)' },
-
-  // relationships between trigonometric functions and inverse trigonometric functions
-  { l: 'sin(asin(n))', r: 'n' },
-  { l: 'cos(acos(n))', r: 'n' },
-  { l: 'tan(atan(n))', r: 'n' },
-  { l: 'sin(acsc(n))', r: '1/n' },
-  { l: 'cos(asec(n))', r: '1/n' },
-  { l: 'tan(acot(n))', r: '1/n' },
-];
-
-export const simplify = (v: any) => {
-  const rules = SIMPLIFY_RULES.concat((ms as any).rules);
-  return ms(v, rules); //.concat(SIMPLIFY_RULES));
-};
 
 const hasSymbol = (node: MathNode, matches: (name: string) => boolean) => {
   let found = false;

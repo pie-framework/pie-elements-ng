@@ -1,20 +1,20 @@
-import { mathjs } from '../mathjs.js';
-import { all, create, type MathNode } from 'mathjs';
-import { simplify as customSimplify } from './index.js';
-const { simplify } = mathjs;
+import { mathjs, numeric } from '../mathjs.js';
+import type { MathNode } from 'mathjs';
+import { simplify as customSimplify } from './simplify.js';
 
 const m: any = mathjs;
 
-// plain floating-point instance for numeric checks; the shared instance works with fractions
-const numeric: any = create(all);
-
-let simplifyRules = [
+// separates a variable from a fraction, for equations that rationalize rejects as they are
+const COEFFICIENT_RULES = Object.freeze([
   { l: '-((n1)*(n2))', r: '(n1)*(n2)' },
   { l: '(n1-n2)/n3', r: 'n1/n3-n2/n3' },
   { l: '(n1+n2)/n3', r: 'n1/n3+n2/n3' },
   { l: '(n1-n2)*n3/n4', r: '(n1*n3)/n4-(n2*n3)/n4' },
   { l: '(n1+n2)*n3/n4', r: '(n1*n3)/n4+(n2*n3)/n4' },
-];
+]);
+
+// inequalities keep a leading minus, since dropping it would reverse their sign
+const EQUATION_COEFFICIENT_RULES = Object.freeze([...COEFFICIENT_RULES, { l: '-(n)', r: 'n' }]);
 
 const customRound = (number: number) => Math.round(number * 10000000000000) / 10000000000000;
 
@@ -243,7 +243,15 @@ const getNumerator = (expr: MathNode): MathNode | undefined => {
   }
 
   try {
-    const { numerator, denominator } = numeric.rationalize(expr.toString(), {}, true);
+    // @types/mathjs leaves out the numerator and denominator of the detailed result
+    const { numerator, denominator } = numeric.rationalize(
+      expr.toString(),
+      {},
+      true
+    ) as unknown as {
+      numerator: MathNode;
+      denominator: MathNode | null;
+    };
 
     return denominator ? numerator : undefined;
   } catch {
@@ -316,11 +324,10 @@ export const getCoefficients = (equation: MathNode, isInequality: boolean) => {
   } catch (e) {
     // rationalize may fail if variable is isolated in a fraction
     // we give it another try to rationalize after applying a new round of simplify to separate the variable
-    if (isInequality) {
-      equation = simplify(equation, simplifyRules);
-    } else {
-      equation = simplify(equation, [...simplifyRules, { l: '-(n)', r: 'n' }]);
-    }
+    equation = m.simplify(
+      equation,
+      isInequality ? [...COEFFICIENT_RULES] : [...EQUATION_COEFFICIENT_RULES]
+    );
 
     try {
       const rationalizedEquation = m.rationalize(equation, {}, true);
@@ -414,14 +421,9 @@ export const solveLinearEquation = (coefficients: number[]) => {
   return result;
 };
 
-export const equationsHaveTheSameVariables = (
-  firstEquationVariables: string[],
-  secondEquationVariables: string[]
-) => {
-  return (
-    Array.isArray(firstEquationVariables) &&
-    Array.isArray(secondEquationVariables) &&
-    firstEquationVariables.length === secondEquationVariables.length &&
-    firstEquationVariables.every((variable, index) => variable === secondEquationVariables[index])
-  );
-};
+// element-wise equality, for variable names and coefficient lists
+export const haveSameElements = <T>(first: T[], second: T[]) =>
+  Array.isArray(first) &&
+  Array.isArray(second) &&
+  first.length === second.length &&
+  first.every((value, index) => value === second[index]);

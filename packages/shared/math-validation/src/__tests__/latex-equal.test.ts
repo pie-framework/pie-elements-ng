@@ -81,7 +81,7 @@ testData.forEach((d) => {
         return;
       }
       const skip = skipTest(d.data, t);
-      const only = onlyTest(d.data, t);;
+      const only = onlyTest(d.data, t);
       const dfn = skip ? describe.skip : only ? describe.only : describe;
 
       const label = getLabel(t);
