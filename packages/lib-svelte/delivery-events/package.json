@@ -24,10 +24,11 @@
     "dev": "vite build --watch"
   },
   "dependencies": {
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^8.3.5"
+    "vite": "^8.3.6"
   }
 }

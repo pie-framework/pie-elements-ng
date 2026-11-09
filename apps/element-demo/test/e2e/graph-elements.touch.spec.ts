@@ -18,7 +18,7 @@ import { assertTouchEnabled, touchDragBy } from './touch-helpers';
  * coverage says nothing about touch - charting was green in that suite the whole
  * time it was unusable on iPads (PIE-1074).
  *
- * These specs run under the `touch` project only (see playwright.config.ts) and
+ * These specs run under the `touch` and `touch-phone` projects (see playwright.config.ts) and
  * assert the two things a learner does with a finger: place a mark, and drag one.
  * They are deliberately shallow per element - most of the plumbing they guard is
  * shared through `@pie-lib/plot`'s `gridDraggable`, so breadth across elements is

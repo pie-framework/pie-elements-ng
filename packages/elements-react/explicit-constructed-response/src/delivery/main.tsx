@@ -38,8 +38,8 @@ const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewProm
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { styled } from '@mui/material/styles';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
-import { alternatesNote } from './default-note.js';
 
 const MainContainer: any = styled(UiLayout)(({ alwaysShowCorrect }) => ({
   color: color.text(),
@@ -207,13 +207,14 @@ export class Main extends React.Component {
           adjustedLimit={maxLengthPerChoiceEnabled}
           spellCheck={playerSpellCheckEnabled}
           pluginProps={responseAreaInputConfiguration}
-          language={contentLanguage}
+          language={language}
+          contentLanguage={contentLanguage}
         />
 
         {displayNote && (
           <NoteContainer
             dangerouslySetInnerHTML={{
-              __html: sanitizeModelHtml(alternatesNote(note, language, contentLanguage)),
+              __html: sanitizeModelHtml(authoredOrDefault(note, (locale) => catalogs.forLocale(locale).t('commonCorrectAnswerWithAlternates'), language, contentLanguage)),
             }}
           />
         )}

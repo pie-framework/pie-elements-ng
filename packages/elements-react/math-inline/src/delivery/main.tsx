@@ -45,8 +45,8 @@ import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import { isComposingKeyEvent, sanitizeModelHtml } from '@pie-element/shared-utils';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
-import { alternatesNote } from './default-note.js';
 
 const NEWLINE_LATEX = /\\newline/g;
 const REGEX = /{{response}}/gm;
@@ -544,7 +544,7 @@ export class Main extends React.Component {
       customKeys,
       env: { mode, role } = {},
     } = config || {};
-    const note = alternatesNote(storedNote, language, model.language);
+    const note = authoredOrDefault(storedNote, (locale) => catalogs.forLocale(locale).t('primaryCorrectWithAlternates'), language, model.language);
     const authoredNote = note === i18n.t('primaryCorrectWithAlternates') ? undefined : note;
     const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote;
     const emptyResponse = isEmpty(responses);

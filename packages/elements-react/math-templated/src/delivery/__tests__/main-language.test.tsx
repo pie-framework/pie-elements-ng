@@ -23,7 +23,7 @@ describe('math-templated language', () => {
       'Mostrar instrucciones para el maestro',
       'Mostrar justificación',
     ],
-  ])('names the heading and toggles in the %s item language', (language, heading, instructions, rationale) => {
+  ])('names the heading and toggles in the %s item language', async (language, heading, instructions, rationale) => {
     // main.tsx is untyped, so its class declares no props.
     const MainComponent = Main as unknown as React.ComponentType<Record<string, unknown>>;
     render(
@@ -40,8 +40,8 @@ describe('math-templated language', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: instructions })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: rationale })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: instructions })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: rationale })).toBeInTheDocument();
   });
 });

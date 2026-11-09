@@ -24,6 +24,13 @@ vi.mock('../src/mathlive-instance', () => {
 
       el.value = '';
       el.getValue = () => el.value;
+      // MathLive's default Tab bindings, as `keybindings` lists them.
+      el.keybindings = [
+        { key: '[Tab]', command: 'moveToNextGroup' },
+        { key: 'shift+[Tab]', command: 'moveToPreviousGroup' },
+        { key: '[Tab]', ifMode: 'latex', command: ['complete', 'accept-suggestion'] },
+        { key: 'alt+[Tab]', ifMode: 'math', command: 'addColumnAfter' },
+      ];
 
       return el;
     }
@@ -116,6 +123,20 @@ describe('async mount race', () => {
     // a LaTeX control space - what MathQuill produced, and MathJax understands
     expect(input.mathField.mathModeSpace).toEqual('\\ ');
     expect(input.mathField.mathModeSpace).not.toEqual('');
+  });
+
+  // MathLive's Tab walks the cursor through the expression before leaving, so the insertion point
+  // is lost before a keypad button can use it.
+  it('leaves Tab to move focus on, keeping its latex suggestion and column bindings', async () => {
+    const input = new Input({});
+
+    holderFor(input);
+    await input.componentDidMount();
+
+    expect(input.mathField.keybindings).toEqual([
+      { key: '[Tab]', ifMode: 'latex', command: ['complete', 'accept-suggestion'] },
+      { key: 'alt+[Tab]', ifMode: 'math', command: 'addColumnAfter' },
+    ]);
   });
 
   // MathLive leaves a superscript after one digit by default (`smartSuperscript`),

@@ -27,12 +27,13 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "dompurify": "^3.4.17",
     "svelte": "^5.57.3",
     "typescript": "^5.9.3",
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "vitest": "^5.0.5"
   },
   "license": "MIT",

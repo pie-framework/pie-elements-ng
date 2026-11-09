@@ -86,7 +86,7 @@ The figures are wireframes: colour marks a region, a dashed region renders only 
 - **`layoutLimits`** (optional): numeric visual constraints; defaults are based on current CQT parity behavior and can be overridden per item
 - **`layoutProfilePresets`** (optional): named preset map by `layoutProfile`; use profile as a template and override with `layoutLimits`
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
-- **`language`** (optional): the language of the learner-facing strings (`en_US`, `es_ES`, …), which come from `@pie-lib/translator` as in the React elements; `locale` stands in when it is unset
+- **`language`** (optional): the item's declared language (`en-US`, `es-ES`, …), the `lang` of its content; the interface strings follow the locale the player publishes, else this language, else `en-US`; `locale` stands in when it is unset
 - **`choiceGroupLabel`** (optional): accessibility label used when no visible prompt is present
 - **`lockChoiceOrder`** (optional): `false` shuffles the choices, as in multiple-choice, and an instructor sees the order the student saw; `shuffle: true` is the older spelling and counts only when `lockChoiceOrder` is unset
 - **`teacherInstructions`** and **`teacherInstructionsEnabled`** (optional): shown to instructors in view and evaluate mode, and in an instructor's printout; unset `teacherInstructionsEnabled` shows them

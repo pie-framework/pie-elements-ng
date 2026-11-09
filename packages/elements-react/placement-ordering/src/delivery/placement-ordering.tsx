@@ -42,8 +42,8 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { createDragCollision, DragProvider } from '@pie-lib/drag';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
-import { alternatesNote } from './default-note.js';
 
 import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { DragPreview } from './tile.js';
@@ -646,7 +646,7 @@ export class PlacementOrdering extends React.Component {
 
             {displayNote && (
               <StyledNote
-                dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(alternatesNote(note, language, model.language)) }}
+                dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(authoredOrDefault(note, (locale) => catalogs.forLocale(locale).t('commonCorrectAnswerWithAlternates'), language, model.language)) }}
               />
             )}
 

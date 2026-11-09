@@ -73,6 +73,8 @@ const migratedElements = [
       'packages/lib-react/render-ui',
       'packages/lib-react/correct-answer-toggle',
       'packages/lib-react/graphing',
+      'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
     // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
     iifeAlso: ['Deshacer'],
@@ -99,6 +101,7 @@ const migratedElements = [
       'packages/elements-react/extended-text-entry',
       'packages/lib-react/render-ui',
       'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
     // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
     iifeAlso: ['Deshacer'],
@@ -115,6 +118,7 @@ const migratedElements = [
       'packages/lib-react/correct-answer-toggle',
       'packages/lib-react/mask-markup',
       'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
     // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
     iifeAlso: ['Deshacer'],
@@ -152,6 +156,92 @@ const migratedElements = [
       'packages/lib-react/render-ui',
       'packages/lib-react/correct-answer-toggle',
       'packages/lib-react/mask-markup',
+    ],
+  },
+  {
+    dir: 'packages/elements-svelte/simple-cloze',
+    catalogPackages: ['packages/elements-svelte/simple-cloze'],
+  },
+  {
+    dir: 'packages/elements-svelte/mc-populated-blank',
+    catalogPackages: ['packages/elements-svelte/mc-populated-blank'],
+  },
+  {
+    dir: 'packages/elements-svelte/venn-classification',
+    catalogPackages: ['packages/elements-svelte/venn-classification'],
+  },
+  {
+    dir: 'packages/elements-svelte/video-stimulus',
+    catalogPackages: [
+      'packages/elements-svelte/video-stimulus',
+      'packages/lib-svelte/media-svelte',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/match-list',
+    catalogPackages: [
+      'packages/elements-react/match-list',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/number-line',
+    catalogPackages: [
+      'packages/elements-react/number-line',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/matrix',
+    catalogPackages: ['packages/lib-react/render-ui'],
+  },
+  {
+    dir: 'packages/elements-react/likert',
+    catalogPackages: ['packages/lib-react/render-ui'],
+  },
+  {
+    dir: 'packages/elements-react/multi-trait-rubric',
+    catalogPackages: ['packages/elements-react/multi-trait-rubric'],
+  },
+  {
+    dir: 'packages/elements-react/complex-rubric',
+    catalogPackages: [
+      'packages/elements-react/rubric',
+      'packages/elements-react/multi-trait-rubric',
+      'packages/lib-react/render-ui',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/fraction-model',
+    catalogPackages: [
+      'packages/elements-react/fraction-model',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/graphing-solution-set',
+    catalogPackages: [
+      'packages/elements-react/graphing-solution-set',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/graphing-solution-set',
+      'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
+    ],
+    // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
+    iifeAlso: ['Deshacer'],
+  },
+  {
+    dir: 'packages/elements-react/math-templated',
+    catalogPackages: [
+      'packages/elements-react/math-templated',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/mask-markup',
+      'packages/lib-react/math-input-mathlive',
     ],
   },
 ];
@@ -198,13 +288,18 @@ describe('migrated catalog packages', () => {
     );
   });
 
-  test.each(catalogPackages)('%s keeps every loader eager for webpack builds', (packageDir) => {
-    const built = readFileSync(join(root, packageDir, 'dist/i18n/index.js'), 'utf-8');
-    const loaders = built.match(/import\(/g) ?? [];
-    const eager = built.match(/import\(\s*\/\*\s*webpackMode:\s*"eager"\s*\*\//g) ?? [];
-    expect(loaders.length).toBeGreaterThan(0);
-    expect(eager).toHaveLength(loaders.length);
-  });
+  // A Svelte element's npm lanes are self-contained bundles that inline every catalog, so no
+  // locale loader reaches a webpack build and there is no dist/i18n/index.js to check.
+  test.each(catalogPackages.filter((dir) => !dir.startsWith('packages/elements-svelte/')))(
+    '%s keeps every loader eager for webpack builds',
+    (packageDir) => {
+      const built = readFileSync(join(root, packageDir, 'dist/i18n/index.js'), 'utf-8');
+      const loaders = built.match(/import\(/g) ?? [];
+      const eager = built.match(/import\(\s*\/\*\s*webpackMode:\s*"eager"\s*\*\//g) ?? [];
+      expect(loaders.length).toBeGreaterThan(0);
+      expect(eager).toHaveLength(loaders.length);
+    }
+  );
 });
 
 describe.each(migratedElements)('$dir delivery bundles', ({ dir, catalogPackages, iifeAlso }) => {

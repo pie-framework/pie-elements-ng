@@ -14,6 +14,7 @@ import {
   trackPlaceholderCaret,
 } from '../mathlive-instance.js';
 import { trackLongDivision, fixLongDivisionWhenReady } from '../longdiv.js';
+import { keepCaretWhileKeypadFocused } from './inactive-caret.js';
 import { describeMathField, labelMathField } from './field-label.js';
 import {
   toMathLive,
@@ -149,6 +150,9 @@ export default class Static extends React.Component {
     // MathLive misdraws long division; correct it after every render.
     this.untrackLongDivision = trackLongDivision(this.mathField);
 
+    // MathLive hides the caret on blur; keep it in the answer block while a keypad button has focus.
+    this.stopKeepingCaret = keepCaretWhileKeypadFocused(this.mathField);
+
     this.mathField.addEventListener('input', this.onPromptInput);
     // Capture: MathLive handles the pointer inside its shadow root and stops it there.
     this.mathField.addEventListener('pointerdown', this.onPointerDown, true);
@@ -261,6 +265,11 @@ export default class Static extends React.Component {
     if (this.untrackLongDivision) {
       this.untrackLongDivision();
       this.untrackLongDivision = undefined;
+    }
+
+    if (this.stopKeepingCaret) {
+      this.stopKeepingCaret();
+      this.stopKeepingCaret = undefined;
     }
 
     if (this.mathField) {

@@ -60,7 +60,7 @@ describe('ebsr interface locale', () => {
     await vi.waitFor(() => expect(partOf(el, 'b').textContent).toContain('Parte B'));
     expect(el.getAttribute('aria-label')).toBe('Pregunta de dos partes');
     expect(el.querySelector('.srOnly')?.textContent).toBe('Pregunta de dos partes');
-    expect(partOf(el, 'a').textContent).toContain('Parte A');
+    await vi.waitFor(() => expect(partOf(el, 'a').textContent).toContain('Parte A'));
     expect(partOf(el, 'a').getAttribute('aria-label')).toBe('Pregunta de opción múltiple');
     expect(el.getAttribute('lang')).toBe('en-US');
     expect(partOf(el, 'a').getAttribute('lang')).toBe('en-US');

@@ -6,6 +6,9 @@ import { color } from '@pie-lib/render-ui';
 import { valueToSize } from '../utils/size.js';
 
 import StyledMenuBar from './MenuBar.js';
+import { TOOLBAR_ATTRIBUTE, setInactiveCaret } from '../extensions/inactive-caret.js';
+
+const inToolbar = (node) => !!node?.closest?.(`[${TOOLBAR_ATTRIBUTE}]`);
 
 const StyledRoot: any = styled('div', {
   shouldForwardProp: (prop) => !['noBorder', 'error'].includes(prop),
@@ -215,6 +218,7 @@ function TiptapContainer(props) {
   const handleFocus = (e) => {
     if (e.currentTarget.contains(e.target)) {
       setHasFocus(true);
+      setInactiveCaret(editor, inToolbar(e.target));
     }
   };
 
@@ -228,6 +232,9 @@ function TiptapContainer(props) {
     if (!e.currentTarget.contains(e.relatedTarget) && !intoOwnPicker) {
       setHasFocus(false);
     }
+
+    // Focus in the toolbar leaves the text's insertion point showing.
+    setInactiveCaret(editor, inToolbar(e.relatedTarget) && e.currentTarget.contains(e.relatedTarget));
   };
 
   return (

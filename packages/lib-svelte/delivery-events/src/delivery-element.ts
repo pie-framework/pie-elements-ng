@@ -1,3 +1,4 @@
+import { stampElementLanguage, subscribeInterfaceLocale } from '@pie-element/shared-i18n';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { writeSessionInPlace } from './write-session-in-place.js';
 
@@ -45,6 +46,9 @@ interface SvelteElement extends HTMLElement {
   get session(): unknown;
   set session(value: unknown);
   onSessionChange?: unknown;
+  interfaceLocale?: unknown;
+  connectedCallback?(): void;
+  disconnectedCallback?(): void;
 }
 
 /**
@@ -61,6 +65,13 @@ interface SvelteElement extends HTMLElement {
  * assigns in its constructor through the accessor Svelte generates for it; a
  * component mounted with `mount()` takes it like any other prop. A subclass
  * assigns its own callback props the same way.
+ *
+ * The interface locale lives here too. While connected, the element follows the
+ * locale a player publishes through `interfaceLocaleContext` and hands it to the
+ * component's `interfaceLocale` prop, which stays unset with no player; the
+ * component renders its chrome in `interfaceLocale`, else `model.language`,
+ * else `en-US`. The host carries `lang` and `dir` for `model.language`, the
+ * item's declared content language, and none when the item declares none.
  */
 export function defineDeliveryElement<Model = unknown, Session = unknown>(
   Component: object,
@@ -77,6 +88,7 @@ export function defineDeliveryElement<Model = unknown, Session = unknown>(
   class Element extends Base {
     #model: Model | undefined;
     #session: Session | undefined;
+    #disconnectInterfaceLocale: (() => void) | null = null;
     declare onSessionChange: (session: Session) => void;
 
     constructor() {
@@ -93,9 +105,26 @@ export function defineDeliveryElement<Model = unknown, Session = unknown>(
      * element.session = …`), and `complete` can only report a restored response
      * once the session is here.
      */
+    connectedCallback(): void {
+      super.connectedCallback?.();
+      this.#disconnectInterfaceLocale ??= subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this.interfaceLocale) {
+          this.interfaceLocale = value.locale;
+        }
+      });
+    }
+
+    disconnectedCallback(): void {
+      super.disconnectedCallback?.();
+      this.#disconnectInterfaceLocale?.();
+      this.#disconnectInterfaceLocale = null;
+    }
+
     set model(model: Model | undefined) {
       this.#model = model;
       super.model = model;
+      const language = (model as { language?: unknown } | undefined)?.language;
+      stampElementLanguage(this, typeof language === 'string' ? language : undefined);
       queueMicrotask(() => {
         this.dispatchEvent(
           new ModelSetEvent(

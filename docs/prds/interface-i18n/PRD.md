@@ -33,15 +33,15 @@ pie-players settled the same question for its own chrome: the interface locale i
 
 `@pie-element/shared-i18n` (`packages/shared/i18n`) ports pie-players' `players-shared/src/i18n`:
 - RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`. Both stay within the request's script, the CLDR likely script for a bare tag: `zh-TW` reads `zh-TW`, `zh-Hant`, and never the Simplified `zh`.
-- Per-key lookup: host messages for the locale, shipped catalog for the locale, host `en-US`, shipped `en-US`, the key itself.
-- `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the resolved locale, so digits and grouping follow CLDR locale defaults (`ar-SA` renders Arabic-Indic digits; current CLDR resolves bare `ar` to Western digits).
-- `catalogs.forLocale(tag)` returns a per-locale view over shared catalogs and host messages, pie-players' `withLocale`, so two players on one page can differ. A locale change re-renders; nothing reloads.
+- Per-key lookup: host messages along the request's truncation chain (`es-MX`, then `es`), the shipped catalog the request resolves to, host `en-US`, shipped `en-US`, the key itself. The catalog locale resolves against shipped catalogs alone, because it decides what loads: a host override for `es-MX` layers over a shipped `es`, which still loads and gates readiness. Host messages match their tag whatever its case or separator.
+- `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required, each category resolving within the requested locale's sources (host messages, then its catalog) before the fallback's: the first carrying the selected category, then the first carrying `other`, else the key, so a locale's own `other` wins over English `one`; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the resolved locale, so digits and grouping follow CLDR locale defaults (`ar-SA` renders Arabic-Indic digits; current CLDR resolves bare `ar` to Western digits).
+- `catalogs.forLocale(tag)` returns a per-locale view over shared catalogs and host messages, pie-players' `withLocale`, so two players on one page can differ. A locale change re-renders; nothing reloads. A view's `getLocale()` and `getDirection()` name the locale its strings are served in: the catalog locale once resident, else the host-message locale, else `en-US`.
 
 Catalog leaves carry `{name}` placeholders and structured plural groups, not Unicode MessageFormat 2.0 strings. Assessment chrome needs only arguments and plurals — none of the 500+ keys uses `select` or rich formatting — so the engine stays dependency-free, and the gate validates the structured shape mechanically. If MF2 semantics are ever needed, the leaf syntax moves behind the same gate; the keys, loaders, registry and fallback chain are format-agnostic.
 
 It replaces i18next outright. `@pie-lib/translator` as a facade over the engine is the alternative; it keeps i18next and both full catalogs in every bundle until the last of 270 call sites in 37 packages moves, and those sites move a package at a time with their strings anyway. The translator stays untouched for unmigrated packages and is deprecated with its last dependent.
 
-Every bundled copy of the engine shares one page registry at `Symbol.for('pie-element.i18n.registry')`, holding the catalog sets evaluated on the page and the host messages. `loadLocale(tag)` loads a locale into every set and never rejects; a failed chunk is reported once and renders English. `isLocaleReady(tag)` answers for every set. `registerMessages(package, tag, messages)` reaches copies evaluated later, and a host plural group replaces the shipped group whole.
+Every bundled copy of the engine shares one page registry at `Symbol.for('pie-element.i18n.registry')`, holding the catalog sets evaluated on the page and the host messages. `loadLocale(tag)` loads a locale into every set and never rejects; a failed chunk is reported once and renders English. `isLocaleReady(tag)` answers for every set. `registerMessages(package, tag, messages)` reaches copies evaluated later, and a host plural group overrides only the categories it carries.
 
 ### Interface locale
 
@@ -63,11 +63,12 @@ Each package keeps its strings in `src/i18n/`: `en-US.ts` (the source, whose sha
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Browser ESM (`dist/browser`), served by pie-players' `local-esm-cdn` | one chunk per locale, fetched on first use                                                                                                                |
 | React `./delivery`, built by the consumer                            | webpack inlines them through the eager comment, since a webpack bundle built from npm fetches chunks relative to the host page; other bundlers split them |
+| Svelte npm ESM (`dist/delivery`), built by the consumer              | inlined; the Svelte build lanes do not split them                                                                                                         |
 | IIFE                                                                 | none; a host registers them ([IIFE](#iife))                                                                                                               |
 
 An element holds its first render until the locale is resident: `_rerender` calls `loadLocale` while `isLocaleReady` is false, so no English frame precedes Spanish. A library rendered by an unmigrated element passes a re-render to `catalogs.forLocale(tag, onLoad)` and shows one English frame first. A deliberate trade: libraries migrate ahead of their elements, at the cost of that frame.
 
-A string lives in the package that renders it. A phrase several elements pass into one library component moves into that component: the teacher-instructions and rationale toggle labels (48 key uses, all passed into `Collapsible`) and the alternates note (9). A shared common catalog is the alternative; nobody owns it, and changing one of its keys means auditing every element that renders it, as the translator's `common` namespace does today.
+A string lives in the package that renders it. A phrase several elements pass into one library component moves into that component: the teacher-instructions and rationale toggle labels (48 key uses, all passed into `Collapsible`, whose `teacherInstructions` and `rationale` variants own them). The Svelte elements render their own toggles and keep those labels in their catalogs. The alternates note stays with each element that renders it, compared through one helper ([Default notes](#default-notes)). A shared common catalog is the alternative; nobody owns it, and changing one of its keys means auditing every element that renders it, as the translator's `common` namespace does today.
 
 ### IIFE
 
@@ -88,24 +89,24 @@ The source catalog types the keys: `forLocale(tag).t('showCorrectAnswer')` check
 
 `bun run verify:i18n-catalogs`, part of `bun run lint` and so of CI, checks every `src/i18n`: locale file, loader and manifest entry present together; key parity both ways; leaf kind; `other` in every plural group; placeholder parity per plural form; no i18next `{{slot}}`; freshness by manifest status. A `generated` locale records its source's hash and fails on any English change. A `reviewed` locale records the English each key was reviewed against and fails only the keys whose English moved.
 
-The hardcoded-string scanner needs a TSX variant; pie-players' walks Svelte ASTs. It runs advisory, per migrated package, because about 25 learner-facing English literals sit in packages this work has not reached.
+The hardcoded-string scanner needs a TSX variant; pie-players' walks Svelte ASTs. It runs advisory, per migrated package, until the English [the migration notes](./notes/migration.md#remaining-english) list is moved.
 
 ### lang and dir
 
 An element stamps `lang` and `dir` on its own host for the language the item declares, canonicalized (`es_MX` → `es-MX`), and removes both when the item declares none or declares a non-tag such as `Spanish`. It never writes `document.documentElement`. Six elements stamp `lang="en"` on every undeclared item today, which on production is every item, Spanish ones included; pie-players' content-language slice cannot land until that default goes. The player half of that slice reflects the resolved content language on the content subtree.
 
-Once chrome follows the published locale, each chrome root a library renders carries that locale's `lang` and `dir`, so a Spanish toggle label inside English content is announced in Spanish. In Phase 1 chrome follows the declared language and inherits the host's `lang`.
+Chrome roots carry the `lang` and `dir` of the locale their strings are served in, their view's `getLocale()`: the correct-answer toggle's root, the Svelte elements' chrome and the transcript controls. A Spanish toggle label inside English content is announced in Spanish, and the English fallback for an unshipped `he` or a failed `ar` chunk as English; `Collapsible`'s root carries neither yet. A library that renders both chrome and content takes the two languages apart: `mask-markup`'s `ConstructedResponse` names its blanks in `language` and marks their text in `contentLanguage`, and `editable-html-tip-tap` labels its toolbar in the published locale, else its `language`.
 
 ### React and Svelte
 
-The engine has no framework dependency. React gets no context or hook: libraries already take `language` as a prop for their 63 call sites, the element is the one place the locale resolves, and a React provider would leave libraries rendered by unmigrated elements without one. The Svelte elements replace their `src/i18n.ts` shims with a `$derived` over `catalogs.forLocale(language, relabel)`.
+The engine has no framework dependency. React gets no context or hook: libraries already take `language` as a prop for their 63 call sites, the element is the one place the locale resolves, and a React provider would leave libraries rendered by unmigrated elements without one. The Svelte elements replace their `src/i18n.ts` shims with catalogs read through a resident-language rune: `defineDeliveryElement` subscribes to the interface locale and stamps the declared language, and the element renders once the chrome language is resident, so it needs no relabel.
 
 ### Default notes
 
-categorize and placement-ordering rewrite `model.note` in `UNSAFE_componentWillReceiveProps` when it equals the previous language's translated default. Their controllers, and ECR's and math-inline's, write the translated default into the model when the note is absent. Both behaviours go as these elements migrate:
+categorize and placement-ordering rewrote `model.note` in `UNSAFE_componentWillReceiveProps` when it equalled the previous language's translated default, and their controllers, ECR's, math-inline's and math-templated's wrote the translated default into the model when the note was absent. Both behaviours are gone:
 - The controller leaves `note` as authored.
-- Delivery renders `model.note`, or the alternates default in the interface locale when the note is absent.
-- A stored note equal to a shipped default, in any locale or in its unprefixed historical English form, counts as absent.
+- Delivery renders `model.note`, or the alternates default in the chrome language when the note is absent.
+- A stored note equal to the shipped default in `en-US`, the chrome language or the declared language counts as absent. `authoredOrDefault` in `@pie-element/shared-i18n` compares them ignoring markup, whitespace including `&nbsp;`, and a leading label such as `Note:`, which the historical English form omits.
 
 The third rule carries the risk. On production, 25–37% of sampled Spanish ECR models, and about half of the Spanish placement-ordering sample, store the English default sentence, which under `note || t()` renders English on Spanish items. No categorize model stores a note, so its swap guards nothing in the data.
 
@@ -131,12 +132,12 @@ Phase 1 ships the engine, the catalog gate, the artifact assertion, and `@pie-li
 
 End state: the toggle reads "Show correct answer", because nothing publishes a locale. The element's host carries `lang="es-ES"` over the Spanish choices; the toggle's root carries `lang="en-US"`. When the district enables its Spanish program and sets `locale="es-MX"`, the player republishes; the element calls `loadLocale('es-MX')`, which fetches each package's `es` chunk once, and re-renders "Mostrar respuesta correcta" without a remount. A host needing French registers `fr-CA` messages for each package before mounting and publishes `fr-CA`.
 
-In Phase 1, with no publisher, the toggle follows `es_ES` and reads "Mostrar respuesta correcta", as it does under the translator. From an IIFE it reads "Show correct answer" unless the host registers `es`.
+With no publisher, the toggle follows `es_ES` and reads "Mostrar respuesta correcta", as it does under the translator. From an IIFE it reads "Show correct answer" unless the host registers `es`.
 
 ## Accessibility
 
 - **Language of page (3.1.1)**: the page owns `document.documentElement`; no element writes it.
-- **Language of parts (3.1.2)**: content takes `lang` from the declaration alone; chrome roots carry the interface locale where it differs.
+- **Language of parts (3.1.2)**: content takes `lang` from the declaration alone; chrome roots carry the locale their strings are served in.
 - **Direction**: `dir` comes from `Intl.Locale.textInfo`, with an RTL primary-subtag set as fallback, so RTL chrome lays out inside an LTR page.
 - **Region names**: the strings an element gives assistive technology, such as multiple-choice's region name, are catalog keys and translate with the rest. Keys ending `A11y` are for assistive technology only.
 
@@ -149,3 +150,4 @@ In Phase 1, with no publisher, the toggle follows `es_ES` and reads "Mostrar res
 
 - Proposal → Accepted. Phase 1 shipped in #475.
 - The declared-language fallback is permanent, and pie-players answers `interfaceLocaleContext` only once a host chooses a locale (2026-11-09).
+- Phases 2 and 3 done: every delivery element follows the interface locale (#629–#635, 2026-11-09). Phase 4, deprecating `@pie-lib/translator` 5.x, is maintainer-run.
