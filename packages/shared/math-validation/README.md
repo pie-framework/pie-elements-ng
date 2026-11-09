@@ -1,19 +1,38 @@
-# math-validation
+# @pie-framework/math-validation
 
-- an api
-- a large set of test data
-- aims to determine if two mathematical expressions are equal, either having the same form or not
-- have a public website where you can add some math and check if it works - also the link should be shareable
+Decides whether two LaTeX expressions are equal, literally or symbolically. The math-inline and math-templated controllers score responses with it.
 
+```ts
+import { latexEqual } from '@pie-framework/math-validation';
 
-## demo
+latexEqual('\\frac{4}{6}', '\\frac{2}{3}', { mode: 'symbolic' }); // true
+latexEqual('a+7+b', '7+a+b', { mode: 'literal', literal: { ignoreOrder: true } }); // true
+```
+
+The package is ES modules only. LaTeX is parsed into an AST (`src/conversion/latex-to-ast.ts`), converted to a mathjs expression tree (`src/conversion/ast-to-mathjs.ts`), and compared there. Both converters derive from the math-expressions library and keep its GPL-3.0-or-later headers.
+
+## Modes
+
+**Literal** compares the form of the expressions. It ignores spaces and parentheses that do not change the meaning, so `a+7 +b` matches `((a) + (7))+b`, and it ignores leading zeros (`0.1` matches `.1`) and thousands separators (`1,000` matches `1000`). Three options under `literal` widen it:
+
+- `allowTrailingZeros`: `4.5` matches `4.50000`.
+- `ignoreOrder`: the order of terms and factors stops mattering, so `a+7+b*c` matches `7+a+bc`, though not `ac+7+b`.
+- `compareNumbersByValue`: a single number matches only a single number of equal value. A number is an integer, decimal, fraction (`\frac{2}{3}` or `2/3`) or mixed number (`2\frac{1}{2}`), with at most one sign and optionally in parentheses. `4/6` matches `2/3` and `2.5` matches `2\frac{1}{2}`, but `3+3` does not match `6`: any operation, constant (`\pi`), unit or percentage makes a side a non-number. When neither side is a number, the literal comparison decides.
+
+**Symbolic** decides mathematical equivalence. It normalises both sides (distributing coefficients, combining like terms, sorting) and, where that is not enough, solves or samples them. It takes no options; the literal options do not apply to it. It handles:
+
+- linear equations in one or two variables, and quadratic equations
+- two-way inequalities in one or two variables, and compound inequalities in one variable
+- trigonometric and inverse trigonometric functions and identities, with angles in radians or in degrees written `°` or `\degree`
+- the product, quotient and power rules for logarithms, and `\log` as `\log_{10}`
+
+## Demo
 
 ```shell
 bun run demo
 ```
 
-Then open the URL Vite prints.
-
+Serves a page that compares two expressions in either mode; the URL records the comparison, so it can be shared. `bun run build:demo` type-checks the page and writes it to `demo/dist`.
 
 ## Tests
 
@@ -21,110 +40,26 @@ Then open the URL Vite prints.
 bun run test
 ```
 
-Runs all the tests
-
-There is one test that runs fixture data located here: `src/fixtures/latex-equal/*.ts`. To filter the fixtures you run, pass Vitest's `-t` flag a fixture path:
+`src/__tests__/latex-equal.test.ts` runs the fixtures under `src/fixtures/latex-equal/literal` and `src/fixtures/latex-equal/symbolic`, one suite per fixture file named by its path. Narrow a run with Vitest's `-t` filter:
 
 ```shell
 bunx vitest run src/__tests__/latex-equal.test.ts -t src/fixtures/latex-equal/literal/PD-303.ts
 ```
 
+To debug in VS Code, add an attach configuration to `launch.json`:
 
-## Next Steps
-
-- Check that api we expose will support what is needed.
-- Do triage on the test failures, add a note to failing test so we can build a picture of the work needed
-
-
-## Test failure triage
-
-| theme                      | notes                                                                  |
-| -------------------------- | ---------------------------------------------------------------------- |
-| latex parsing              | seems like we aren't able to parse all the inputs in the test cases    |
-| math evaluation            | math.js is not seeing things as being equal - need more detail on that |
-| incomplete literal support | we haven't really set up literal options support yet                   |
-| incorrect test data        | sometimes the test data is not quite right                             |
-
-
-## Goals
-
-- we parse from latex -> ast -> mathjs
-- clean up symbolic evaluation (in progress)
-- avoid the use of string manipulation/regex (in progress)
-- more advanced literal validation (todo)
-- block input that is clearly too large/unrelated (eg: a user can type in gobbledy-gook - we should just abort if we see that)
-
-
-## Capabilities
-
-It can determine mathematical equivalence between:
-
-- linear equations in one variable
-- linear equations in two variables
-- quadratic equations
-- 2-way inequalities in one or two variables
-- compound inequalities in one variable
-- trigonometric identities and functions
-- inverse trigonometric functions
-- similar notation for logarithms and based logarithms
-
-It can also handle degrees, radians and gradians
-
-
-### things that'd be great (but we may have to park until we have more time)
-
-- a faster latex parser
-- faster math evaluation
-
-
-## Modes
-
-There are 2 modes - literal and symbolic
-
-Literal: is at its most basic a tuned version of a string validation
-
-By default - ignores spaces and parentheses as long as they do not change the meaning of operations (ex. “a+7 +b” will validate against “ ((a) + (7))+b ”)
-- ignores leading zeros: “0.1” will validate against “.1”
-- accepts commas for decimal marks. For example “1,000” will be equivalent with 1000
-
-Literal Validation offers three configuration options that can be used to validate some variety of forms for an expression:
-
-Ignore trailing zeros option; allows the evaluation to accept zeros to the right of the decimal place “4.5” will validate against “4.50000000000000”
-Ignore order option; makes validation indifferent to the variables order, as long as it does not change operations meaning. In this case “a+7 +b*c” will validate against “7 + a+bc”, but not against “ac+7+b”; without it “a+7 +b” will not validate against “7 + a+b”
-Compare numbers by value option; a single number validates only against a single number of equal value. A number is an integer, decimal, fraction (`\frac{2}{3}` or `2/3`) or mixed number (`2\frac{1}{2}`), with at most one sign and optionally in parentheses. “4/6” will validate against “2/3” and “2.5” against “2\frac{1}{2}”, but “3+3” will not validate against “6”: any operation, constant (`\pi`), unit or percentage makes a side a non-number. Two non-numbers compare as literal.
-
-Symbolic: attempts to decide if expressions are mathematically equivalent or not
-
-By default, it offers all configurations presented for literal validation, exceeding it by quite a lot
-In order to check equivalence between 2 expressions, we have to reduce both expressions to the simplest one. Then distribute all coefficients, combine any like terms on each side of the expression, and arrange them in the same order.
-
-
-
-## TODO
-
-- set up api that is compatible w/ ui component options
-- derivatives kind of work and kind of not - how to use?
-
-### CI
-
-The package builds, tests and releases with the rest of [pie-elements-ng](https://github.com/pie-framework/pie-elements-ng); see `docs/PUBLISHING.md` there.
-
-### debugging tests
-
-#### vscode
-
-add the following to `configurations` array in launch.json
 ```json
 {
   "name": "Attach",
   "port": 9229,
   "request": "attach",
   "skipFiles": ["<node_internals>/**"],
-  "type": "pwa-node"
+  "type": "node"
 }
 ```
 
-```shell
-bunx vitest run --inspect-brk --no-file-parallelism #and any other flags you want
-```
-The launch debug using 'Attach' command above.
+Start the tests with `bunx vitest run --inspect-brk --no-file-parallelism`, then run the Attach configuration.
+
+## Release
+
+The package builds, tests and releases with the rest of [pie-elements-ng](https://github.com/pie-framework/pie-elements-ng); see `docs/PUBLISHING.md` there.
