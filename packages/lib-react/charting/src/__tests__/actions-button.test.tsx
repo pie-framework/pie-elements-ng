@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { loadLocale } from '@pie-element/shared-i18n';
 
 import ActionsButton from '../actions-button';
 
@@ -37,7 +38,8 @@ describe('charting Actions trigger', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('names the trigger in the item language', () => {
+  it('names the trigger in the item language', async () => {
+    await loadLocale('es_ES');
     renderActions({ language: 'es_ES' });
 
     expect(screen.getByRole('button', { name: 'Acciones' })).toBeInTheDocument();

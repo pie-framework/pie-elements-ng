@@ -98,6 +98,22 @@ export default {
       settings: true,
       label: 'Maximum Length Per Choice',
     },
+    ignoreCase: {
+      settings: true,
+      label: 'Ignore Case',
+    },
+    collapseWhitespace: {
+      settings: true,
+      label: 'Ignore Extra Spaces',
+    },
+    ignoreSlashSpacing: {
+      settings: true,
+      label: 'Ignore Spaces Around /',
+    },
+    ignoreAccents: {
+      settings: true,
+      label: 'Ignore Accents',
+    },
     maxResponseAreas: 10,
     maxImageWidth: {
       teacherInstructions: 300,

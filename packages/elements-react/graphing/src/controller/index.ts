@@ -44,8 +44,10 @@ type BestAnswer = {
 /** The model the delivery view receives. */
 type GraphingViewModel = Omit<
   GraphingModel,
-  'arrows' | 'defaultTool' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
+  'answers' | 'arrows' | 'defaultTool' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
 > & {
+  /** Only in evaluate mode or for the instructor: delivery reads `correctResponse` instead */
+  answers?: GraphingModel['answers'];
   arrows?: Arrows;
   defaultTool: GraphingTool | '';
   disabled: boolean;
@@ -312,7 +314,8 @@ export function model(
 
     const base: GraphingViewModel = {
       ...questionProps,
-      answers,
+      // The answer key reaches the browser only once it may show it.
+      ...((mode === 'evaluate' || role === 'instructor') && { answers }),
       arrows,
       defaultTool: normalizedDefaultTool,
       disabled: env.mode !== 'gather',

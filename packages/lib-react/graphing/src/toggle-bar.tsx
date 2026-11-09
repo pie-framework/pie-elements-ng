@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -10,9 +10,8 @@ import { DragProvider, useDraggableControl } from '@pie-lib/drag';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@dnd-kit/sortable';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
+import { catalogs } from './i18n/index.js';
 
 const StyledMiniButton: any = styled(Button, {
   shouldForwardProp: (prop) => !['selected'].includes(prop),
@@ -41,7 +40,9 @@ const StyledMiniButton: any = styled(Button, {
 
 export const MiniButton = (props) => {
   const { disabled, className, selected, value, onClick, language, dragProps } = props;
-  const translatorKey = value.toLowerCase();
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
+  const name = catalogs.forLocale(language, relabel).t(dynamicMessageKey(value.toLowerCase()));
 
   return (
     <StyledMiniButton
@@ -55,7 +56,7 @@ export const MiniButton = (props) => {
       variant="outlined"
       onClick={(e) => onClick({ ...e, buttonValue: value })}
     >
-      {translator.t(`graphing.${translatorKey}`, { lng: language })}
+      {name}
     </StyledMiniButton>
   );
 };

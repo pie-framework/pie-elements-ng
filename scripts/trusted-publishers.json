@@ -251,6 +251,10 @@
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"
     },
+    "@pie-lib/math-input-mathlive": {
+      "repository": "pie-framework/pie-elements-ng",
+      "workflow": "release.yml"
+    },
     "@pie-lib/math-rendering": {
       "repository": "pie-framework/pie-elements-ng",
       "workflow": "release.yml"

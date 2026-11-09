@@ -2,6 +2,7 @@
   "name": "@pie-lib/translator",
   "version": "5.0.2",
   "description": "UI string translations shared by the React and Svelte PIE elements",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 // MathJax loads off a CDN and has no bearing on the combobox's semantics.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -109,12 +109,12 @@ describe('Dropdown name', () => {
   it.each([
     ['en_US', 'Query 2', 'Query'],
     ['es_ES', 'Consulta 2', 'Consulta'],
-  ])('follows the %s item language', (language, numbered, single) => {
+  ])('follows the %s item language', async (language, numbered, single) => {
     render(<Dropdown id="1" language={language} choices={choices} onChange={vi.fn()} />);
     render(<Dropdown id="0" singleQuery language={language} choices={choices} onChange={vi.fn()} />);
 
     const [first, second] = screen.getAllByRole('combobox');
-    expect(first).toHaveAccessibleName(numbered);
+    await waitFor(() => expect(first).toHaveAccessibleName(numbered));
     expect(second).toHaveAccessibleName(single);
   });
 });

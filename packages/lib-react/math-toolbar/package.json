@@ -2,6 +2,7 @@
   "name": "@pie-lib/math-toolbar",
   "version": "4.0.7",
   "description": "Math toolbar for editing math equations",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -12,7 +13,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "@pie-lib/math-input": "workspace:*",
+    "@pie-lib/math-input-mathlive": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.7.2",

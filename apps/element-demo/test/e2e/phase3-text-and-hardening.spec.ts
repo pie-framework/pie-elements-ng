@@ -60,7 +60,7 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     await expect(root).toBeVisible();
 
     const field = root
-      .locator('input, textarea, [contenteditable="true"], [role="textbox"], .mq-editable-field')
+      .locator('input, textarea, [contenteditable="true"], [role="textbox"], math-field')
       .first();
     await expect(field).toBeVisible();
     const marker = `ecr-${Date.now()}`;

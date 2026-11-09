@@ -1,6 +1,6 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-import { t } from './i18n';
+import { catalogs } from '../i18n/index.js';
 
 interface DisplayChoice {
   imageUrl?: string;
@@ -30,6 +30,9 @@ let {
   language?: string;
 } = $props();
 
+/** `language` is the chrome language, resident before this renders. */
+const i18n = $derived(catalogs.forLocale(language));
+
 const isImage = (c: DisplayChoice | undefined) => choiceMode === 'image' && !!c?.imageUrl;
 const sizers = $derived(choices.filter((c) => isImage(c) || !!c?.labelHtml));
 </script>
@@ -45,7 +48,7 @@ const sizers = $derived(choices.filter((c) => isImage(c) || !!c?.labelHtml));
   {#if isImage(displayChoice)}
     <img
       src={displayChoice?.imageUrl}
-      alt={displayChoice?.imageAlt || t('selectedAnswerImage', language)}
+      alt={displayChoice?.imageAlt || i18n.t('selectedAnswerImage')}
       class="cloze-marker-image pie-blank-image"
       style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
@@ -54,7 +57,7 @@ const sizers = $derived(choices.filter((c) => isImage(c) || !!c?.labelHtml));
   {:else}
     <span class="cloze-marker-empty">
       <span aria-hidden="true">&nbsp;</span>
-      <span class="sr-only">{t('emptyBlank', language)}</span>
+      <span class="sr-only">{i18n.t('emptyBlank')}</span>
     </span>
   {/if}
   {#if sizers.length}

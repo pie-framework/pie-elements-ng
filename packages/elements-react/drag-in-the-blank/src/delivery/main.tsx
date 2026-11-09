@@ -36,9 +36,6 @@ const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapR
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -63,6 +60,8 @@ export class Main extends React.Component {
     value: PropTypes.object,
     feedback: PropTypes.object,
     onChange: PropTypes.func,
+    /** The chrome language: the interface locale, else the item's declared language. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -90,8 +89,8 @@ export class Main extends React.Component {
 
   render() {
     const { showCorrectAnswer } = this.state;
-    const { model, onChange, value } = this.props;
-    const { extraCSSRules, prompt, mode, language, fontSizeFactor, autoplayAudioEnabled, autoplayAudioHeld, customAudioButton } =
+    const { model, onChange, value, language } = this.props;
+    const { extraCSSRules, prompt, mode, fontSizeFactor, autoplayAudioEnabled, autoplayAudioHeld, customAudioButton } =
       model;
     const modelWithValue = { ...model, value };
     const showCorrectAnswerToggle = mode === 'evaluate';
@@ -108,9 +107,7 @@ export class Main extends React.Component {
         fontSizeFactor={fontSizeFactor}
       >
         {showTeacherInstructions && (
-          <StyledCollapsible
-            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={model.teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -133,10 +130,15 @@ export class Main extends React.Component {
           language={language}
         />
 
-        <DragInTheBlank {...modelWithValue} onChange={onChange} showCorrectAnswer={showCorrectAnswer} />
+        <DragInTheBlank
+          {...modelWithValue}
+          language={language}
+          onChange={onChange}
+          showCorrectAnswer={showCorrectAnswer}
+        />
 
         {showRationale && (
-          <StyledRationale labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <StyledRationale variant="rationale" language={language}>
             <PreviewPrompt prompt={model.rationale} />
           </StyledRationale>
         )}

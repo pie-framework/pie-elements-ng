@@ -32,21 +32,23 @@ describe('explicit-constructed-response region name', () => {
     ['en_US', 'Fill in the Blank Question'],
     ['es_ES', 'Pregunta para completar espacios en blanco'],
     [undefined, 'Fill in the Blank Question'],
-  ])('follows the %s item language', (language, name) => {
+  ])('follows the %s item language', async (language, name) => {
     const element = mount();
 
     element.model = { markup: '<div></div>', language };
 
-    expect(element.getAttribute('aria-label')).toBe(name);
+    await vi.waitFor(() => expect(element.getAttribute('aria-label')).toBe(name));
   });
 
-  it('follows a language change after the first render', () => {
+  it('follows a language change after the first render', async () => {
     const element = mount();
     element.model = { markup: '<div></div>', language: 'en_US' };
     element.session = {};
 
     element.model = { markup: '<div></div>', language: 'es_ES' };
 
-    expect(element.getAttribute('aria-label')).toBe('Pregunta para completar espacios en blanco');
+    await vi.waitFor(() =>
+      expect(element.getAttribute('aria-label')).toBe('Pregunta para completar espacios en blanco'),
+    );
   });
 });

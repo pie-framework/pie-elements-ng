@@ -40,9 +40,10 @@ const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewProm
 const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import Translator from '@pie-lib/translator';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { createDragCollision, DragProvider } from '@pie-lib/drag';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { DragPreview } from './tile.js';
@@ -100,7 +101,7 @@ const releasedTileRect = (rect, pointer, activatorEvent) => {
   };
 };
 
-const getKeyboardDragOptions = (includeTargets) =>
+const getKeyboardDragOptions = (includeTargets, i18n) =>
   includeTargets
     ? {
         keyboardCoordinateGetter: closestDroppableKeyboardCoordinates,
@@ -111,14 +112,11 @@ const getKeyboardDragOptions = (includeTargets) =>
         },
         accessibility: {
           screenReaderInstructions: {
-            draggable:
-              'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel.',
+            draggable: i18n.t('dragInstructions'),
           },
         },
       }
     : {};
-
-const { translator } = Translator;
 
 const log = debug('pie-elements:placement-ordering');
 
@@ -193,6 +191,8 @@ export class PlacementOrdering extends React.Component {
     onSessionChange: PropTypes.func.isRequired,
     model: PropTypes.object.isRequired,
     session: PropTypes.oneOfType([PropTypes.array.isRequired, PropTypes.object.isRequired]),
+    /** The locale the chrome follows; the item's declared language when omitted. */
+    language: PropTypes.string,
   };
 
   containerRef = React.createRef<HTMLDivElement>();
@@ -293,18 +293,6 @@ export class PlacementOrdering extends React.Component {
     const { includeTargets } = config || {};
 
     const newState = {};
-
-    const isLanguageChanged = currentModel.language && currentModel.language !== nextModel.language;
-    const isDefaultNote =
-      currentModel.note &&
-      currentModel.note === translator.t('common:commonCorrectAnswerWithAlternates', { lng: currentModel.language });
-
-    // check if the note is the default one for prev language and change to the default one for new language
-    // this check is necessary in order to diferanciate between default and authour defined note
-    // and only change between languages for default ones
-    if (isLanguageChanged && isDefaultNote) {
-      currentModel.note = translator.t('common:commonCorrectAnswerWithAlternates', { lng: nextModel.language });
-    }
 
     if (!correctResponse) {
       newState.showingCorrect = false;
@@ -573,8 +561,9 @@ export class PlacementOrdering extends React.Component {
       env,
       disabled,
       teacherInstructions,
-      language,
     } = model;
+    const language = this.props.language ?? model.language;
+    const i18n = catalogs.forLocale(language);
     const showToggle = correctResponse && correctResponse.length > 0;
     const { showingCorrect } = this.state;
     const config = configs || {
@@ -587,7 +576,7 @@ export class PlacementOrdering extends React.Component {
     const { mode, role } = env || {};
 
     const Tiler = vertical ? VerticalTiler : HorizontalTiler;
-    const displayNote = (showingCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
+    const displayNote = (showingCorrect || (mode === 'view' && role === 'instructor')) && showNote;
     const showRationale = rationale && (hasText(rationale) || hasMedia(rationale));
     const showTeacherInstructions =
       teacherInstructions && (hasText(teacherInstructions) || hasMedia(teacherInstructions));
@@ -616,15 +605,12 @@ export class PlacementOrdering extends React.Component {
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
         collisionDetection={this.dragCollision.collisionDetection}
-        {...getKeyboardDragOptions(includeTargets)}
+        {...getKeyboardDragOptions(includeTargets, i18n)}
       >
         <PlacementOrderingContainer ref={this.containerRef}>
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
-              <StyledCollapsible
-                labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
-                className="collapsible"
-              >
+              <StyledCollapsible variant="teacherInstructions" language={language} className="collapsible">
                 <PreviewPrompt prompt={teacherInstructions} />
               </StyledCollapsible>
             )}
@@ -658,13 +644,14 @@ export class PlacementOrdering extends React.Component {
               </InteractiveRegionContent>
             </InteractiveRegion>
 
-            {displayNote && <StyledNote dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
+            {displayNote && (
+              <StyledNote
+                dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(authoredOrDefault(note, (locale) => catalogs.forLocale(locale).t('commonCorrectAnswerWithAlternates'), language, model.language)) }}
+              />
+            )}
 
             {showRationale && (
-              <StyledCollapsible
-                labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}
-                className="collapsible"
-              >
+              <StyledCollapsible variant="rationale" language={language} className="collapsible">
                 <PreviewPrompt prompt={rationale} />
               </StyledCollapsible>
             )}

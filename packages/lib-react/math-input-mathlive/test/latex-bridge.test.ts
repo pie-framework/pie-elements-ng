@@ -1,0 +1,504 @@
+import { describe, it, test, expect } from 'vitest';
+import { divide } from '../src/keys/basic-operators';
+import { perpindicular as perpendicular } from '../src/keys/geometry';
+import { xOverBlank } from '../src/keys/fractions';
+import {
+  toMathLive,
+  fromMathLive,
+  fieldIds,
+  fieldTemplate,
+  fieldValues,
+  fillFields,
+  toAccessibleLatex,
+  keyToAction,
+  toNativeCommands,
+  toCanonicalCommands,
+  MATHQUILL_ALIASES,
+  NEWLINE_EMBED,
+  DEFAULT_FIELD_ID,
+  answerBlockLatex,
+} from '../src/latex-bridge';
+
+describe('latex-bridge', () => {
+  describe('toMathLive', () => {
+    it('passes plain latex through', () => {
+      expect(toMathLive('\\frac{1}{2}')).toEqual('\\frac{1}{2}');
+    });
+
+    it('handles empty/nullish', () => {
+      expect(toMathLive('')).toEqual('');
+      expect(toMathLive(undefined)).toEqual('');
+      expect(toMathLive(null)).toEqual('');
+    });
+
+    it('converts a newLine embed to a multiline environment', () => {
+      expect(toMathLive(`a${NEWLINE_EMBED}b`)).toEqual('\\displaylines{a \\\\ b}');
+    });
+
+    it('converts multiple newLine embeds', () => {
+      expect(toMathLive(`a${NEWLINE_EMBED}b${NEWLINE_EMBED}c`)).toEqual('\\displaylines{a \\\\ b \\\\ c}');
+    });
+
+    it('converts MathQuill answer blocks to placeholders', () => {
+      expect(toMathLive('x=\\MathQuillMathField[r1]{}')).toEqual('x=\\placeholder[r1]{}');
+    });
+
+    it('preserves answer block content', () => {
+      expect(toMathLive('\\MathQuillMathField[r2]{7}')).toEqual('\\placeholder[r2]{7}');
+    });
+
+    it('defaults an unnamed answer block id', () => {
+      expect(toMathLive('\\MathQuillMathField[]{}')).toEqual(`\\placeholder[${DEFAULT_FIELD_ID}]{}`);
+    });
+
+    it('handles answer blocks and newlines together', () => {
+      expect(toMathLive(`\\MathQuillMathField[r1]{}${NEWLINE_EMBED}x`)).toEqual(
+        '\\displaylines{\\placeholder[r1]{} \\\\ x}',
+      );
+    });
+  });
+
+  describe('response areas', () => {
+    it('maps the stored answerBlock embed to the answerBlock macro and back', () => {
+      const stored = 'x+\\embed{answerBlock}[r1]=\\embed{answerBlock}[r2]';
+
+      expect(toMathLive(stored)).toEqual('x+\\answerBlock{r1}=\\answerBlock{r2}');
+      expect(fromMathLive(toMathLive(stored))).toEqual(stored);
+    });
+
+    it('keeps a response area inside a multiline template', () => {
+      const stored = `\\embed{answerBlock}[r1]${NEWLINE_EMBED}y`;
+
+      expect(fromMathLive(toMathLive(stored))).toEqual(stored);
+    });
+
+    it('draws an answer inside a box tagged with the response id', () => {
+      expect(answerBlockLatex('r1', '12')).toEqual(
+        '\\htmlData{answer-block=r1}{\\boxed{\\htmlData{answer-block-index=r1}{\\textsf{R}}\\enspace 12}}',
+      );
+    });
+
+    it('keeps the box open for an empty answer', () => {
+      expect(answerBlockLatex('r1', '')).toContain('\\phantom{0}');
+    });
+
+    it('breaks a multiline answer inside the box, not across it', () => {
+      const latex = answerBlockLatex('r1', `a${NEWLINE_EMBED}b`);
+
+      expect(latex).toContain('\\begin{array}{l}a \\\\ b\\end{array}');
+      expect(toMathLive(`x=${latex}`)).toEqual(`x=${latex}`);
+    });
+  });
+
+  describe('answer fields holding nested groups', () => {
+    const stored = 'x=\\MathQuillMathField[r1]{\\frac{1}{2}}+\\MathQuillMathField[r2]{x^{2}}';
+
+    it('converts a filled field to a prompt and back', () => {
+      expect(toMathLive(stored)).toEqual('x=\\placeholder[r1]{\\frac{1}{2}}+\\placeholder[r2]{x^{2}}');
+      expect(fromMathLive(toMathLive(stored))).toEqual(stored);
+    });
+
+    it('finds the field ids', () => {
+      expect(fieldIds(stored)).toEqual(['r1', 'r2']);
+    });
+
+    it('reads a field whose answer has a line break', () => {
+      expect(fieldIds(`\\MathQuillMathField[r1]{a${NEWLINE_EMBED}b}`)).toEqual(['r1']);
+    });
+
+    it('ignores escaped braces when matching the group', () => {
+      expect(toMathLive('\\MathQuillMathField[r1]{\\{x\\}}')).toEqual('\\placeholder[r1]{\\{x\\}}');
+    });
+  });
+
+  describe('dollar signs', () => {
+    it('escapes a literal dollar, which MathLive would read as a math delimiter', () => {
+      expect(toMathLive('$\\MathQuillMathField[r1]{}')).toEqual('\\$\\placeholder[r1]{}');
+    });
+
+    it('leaves an escaped dollar alone', () => {
+      expect(toMathLive('\\$5')).toEqual('\\$5');
+    });
+  });
+
+  describe('line breaks inside a group', () => {
+    it('turns the blank lines of a print field into a one-column array', () => {
+      expect(toMathLive(`\\MathQuillMathField[r1]{a${NEWLINE_EMBED}b}`)).toEqual(
+        '\\placeholder[r1]{\\begin{array}{l}a \\\\ b\\end{array}}',
+      );
+    });
+
+    it('still makes top-level breaks displaylines rows', () => {
+      expect(toMathLive(`x${NEWLINE_EMBED}\\MathQuillMathField[r1]{a${NEWLINE_EMBED}b}`)).toEqual(
+        '\\displaylines{x \\\\ \\placeholder[r1]{\\begin{array}{l}a \\\\ b\\end{array}}}',
+      );
+    });
+  });
+
+  describe('answer field values', () => {
+    const stored = '$\\MathQuillMathField[r1]{\\frac{1}{2}}+\\MathQuillMathField[r2]{}';
+
+    it('reads each answer by id', () => {
+      expect(fieldValues(stored)).toEqual({ r1: '\\frac{1}{2}', r2: '' });
+    });
+
+    it('empties the answers to give the template', () => {
+      expect(fieldTemplate(stored)).toEqual('$\\MathQuillMathField[r1]{}+\\MathQuillMathField[r2]{}');
+    });
+
+    it('fills the answers, keeping everything else as stored', () => {
+      expect(fillFields(stored, { r2: '3' })).toEqual('$\\MathQuillMathField[r1]{\\frac{1}{2}}+\\MathQuillMathField[r2]{3}');
+    });
+  });
+
+  describe('toAccessibleLatex', () => {
+    it('keeps the answer in an answer block and drops its label', () => {
+      expect(toAccessibleLatex(`x+${answerBlockLatex('r1', '\\frac{1}{2}')}=3`)).toEqual('x+{{\\frac{1}{2}}}=3');
+    });
+
+    it('reads an empty response area as a blank', () => {
+      expect(toAccessibleLatex('x+\\answerBlock{r1}')).toEqual('x+\\square');
+    });
+
+    it('leaves plain latex alone', () => {
+      expect(toAccessibleLatex('\\frac12')).toEqual('\\frac12');
+    });
+  });
+
+  describe('row separators that are not line breaks', () => {
+    it('keeps a matrix row separator outside displaylines', () => {
+      const matrix = '\\begin{bmatrix}&\\\\&\\end{bmatrix}';
+
+      expect(fromMathLive(matrix)).toEqual(matrix);
+    });
+
+    it('keeps a matrix row separator inside a multiline expression', () => {
+      const matrix = '\\begin{bmatrix}1\\\\2\\end{bmatrix}';
+
+      expect(fromMathLive(`\\displaylines{${matrix} \\\\ y}`)).toEqual(`${matrix}${NEWLINE_EMBED}y`);
+    });
+  });
+
+  describe('fromMathLive', () => {
+    it('passes plain latex through', () => {
+      expect(fromMathLive('\\frac{1}{2}')).toEqual('\\frac{1}{2}');
+    });
+
+    it('unwraps displaylines back to newLine embeds', () => {
+      expect(fromMathLive('\\displaylines{a \\\\ b}')).toEqual(`a${NEWLINE_EMBED}b`);
+    });
+
+    it('converts placeholders back to MathQuill answer blocks', () => {
+      expect(fromMathLive('x=\\placeholder[r1]{}')).toEqual('x=\\MathQuillMathField[r1]{}');
+    });
+
+    it('round-trips a newline document', () => {
+      const stored = `a${NEWLINE_EMBED}b${NEWLINE_EMBED}c`;
+
+      expect(fromMathLive(toMathLive(stored))).toEqual(stored);
+    });
+
+    it('round-trips an answer-block document', () => {
+      const stored = 'x=\\MathQuillMathField[r1]{}+\\MathQuillMathField[r2]{3}';
+
+      expect(fromMathLive(toMathLive(stored))).toEqual(stored);
+    });
+
+    // MathLive serialises empty slots as \placeholder{}, which MathJax (used by
+    // @pie-lib/math-rendering for prompts/previews) renders as red error text.
+    it('strips unnamed placeholders that MathLive adds', () => {
+      expect(fromMathLive('\\longdiv{\\placeholder{}}')).toEqual('\\longdiv{}');
+      expect(fromMathLive('\\frac{\\placeholder{}}{\\placeholder{}}')).toEqual('\\frac{}{}');
+    });
+
+    it('keeps content inside an unnamed placeholder', () => {
+      expect(fromMathLive('\\sqrt{\\placeholder{7}}')).toEqual('\\sqrt{7}');
+    });
+
+    it('handles a bare \\placeholder with no argument', () => {
+      expect(fromMathLive('\\longdiv{\\placeholder}')).toEqual('\\longdiv{}');
+    });
+
+    it('never leaks the token \\placeholder', () => {
+      ['\\longdiv{\\placeholder{}}', '\\frac{\\placeholder{}}{x}', '\\placeholder{}'].forEach((l) => {
+        expect(fromMathLive(l)).not.toContain('\\placeholder');
+      });
+    });
+
+    it('still maps NAMED placeholders to answer blocks', () => {
+      // named ones are answer blocks and must survive
+      expect(fromMathLive('\\placeholder[r1]{}')).toEqual('\\MathQuillMathField[r1]{}');
+    });
+
+    it('round-trips answer blocks combined with newlines', () => {
+      const stored = `\\MathQuillMathField[r1]{}${NEWLINE_EMBED}y`;
+
+      expect(fromMathLive(toMathLive(stored))).toEqual(stored);
+    });
+  });
+
+  // A MathLive macro serialises from the arguments it was created with, so text
+  // typed inside its expansion never comes back out of getValue('latex').
+  // Argument-taking pie commands must therefore become native constructs before
+  // they reach a mathfield.
+  describe('toNativeCommands', () => {
+    it('expands \\longdiv to native \\enclose', () => {
+      expect(toNativeCommands('\\longdiv{1234}')).toEqual('\\enclose{longdiv}{1234}');
+      expect(toNativeCommands('\\longdiv{}')).toEqual('\\enclose{longdiv}{}');
+    });
+
+    it('expands \\overarc to native \\overparen', () => {
+      expect(toNativeCommands('\\overarc{AB}')).toEqual('\\overparen{AB}');
+    });
+
+    it('expands \\abs to native \\left|..\\right|', () => {
+      expect(toNativeCommands('\\abs{x}')).toEqual('\\left|x\\right|');
+      expect(toNativeCommands('\\abs{}')).toEqual('\\left|\\right|');
+    });
+
+    it('handles nested braces inside \\abs', () => {
+      expect(toNativeCommands('\\abs{\\frac{1}{2}}')).toEqual('\\left|\\frac{1}{2}\\right|');
+    });
+
+    it('handles several occurrences', () => {
+      expect(toNativeCommands('\\abs{a}+\\abs{b}')).toEqual('\\left|a\\right|+\\left|b\\right|');
+      expect(toNativeCommands('\\longdiv{1}\\longdiv{2}')).toEqual('\\enclose{longdiv}{1}\\enclose{longdiv}{2}');
+    });
+
+    // `%` starts a comment in real LaTeX, so MathLive drops it and everything
+    // after it. MathQuill had no comments, so latex authored under it - or by
+    // hand - can carry a bare `%` that would silently truncate the expression.
+    it('escapes a bare % so it cannot comment out the rest of the line', () => {
+      expect(toNativeCommands('%')).toEqual('\\%');
+      expect(toNativeCommands('50%')).toEqual('50\\%');
+      expect(toNativeCommands('x%y')).toEqual('x\\%y');
+      expect(toNativeCommands('a%b%c')).toEqual('a\\%b\\%c');
+    });
+
+    it('leaves an already-escaped % alone', () => {
+      expect(toNativeCommands('\\%')).toEqual('\\%');
+      expect(toNativeCommands('50\\%')).toEqual('50\\%');
+      // idempotent: toMathLive may run over latex that came back out of a field
+      expect(toNativeCommands(toNativeCommands('50%'))).toEqual('50\\%');
+    });
+
+    // `\\` is a line break, not an escape, so the `%` after it is still bare.
+    it('counts backslashes to decide whether a % is escaped', () => {
+      expect(toNativeCommands('a\\\\%b')).toEqual('a\\\\\\%b');
+    });
+
+    it('leaves other latex untouched', () => {
+      ['\\frac{1}{2}', '\\pi', '\\sqrt{x}', '\\overline{AB}'].forEach((l) => {
+        expect(toNativeCommands(l)).toEqual(l);
+      });
+    });
+
+    it('handles nullish input', () => {
+      expect(toNativeCommands(undefined)).toEqual('');
+      expect(toNativeCommands('')).toEqual('');
+    });
+
+    it('is applied by toMathLive', () => {
+      expect(toMathLive('\\longdiv{5}')).toEqual('\\enclose{longdiv}{5}');
+    });
+
+    it('does not leave a pie macro in what reaches the field', () => {
+      ['\\longdiv{7}', '\\abs{7}', '\\overarc{7}'].forEach((l) => {
+        const out = toMathLive(l);
+
+        expect(out).not.toMatch(/\\longdiv|\\abs|\\overarc/);
+      });
+    });
+  });
+
+  describe('fieldIds', () => {
+    it('returns ids in document order', () => {
+      expect(fieldIds('\\MathQuillMathField[r1]{}+\\MathQuillMathField[r2]{}')).toEqual(['r1', 'r2']);
+    });
+
+    it('returns [] when there are none', () => {
+      expect(fieldIds('x+y')).toEqual([]);
+      expect(fieldIds(undefined)).toEqual([]);
+    });
+
+    it('is repeatable (regex lastIndex is reset)', () => {
+      const latex = '\\MathQuillMathField[r1]{}';
+
+      expect(fieldIds(latex)).toEqual(['r1']);
+      expect(fieldIds(latex)).toEqual(['r1']);
+    });
+  });
+
+  // MathQuill registered some keypad names as aliases of a different command:
+  // the divide key stored `\div`, not `\divide`. MathLive knows `\divide` only as
+  // a pie macro and serialises it under that name, so it reached storage and
+  // MathJax (which has no `\divide`) rendered it as red text.
+  describe('MathQuill command aliases', () => {
+    it('the divide and perpendicular keys insert the command MathQuill stored', () => {
+      expect(keyToAction(divide)).toEqual({ type: 'insert', value: '\\div' });
+      expect(keyToAction(perpendicular)).toEqual({ type: 'insert', value: '\\perp' });
+    });
+
+    it('stores the canonical command for latex that still carries an alias', () => {
+      // Typed into the field, or saved before the keypad resolved the alias.
+      expect(fromMathLive('1\\divide 6')).toEqual('1\\div 6');
+      expect(fromMathLive('a\\perpendicular b')).toEqual('a\\perp b');
+    });
+
+    it('only replaces whole command names', () => {
+      // \divideontimes is a real AMS symbol and must survive.
+      expect(toCanonicalCommands('a\\divideontimes b')).toEqual('a\\divideontimes b');
+      expect(toCanonicalCommands('\\divide\\divide')).toEqual('\\div\\div');
+    });
+
+    // The double prime key: MathLive serialises `5''` as `5^{\doubleprime}`,
+    // which MathJax cannot render (red `\doubleprime`). MathQuill stored `5''`.
+    it('stores the double prime key as apostrophes', () => {
+      expect(fromMathLive('5^{\\doubleprime}')).toEqual("5''");
+      expect(fromMathLive('x^{\\prime}')).toEqual("x'");
+      expect(fromMathLive('x^{\\prime\\prime\\prime}')).toEqual("x'''");
+      expect(fromMathLive('\\doubleprime')).toEqual("''");
+    });
+
+    // Typing `'` twice yields two superscript groups - a MathJax double-exponent
+    // error - so they collapse into apostrophes too.
+    it('collapses adjacent prime superscripts', () => {
+      expect(fromMathLive('x^{\\prime}^{\\prime}')).toEqual("x''");
+      expect(fromMathLive('5^{\\prime}^{\\doubleprime}')).toEqual("5'''");
+    });
+
+    it('leaves superscripts that hold more than primes alone', () => {
+      expect(fromMathLive('x^{\\prime 2}')).toEqual('x^{\\prime 2}');
+      expect(fromMathLive('x^{2}')).toEqual('x^{2}');
+    });
+
+    it('round-trips stored primes unchanged', () => {
+      expect(fromMathLive("12^{\\circ}30'15''")).toEqual("12^{\\circ}30'15''");
+    });
+
+    // `5′6″` typed or pasted as characters serialises as bare commands. A bare
+    // `\prime` is full size in MathJax while `''` is a superscript, so storing
+    // `5\prime6''` drew the single prime larger than each stroke of the double.
+    it('stores bare primes as apostrophes, so single and double match', () => {
+      expect(fromMathLive('5\\prime6\\doubleprime')).toEqual("5'6''");
+      expect(fromMathLive('5\\prime 6\\doubleprime')).toEqual("5' 6''");
+      expect(fromMathLive('\\prime')).toEqual("'");
+      expect(fromMathLive('\\frac{5\\prime}{2}')).toEqual("\\frac{5'}{2}");
+    });
+
+    // Inside a script a prime is already a superscript; an apostrophe there
+    // would be a prime *of* the script.
+    it('keeps primes that are inside a superscript or subscript', () => {
+      expect(fromMathLive('x^{\\prime 2}')).toEqual('x^{\\prime 2}');
+      expect(fromMathLive('x^\\prime')).toEqual('x^\\prime');
+      expect(fromMathLive('x_{\\prime}')).toEqual('x_{\\prime}');
+      // MathJax has no \doubleprime: spell it out rather than leave red text
+      expect(fromMathLive('x^{\\doubleprime 2}')).toEqual('x^{\\prime\\prime 2}');
+    });
+
+    it('closes the script scope at the matching brace', () => {
+      expect(fromMathLive('x^{2}\\prime')).toEqual("x^{2}'");
+      expect(fromMathLive('x^{\\frac{a}{b}}6\\doubleprime')).toEqual("x^{\\frac{a}{b}}6''");
+    });
+
+    it('does not touch commands that merely start with "prime"', () => {
+      expect(fromMathLive('\\primes')).toEqual('\\primes');
+      expect(fromMathLive('\\backprime')).toEqual('\\backprime');
+    });
+
+    it('no keypad key inserts an alias name', () => {
+      const keyModules = import.meta.glob('../src/keys/*.ts', { eager: true });
+      const keys = [];
+
+      const collect = (v) => {
+        if (Array.isArray(v)) return v.forEach(collect);
+        if (v && typeof v === 'object' && (v.command || v.latex || v.write)) keys.push(v);
+      };
+
+      Object.values(keyModules).forEach((m) => Object.values(m).forEach(collect));
+
+      expect(keys.length).toBeGreaterThan(50);
+
+      keys.forEach((k) => {
+        const action = keyToAction(k);
+        const value = (action && action.value) || '';
+
+        Object.keys(MATHQUILL_ALIASES).forEach((alias) => {
+          expect(new RegExp(`\\${alias}(?![a-zA-Z])`).test(value)).toBe(false);
+        });
+      });
+    });
+  });
+
+  describe('keyToAction', () => {
+    it('prefers latex when there is no command', () => {
+      expect(keyToAction({ latex: '\\pi', write: 'p' })).toEqual({ type: 'insert', value: '\\pi' });
+    });
+
+    it('uses write', () => {
+      expect(keyToAction({ write: 'x' })).toEqual({ type: 'insert', value: 'x' });
+    });
+
+    it('expands commands that take arguments into placeholders', () => {
+      expect(keyToAction({ command: '\\frac' })).toEqual({ type: 'insert', value: '\\frac{#?}{#?}' });
+      expect(keyToAction({ command: '\\sqrt' })).toEqual({ type: 'insert', value: '\\sqrt{#?}' });
+      expect(keyToAction({ command: '^' })).toEqual({ type: 'insert', value: '^{#?}' });
+    });
+
+    // MathQuill's `/` turned the preceding expression into the numerator: type
+    // 5, press the key, get 5/_ with the caret in the denominator. `#@` is
+    // MathLive's "selection, or the item before the cursor" token, and is what
+    // MathLive binds to `/` itself.
+    it('division takes the preceding item as the numerator', () => {
+      expect(keyToAction({ command: '/' })).toEqual({ type: 'insert', value: '\\frac{#@}{#?}' });
+    });
+
+    it('an explicit blank-over-blank fraction stays empty', () => {
+      // distinct from `/`: this key is meant to insert two empty slots
+      expect(keyToAction({ command: '\\frac' })).toEqual({ type: 'insert', value: '\\frac{#?}{#?}' });
+    });
+
+    it('the x-over-blank key routes through division', () => {
+
+      expect(xOverBlank.command).toEqual('/');
+      expect(keyToAction(xOverBlank).value).toEqual('\\frac{#@}{#?}');
+    });
+
+    it('passes argument-less commands through', () => {
+      expect(keyToAction({ command: '\\pi' })).toEqual({ type: 'insert', value: '\\pi' });
+    });
+
+    it('concatenates array commands (MathQuill cmd() applied them in sequence)', () => {
+      // Measured Angle
+      expect(keyToAction({ command: ['m', '\\angle'] })).toEqual({ type: 'insert', value: 'm\\angle' });
+      // log base n - the `_` part must still expand to a placeholder
+      expect(keyToAction({ command: ['\\log', '_'] })).toEqual({ type: 'insert', value: '\\log_{#?}' });
+    });
+
+    it('always returns a string value for insert actions', () => {
+      [{ command: ['m', '\\angle'] }, { command: '\\frac' }, { write: 'x' }, { latex: '\\pi' }].forEach((k) => {
+        expect(typeof keyToAction(k).value).toBe('string');
+      });
+    });
+
+    it('maps keystrokes to MathLive selectors', () => {
+      expect(keyToAction({ keystroke: 'Left' })).toEqual({ type: 'command', value: 'moveToPreviousChar' });
+      expect(keyToAction({ keystroke: 'Right' })).toEqual({ type: 'command', value: 'moveToNextChar' });
+      expect(keyToAction({ keystroke: 'Backspace' })).toEqual({ type: 'command', value: 'deleteBackward' });
+    });
+
+    it('returns undefined for unknown/empty input', () => {
+      expect(keyToAction(undefined)).toBeUndefined();
+      expect(keyToAction({})).toBeUndefined();
+      expect(keyToAction({ keystroke: 'Nope' })).toBeUndefined();
+    });
+
+    it('latex wins over command only when command is absent', () => {
+      // a key with both should use the command path (matches MathInput.keypadPress)
+      expect(keyToAction({ latex: '\\frac{}{}', command: '\\frac' })).toEqual({
+        type: 'insert',
+        value: '\\frac{#?}{#?}',
+      });
+    });
+  });
+});

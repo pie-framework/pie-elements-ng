@@ -1,6 +1,7 @@
 {
   "name": "@pie-lib/delivery-events-svelte",
   "version": "0.2.2",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -23,6 +24,7 @@
     "dev": "vite build --watch"
   },
   "dependencies": {
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "devDependencies": {

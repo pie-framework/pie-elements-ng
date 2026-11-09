@@ -1,0 +1,37 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: '坐标图',
+  axisRange: '{axis} 轴范围为 {min} 至 {max}。',
+  plottedNone: '尚未绘制任何对象。',
+  plotted: {
+    other: '已绘制 {count} 个对象：{marks}。',
+  },
+  point: '点',
+  circle: '圆',
+  line: '直线',
+  parabola: '抛物线',
+  absolute: '绝对值',
+  exponential: '指数',
+  polygon: '多边形',
+  ray: '射线',
+  segment: '线段',
+  sine: '正弦',
+  vector: '向量',
+  label: '标签',
+  markLabel: '位于（{x}, {y}）的标签',
+  correctMarkLabel: '位于（{x}, {y}）的正确标签',
+  undo: '撤销',
+  redo: '重做',
+  reset: '重置',
+  key: '图例',
+  keyLegend: {
+    missingRequiredLabel: '缺少必填标签',
+    answerKeyCorrect: '标准答案',
+    answerKeyCorrectLabel: '标准答案标签',
+    studentIncorrect: '学生错误答案',
+    incorrectStudentLabel: '学生错误标签',
+    studentCorrect: '学生正确答案',
+    studentCorrectLabel: '学生正确标签',
+  },
+} satisfies MessageCatalog;

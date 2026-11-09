@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { catalogs } from '../i18n/index.js';
 
 const TraitName: any = styled('td')({
   color: color.primaryDark(),
@@ -17,7 +18,7 @@ const NoDescription: any = styled('div')({
 });
 
 const Trait = (props) => {
-  const { trait, traitIndex, scaleIndex, showStandards, showDescription, scorePointsValues } = props;
+  const { trait, traitIndex, scaleIndex, showStandards, showDescription, scorePointsValues, language } = props;
   const { name, standards, scorePointsDescriptors, description } = trait || {};
 
   return (
@@ -51,7 +52,7 @@ const Trait = (props) => {
           return (
             <td key={`table-cell-${index}`}>
               {!scoreDescriptor ? (
-                <NoDescription dangerouslySetInnerHTML={{ __html: 'No Description' }} />
+                <NoDescription>{catalogs.forLocale(language).t('noDescription')}</NoDescription>
               ) : (
                 <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(scoreDescriptor) }} />
               )}
@@ -63,6 +64,7 @@ const Trait = (props) => {
 };
 
 Trait.propTypes = {
+  language: PropTypes.string,
   showStandards: PropTypes.bool,
   showDescription: PropTypes.bool,
   scorePointsValues: PropTypes.arrayOf(PropTypes.number),

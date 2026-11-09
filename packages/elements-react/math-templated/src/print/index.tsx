@@ -6,6 +6,7 @@ import { debounce } from '@pie-element/shared-lodash';
 import Main from '../delivery/main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
+import { isLocaleReady, loadLocale } from '@pie-element/shared-i18n';
 
 const log = debug('pie-element:math-templated:print');
 
@@ -47,6 +48,12 @@ export default class MathTemplatedPrint extends HTMLElement {
     this._rerender = debounce(
       () => {
         if (this._model && this._session) {
+          // A print view has no player to publish a locale, so its chrome follows the item's
+          // language, rendered once that catalog is resident.
+          if (!isLocaleReady(this._model.language)) {
+            void loadLocale(this._model.language).then(() => this._rerender());
+            return;
+          }
           const printModel = preparePrintModel(this._model, this._options);
 
           const element =
