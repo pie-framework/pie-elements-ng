@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 import Trait from './trait.js';
+import { catalogs } from '../i18n/index.js';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
@@ -129,7 +130,8 @@ class Scale extends React.Component {
 
   render() {
     const { showRight, showLeft } = this.state;
-    const { scale, scaleIndex, showDescription, showPointsLabels, showStandards, arrowsDisabled } = this.props;
+    const { scale, scaleIndex, showDescription, showPointsLabels, showStandards, arrowsDisabled, language } = this.props;
+    const i18n = catalogs.forLocale(language);
     const { excludeZero, maxPoints, traitLabel, traits, scorePointsLabels } = scale || {};
 
     let scorePointsValues = [];
@@ -191,7 +193,7 @@ class Scale extends React.Component {
             });
           }}
         >
-          {arrowsDisabled && (showRight || showLeft) ? <div>The item is too large to fit in print mode.</div> : null}
+          {arrowsDisabled && (showRight || showLeft) ? <div>{i18n.t('tooLargeForPrint')}</div> : null}
           <Table key={`scale-${scaleIndex}`}>
             <thead>
               <tr>
@@ -201,13 +203,13 @@ class Scale extends React.Component {
 
                 {standards ? (
                   <th>
-                    <div>Standard(s)</div>
+                    <div>{i18n.t('standardsHeader')}</div>
                   </th>
                 ) : null}
 
                 {descriptions ? (
                   <th>
-                    <div>Description</div>
+                    <div>{i18n.t('descriptionHeader')}</div>
                   </th>
                 ) : null}
 
@@ -237,7 +239,7 @@ class Scale extends React.Component {
                             ) : null}
                             <tr>
                               <ScorePointValue>
-                                {scorePointValue === 1 ? `${scorePointValue} point` : `${scorePointValue} points`}
+                                {i18n.plural('scorePoints', { count: scorePointValue })}
                               </ScorePointValue>
                             </tr>
                           </thead>
@@ -260,6 +262,7 @@ class Scale extends React.Component {
                     scaleIndex={scaleIndex}
                     scorePointsValues={scorePointsValues}
                     excludeZero={excludeZero}
+                    language={language}
                   />
                 ))}
             </tbody>
@@ -298,6 +301,7 @@ Scale.propTypes = {
     ),
   }),
   showPointsLabels: PropTypes.bool,
+  language: PropTypes.string,
   showDescription: PropTypes.bool,
   showStandards: PropTypes.bool,
   arrowsDisabled: PropTypes.bool,

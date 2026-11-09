@@ -37,10 +37,9 @@ const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapR
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
+import { alternatesNote } from './default-note.js';
 
 const MainContainer: any = styled(UiLayout)(({ alwaysShowCorrect }) => ({
   color: color.text(),
@@ -76,7 +75,10 @@ export class Main extends React.Component {
     disabled: PropTypes.bool,
     displayType: PropTypes.string,
     feedback: PropTypes.object,
+    /** The chrome language: the player's interface locale, else the declared language. */
     language: PropTypes.string,
+    /** The item's declared language, which the blanks' editors take as their content language. */
+    contentLanguage: PropTypes.string,
     markup: PropTypes.string,
     maxLengthPerChoice: PropTypes.array,
     maxLengthPerChoiceEnabled: PropTypes.bool,
@@ -104,27 +106,12 @@ export class Main extends React.Component {
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { language } = this.props;
-    let { note } = this.props;
-
     if (isEmpty(nextProps.feedback)) {
       this.setState({ showCorrectAnswer: false });
     }
 
     if (nextProps.alwaysShowCorrect) {
       this.setState({ showCorrectAnswer: true });
-    }
-
-    // check if the note is the default one for prev language and change to the default one for new language
-    // this check is necessary in order to diferanciate between default and authour defined note
-    // and only change between languages for default ones
-    if (
-      note &&
-      language &&
-      language !== nextProps.language &&
-      note === translator.t('common:commonCorrectAnswerWithAlternates', { lng: language })
-    ) {
-      note = translator.t('common:commonCorrectAnswerWithAlternates', { lng: nextProps.language });
     }
   }
 
@@ -148,6 +135,7 @@ export class Main extends React.Component {
       displayType,
       role,
       language,
+      contentLanguage,
       maxLengthPerChoice,
       maxLengthPerChoiceEnabled,
       note,
@@ -163,7 +151,8 @@ export class Main extends React.Component {
     } = this.props;
 
     const { extraCSSRules } = model || {};
-    const displayNote = (showCorrectAnswer || (mode === 'view' && role === 'instructor')) && showNote && note;
+    const i18n = catalogs.forLocale(language);
+    const displayNote = (showCorrectAnswer || (mode === 'view' && role === 'instructor')) && showNote;
 
     const teacherInstructionsDiv = (
       <PreviewPrompt defaultClassName="teacher-instructions" prompt={teacherInstructions} />
@@ -182,13 +171,13 @@ export class Main extends React.Component {
         style={{ display: `${displayType}` }}
       >
         {mode === 'gather' && (
-          <SrOnly>{translator.t('explicitConstructedResponse.fillInTheBlankQuestion', { lng: language })}</SrOnly>
+          <SrOnly>{i18n.t('fillInTheBlankQuestion')}</SrOnly>
         )}
 
         {showTeacherInstructions && (
           <CollapsibleContainer>
             {!animationsDisabled ? (
-              <Collapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
+              <Collapsible variant="teacherInstructions" language={language}>
                 {teacherInstructionsDiv}
               </Collapsible>
             ) : (
@@ -218,14 +207,23 @@ export class Main extends React.Component {
           adjustedLimit={maxLengthPerChoiceEnabled}
           spellCheck={playerSpellCheckEnabled}
           pluginProps={responseAreaInputConfiguration}
+          language={contentLanguage}
         />
 
-        {displayNote && <NoteContainer dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
+        {displayNote && (
+          <NoteContainer
+            dangerouslySetInnerHTML={{
+              __html: sanitizeModelHtml(alternatesNote(note, language, contentLanguage)),
+            }}
+          />
+        )}
 
         {showRationale && (
           <CollapsibleContainer>
             {!animationsDisabled ? (
-              <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>{rationaleDiv}</Collapsible>
+              <Collapsible variant="rationale" language={language}>
+                {rationaleDiv}
+              </Collapsible>
             ) : (
               rationaleDiv
             )}

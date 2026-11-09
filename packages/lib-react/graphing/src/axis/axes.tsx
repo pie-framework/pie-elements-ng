@@ -112,6 +112,9 @@ export const sharedValues = (
   return result;
 };
 
+/** Where an axis crosses the other one: zero when it is in view, otherwise the nearest edge. */
+export const axisPosition = ({ min, max }) => Math.min(Math.max(0, min), max);
+
 export const firstNegativeValue = (interval) => (interval || []).find((element) => element < 0);
 
 export class RawXAxis extends React.Component {
@@ -138,6 +141,7 @@ export class RawXAxis extends React.Component {
       };
     };
 
+    const axisY = axisPosition(range);
     const necessaryRows = countWords(domain.axisLabel);
     const longestWord = findLongestWord(domain.axisLabel);
     const necessaryWidth = amountToIncreaseWidth(longestWord) + 2;
@@ -146,7 +150,7 @@ export class RawXAxis extends React.Component {
       <StyledAxesGroup>
         <Axis
           scale={scale.x}
-          top={scale.y(0)}
+          top={scale.y(axisY)}
           left={0}
           label={domain.label}
           rangePadding={8}
@@ -155,10 +159,10 @@ export class RawXAxis extends React.Component {
           tickValues={columnTicksValues}
           hideZero={!(domain.labelStep || range.labelStep) && domain.min <= 0}
         />
-        {includeArrows && includeArrows.left && <StyledArrow direction="left" x={domain.min} y={0} scale={scale} />}
-        {includeArrows && includeArrows.right && <StyledArrow direction="right" x={domain.max} y={0} scale={scale} />}
+        {includeArrows && includeArrows.left && <StyledArrow direction="left" x={domain.min} y={axisY} scale={scale} />}
+        {includeArrows && includeArrows.right && <StyledArrow direction="right" x={domain.max} y={axisY} scale={scale} />}
         {domain.axisLabel && (
-          <foreignObject x={size.width + 17} y={scale.y(0) - 9} width={necessaryWidth} height={20 * necessaryRows}>
+          <foreignObject x={size.width + 17} y={scale.y(axisY) - 9} width={necessaryWidth} height={20 * necessaryRows}>
             <Readable false>
               <StyledAxisLabelHolder dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(domain.axisLabel) }} />
             </Readable>
@@ -180,7 +184,8 @@ export class RawYAxis extends React.Component {
 
   render() {
     const { includeArrows, graphProps, skipValues, rowTickValues } = this.props;
-    const { scale, range, size } = graphProps || {};
+    const { scale, domain, range, size } = graphProps || {};
+    const axisX = axisPosition(domain);
 
     const necessaryWidth = range.axisLabel ? amountToIncreaseWidth(range.axisLabel.length) : 0;
 
@@ -193,7 +198,7 @@ export class RawYAxis extends React.Component {
           scale={scale.y}
           top={0}
           height={size.height}
-          left={scale.x(0)}
+          left={scale.x(axisX)}
           label={range.label}
           labelProps={{ 'data-pie-readable': false }}
           rangePadding={8}
@@ -213,10 +218,10 @@ export class RawYAxis extends React.Component {
           tickTextAnchor={'bottom'}
           tickValues={rowTickValues}
         />
-        {includeArrows && includeArrows.down && <StyledArrow direction="down" x={0} y={range.min} scale={scale} />}
-        {includeArrows && includeArrows.up && <StyledArrow direction="up" x={0} y={range.max} scale={scale} />}
+        {includeArrows && includeArrows.down && <StyledArrow direction="down" x={axisX} y={range.min} scale={scale} />}
+        {includeArrows && includeArrows.up && <StyledArrow direction="up" x={axisX} y={range.max} scale={scale} />}
         {range.axisLabel && (
-          <foreignObject x={scale.x(0) - necessaryWidth / 2} y={-33} width={necessaryWidth} height="20">
+          <foreignObject x={scale.x(axisX) - necessaryWidth / 2} y={-33} width={necessaryWidth} height="20">
             <Readable false>
               <StyledAxisLabelHolder centered dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(range.axisLabel) }} />
             </Readable>
@@ -289,26 +294,22 @@ export default class Axes extends React.Component {
       dy,
     );
 
-    // each axis has to be displayed only if the domain & range include it
+    // when the origin is out of view, each axis is pinned to the nearest edge (see axisPosition)
     return (
       <StyledAxesGroup>
-        {range.min <= 0 ? (
-          <XAxis
-            {...this.props}
-            skipValues={skipValues}
-            columnTicksValues={columnTicksValues}
-            distanceFromOriginToFirstNegativeY={distanceFromOriginToFirstNegativeY}
-            dy={dy}
-          />
-        ) : null}
-        {domain.min <= 0 ? (
-          <YAxis
-            {...this.props}
-            skipValues={skipValues}
-            rowTickValues={rowTickValues}
-            distanceFromOriginToFirstNegativeX={distanceFromOriginToFirstNegativeX}
-          />
-        ) : null}
+        <XAxis
+          {...this.props}
+          skipValues={skipValues}
+          columnTicksValues={columnTicksValues}
+          distanceFromOriginToFirstNegativeY={distanceFromOriginToFirstNegativeY}
+          dy={dy}
+        />
+        <YAxis
+          {...this.props}
+          skipValues={skipValues}
+          rowTickValues={rowTickValues}
+          distanceFromOriginToFirstNegativeX={distanceFromOriginToFirstNegativeX}
+        />
       </StyledAxesGroup>
     );
   }

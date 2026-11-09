@@ -9,6 +9,7 @@ import type {
   Graph,
   GraphingSolutionSetModel,
   GraphingSolutionSetSession,
+  GssLineData,
   Mark,
 } from '../types.js';
 
@@ -32,8 +33,12 @@ type BestAnswer = {
 /** The model the delivery view receives. */
 type GraphingSolutionSetViewModel = Omit<
   GraphingSolutionSetModel,
-  'arrows' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
+  'answers' | 'arrows' | 'graph' | 'gssLineData' | 'prompt' | 'rationale' | 'teacherInstructions'
 > & {
+  /** Only in evaluate mode or for the instructor: delivery reads `correctResponse` instead */
+  answers?: GraphingSolutionSetModel['answers'];
+  /** The full line data only alongside `answers`; otherwise just the line count */
+  gssLineData?: GssLineData | Pick<GssLineData, 'numberOfLines'>;
   arrows?: Arrows;
   defaultTool: 'line';
   disabled: boolean;
@@ -207,11 +212,12 @@ export function model(
     session.answer = removeInvalidAnswers(session.answer);
     // console.log('normalizedQuestion', normalizedQuestion);
     // `defaultTool` and `toolbarTools` are not model keys; destructuring keeps them out of `questionProps`.
-    const { defaultTool, extraCSSRules, prompt, promptEnabled, graph, answers, toolbarTools, ...questionProps } =
+    const { defaultTool, extraCSSRules, prompt, promptEnabled, graph, answers, toolbarTools, gssLineData, ...questionProps } =
       normalizedQuestion as GraphingSolutionSetModel & { defaultTool?: unknown; toolbarTools?: unknown };
     let { arrows } = normalizedQuestion;
     const mode = env?.mode;
     const role = env?.role;
+    const includeAnswers = mode === 'evaluate' || role === 'instructor';
 
     // This is used for offering support for old models which have the property arrows: boolean
     // Same thing is set in authoring : packages/graphing/configure/src/configure.jsx - componentDidMount
@@ -235,7 +241,11 @@ export function model(
 
     const base: GraphingSolutionSetViewModel = {
       ...questionProps,
-      answers,
+      // The answer key reaches the browser only once it may show it. `gssLineData` carries the key's lines, fills
+      // and sections, so a gathering student gets only the line count.
+      ...(includeAnswers
+        ? { answers, gssLineData }
+        : gssLineData && { gssLineData: { numberOfLines: gssLineData.numberOfLines } }),
       arrows,
       defaultTool: 'line',
       disabled: env.mode !== 'gather',

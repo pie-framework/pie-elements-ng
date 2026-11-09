@@ -40,9 +40,6 @@ const renderUi =
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { LIKERT_ORIENTATION } from './likertEntities.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const Main: any = styled('div')({
   color: color.text(),
@@ -106,12 +103,7 @@ export class Likert extends React.Component {
     return (
       <Main className={className}>
         {teacherInstructions && (
-          <StyledCollapsible
-            labels={{
-              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-            }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </StyledCollapsible>
         )}

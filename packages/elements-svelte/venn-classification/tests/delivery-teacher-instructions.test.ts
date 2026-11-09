@@ -64,8 +64,10 @@ describe('venn-classification teacher instructions', () => {
       { mode: 'view', role: 'instructor' }
     );
 
-    expect(element.querySelector('.teacher-instructions-toggle')?.textContent?.trim()).toBe(
-      'Mostrar instrucciones para el maestro'
+    await vi.waitFor(() =>
+      expect(element.querySelector('.teacher-instructions-toggle')?.textContent?.trim()).toBe(
+        'Mostrar instrucciones para el maestro'
+      )
     );
   });
 

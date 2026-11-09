@@ -3,11 +3,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
 
 import ImageDropTarget from './image-drop-target.js';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   margin: theme.spacing(2),
@@ -38,6 +36,7 @@ class ImageContainer extends Component {
       onSelectClick,
       onPlacementClick,
     } = this.props;
+    const i18n = catalogs.forLocale(language);
 
     return (
       <BaseContainer>
@@ -45,10 +44,7 @@ class ImageContainer extends Component {
             image must never shrink to fit (interactive-section scrolls instead). The inline style beats
             the global '& img' max-width:100%/height:auto rule (root.tsx) that keeps other images fluid */}
         <img
-          alt={translator.t('imageClozeAssociation.image', {
-            lng: language,
-            count: (responseContainers || []).length,
-          })}
+          alt={i18n.plural('image', { count: (responseContainers || []).length })}
           src={src}
           height={height}
           width={width}
@@ -78,8 +74,7 @@ class ImageContainer extends Component {
               index={r.index}
               label={
                 r.ariaLabel?.trim() ||
-                translator.t('imageClozeAssociation.responseArea', {
-                  lng: language,
+                i18n.t('responseArea', {
                   index: i + 1,
                   total: responseContainers.length,
                 })

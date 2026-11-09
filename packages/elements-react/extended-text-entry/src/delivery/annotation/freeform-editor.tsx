@@ -6,6 +6,7 @@ import { Popover, TextField } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import { ANNOTATION_STROKE } from './annotation-utils.js';
+import { catalogs } from '../../i18n/index.js';
 
 const StyledPopover: any = styled(Popover)(({ annotationType }) => ({
   '& .MuiPaper-root': {
@@ -128,6 +129,8 @@ class FreeformEditor extends React.Component {
     onDelete: PropTypes.func,
     onSave: PropTypes.func,
     onTypeChange: PropTypes.func,
+    /** The chrome language of the button labels. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -177,8 +180,9 @@ class FreeformEditor extends React.Component {
   };
 
   render() {
-    const { anchorEl, offset, onDelete, open, type } = this.props;
+    const { anchorEl, language, offset, onDelete, open, type } = this.props;
     const { value } = this.state;
+    const i18n = catalogs.forLocale(language);
 
     return (
       <StyledPopover
@@ -215,13 +219,13 @@ class FreeformEditor extends React.Component {
           />
           <Holder>
             <Button onClick={onDelete}>
-              Delete
+              {i18n.t('annotation.delete')}
             </Button>
             <Button variant="typeChange" annotationType={type} onClick={this.handleTypeChange}>
-              {type === 'negative' ? 'Green' : 'Pink'}
+              {i18n.t(type === 'negative' ? 'annotation.green' : 'annotation.pink')}
             </Button>
             <Button onClick={this.handleSave}>
-              Save
+              {i18n.t('annotation.save')}
             </Button>
           </Holder>
         </Wrapper>

@@ -1,0 +1,37 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: 'กราฟบนระนาบพิกัด',
+  axisRange: 'แกน {axis} ตั้งแต่ {min} ถึง {max}',
+  plottedNone: 'ยังไม่มีการวาดสิ่งใด',
+  plotted: {
+    other: 'วาดแล้ว {count} รายการ: {marks}',
+  },
+  point: 'จุด',
+  circle: 'วงกลม',
+  line: 'เส้นตรง',
+  parabola: 'พาราโบลา',
+  absolute: 'ค่าสัมบูรณ์',
+  exponential: 'เอกซ์โพเนนเชียล',
+  polygon: 'รูปหลายเหลี่ยม',
+  ray: 'รังสี',
+  segment: 'ส่วนของเส้นตรง',
+  sine: 'ไซน์',
+  vector: 'เวกเตอร์',
+  label: 'ป้ายกำกับ',
+  markLabel: 'ป้ายกำกับที่ ({x}, {y})',
+  correctMarkLabel: 'ป้ายกำกับที่ถูกต้องที่ ({x}, {y})',
+  undo: 'เลิกทำ',
+  redo: 'ทำซ้ำ',
+  reset: 'รีเซ็ต',
+  key: 'คำอธิบายสัญลักษณ์',
+  keyLegend: {
+    missingRequiredLabel: 'ไม่มีป้ายกำกับที่จำเป็น',
+    answerKeyCorrect: 'ถูกต้องตามเฉลย',
+    answerKeyCorrectLabel: 'ป้ายกำกับที่ถูกต้องตามเฉลย',
+    studentIncorrect: 'คำตอบที่ไม่ถูกต้องของนักเรียน',
+    incorrectStudentLabel: 'ป้ายกำกับที่ไม่ถูกต้องของนักเรียน',
+    studentCorrect: 'คำตอบที่ถูกต้องของนักเรียน',
+    studentCorrectLabel: 'ป้ายกำกับที่ถูกต้องของนักเรียน',
+  },
+} satisfies MessageCatalog;

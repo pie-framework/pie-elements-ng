@@ -1,0 +1,45 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  actions: 'Camau gweithredu',
+  add: 'Ychwanegu',
+  delete: 'Dileu',
+  newLabel: 'Label newydd',
+  categoryLabel: 'Label categori {index}',
+  categoryLabelValue: 'Label categori {index}: {label}',
+  category: 'Categori {index}',
+  warning: 'Rhybudd',
+  reachedLimit: {
+    zero: 'Ni all fod mwy na {count} o gategorïau.',
+    one: 'Ni all fod mwy na {count} categori.',
+    two: 'Ni all fod mwy na {count} gategori.',
+    few: 'Ni all fod mwy na {count} chategori.',
+    many: 'Ni all fod mwy na {count} chategori.',
+    other: 'Ni all fod mwy na {count} o gategorïau.',
+  },
+  key: 'Allwedd',
+  keyLegend: {
+    incorrectAnswer: 'Ateb anghywir y myfyriwr',
+    correctAnswer: 'Ateb cywir y myfyriwr',
+    correctKeyAnswer: 'Cywir yn ôl y cynllun marcio',
+  },
+  chartTypes: {
+    bar: 'Siart bar',
+    histogram: 'Histogram',
+    lineDot: 'Siart llinell gyda dotiau',
+    lineCross: 'Siart llinell gyda chroesau',
+    dotPlot: 'Plot dot',
+    linePlot: 'Plot llinell',
+  },
+  categoriesNone: 'Dim categorïau.',
+  categories: {
+    zero: '{count} o gategorïau: {categories}.',
+    one: '{count} categori: {categories}.',
+    two: '{count} gategori: {categories}.',
+    few: '{count} chategori: {categories}.',
+    many: '{count} chategori: {categories}.',
+    other: '{count} o gategorïau: {categories}.',
+  },
+  valueRange: 'Gwerthoedd o {min} i {max}.',
+  labelledValueRange: '{label} o {min} i {max}.',
+} satisfies MessageCatalog;

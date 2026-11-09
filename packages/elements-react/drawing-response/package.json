@@ -2,6 +2,7 @@
   "name": "@pie-element/drawing-response",
   "version": "13.0.7",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -14,7 +15,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "konva": "8.3.0",
     "prop-types": "^15.8.1",
     "react-konva": "^18.2.14",

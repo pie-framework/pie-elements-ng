@@ -11,9 +11,8 @@ export default {
     one: 'Er is slechts {count} antwoord toegestaan.',
     other: 'Er zijn slechts {count} antwoorden toegestaan.',
   },
-  showTeacherInstructions: 'Instructies voor de leraar weergeven',
-  hideTeacherInstructions: 'Instructies voor de leraar verbergen',
   answerChoicesA11y: 'Antwoordkeuzes',
   partAnswerChoicesA11y: '{partLabel}, antwoordkeuzes',
   pickTheAnswerBelowA11y: 'Selecteer het antwoord hieronder',
+  choiceNameA11y: 'Keuze {key}',
 } satisfies MessageCatalog;

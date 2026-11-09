@@ -4,6 +4,7 @@
     props: {
       model: { type: 'Object' },
       session: { type: 'Object' },
+      interfaceLocale: { type: 'String' },
       onSessionChange: {}
     }
   }}
@@ -12,14 +13,31 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { t, tCommon } from '../i18n';
+import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
+import { residentLanguage } from './resident-language.svelte.js';
 import TeacherInstructions from './TeacherInstructions.svelte';
 
 let {
   model = null,
   session = null,
+  interfaceLocale = undefined,
   onSessionChange,
-}: { model?: any; session?: any; onSessionChange?: (session: any) => void } = $props();
+}: {
+  model?: any;
+  session?: any;
+  /** The locale the player publishes; the element shell sets it. */
+  interfaceLocale?: string;
+  onSessionChange?: (session: any) => void;
+} = $props();
+
+// The chrome speaks the locale the player publishes, else the item's declared
+// language, else `en-US`, and renders once that locale's catalogs are resident.
+const language = residentLanguage(() =>
+  model ? interfaceLocale || model.language || undefined : null
+);
+const i18n = $derived(catalogs.forLocale(language.current));
+const chromeLanguageAttributes = $derived(elementLanguageAttributes(language.current));
 
 // Per-instance ids: a page can hold several instances, and several versions of
 // this element, each with its own Svelte runtime.
@@ -46,10 +64,10 @@ const showingCorrectAnswer = $derived(showCorrectAnswer && canShowCorrectAnswer)
 
 const feedbackText = $derived.by(() => {
   if (!isEvaluateMode) return '';
-  if (showingCorrectAnswer) return t('correctAnswerShown', model?.language);
-  if (isCorrect) return t('correct', model?.language);
-  if (isIncorrect) return t('incorrect', model?.language);
-  if (isUnanswered) return t('unanswered', model?.language);
+  if (showingCorrectAnswer) return i18n.t('correctAnswerShown');
+  if (isCorrect) return i18n.t('correct');
+  if (isIncorrect) return i18n.t('incorrect');
+  if (isUnanswered) return i18n.t('unanswered');
   return '';
 });
 
@@ -98,9 +116,10 @@ function toggleCorrectAnswer() {
 }
 </script>
 
+{#if language.current !== null}
 <div class="simple-cloze-root">
   {#if model?.teacherInstructions}
-    <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
+    <TeacherInstructions html={model.teacherInstructions} language={language.current} />
   {/if}
 
   {#if prompt}
@@ -111,6 +130,7 @@ function toggleCorrectAnswer() {
     <button
       type="button"
       class="simple-cloze-toggle"
+      {...chromeLanguageAttributes}
       onclick={toggleCorrectAnswer}
       aria-pressed={showingCorrectAnswer}
     >
@@ -132,7 +152,7 @@ function toggleCorrectAnswer() {
         {/if}
       </span>
       <span class="simple-cloze-toggle-label">
-        {tCommon(showingCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
+        {i18n.t(showingCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer')}
       </span>
     </button>
   {/if}
@@ -157,18 +177,19 @@ function toggleCorrectAnswer() {
       class="simple-cloze-input"
       class:simple-cloze-input--correct={isEvaluateMode && (isCorrect || showingCorrectAnswer)}
       class:simple-cloze-input--incorrect={isEvaluateMode && isIncorrect && !showingCorrectAnswer}
-      placeholder={t('placeholder', model?.language)}
+      placeholder={i18n.t('placeholder')}
       spellcheck="false"
       aria-labelledby={prompt ? promptId : undefined}
-      aria-label={prompt ? undefined : t('answerInput', model?.language)}
+      aria-label={prompt ? undefined : i18n.t('answerInput')}
       aria-describedby={feedbackText ? feedbackId : undefined}
       disabled={model?.disabled}
       readonly={showingCorrectAnswer}
       oninput={handleInput}
     />
-    <span id={feedbackId} class="sr-only" role="status">{feedbackText}</span>
+    <span id={feedbackId} class="sr-only" role="status" {...chromeLanguageAttributes}>{feedbackText}</span>
   </div>
 </div>
+{/if}
 
 <style>
   /*

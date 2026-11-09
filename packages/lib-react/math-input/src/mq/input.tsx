@@ -27,6 +27,9 @@ export class Input extends React.Component {
     language: PropTypes.string,
   };
 
+  /** Renames the fields once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => labelFieldTextareas(this.input, this.props.language);
+
   componentDidMount() {
     if (!MQ) {
       throw new Error('MQ is not defined - but component has mounted?');
@@ -39,7 +42,7 @@ export class Input extends React.Component {
     });
 
     this.updateLatex();
-    labelFieldTextareas(this.input, this.props.language);
+    labelFieldTextareas(this.input, this.props.language, this.relabel);
     this.stopKeepingCursor = keepCursorWhileKeypadFocused(this.mathField);
   }
 
@@ -49,7 +52,7 @@ export class Input extends React.Component {
 
   componentDidUpdate() {
     this.updateLatex();
-    labelFieldTextareas(this.input, this.props.language);
+    labelFieldTextareas(this.input, this.props.language, this.relabel);
   }
 
   updateLatex() {

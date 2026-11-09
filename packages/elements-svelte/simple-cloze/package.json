@@ -2,6 +2,7 @@
   "name": "@pie-element/simple-cloze",
   "version": "0.1.11",
   "description": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -103,11 +104,11 @@
   },
   "devDependencies": {
     "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/config-ui-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tiptap/core": "3.32.0",
     "@tiptap/pm": "3.32.0",

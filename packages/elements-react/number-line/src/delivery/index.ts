@@ -13,6 +13,12 @@ import { createRoot } from 'react-dom/client';
 import RootComponent from './number-line/index.js';
 import { cloneDeep } from '@pie-element/shared-lodash';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 
 //Expose some additional modules for configuration
 export { Graph, NumberLineComponent, tickUtils, dataConverter, pointChooser };
@@ -22,6 +28,10 @@ export default class NumberLine extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // The locale the player publishes, once it answers; until then the chrome
+    // follows the item's declared language, else `en-US`.
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   _scheduleMathRender: any = () => {
@@ -88,6 +98,14 @@ export default class NumberLine extends HTMLElement {
 
   connectedCallback() {
     this._initMathObserver();
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this._render();
+        }
+      });
+    }
     this._render();
   }
 
@@ -178,6 +196,16 @@ export default class NumberLine extends HTMLElement {
 
   _render() {
     if (this._model && this._session) {
+      const declaredLanguage = this._model.language;
+      // Rendered once every catalog on the render path holds the chrome language,
+      // so no English frame precedes it.
+      const language = this._interfaceLocale ?? declaredLanguage;
+      if (!isLocaleReady(language)) {
+        void loadLocale(language).then(() => this._render());
+        return;
+      }
+      stampElementLanguage(this, declaredLanguage);
+
       if (!this._session.answer) {
         this._applyInitialElements();
       }
@@ -194,6 +222,7 @@ export default class NumberLine extends HTMLElement {
         onDeleteElements: this.deleteElements.bind(this),
         onUndoElement: this.undoElement.bind(this),
         onClearElements: this.clearElements.bind(this),
+        language,
       };
 
       let el = React.createElement(RootComponent, props);
@@ -210,6 +239,8 @@ export default class NumberLine extends HTMLElement {
 
   disconnectedCallback() {
     this._disconnectMathObserver();
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     if (this._root) {
       this._root.unmount();
       this._root = null;

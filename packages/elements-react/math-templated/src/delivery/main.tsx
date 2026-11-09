@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { mq, HorizontalKeypad, updateSpans, registerEmbed, applyStaticMath } from '@pie-lib/math-input';
+import { mq, HorizontalKeypad, updateSpans, answerBlockLatex } from '@pie-lib/math-input-mathlive';
 import { color, Collapsible as CollapsibleImport, Readable as ReadableImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -41,10 +41,9 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
+import { alternatesNote } from './default-note.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -74,46 +73,6 @@ const InputAndKeypadContainer: any = styled('div')({
     alignItems: 'baseline',
     flexWrap: 'wrap',
   },
-  '& .mq-overarrow-inner': {
-    border: 'none !important',
-    padding: '0 !important',
-  },
-  '& .mq-overarrow-inner-right': {
-    display: 'none !important',
-  },
-  '& .mq-overarrow-inner-left': {
-    display: 'none !important',
-  },
-  '& .mq-overarrow.mq-arrow-both': {
-    minWidth: '1.23em',
-    '& *': {
-      lineHeight: '1 !important',
-    },
-    '&:before': {
-      top: '-0.4em',
-      left: '-1px',
-    },
-    '&:after': {
-      top: '-2.4em',
-      right: '-1px',
-    },
-    '&.mq-empty:after': {
-      top: '-0.45em',
-    },
-  },
-  '& .mq-overarrow.mq-arrow-right': {
-    '&:before': {
-      top: '-0.4em',
-      right: '-1px',
-    },
-  },
-  '& .mq-longdiv-inner': {
-    borderTop: '1px solid !important',
-    paddingTop: '1.5px !important',
-  },
-  '& .mq-parallelogram': {
-    lineHeight: 0.85,
-  },
 });
 
 const Expression: any = styled('div')(({ theme, $incorrect, $correct, $showCorrectness, $correctAnswerShown }) => ({
@@ -131,26 +90,7 @@ const Expression: any = styled('div')(({ theme, $incorrect, $correct, $showCorre
     padding: theme.spacing(1),
     letterSpacing: '0.5px',
   }),
-  '& > .mq-math-mode': {
-    '& > .mq-root-block': {
-      '& > .mq-editable-field': {
-        minWidth: '10px',
-        padding: theme.spacing(0.25),
-      },
-    },
-    '& sup': {
-      top: 0,
-    },
-  },
 }));
-
-const StyledStatic: any = styled(mq.Static)({
-  '& > .mq-root-block': {
-    '& > .mq-editable-field': {
-      borderColor: color.text(),
-    },
-  },
-});
 
 // Tooltip styling is handled via slotProps, no need for styled component
 
@@ -183,53 +123,20 @@ const StyledToggle: any = styled(CorrectAnswerToggle)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-// CSS for classes used in HTML strings and classList operations
+// CSS for the answer blocks drawn by answerBlockLatex
 if (typeof document !== 'undefined') {
   const styleId = 'math-templated-main-styles';
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
-      .block-container {
-        margin: 8px !important;
-        display: inline-flex;
-        border: 2px solid grey !important;
-      }
-      .block-response {
-        flex: 2;
+      [data-answer-block-index] {
         color: grey;
-        background: rgba(0, 0, 0, 0.04);
-        font-size: 0.8rem !important;
-        padding: 4px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-right: 2px solid #bdbdbd !important;
-      }
-      .block-math {
-        color: ${color.text()};
-        background-color: ${color.background()};
-        padding: 4px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 8;
-      }
-      .block-math > .mq-math-mode > .mq-hasCursor > .mq-cursor {
-        display: none;
-      }
-      .correct {
-        border-color: ${color.correct()} !important;
-      }
-      .incorrect {
-        border-color: ${color.incorrect()} !important;
       }
     `;
     document.head.appendChild(style);
   }
 }
-
-let registered = false;
 
 // Define a regex pattern to match {{number}}
 const REGEX = /(\{\{\d+\}\})/gm;
@@ -295,7 +202,7 @@ function prepareForStatic(model, state) {
         if (disabled) {
           return {
             ...acc,
-            [responseKey]: `\\embed{answerBlock}[r${responseKey}]`,
+            [responseKey]: answerBlockLatex(`r${responseKey}`, answer && answer.value),
           };
         }
 
@@ -372,7 +279,15 @@ export class Main extends React.Component {
     session: PropTypes.object.isRequired,
     onSessionChange: PropTypes.func,
     model: PropTypes.object.isRequired,
+    /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+    language: PropTypes.string,
   };
+
+  /** Re-renders once the chrome language's catalog lands, for a host that did not preload it. */
+  relabel = () => this.forceUpdate();
+
+  /** The locale the chrome follows: the element's interface locale, else the item's language. */
+  chromeLanguage = () => this.props.language ?? this.props.model?.language;
 
   constructor(props) {
     super(props);
@@ -399,52 +314,9 @@ export class Main extends React.Component {
     };
   }
 
-  UNSAFE_componentWillMount() {
-    if (typeof window !== 'undefined') {
-      if (!registered) {
-        // The embed is registered once for every item on the page, so it marks each block by its
-        // response id in a data attribute; a DOM id would repeat in a second item.
-        registerEmbed('answerBlock', (data) => ({
-          htmlString: `<div class="block-container">
-              <div class="block-response" data-answer-block-index="${data}">R</div>
-              <div class="block-math">
-                <span data-answer-block="${data}"></span>
-              </div>
-            </div>`,
-          text: () => 'text',
-          latex: () => `\\embed{answerBlock}[${data}]`,
-        }));
-
-        registered = true;
-      }
-    }
-  }
-
+  // Answer blocks are part of the static latex (see prepareForStatic); only the markup's MathJax
+  // needs rendering after an update.
   handleAnswerBlockDomUpdate: any = () => {
-    const { model } = this.props;
-    const { session, showCorrect } = this.state;
-    const answers = session.answers;
-
-    if (this.root && model.disabled && !showCorrect) {
-      Object.keys(answers).forEach((answerId) => {
-        const el = this.root.querySelector(`[data-answer-block="${answerId}"]`);
-        const indexEl = this.root.querySelector(`[data-answer-block-index="${answerId}"]`);
-
-        if (el) {
-          const answer = answers[answerId];
-
-          applyStaticMath(el, (answer && answer.value) || '');
-
-          if (model.view) {
-            el.parentElement.parentElement.classList.remove('correct');
-            el.parentElement.parentElement.classList.remove('incorrect');
-          }
-
-          indexEl.textContent = 'R';
-        }
-      });
-    }
-
     renderMath(this.root);
   };
 
@@ -512,7 +384,7 @@ export class Main extends React.Component {
   }
 
   onSubFieldFocus: any = (id) => {
-    const editableFields = Array.from(this.root?.querySelectorAll('.mq-editable-field') || []);
+    const editableFields = Array.from(this.root?.querySelectorAll('math-field') || []);
     const savedScroll = editableFields.map((el) => ({
       el,
       left: el.scrollLeft,
@@ -726,7 +598,7 @@ export class Main extends React.Component {
       showTeacherInstructions && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model?.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model?.language }) }}>
+            <Collapsible variant="teacherInstructions" language={this.chromeLanguage()}>
               {teacherInstructionsDiv}
             </Collapsible>
           ) : (
@@ -747,7 +619,9 @@ export class Main extends React.Component {
       showRationale && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: model?.language }), visible: translator.t('common:hideRationale', { lng: model?.language }) }}>{rationaleDiv}</Collapsible>
+            <Collapsible variant="rationale" language={this.chromeLanguage()}>
+              {rationaleDiv}
+            </Collapsible>
           ) : (
             rationaleDiv
           )}
@@ -770,8 +644,8 @@ export class Main extends React.Component {
       env: { mode } = {},
       printMode,
       alwaysShowCorrect,
-      language,
     } = model || {};
+    const language = this.chromeLanguage();
 
     const emptyResponse = isEmpty(responses);
     const additionalKeys = generateAdditionalKeys(customKeys);
@@ -789,7 +663,7 @@ export class Main extends React.Component {
             const responseIsCorrect = mode === 'evaluate' && feedback && feedback[id];
 
             const MQStatic = (
-              <StyledStatic
+              <mq.Static
                 ref={(mqStatic) => {
                   this.mqStatic = mqStatic || this.mqStatic;
                 }}
@@ -892,13 +766,17 @@ export class Main extends React.Component {
       extraCSSRules,
       correctness,
       responses,
-      language,
       showNote,
       note,
     } = model || {};
+    const language = this.chromeLanguage();
+    const i18n = catalogs.forLocale(language, this.relabel);
     const emptyResponse = isEmpty(responses);
     const showCorrectAnswerToggle = !emptyResponse && correctness && correctness.correctness !== 'correct';
-    const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
+    const displayNote =
+      (showCorrect || (mode === 'view' && role === 'instructor')) && showNote
+        ? alternatesNote(note, language, model?.language)
+        : null;
 
     return (
       <StyledUiLayout
@@ -910,7 +788,7 @@ export class Main extends React.Component {
         <MainContainer>
           {/* what is srOnly ? */}
           {mode === 'gather' && (
-            <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+            <SrOnly>{i18n.t('mathEquationResponseQuestion')}</SrOnly>
           )}
 
           <MainContainer>
@@ -929,7 +807,7 @@ export class Main extends React.Component {
 
           <Readable false>{this.renderPlayerContent()}</Readable>
 
-          {displayNote && <Note className="note" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
+          {displayNote && <Note className="note" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(displayNote) }} />}
 
           {this.renderRationale()}
         </MainContainer>

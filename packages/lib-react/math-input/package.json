@@ -2,6 +2,7 @@
   "name": "@pie-lib/math-input",
   "version": "9.0.7",
   "description": "React implementation of @pie-lib/math-input",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -17,7 +18,7 @@
     "prop-types": "^15.7.2",
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*"
+    "@pie-element/shared-i18n": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

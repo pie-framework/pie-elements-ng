@@ -2,6 +2,7 @@
   "name": "@pie-lib/math-rendering",
   "version": "6.0.7",
   "description": "math rendering utilities",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

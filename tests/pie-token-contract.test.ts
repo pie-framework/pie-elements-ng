@@ -134,6 +134,8 @@ const REACT_ALLOWED_TOKENS = new Set([
   '--pie-disabled-secondary',
   '--pie-dropdown-background',
   '--pie-faded-primary',
+  // palette: 0% under a Base Theme, 100% under every colour scheme; folds authored fixed hues.
+  '--pie-fixed-hue-collapse',
   '--pie-focus-checked',
   '--pie-focus-checked-border',
   '--pie-focus-keyboard-outline',

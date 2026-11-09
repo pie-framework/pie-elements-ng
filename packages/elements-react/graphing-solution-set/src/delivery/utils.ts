@@ -21,409 +21,155 @@ const completeMark = {
 };
 
 //////////////////////////////////////////////////////////////////////////////////
-// BELOW FUNCTIONS ARE USED IN configure/src/utils as well
+// BELOW FUNCTIONS ARE USED IN author/utils as well
 //////////////////////////////////////////////////////////////////////////////////
 
+// Coordinates are compared at three decimals, matching how section vertices are stored
+const TOLERANCE = 1e-3;
+
+const round = (value) => Number(value.toFixed(3));
+
 /*
- * Function to calculate the distance between two points
- * @param {Object} a - point a
- * @param {Object} b - point b
+ * Signed side of a point relative to a line mark: positive on one side, negative on the other, 0 on the line
+ * @param {Object} mark - line mark
+ * @param {Object} point - point object
  * */
-const distance = (a, b) => {
-  return Number(Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2).toFixed(3));
+const sideOfLine = (mark, point) =>
+  (mark.to.x - mark.from.x) * (point.y - mark.from.y) - (mark.to.y - mark.from.y) * (point.x - mark.from.x);
+
+/*
+ * Where a polygon edge meets a line mark. An edge on another mark meets it at the two lines' intersection, and a
+ * grid edge at the mark's value on that axis, both from the marks' own points; the edge's endpoints may already
+ * carry float error from earlier clipping, and interpolating along them would make the vertex depend on the order
+ * the lines were drawn in.
+ * @param {Object} current - edge start, with the mark the edge lies on (`line`), or none for a grid edge
+ * @param {Object} next - edge end
+ * @param {Object} mark - line mark
+ * */
+const edgeCrossing = (current, next, mark) => {
+  const { from, to } = mark;
+  if (current.line) {
+    const { from: a, to: b } = current.line;
+    const d = (a.x - b.x) * (from.y - to.y) - (a.y - b.y) * (from.x - to.x);
+    const ab = a.x * b.y - a.y * b.x;
+    const ft = from.x * to.y - from.y * to.x;
+    return { x: (ab * (from.x - to.x) - (a.x - b.x) * ft) / d, y: (ab * (from.y - to.y) - (a.y - b.y) * ft) / d };
+  }
+  if (current.x === next.x) {
+    return { x: current.x, y: from.y + ((current.x - from.x) * (to.y - from.y)) / (to.x - from.x) };
+  }
+  return { x: from.x + ((current.y - from.y) * (to.x - from.x)) / (to.y - from.y), y: current.y };
 };
 
 /*
- * Function to check if a point lies on edges of a polygon
- * @param {Object} point - point object
+ * Clip a convex polygon to one side of a line (Sutherland-Hodgman); vertices on the line belong to both sides.
+ * Each vertex carries the mark its outgoing edge lies on (`line`), none for a grid edge.
  * @param {Array} polygon - polygon points array
+ * @param {Object} mark - line mark
+ * @param {Number} sign - 1 or -1, the side to keep
  * */
-const pointInPolygon = (point, polygon) => {
-  let c = point;
-  let inside = false;
-  let clonePolygon = [...polygon];
-  clonePolygon.push(polygon[0]);
-  for (let i = 0; i < clonePolygon.length - 1; i++) {
-    let a = clonePolygon[i];
-    let b = clonePolygon[i + 1];
-    // check if point is on the edge
-    if (distance(a, c) + distance(c, b) === distance(a, b)) {
-      inside = true;
-      break;
+const clipToSideOfLine = (polygon, mark, sign) => {
+  const clipped = [];
+  polygon.forEach((current, i) => {
+    const next = polygon[(i + 1) % polygon.length];
+    const currentSide = sign * sideOfLine(mark, current);
+    const nextSide = sign * sideOfLine(mark, next);
+    if (currentSide >= 0) {
+      clipped.push({ ...current, line: currentSide === 0 && nextSide < 0 ? mark : current.line });
     }
-  }
-  return inside;
-};
-
-/*
- * Function to get the intersection point of two lines
- * @param {Number} x1 - x coordinate of point 1 of line 1
- * @param {Number} y1 - y coordinate of point 1 of line 1
- * @param {Number} x2 - x coordinate of point 2 of line 1
- * @param {Number} y2 - y coordinate of point 2 of line 1
- * @param {Number} x3 - x coordinate of point 1 of line 2
- * @param {Number} y3 - y coordinate of point 1 of line 2
- * @param {Number} x4 - x coordinate of point 2 of line 2
- * @param {Number} y4 - y coordinate of point 2 of line 2
- * */
-const lineIntersect = (x1, y1, x2, y2, x3, y3, x4, y4) => {
-  let ua,
-    denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-  if (denominator === 0) {
-    return null;
-  }
-  ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
-  return {
-    x: Number((x1 + ua * (x2 - x1)).toFixed(3)),
-    y: Number((y1 + ua * (y2 - y1)).toFixed(3)),
-  };
-};
-
-/*
- * Check if a point is inside the graph
- * @param {Object} point - point object
- * @param {Object} domain - domain object
- * @param {Object} range - range object
- * */
-const isPointInsideGraph = (point, domain, range) => {
-  return point.x > domain.min && point.x < domain.max && point.y > range.min && point.y < range.max;
-};
-
-/*
- * Check if a point is on or inside the graph
- * @param {Object} point - point object
- * @param {Object} domain - domain object
- * @param {Object} range - range object
- * */
-const isPointOnOrInsideGraph = (point, domain, range) => {
-  return point.x >= domain.min && point.x <= domain.max && point.y >= range.min && point.y <= range.max;
-};
-
-/*
- * Find the intersection point of a mark with the graph
- * @param {Object} mark - mark object
- * @param {Object} domain - domain object
- * @param {Object} range - range object
- * */
-const findIntersectionPointForMark = (mark, domain, range) => {
-  let intersectionPoint = [];
-  let tempData = [
-    [domain.max, range.max, domain.max, range.min],
-    [domain.min, range.max, domain.min, range.min],
-    [domain.min, range.max, domain.max, range.max],
-    [domain.min, range.min, domain.max, range.min],
-  ];
-  for (let i = 0; i < tempData.length; i++) {
-    let intersection = lineIntersect(
-      mark.from.x,
-      mark.from.y,
-      mark.to.x,
-      mark.to.y,
-      tempData[i][0],
-      tempData[i][1],
-      tempData[i][2],
-      tempData[i][3],
-    );
-    if (intersection && isPointOnOrInsideGraph(intersection, domain, range)) {
-      intersectionPoint.push(intersection);
+    if ((currentSide > 0 && nextSide < 0) || (currentSide < 0 && nextSide > 0)) {
+      clipped.push({ ...edgeCrossing(current, next, mark), line: currentSide > 0 ? mark : current.line });
     }
-  }
-  return intersectionPoint;
-};
-
-/*
- * Sort points in clockwise direction for a polygon
- * @param {Array} points - points array
- * */
-const sortPointsClockWise = (points) => {
-  // Find min max to get center and Sort from top to bottom
-  points.sort((a, b) => a.y - b.y);
-  // Get center y
-  const cy = (points[0].y + points[points.length - 1].y) / 2;
-  // Sort from right to left
-  points.sort((a, b) => b.x - a.x);
-  // Get center x
-  const cx = (points[0].x + points[points.length - 1].x) / 2;
-  // Center point
-  const center = { x: cx, y: cy };
-  // As the points are sorted from right to left the first point is the rightmost Starting angle used to reference other angles
-  let startAng;
-  points.forEach((point) => {
-    let ang = Math.atan2(point.y - center.y, point.x - center.x);
-    if (!startAng) {
-      startAng = ang;
-    } else {
-      if (ang < startAng) {
-        // ensure that all points are clockwise of the start point
-        ang += Math.PI * 2;
-      }
-    }
-    point.angle = ang; // add the angle to the point
   });
-  // first sort clockwise
-  points.sort((a, b) => a.angle - b.angle);
-  // then reverse the order
-  const ccwPoints = points.reverse();
-  // move the last point back to the start
-  ccwPoints.unshift(ccwPoints.pop());
-  return ccwPoints.map(({ angle, ...attr }) => attr);
+  return clipped;
 };
 
-/*
- * Function to calculate the dot product of two vectors
- * @param {Object} v1 - point 1
- * @param {Object} v2 - point 2
- * */
-const dotProduct = (v1, v2) => {
-  return v1.x * v2.x + v1.y * v2.y;
-};
+const removeDuplicatePoints = (points) =>
+  points.filter((point, index) => index === points.findIndex((o) => o.x === point.x && o.y === point.y));
+
+const polygonArea = (points) =>
+  Math.abs(
+    points.reduce((sum, point, i) => {
+      const next = points[(i + 1) % points.length];
+      return sum + point.x * next.y - next.x * point.y;
+    }, 0),
+  ) / 2;
 
 /*
- * Function to calculate the magnitude of a vector
- * @param {Object} v - point object
- * */
-const magnitude = (v) => {
-  return Math.sqrt(v.x * v.x + v.y * v.y);
-};
-
-/*
- * Function to calculate the angle between two vectors in radians
- * @param {Object} v1 - point 1
- * @param {Object} v2 - point 2
- * */
-const angleBetweenVectors = (v1, v2) => {
-  const dot = dotProduct(v1, v2);
-  const magV1 = magnitude(v1);
-  const magV2 = magnitude(v2);
-  // Ensure the dot product is within the domain of the acos function
-  return Math.acos(dot / (magV1 * magV2));
-};
-
-/*
- * Function to check if a point lies between the angle formed by two lines
- * @param {Object} commonPoint - common point of the two lines
- * @param {Object} point1 - point 1 of cone
- * @param {Object} point2 - point 2 of cone
- * @param {Object} testPoint - point to be tested
- * */
-const pointInAngle = (commonPoint, point1, point2, testPoint) => {
-  const vector1 = { x: point1.x - commonPoint.x, y: point1.y - commonPoint.y };
-  const vector2 = { x: point2.x - commonPoint.x, y: point2.y - commonPoint.y };
-  const testVector = { x: testPoint.x - commonPoint.x, y: testPoint.y - commonPoint.y };
-  const angle1 = angleBetweenVectors(vector1, testVector);
-  const angle2 = angleBetweenVectors(vector2, testVector);
-  const angleSum = angle1 + angle2;
-  // Check if the sum of angles is approximately equal to the angle between the two lines
-  // You may need to adjust the tolerance (e.g., 0.0001) based on your specific requirements
-  const tolerance = 0.0001;
-  return Math.abs(angleSum - angleBetweenVectors(vector1, vector2)) < tolerance;
-};
-
-/*
- * Function to remove duplicate points from an array
- * @param {Array} array - array of points
- * */
-const removeDuplicatesFromArray = (array) => {
-  return array.filter((obj, index) => {
-    return index === array.findIndex((o) => obj.x === o.x && obj.y === o.y);
-  });
-};
-
-/*
- * Function to remove duplicate points and filter sections
- * @param {Array} sections - array of sections
- * */
-const removeDuplicateAndFilterSections = (sections) => {
-  //removing duplicate points.
-  for (let i = 0; i < sections.length; i++) {
-    sections[i] = sections[i].filter((obj, index) => {
-      return index === sections[i].findIndex((o) => obj.x === o.x && obj.y === o.y);
-    });
-  }
-  //removing arrays with two points
-  sections = sections.filter((section) => section.length > 2);
-  //sorting the points in clockwise direction
-  for (let i = 0; i < sections.length; i++) {
-    sections[i] = sortPointsClockWise(sections[i]);
-  }
-  return sections;
-};
-
-/*
- * Function to find sections in solution set for one line
- * @param {Array} intersectionPoint - intersection point
- * @param {Object} domain - domain object
- * @param {Object} range - range object
- * */
-const findSectionsInSolutionSetForOneLine = (intersectionPoint, domain, range) => {
-  let sections = [];
-  sections.push([].concat(intersectionPoint));
-  sections.push([].concat(intersectionPoint));
-  if (
-    (intersectionPoint[0].x === domain.max && intersectionPoint[1].y === range.max) ||
-    (intersectionPoint[1].x === domain.max && intersectionPoint[0].y === range.max)
-  ) {
-    sections[0].push({ x: domain.max, y: range.max });
-    sections[1].push({ x: domain.min, y: range.max }, { x: domain.min, y: range.min }, { x: domain.max, y: range.min });
-  } else if (
-    (intersectionPoint[0].x === domain.min && intersectionPoint[1].y === range.max) ||
-    (intersectionPoint[1].x === domain.min && intersectionPoint[0].y === range.max)
-  ) {
-    sections[0].push({ x: domain.min, y: range.max });
-    sections[1].push({ x: domain.max, y: range.max }, { x: domain.max, y: range.min }, { x: domain.min, y: range.min });
-  } else if (
-    (intersectionPoint[0].x === domain.min && intersectionPoint[1].y === range.min) ||
-    (intersectionPoint[1].x === domain.min && intersectionPoint[0].y === range.min)
-  ) {
-    sections[0].push({ x: domain.min, y: range.min });
-    sections[1].push({ x: domain.max, y: range.min }, { x: domain.max, y: range.max }, { x: domain.min, y: range.max });
-  } else if (
-    (intersectionPoint[0].x === domain.max && intersectionPoint[1].y === range.min) ||
-    (intersectionPoint[1].x === domain.max && intersectionPoint[0].y === range.min)
-  ) {
-    sections[0].push({ x: domain.max, y: range.min });
-    sections[1].push({ x: domain.min, y: range.min }, { x: domain.min, y: range.max }, { x: domain.max, y: range.max });
-  } else if (
-    (intersectionPoint[0].x === domain.min && intersectionPoint[1].x === domain.max) ||
-    (intersectionPoint[0].x === domain.max && intersectionPoint[1].x === domain.min)
-  ) {
-    sections[0].push({ x: domain.min, y: range.max }, { x: domain.max, y: range.max });
-    sections[1].push({ x: domain.min, y: range.min }, { x: domain.max, y: range.min });
-  } else if (
-    (intersectionPoint[0].y === range.min && intersectionPoint[1].y === range.max) ||
-    (intersectionPoint[0].y === range.max && intersectionPoint[1].y === range.min)
-  ) {
-    sections[0].push({ x: domain.min, y: range.min }, { x: domain.min, y: range.max });
-    sections[1].push({ x: domain.max, y: range.min }, { x: domain.max, y: range.max });
-  }
-  return removeDuplicateAndFilterSections(sections);
-};
-
-/*
- * Function to find sections in solution set for two lines
- * @param {Object} gssLineData - graphing solution set line data
- * @param {Array} answers - answers array
- * @param {Object} domain - domain object
- * @param {Object} range - range object
- * */
-const findSectionsInSolutionSetForTwoLines = (gssLineData, answers, domain, range) => {
-  let mark1 = answers[0];
-  let mark2 = answers[1];
-  let cornerPoints = [
-    { x: domain.min, y: range.min },
-    { x: domain.min, y: range.max },
-    { x: domain.max, y: range.min },
-    { x: domain.max, y: range.max },
-  ];
-  let intersectPoint = lineIntersect(
-    mark1.from.x,
-    mark1.from.y,
-    mark1.to.x,
-    mark1.to.y,
-    mark2.from.x,
-    mark2.from.y,
-    mark2.to.x,
-    mark2.to.y,
-  );
-  let sections = [];
-  let intersectionPoint1 = findIntersectionPointForMark(mark1, domain, range);
-  intersectionPoint1 = removeDuplicatesFromArray(intersectionPoint1);
-  let intersectionPoint2 = findIntersectionPointForMark(mark2, domain, range);
-  intersectionPoint2 = removeDuplicatesFromArray(intersectionPoint2);
-  if (intersectPoint && isPointInsideGraph(intersectPoint, domain, range)) {
-    for (let i = 0; i < intersectionPoint1.length; i++) {
-      for (let j = 0; j < intersectionPoint2.length; j++) {
-        let bucket = [];
-        let newCornerPoints = [];
-        bucket.push(intersectPoint);
-        bucket.push(intersectionPoint1[i]);
-        bucket.push(intersectionPoint2[j]);
-        for (let k = 0; k < cornerPoints.length; k++) {
-          if (pointInAngle(intersectPoint, intersectionPoint1[i], intersectionPoint2[j], cornerPoints[k])) {
-            bucket.push(cornerPoints[k]);
-          } else {
-            newCornerPoints.push(cornerPoints[k]);
-          }
-        }
-        cornerPoints = newCornerPoints;
-        sections.push(bucket);
-      }
-    }
-  } else {
-    let sections1 = findSectionsInSolutionSetForOneLine(intersectionPoint1, domain, range);
-    let sections2 = findSectionsInSolutionSetForOneLine(intersectionPoint2, domain, range);
-    for (let i = 0; i < sections1.length; i++) {
-      if (
-        !(pointInPolygon(intersectionPoint2[0], sections1[i]) && pointInPolygon(intersectionPoint2[1], sections1[i]))
-      ) {
-        sections.push(sections1[i]);
-      }
-    }
-    for (let i = 0; i < sections2.length; i++) {
-      if (
-        !(pointInPolygon(intersectionPoint1[0], sections2[i]) && pointInPolygon(intersectionPoint1[1], sections2[i]))
-      ) {
-        sections.push(sections2[i]);
-      }
-    }
-    for (let i = 0; i < sections.length; i++) {
-      cornerPoints = cornerPoints.filter(function (o1) {
-        return !sections[i].some(function (o2) {
-          return o1.x === o2.x && o1.y === o2.y;
-        });
-      });
-    }
-    let sections3 = cornerPoints.concat(intersectionPoint1, intersectionPoint2);
-    sections.push(sections3);
-  }
-  return removeDuplicateAndFilterSections(sections);
-};
-
-/*
- * Function to find sections in solution set
+ * Function to find sections in solution set: the graph rectangle split by each line, keeping the non-empty parts.
+ * A line through a grid corner, or two parallel lines, yields fewer sections, never a section covering the whole grid.
  * @param {Object} gssLineData - graphing solution set line data
  * @param {Array} answers - answers array
  * @param {Object} domain - domain object
  * @param {Object} range - range object
  * */
 export const findSectionsInSolutionSet = (gssLineData, answers, domain, range) => {
-  if (gssLineData.numberOfLines === 1) {
-    const intersectionPoint = findIntersectionPointForMark(answers[0], domain, range);
-    gssLineData.sections = findSectionsInSolutionSetForOneLine(intersectionPoint, domain, range);
-  } else {
-    gssLineData.sections = findSectionsInSolutionSetForTwoLines(gssLineData, answers, domain, range);
-  }
+  const graph = [
+    { x: domain.min, y: range.max },
+    { x: domain.max, y: range.max },
+    { x: domain.max, y: range.min },
+    { x: domain.min, y: range.min },
+  ];
+  const lines = answers.slice(0, gssLineData.numberOfLines === 1 ? 1 : 2);
+  const sections = lines.reduce(
+    (parts, mark) => parts.flatMap((part) => [clipToSideOfLine(part, mark, 1), clipToSideOfLine(part, mark, -1)]),
+    [graph],
+  );
+  gssLineData.sections = sections
+    .map((section) => removeDuplicatePoints(section.map(({ x, y }) => ({ x: round(x), y: round(y) }))))
+    .filter((section) => section.length > 2 && polygonArea(section) > TOLERANCE);
   return gssLineData;
 };
 
 /*
- * Function to check if a point is inside a polygon
+ * Check if a point lies on a segment
+ * @param {Object} point - point object
+ * @param {Object} a - segment start
+ * @param {Object} b - segment end
+ * */
+const pointOnSegment = (point, a, b) => {
+  const length = Math.hypot(b.x - a.x, b.y - a.y);
+  const distanceToLine = Math.abs((b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x)) / (length || 1);
+  return (
+    distanceToLine <= TOLERANCE &&
+    point.x >= Math.min(a.x, b.x) - TOLERANCE &&
+    point.x <= Math.max(a.x, b.x) + TOLERANCE &&
+    point.y >= Math.min(a.y, b.y) - TOLERANCE &&
+    point.y <= Math.max(a.y, b.y) + TOLERANCE
+  );
+};
+
+/*
+ * Function to check if a point is inside a polygon or on its boundary
  * @param {Object} point - point to be checked
  * @param {Array} polygon - polygon points array
  * */
 export const pointInsidePolygon = (point, polygon) => {
-  const num_vertices = polygon.length;
-  const x = point.x;
-  const y = point.y;
+  const { x, y } = point;
   let inside = false;
-  let p1 = polygon[0];
-  let p2;
-  for (let i = 1; i <= num_vertices; i++) {
-    p2 = polygon[i % num_vertices];
-    if (y > Math.min(p1.y, p2.y)) {
-      if (y <= Math.max(p1.y, p2.y)) {
-        if (x <= Math.max(p1.x, p2.x)) {
-          const x_intersection = ((y - p1.y) * (p2.x - p1.x)) / (p2.y - p1.y) + p1.x;
-          if (p1.x === p2.x || x <= x_intersection) {
-            inside = !inside;
-          }
-        }
-      }
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const a = polygon[i];
+    const b = polygon[j];
+    if (pointOnSegment(point, a, b)) {
+      return true;
     }
-    p1 = p2;
+    if (a.y > y !== b.y > y && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
   }
   return inside;
 };
+
+/*
+ * Function to find the section a click selects. The unsnapped position decides, so a click that snaps onto a
+ * boundary keeps the side it was made on; the snapped point covers clicks outside the grid and on a line mark.
+ * @param {Array} sections - sections array
+ * @param {Object} point - snapped point
+ * @param {Object} rawPoint - unsnapped point, when known
+ * */
+export const findSelectedSection = (sections, point, rawPoint) =>
+  (rawPoint && sections.find((section) => pointInsidePolygon(rawPoint, section))) ||
+  sections.find((section) => pointInsidePolygon(point, section));
 
 /*
  * Function to check if lines are added in the graph

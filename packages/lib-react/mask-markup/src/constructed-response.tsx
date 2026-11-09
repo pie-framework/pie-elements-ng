@@ -5,11 +5,9 @@ import { styled } from '@mui/material/styles';
 import classnames from 'clsx';
 
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 import { withMask } from './with-mask.js';
 import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 // Response ids in reading order, from the {{n}} placeholders componentize turns into inputs.
 const responseIds = (markup) => [...new Set(Array.from((markup || '').matchAll(/\{\{(\d+)\}\}/g), (m) => m[1]))];
@@ -86,8 +84,8 @@ const MaskedInput = (props) => (node, data) => {
           correct: isCorrect,
           incorrect: isIncorrect,
         })}
-        ariaLabel={translator.t('explicitConstructedResponse.response', {
-          lng: props.language,
+        // The mask re-renders this once the language's catalog lands (see withMask).
+        ariaLabel={catalogs.forLocale(props.language).t('response', {
           index: ids.indexOf(dataset.id) + 1,
           total: ids.length,
         })}

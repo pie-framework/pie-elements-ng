@@ -20,9 +20,8 @@ import {
 } from './utils.js';
 import chartTypes from './chart-types.js';
 import ActionsButton from './actions-button.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
+import { catalogs } from './i18n/index.js';
 
 const log = debug('pie-lib:charts:chart');
 
@@ -32,19 +31,20 @@ const StyledChartContainer: any = styled('div')(() => ({
 
 // the chart svg's name and description, generated from the model: the title names the chart when
 // there is one, and the description gives its type, its categories and the range of its values
-export const chartAlternative = ({ title, chartType, categories, range, language }) => {
-  // category labels and titles are author text, which React escapes
-  const options = { lng: language, interpolation: { escapeValue: false } };
-  const type = translator.t(`charting.chartTypes.${chartType}`, options);
+export const chartAlternative = ({ title, chartType, categories, range, language, onLoad }) => {
+  const i18n = catalogs.forLocale(language, onLoad);
+  const type = i18n.t(dynamicMessageKey(`chartTypes.${chartType}`));
   const valueLabel = textOf(range.label);
   const values = valueLabel
-    ? translator.t('charting.labelledValueRange', { ...options, label: valueLabel, min: range.min, max: range.max })
-    : translator.t('charting.valueRange', { ...options, min: range.min, max: range.max });
-  const categoryList = translator.t('charting.categories', {
-    ...options,
-    count: categories.length,
-    categories: categories.map((c) => textOf(c.label)).join(', '),
-  });
+    ? i18n.t('labelledValueRange', { label: valueLabel, min: range.min, max: range.max })
+    : i18n.t('valueRange', { min: range.min, max: range.max });
+  const categoryList =
+    categories.length === 0
+      ? i18n.t('categoriesNone')
+      : i18n.plural('categories', {
+          count: categories.length,
+          categories: categories.map((c) => textOf(c.label)).join(', '),
+        });
 
   return {
     ariaLabel: textOf(title) || type,
@@ -53,6 +53,9 @@ export const chartAlternative = ({ title, chartType, categories, range, language
 };
 
 export class Chart extends React.Component {
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   constructor(props) {
     super(props);
     this.state = {
@@ -196,13 +199,14 @@ export class Chart extends React.Component {
 
   addCategory: any = () => {
     const { onDataChange, data, categoryDefaultLabel, defineChart, categoryDefaults, language } = this.props;
+    const i18n = catalogs.forLocale(language);
 
     if ((data || []).length > 19) {
       this.setState({
         dialog: {
           open: true,
-          title: translator.t('common:warning', { lng: language }),
-          text: translator.t('charting.reachedLimit_other', { count: 20, lng: language }),
+          title: i18n.t('warning'),
+          text: i18n.plural('reachedLimit', { count: 20 }),
           onConfirm: () => this.handleAlertDialog(false),
         },
       });
@@ -212,7 +216,7 @@ export class Chart extends React.Component {
         ...data,
         {
           inDefineChart: defineChart,
-          label: categoryDefaultLabel || translator.t('charting.newLabel', { lng: language }),
+          label: categoryDefaultLabel || i18n.t('newLabel'),
           value: 0,
           deletable: true,
           editable: categoryDefaults ? categoryDefaults?.editable : true,
@@ -289,6 +293,7 @@ export class Chart extends React.Component {
       categories,
       range: { ...correctValues.range, label: range.label },
       language,
+      onLoad: this.relabel,
     });
 
     const { verticalLines, horizontalLines, leftAxis } = getGridLinesAndAxisByChartType(correctValues.range, chartType);

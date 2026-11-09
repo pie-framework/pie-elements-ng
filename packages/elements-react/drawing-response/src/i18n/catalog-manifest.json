@@ -1,0 +1,134 @@
+{
+  "locales": {
+    "es": {
+      "status": "reviewed",
+      "from": "@pie-lib/translator es catalog (drawingResponse namespace, common:undo and common:clearAll), carried unchanged; renderError added on 2026-11-09 by Claude (Anthropic) from the hardcoded English the error boundary rendered",
+      "awaitingReview": {
+        "keys": [
+          "renderError"
+        ],
+        "note": "translated on 2026-11-09 by Claude (Anthropic); anchored so the gate passes, not yet reviewed by a person"
+      },
+      "english": {
+        "fillColor": "Fill color",
+        "outlineColor": "Outline color",
+        "colors.noFill": "No fill",
+        "colors.lightblue": "Light blue",
+        "colors.lightyellow": "Light yellow",
+        "colors.red": "Red",
+        "colors.orange": "Orange",
+        "colors.yellow": "Yellow",
+        "colors.violet": "Violet",
+        "colors.blue": "Blue",
+        "colors.green": "Green",
+        "colors.white": "White",
+        "colors.black": "Black",
+        "onDoubleClick": "Double click to edit this text. Press Enter to submit.",
+        "drawingArea": "Drawing area",
+        "drawingAreaOverImage": "Drawing area over a background image",
+        "tools.select": "Select",
+        "tools.freeDraw": "Free Draw",
+        "tools.line": "Line",
+        "tools.rectangle": "Rectangle",
+        "tools.circle": "Circle",
+        "tools.textEntry": "Text Entry",
+        "tools.eraser": "Eraser",
+        "undo": "Undo",
+        "clearAll": "Clear all",
+        "renderError": "An error occurred: {message}"
+      },
+      "reviewedAt": "2026-11-09"
+    },
+    "th-TH": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "en-GB": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, identical to en-US where no key carries a British form",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "en-AU": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values per pie-players' briefs/en-AU.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "fr": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ar": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; plural groups carry all six CLDR categories",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "pt": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ko": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ja": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "zh": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "cy": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; plural groups carry all six CLDR categories",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "sv": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "nl-NL": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md (impersonal infinitive for labels, imperative for learner instructions)",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ro": {
+      "status": "generated",
+      "sourceHash": "b31f968bde1ff0f9f8e850cec9849396a6ca1a833044d43732fb67ad519ac0bd",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other)",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    }
+  }
+}
