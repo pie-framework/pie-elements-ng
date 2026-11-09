@@ -1,5 +1,6 @@
 <script lang="ts">
-import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { chromeLanguageAttributes as servedLanguageAttributes } from '@pie-element/shared-i18n';
+import { catalogs } from './i18n/index.js';
 import { resolveMediaUiText } from './media-ui.js';
 import { resolveTranscriptContent } from './transcript.js';
 import type { TranscriptProps } from './types.js';
@@ -18,8 +19,10 @@ const transcriptId = `media-transcript-${componentId}`;
 const readInitialExpansion = () => initiallyExpanded;
 let expanded = $state(readInitialExpansion());
 const messages = $derived(resolveMediaUiText(language, uiText));
-// The controls speak the chrome language; the transcript keeps the content's.
-const chromeLanguageAttributes = $derived(elementLanguageAttributes(language));
+// The controls name the locale their strings are served in; the transcript keeps the content's.
+const chromeLanguageAttributes = $derived(
+  servedLanguageAttributes(catalogs.forLocale(language), language)
+);
 const content = $derived(resolveTranscriptContent(transcript));
 const transcriptLanguage = $derived(
   transcript?.lang?.trim() || contentLanguage?.trim() || undefined

@@ -35,7 +35,7 @@ import {
   getVariantRootClass,
   VARIANT_CSS_KEY,
 } from './variant-css-map';
-import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { chromeLanguageAttributes as servedLanguageAttributes } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 import { residentLanguage } from './resident-language.svelte.js';
 import { selectedChoiceId } from '../shared/session';
@@ -68,7 +68,7 @@ const language = residentLanguage(() =>
   model ? interfaceLocale || model.language || undefined : null
 );
 const i18n = $derived(catalogs.forLocale(language.current));
-const chromeLanguageAttributes = $derived(elementLanguageAttributes(language.current));
+const chromeLanguageAttributes = $derived(servedLanguageAttributes(i18n, language.current));
 const t = (key: Parameters<typeof i18n.t>[0]) => i18n.t(key);
 let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);

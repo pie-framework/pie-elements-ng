@@ -27,6 +27,19 @@ export function toLanguageTag(tag: string | null | undefined): string {
   return tag ? tag.trim().replace(/_/g, '-') : '';
 }
 
+/** The canonical tag for a declared language, or `undefined` when it is not a usable tag. */
+export function canonicalLanguageTag(language: string | null | undefined): string | undefined {
+  const tag = toLanguageTag(language).split(/[.@]/)[0];
+  // `Intl` accepts any 5-8 letter primary subtag, `Spanish` included; a language in use has an
+  // ISO 639 code of two or three letters.
+  if (!/^[a-z]{2,3}(-|$)/i.test(tag)) return undefined;
+  try {
+    return Intl.getCanonicalLocales(tag)[0];
+  } catch {
+    return undefined;
+  }
+}
+
 /** Whether two tags denote the same locale, ignoring separator style and case. */
 export function languageTagsEqual(
   a: string | null | undefined,

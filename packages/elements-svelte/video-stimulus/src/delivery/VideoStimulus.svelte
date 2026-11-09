@@ -14,7 +14,8 @@ let instanceNumber = 0;
 
 <script lang="ts">
   import { Transcript, hasTranscriptContent } from '@pie-lib/media-svelte';
-  import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+  import { chromeLanguageAttributes as servedLanguageAttributes, elementLanguageAttributes } from '@pie-element/shared-i18n';
+  import { catalogs } from '../i18n/index.js';
   import { resolveVideoStimulusUiText } from '../ui-text.js';
   import { residentLanguage } from './resident-language.svelte.js';
   import type { VideoStimulusViewModel } from '../types.js';
@@ -51,7 +52,9 @@ let instanceNumber = 0;
     model ? interfaceLocale || model.language || undefined : null
   );
   const chromeLanguage = $derived(language.current ?? undefined);
-  const chromeLanguageAttributes = $derived(elementLanguageAttributes(chromeLanguage));
+  const chromeLanguageAttributes = $derived(
+    servedLanguageAttributes(catalogs.forLocale(chromeLanguage), chromeLanguage)
+  );
   const messages = $derived(resolveVideoStimulusUiText(chromeLanguage, model?.uiText));
   const hasTranscript = $derived.by(() => {
     try {
@@ -163,7 +166,7 @@ let instanceNumber = 0;
 </script>
 
 {#if language.current !== null}
-<section class="video-stimulus" aria-labelledby={labelId} lang={model?.language}>
+<section class="video-stimulus" aria-labelledby={labelId} lang={elementLanguageAttributes(model?.language)?.lang}>
   <figure class="video-figure">
     <figcaption
       id={labelId}

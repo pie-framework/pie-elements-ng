@@ -9,6 +9,7 @@ export {
 } from './catalogs.js';
 export {
   canonicalLanguageTag,
+  chromeLanguageAttributes,
   elementLanguageAttributes,
   type LanguageAttributes,
   stampElementLanguage,

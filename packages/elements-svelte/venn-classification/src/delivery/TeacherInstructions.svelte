@@ -1,6 +1,6 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { chromeLanguageAttributes } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 
 /** `language` is the chrome language, resident before this renders; `html` stays in the item's. */
@@ -19,7 +19,7 @@ const panelId = `venn-teacher-instructions-${Math.random().toString(36).slice(2,
     class="teacher-instructions-toggle pie-teacher-instructions-toggle"
     aria-expanded={expanded}
     aria-controls={panelId}
-    {...elementLanguageAttributes(language)}
+    {...chromeLanguageAttributes(i18n, language)}
     onclick={() => (expanded = !expanded)}
   >
     {i18n.t(expanded ? 'hideTeacherInstructions' : 'showTeacherInstructions')}

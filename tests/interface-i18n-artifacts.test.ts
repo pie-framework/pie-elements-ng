@@ -73,6 +73,8 @@ const migratedElements = [
       'packages/lib-react/render-ui',
       'packages/lib-react/correct-answer-toggle',
       'packages/lib-react/graphing',
+      'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
     // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
     iifeAlso: ['Deshacer'],
@@ -99,6 +101,7 @@ const migratedElements = [
       'packages/elements-react/extended-text-entry',
       'packages/lib-react/render-ui',
       'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
     // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
     iifeAlso: ['Deshacer'],
@@ -115,6 +118,7 @@ const migratedElements = [
       'packages/lib-react/correct-answer-toggle',
       'packages/lib-react/mask-markup',
       'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
     // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
     iifeAlso: ['Deshacer'],
@@ -224,7 +228,11 @@ const migratedElements = [
       'packages/lib-react/render-ui',
       'packages/lib-react/correct-answer-toggle',
       'packages/lib-react/graphing-solution-set',
+      'packages/lib-react/editable-html-tip-tap',
+      'packages/lib-react/math-input-mathlive',
     ],
+    // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
+    iifeAlso: ['Deshacer'],
   },
   {
     dir: 'packages/elements-react/math-templated',

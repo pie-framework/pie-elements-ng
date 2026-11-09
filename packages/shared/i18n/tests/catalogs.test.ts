@@ -102,15 +102,76 @@ describe('registerMessages', () => {
     expect(translator.plural('count', { count: 2 })).toBe('2 items');
   });
 
-  it('merges successive registrations in order; a plural group replaces the shipped one', () => {
+  it('merges successive registrations in order; a plural override resolves per category', () => {
     const { catalogs } = define('@pie-lib/a');
     registerMessages('@pie-lib/a', 'en-US', { label: 'Reveal' });
     registerMessages('@pie-lib/a', 'en-US', { count: { other: '{count} things' } });
     const translator = catalogs.forLocale();
     expect(translator.t('label')).toBe('Reveal');
-    // pie-players semantics: the first source holding the group answers every count, so a
-    // host's wording never mixes with the shipped forms.
-    expect(translator.plural('count', { count: 1 })).toBe('1 things');
+    // The host overrode `other` only, so `one` still comes from the shipped group.
+    expect(translator.plural('count', { count: 1 })).toBe('1 item');
     expect(translator.plural('count', { count: 5 })).toBe('5 things');
+    expect(translator.t('count')).toBe('{count} things');
+  });
+
+  it('never throws on a plural override that lacks the selected category', () => {
+    const { catalogs } = define('@pie-lib/a');
+    registerMessages('@pie-lib/a', 'en-US', { count: { one: 'Just {count} item' } });
+    const translator = catalogs.forLocale();
+    expect(translator.plural('count', { count: 1 })).toBe('Just 1 item');
+    expect(translator.plural('count', { count: 2 })).toBe('2 items');
+    expect(translator.t('count')).toBe('{count} items');
+  });
+
+  it('layers a regional host override over the shipped parent catalog and loads it', async () => {
+    const { catalogs, load } = define('@pie-lib/a');
+    registerMessages('@pie-lib/a', 'es-MX', { label: 'Ver' });
+    expect(isLocaleReady('es-MX')).toBe(false);
+    await loadLocale('es-MX');
+    expect(load).toHaveBeenCalledTimes(1);
+    const translator = catalogs.forLocale('es-MX');
+    expect(translator.t('label')).toBe('Ver');
+    expect(translator.plural('count', { count: 2 })).toBe('2 elementos');
+    expect(translator.getLocale()).toBe('es-ES');
+  });
+
+  it('matches host messages to the request whatever the tag casing', async () => {
+    const { catalogs } = define('@pie-lib/a');
+    registerMessages('@pie-lib/a', 'ES', { label: 'Ver' });
+    await loadLocale('es');
+    expect(catalogs.forLocale('es').t('label')).toBe('Ver');
+    expect(catalogs.forLocale('es').plural('count', { count: 2 })).toBe('2 elementos');
+    expect(catalogs.forLocale('es-MX').t('label')).toBe('Ver');
+  });
+
+  it('names the served locale: English for a locale nothing serves, the host tag for host messages', () => {
+    const { catalogs } = define('@pie-lib/a');
+    const he = catalogs.forLocale('he');
+    expect(he.getLocale()).toBe('en-US');
+    expect(he.getDirection()).toBe('ltr');
+    registerMessages('@pie-lib/a', 'HE', { label: 'הצג' });
+    expect(he.getLocale()).toBe('he');
+    expect(he.getDirection()).toBe('rtl');
+  });
+
+  it('names English for a shipped locale whose catalog failed', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { catalogs } = define(
+      '@pie-lib/a',
+      vi.fn(async () => Promise.reject(new Error('404')))
+    );
+    await loadLocale('es-ES');
+    expect(catalogs.forLocale('es-ES').getLocale()).toBe('en-US');
+  });
+});
+
+describe('locale arguments', () => {
+  it('treats a value that is not a string as no locale', async () => {
+    const { catalogs, load } = define('@pie-lib/a');
+    const notATag = ['es-ES'] as unknown as string;
+    expect(isLocaleReady(notATag)).toBe(true);
+    await expect(loadLocale(notATag)).resolves.toBeUndefined();
+    expect(catalogs.forLocale(notATag, vi.fn()).t('label')).toBe('Show');
+    expect(load).not.toHaveBeenCalled();
   });
 });

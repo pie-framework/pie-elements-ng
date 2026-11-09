@@ -370,8 +370,11 @@ export class Main extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     const sameModel = isEqual(this.props.model, nextProps.model);
     const sameState = isEqual(this.state, nextState);
+    // The chrome language is a prop of its own: a switch back to a resident locale loads nothing,
+    // so no catalog-load re-render would follow it.
+    const sameLanguage = this.props.language === nextProps.language;
 
-    return !sameModel || !sameState;
+    return !sameModel || !sameState || !sameLanguage;
   }
 
   componentDidMount() {

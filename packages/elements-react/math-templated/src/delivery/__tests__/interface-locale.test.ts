@@ -85,6 +85,29 @@ describe('math-templated interface locale', () => {
     expect(el.textContent).toContain(SPANISH_INSTRUCTIONS);
     // The content keeps its own language.
     expect(el.getAttribute('lang')).toBe('en-US');
+
+    // Back to a locale already resident: nothing loads, and the chrome still follows.
+    publish('en-US');
+
+    await vi.waitFor(() => expect(noteText(el)).toBe(ENGLISH_NOTE));
+    expect(el.textContent).toContain('Show Teacher Instructions');
+  });
+
+  it('follows each locale change in evaluate mode', async () => {
+    const { player, publish } = mountPlayer('en-US');
+    const el = create(player, {
+      ...model,
+      env: { mode: 'evaluate', role: 'student' },
+      responses: { r1: { answer: '1' } },
+      correctness: { correctness: 'incorrect' },
+    });
+    await vi.waitFor(() => expect(el.textContent).toContain('Show correct answer'));
+
+    publish('es');
+    await vi.waitFor(() => expect(el.textContent).toContain('Mostrar respuesta correcta'));
+
+    publish('en-US');
+    await vi.waitFor(() => expect(el.textContent).toContain('Show correct answer'));
   });
 
   // Invariant: with no player answering, the chrome follows the language the item declares.
