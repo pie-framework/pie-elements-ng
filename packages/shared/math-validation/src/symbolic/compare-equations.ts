@@ -1,5 +1,4 @@
-import { mathjs } from '../mathjs.js';
-import type { MathNode } from 'mathjs';
+import { mathjs, type ExpressionNode } from '../mathjs.js';
 import {
   getVariables,
   haveSameElements,
@@ -16,8 +15,8 @@ import {
 const m: any = mathjs;
 
 export const compareEquations = (
-  firstEquation: MathNode,
-  secondEquation: MathNode,
+  firstEquation: ExpressionNode,
+  secondEquation: ExpressionNode,
   isInequality: boolean
 ) => {
   let equivalence: boolean = false;

@@ -1,10 +1,29 @@
-import { all, create, type MathJsStatic } from 'mathjs';
+import { all, create, type MathJsStatic, type MathNode } from 'mathjs';
 
 // mathjs types `create` as returning a Partial; `all` loads every function.
 export const mathjs = create(all, { number: 'Fraction' }) as MathJsStatic & {
   replacer: (key: string, value: unknown) => unknown;
 };
 export const { parse } = mathjs;
+
+// A node of any type, with the fields of every node type optional. mathjs 9 typed MathNode this way, and this
+// package reads and rewrites nodes without narrowing them first.
+export type ExpressionNode = MathNode & {
+  isAccessorNode?: boolean;
+  isArrayNode?: boolean;
+  isConstantNode?: boolean;
+  isFunctionNode?: boolean;
+  isOperatorNode?: boolean;
+  isParenthesisNode?: boolean;
+  isRelationalNode?: boolean;
+  isSymbolNode?: boolean;
+  args?: ExpressionNode[];
+  content?: ExpressionNode;
+  fn?: string;
+  name?: string;
+  op?: string;
+  value?: any;
+};
 
 export const replacer = mathjs.replacer;
 
