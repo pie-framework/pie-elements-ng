@@ -2,6 +2,7 @@
   "name": "@pie-element/multiple-choice",
   "version": "14.0.7",
   "description": "React implementation of multiple-choice element",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

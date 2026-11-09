@@ -1,11 +1,11 @@
 // @ts-nocheck
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import classNames from 'clsx';
 import { styled, useTheme } from '@mui/material/styles';
 import { NodeSelection } from 'prosemirror-state';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
 
 import Bold from '@mui/icons-material/FormatBold';
 import Italic from '@mui/icons-material/FormatItalic';
@@ -46,8 +46,8 @@ import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons
 import { CharacterIcon, CharacterPicker } from './CharacterPicker.js';
 import { DoneButton } from './common/done-button.js';
 import { TOOLBAR_ATTRIBUTE } from '../extensions/inactive-caret.js';
+import { catalogs } from '../i18n/index.js';
 
-const { translator } = Translator;
 
 const SuperscriptIcon = () => (
   <svg
@@ -119,6 +119,9 @@ function MenuBar({
   const [showPicker, setShowPicker] = useState(false);
   const [pickerTrigger, setPickerTrigger] = useState({ el: null, keyboard: false });
   const [dismissed, setDismissed] = useState(false);
+  // Bumped once the language's catalog lands, for an element that did not preload it.
+  const [catalogVersion, relabel] = useReducer((version) => version + 1, 0);
+  const i18n = catalogs.forLocale(language, relabel);
   const toolbarRef = useRef(null);
   // `detail === 0` means the click was synthesized by the keyboard (Enter/Space)
   const openPicker = (config, e) => {
@@ -293,7 +296,7 @@ function MenuBar({
     e.preventDefault();
   };
 
-  const buttonLabel = (key) => translator.t(`editableHtml.buttons.${key}`, { lng: language });
+  const buttonLabel = (key) => i18n.t(dynamicMessageKey(`buttons.${key}`));
 
   const toolbarButtons = useMemo(
     () => [
@@ -561,20 +564,20 @@ function MenuBar({
       },
       {
         icon: <Undo />,
-        label: translator.t('common:undo', { lng: language }),
+        label: i18n.t('buttons.undo'),
         hidden: () => !activePlugins?.includes('undo'),
         onClick: (editor) => editor.chain().focus().undo().run(),
         isDisabled: (state) => !state.canUndo,
       },
       {
         icon: <Redo />,
-        label: translator.t('graphing.redo', { lng: language }),
+        label: i18n.t('buttons.redo'),
         hidden: () => !activePlugins?.includes('redo'),
         onClick: (editor) => editor.chain().focus().redo().run(),
         isDisabled: (state) => !state.canRedo,
       },
     ],
-    [activePlugins, editor, language],
+    [activePlugins, editor, i18n, catalogVersion],
   );
 
   return (
@@ -590,7 +593,7 @@ function MenuBar({
           className={classes.defaultToolbar}
           role="toolbar"
           tabIndex={-1}
-          aria-label={translator.t('editableHtml.responseAreaToolbar', { lng: language })}
+          aria-label={i18n.t('responseAreaToolbar')}
         >
           <div className={classes.buttonsContainer}>
             <button
@@ -614,7 +617,7 @@ function MenuBar({
           className={classes.defaultToolbar}
           role="toolbar"
           tabIndex={-1}
-          aria-label={translator.t('editableHtml.toolbar', { lng: language })}
+          aria-label={i18n.t('toolbar')}
           onKeyDown={handleToolbarKeyDown}
         >
           <div className={classes.buttonsContainer}>

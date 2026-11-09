@@ -2,6 +2,7 @@
   "name": "@pie-element/simple-cloze",
   "version": "0.1.11",
   "description": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

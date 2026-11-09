@@ -54,6 +54,28 @@ describe('multiple-choice interface locale', () => {
     expect(el.getAttribute('lang')).toBe('en-US');
   });
 
+  // Invariant: with no player answering, the chrome follows the language the
+  // item declares. Items declaring `es_ES` render Spanish chrome this way, and
+  // pie-players answers only once a host chooses a locale so they keep it.
+  it("falls back to the item's declared language when no player answers", async () => {
+    const el = document.createElement('test-mc-interface-locale') as Host;
+    document.body.appendChild(el);
+    el.model = {
+      choiceMode: 'radio',
+      prompt: '<p>¿Cuál?</p>',
+      choices: [
+        { value: 'a', label: 'A' },
+        { value: 'b', label: 'B' },
+      ],
+      language: 'es_ES',
+      mode: 'gather',
+    };
+    el.session = {};
+
+    await vi.waitFor(() => expect(el.querySelector('legend')?.textContent).toBe('Opciones de respuesta'));
+    expect(el.getAttribute('aria-label')).toBe('Pregunta de opción múltiple');
+  });
+
   it('labels the correct-answer toggle in the interface locale', async () => {
     const el = mount('nl-NL', { mode: 'evaluate', responseCorrect: false });
 

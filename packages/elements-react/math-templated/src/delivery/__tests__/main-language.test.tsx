@@ -5,12 +5,11 @@ import { render, screen } from '@testing-library/react';
 // MathJax loads off a CDN, and the response areas have no bearing on the item's heading and toggles.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 vi.mock('@pie-lib/mask-markup', () => ({ Customizable: () => null }));
-vi.mock('@pie-lib/math-input', () => ({
+vi.mock('@pie-lib/math-input-mathlive', () => ({
   mq: { Static: () => null },
   HorizontalKeypad: () => null,
   updateSpans: () => {},
-  registerEmbed: () => {},
-  applyStaticMath: () => {},
+  answerBlockLatex: () => '',
 }));
 
 const { Main } = await import('../main');

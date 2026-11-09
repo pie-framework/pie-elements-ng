@@ -19,6 +19,10 @@ const migratedElements = [
       'packages/lib-react/correct-answer-toggle',
     ],
   },
+  {
+    dir: 'packages/elements-react/passage',
+    catalogPackages: ['packages/elements-react/passage', 'packages/lib-react/render-ui'],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })

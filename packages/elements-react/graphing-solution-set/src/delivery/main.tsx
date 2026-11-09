@@ -36,7 +36,7 @@ const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapR
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils.js';
+import { findSectionsInSolutionSet, findSelectedSection, checkIfLinesAreAdded } from './utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
 import Translator from '@pie-lib/translator';
 
@@ -118,26 +118,25 @@ export class Main extends React.Component {
   /*
    * Function to handle the event of solution set selected
    * @param {object} point - point selected on the graph
+   * @param {object} rawPoint - unsnapped position of the click, when known
    * */
-  onSolutionSetSelected: any = (point) => {
+  onSolutionSetSelected: any = (point, rawPoint) => {
     const { model, session, setGssData } = this.props;
     const { gssData, disabled } = model;
     if (disabled) {
       return;
     }
-    for (const section of gssData.sections) {
-      if (pointInsidePolygon(point, section)) {
-        let polygon = {
-          points: section,
-          building: false,
-          type: 'polygon',
-          closed: true,
-          isSolution: true,
-        };
-        session.answer = session.answer.filter((mark) => mark.type !== 'polygon');
-        session.answer.push(polygon);
-        break;
-      }
+    const section = findSelectedSection(gssData.sections, point, rawPoint);
+    if (section) {
+      let polygon = {
+        points: section,
+        building: false,
+        type: 'polygon',
+        closed: true,
+        isSolution: true,
+      };
+      session.answer = session.answer.filter((mark) => mark.type !== 'polygon');
+      session.answer.push(polygon);
     }
     setGssData(gssData, session);
   };

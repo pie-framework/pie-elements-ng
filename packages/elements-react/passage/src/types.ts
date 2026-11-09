@@ -109,8 +109,8 @@ export interface PassageConfiguration {
    * Only available if language is enabled
    */
   languageChoices?: ConfigureLanguageOptions;
-  /** ability to include a second passage */
-  additionalPassage?: ConfigurePropWithEnabled;
+  /** Additional passages; `max` caps how many passages the author can hold, unlimited when unset */
+  additionalPassage?: ConfigurePropWithEnabled & { max?: number };
 }
 
 /** The passage records no response; its session carries only its identity */

@@ -161,6 +161,7 @@ export class GraphWithControls extends React.Component {
       language,
       removeIncompleteTool,
       limitLabeling,
+      markLimits,
     } = this.props;
     let { backgroundMarks, marks, toolbarTools } = this.props;
 
@@ -235,6 +236,7 @@ export class GraphWithControls extends React.Component {
           tools={tools}
           removeIncompleteTool={removeIncompleteTool}
           limitLabeling={limitLabeling}
+          markLimits={markLimits}
           language={language}
         />
       </StyledGraphContainer>

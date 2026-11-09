@@ -6,6 +6,7 @@ import Mask from './mask.js';
 import componentize from './componentize.js';
 import { deserialize } from './serialization.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { catalogs } from './i18n/index.js';
 
 export const buildLayoutFromMarkup = (markup, type) => {
   const { markup: processed } = componentize(markup, type);
@@ -28,6 +29,7 @@ export const withMask = (type, renderChildren) => {
       onChange: PropTypes.func,
       customMarkMarkupComponent: PropTypes.func,
       elementType: PropTypes.string,
+      language: PropTypes.string,
     };
 
     constructor(props) {
@@ -59,8 +61,13 @@ export const withMask = (type, renderChildren) => {
       }
     }
 
+    /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+    relabel = () => this.forceUpdate();
+
     render() {
-      const { markup, layout, value, onChange, elementType } = this.props;
+      const { markup, layout, value, onChange, elementType, language } = this.props;
+      // Starts the language's load; the renderers below read the catalog synchronously.
+      catalogs.forLocale(language, this.relabel);
 
       const maskLayout = layout ? layout : buildLayoutFromMarkup(markup, type);
       return (

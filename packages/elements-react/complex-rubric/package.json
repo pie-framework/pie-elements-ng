@@ -2,6 +2,7 @@
   "name": "@pie-element/complex-rubric",
   "version": "8.0.7",
   "description": "Complex Rubric Scoring Interaction",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

@@ -137,7 +137,6 @@ export default class Categorize extends HTMLElement {
       choices,
       completeAudioEnabled,
       hasUnplacedChoices,
-      possibleResponses,
       responseAreasToBeFilled,
     } = this._model || {};
     // check audio completion if the setting is enabled and audio actually exists,
@@ -176,13 +175,9 @@ export default class Categorize extends HTMLElement {
 
     const allAnswersIds = answers.map((answer) => answer.choices).flat();
 
-    // check if any correct answer have any unplaced answer choices (by the student)
-    const requiredAnswersPlaced = (possibleResponses || []).some((response) =>
-      response.every((val) => allAnswersIds.includes(val)),
-    );
-
-    // true - all choices (required for a correct response) were placed into a response area
-    return requiredAnswersPlaced;
+    // Every correct answer places every choice, so complete means every choice is placed. The
+    // model carries no correct answers in gather mode, so this reads the choices alone.
+    return (choices || []).every((choice) => allAnswersIds.includes(choice.id));
   }
 
   set session(s) {

@@ -1,0 +1,38 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: 'Grafiek in een assenstelsel',
+  axisRange: '{axis}-as van {min} tot {max}.',
+  plottedNone: 'Niets getekend.',
+  plotted: {
+    one: '{count} object getekend: {marks}.',
+    other: '{count} objecten getekend: {marks}.',
+  },
+  point: 'Punt',
+  circle: 'Cirkel',
+  line: 'Lijn',
+  parabola: 'Parabool',
+  absolute: 'Absolute waarde',
+  exponential: 'Exponentieel',
+  polygon: 'Veelhoek',
+  ray: 'Halve lijn',
+  segment: 'Lijnstuk',
+  sine: 'Sinus',
+  vector: 'Vector',
+  label: 'Label',
+  markLabel: 'Label bij ({x}, {y})',
+  correctMarkLabel: 'Juist label bij ({x}, {y})',
+  undo: 'Ongedaan maken',
+  redo: 'Opnieuw uitvoeren',
+  reset: 'Opnieuw instellen',
+  key: 'Legenda',
+  keyLegend: {
+    missingRequiredLabel: 'Verplicht label ontbreekt',
+    answerKeyCorrect: 'Juist volgens de antwoordsleutel',
+    answerKeyCorrectLabel: 'Juist label volgens de antwoordsleutel',
+    studentIncorrect: 'Onjuist antwoord van de leerling',
+    incorrectStudentLabel: 'Onjuist label van de leerling',
+    studentCorrect: 'Juist antwoord van de leerling',
+    studentCorrectLabel: 'Juist label van de leerling',
+  },
+} satisfies MessageCatalog;

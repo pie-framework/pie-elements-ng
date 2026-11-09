@@ -234,7 +234,7 @@ export const model = async (
 
   const alternates = getAlternates(filteredCorrectResponse);
   const showInstructorContent = role === 'instructor' && (mode === 'view' || mode === 'evaluate');
-  const { responseAreasToBeFilled, possibleResponses, hasUnplacedChoices } = getCompleteResponseDetails(
+  const { responseAreasToBeFilled, hasUnplacedChoices } = getCompleteResponseDetails(
     filteredCorrectResponse,
     normalizedQuestion.allowAlternateEnabled ? alternates : [],
     normalizedQuestion.choices,
@@ -254,7 +254,8 @@ export const model = async (
     rowLabels,
     note,
     env,
-    showNote: alternates && alternates.length > 0,
+    // Delivery shows the note beside the correct answer alone, and it tells that alternates exist.
+    showNote: (mode === 'evaluate' || role === 'instructor') && alternates && alternates.length > 0,
     correctResponse: mode === 'evaluate' ? filteredCorrectResponse : undefined,
     language,
     extraCSSRules,
@@ -264,7 +265,6 @@ export const model = async (
     autoplayAudioHeld,
     completeAudioEnabled,
     customAudioButton,
-    possibleResponses,
     responseAreasToBeFilled,
     hasUnplacedChoices,
     ...(question.allowMultiplePlacementsEnabled == null && { allowMultiplePlacementsEnabled: resolvedAllowMultiple }),

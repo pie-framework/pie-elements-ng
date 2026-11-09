@@ -44,3 +44,20 @@ describe('multiple-choice authoring field names', () => {
     expect(screen.queryByRole('textbox', { name: 'Prompt' })).not.toBeInTheDocument();
   });
 });
+
+describe('multiple-choice image-only choices (PIE-1484)', () => {
+  it('asks for alt text on an image choice with no text and no alt', async () => {
+    const withImages = {
+      ...model,
+      choices: [
+        { label: '<img src="a.png" alt="">', value: '0', correct: true },
+        { label: '<img src="b.png" alt="A red triangle">', value: '1', correct: false },
+      ],
+    };
+    render(
+      <Main model={withImages} configuration={configuration} onModelChanged={vi.fn()} onConfigurationChanged={vi.fn()} />,
+    );
+
+    expect(await screen.findAllByText(/Add alt text to the image/)).toHaveLength(1);
+  });
+});

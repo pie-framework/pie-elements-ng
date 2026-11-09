@@ -2,6 +2,7 @@
   "name": "@pie-element/explicit-constructed-response",
   "version": "12.1.2",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

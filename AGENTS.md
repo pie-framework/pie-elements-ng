@@ -15,7 +15,7 @@ Use [`CONTEXT.md`](CONTEXT.md) as the canonical domain-language glossary. When n
 - **Feature parity**: Must match all 21 QTI 2.2 interaction types from original pie-elements.
 - **Strict TypeScript** (`strict` in `tsconfig.base.json`): no `any` allowed.
 
-Stack, with exact versions in `package.json`: Vite 8 and Turbo 2; Vitest 4 and Playwright with `@axe-core/playwright`; Biome 2, which replaces ESLint and Prettier; TipTap 3; MathJax 4.1.3, loaded at runtime by `@pie-element/shared-math-rendering-mathjax`, and MathQuill for math input.
+Stack, with exact versions in `package.json`: Vite 8 and Turbo 2; Vitest 4 and Playwright with `@axe-core/playwright`; Biome 2, which replaces ESLint and Prettier; TipTap 3; MathJax 4.1.3, loaded at runtime by `@pie-element/shared-math-rendering-mathjax`, and MathLive for math input.
 
 ## Spec-driven workflow (PRDs)
 
@@ -56,6 +56,10 @@ changing these packages, re-verify behavior in `apps/element-demo` and run:
 bun run verify:element-contracts
 bun run lint:all && bun run test
 ```
+
+## Interface Locale Invariant
+
+An element treats an unanswered `interfaceLocaleContext` request as "no locale chosen" and labels its chrome in the language its item declares (`model.language`, or the field it has always read, such as ebsr's `partA.language`), else `en-US`. Never map "unanswered" straight to `en-US`, and never drop the declared-language fallback: content declaring `es_ES` renders Spanish chrome through it under hosts that set no locale, and pie-players answers the context only once a host chooses one so that this holds. Every migrated element's interface-locale test covers a Spanish-declaring item with no player. The rule is in [`docs/prds/interface-i18n/PRD.md`](docs/prds/interface-i18n/PRD.md#interface-locale).
 
 ## Shared Infra Guardrails
 
@@ -220,7 +224,7 @@ The contract's [Browser ESM Packaging](docs/PIE_ELEMENT_CONTRACT.md#browser-esm-
 ### Math And Rich Text
 
 - **MathJax 4**: Math rendering with hidden MathML for screen readers ([MATH-RENDERING.md](docs/MATH-RENDERING.md))
-- **MathQuill**: Interactive math input (`@pie-lib/math-input`)
+- **MathLive**: Interactive math input (`@pie-lib/math-input-mathlive`)
 - **TipTap 3** on ProseMirror (`@pie-lib/editable-html-tip-tap`): rich text with a configurable toolbar and extensions, its math extension rendering through MathJax
 - **DOMPurify**: sanitizes authored model HTML (`@pie-element/shared-utils`)
 

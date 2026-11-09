@@ -2,6 +2,7 @@
   "name": "@pie-lib/test-utils",
   "version": "3.0.3",
   "description": "Testing utilities for pie-lib packages with React Testing Library and MUI support",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

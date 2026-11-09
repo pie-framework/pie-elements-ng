@@ -90,6 +90,7 @@ export class Main extends React.Component {
       titleEnabled,
       teacherInstructions,
       toolbarTools,
+      markLimits,
       language,
     } = model || {};
     const size = model?.size || model?.graph || {}; // need this for models that are not processed by controller
@@ -157,6 +158,7 @@ export class Main extends React.Component {
             size={size}
             title={title}
             toolbarTools={toolbarTools}
+            markLimits={markLimits}
             language={language}
             limitLabeling={true}
           />
