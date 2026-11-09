@@ -58,8 +58,8 @@ export default defineConfig(({ mode, command }) => {
           /^react-redux($|\/)/.test(id) ||
           /^use-sync-external-store($|\/)/.test(id) ||
           // mathjs is bundled into this package, not external. Shared, it breaks any bundle that
-          // also holds @pie-framework/math-validation (math-inline, math-templated): that loads
-          // mathjs's CommonJS build while this package loads its ES build, the bundle service
+          // also holds @pie-framework/math-validation 1.4.3 or earlier (math-inline, math-templated):
+          // that loads mathjs's CommonJS build while this package loads its ES build, the bundle service
           // gives both one typed-function module, and each mathjs build creates its default
           // instance on typed-function's shared singleton, so the second build's parser throws
           // `There is already a conversion from "string" to "Node"` and the whole bundle fails

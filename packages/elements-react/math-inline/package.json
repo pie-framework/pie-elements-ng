@@ -21,7 +21,7 @@
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@pie-element/shared-utils": "workspace:*",
-    "@pie-framework/math-validation": "^1.4.3",
+    "@pie-framework/math-validation": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

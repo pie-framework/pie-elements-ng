@@ -9,24 +9,24 @@
 ## demo
 
 ```shell
-yarn demo
+bun run demo
 ```
 
-Then go to `http://localhost:$PORT/demo`
+Then open the URL Vite prints.
 
 
 ## Tests
 
 ```shell
-yarn jest
+bun run test
 ```
 
 Runs all the tests
 
-There is one test that runs fixture data located here: `src/fixtures/latex-equal/*.ts`. To filter the fixtures you run here you can use the `-t` flag:
+There is one test that runs fixture data located here: `src/fixtures/latex-equal/*.ts`. To filter the fixtures you run, pass Vitest's `-t` flag a fixture path:
 
 ```shell
-yarn jest src/__tests__/latex-equal.spec.ts -t src/fixtures/latex-equal/7119.ts --reporters default
+bunx vitest run src/__tests__/latex-equal.test.ts -t src/fixtures/latex-equal/literal/PD-303.ts
 ```
 
 
@@ -100,10 +100,6 @@ In order to check equivalence between 2 expressions, we have to reduce both expr
 
 
 
-### Notes
-
-- `@babel/runtime` is a devDependency if you ever need to link this repo to another package for testing
-
 ## TODO
 
 - set up api that is compatible w/ ui component options
@@ -111,7 +107,7 @@ In order to check equivalence between 2 expressions, we have to reduce both expr
 
 ### CI
 
-We use circleci - see .circleci/config.yml
+The package builds, tests and releases with the rest of [pie-elements-ng](https://github.com/pie-framework/pie-elements-ng); see `docs/PUBLISHING.md` there.
 
 ### debugging tests
 
@@ -129,8 +125,6 @@ add the following to `configurations` array in launch.json
 ```
 
 ```shell
-node --inspect-brk ./node_modules/.bin/jest --runInBand #and any other flags you want
+bunx vitest run --inspect-brk --no-file-parallelism #and any other flags you want
 ```
 The launch debug using 'Attach' command above.
-
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)

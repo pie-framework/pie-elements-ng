@@ -214,10 +214,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@workspace': workspaceRoot,
-      // Fix @pie-framework/math-validation resolution issue
-      // The package has module: "src/index.ts" which doesn't exist in installed package
-      // Force Vite to use the main field (lib/index.js) instead
-      '@pie-framework/math-validation': '@pie-framework/math-validation/lib/index.js',
       // See proseMirrorSingletonAliases comment above. Aliasing each pkg's
       // bare specifier to its single resolved directory forces every chunk
       // (including dep-optimizer pre-bundles) to share one physical copy.

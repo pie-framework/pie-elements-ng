@@ -26,11 +26,6 @@ type MathInlineCorrectness = {
   correct: boolean;
 };
 
-/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
-type LatexEqualOpts = mv.Opts & {
-  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
-};
-
 /** The model with the controller defaults applied. */
 type NormalizedQuestion = ReturnType<typeof normalize>;
 
@@ -166,7 +161,7 @@ function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefin
     if (answerCorrect) return;
 
     const mode = correctResponse.validation || defaults.validationDefault;
-    const opts: LatexEqualOpts = { mode: mode === 'value' ? 'literal' : mode };
+    const opts: mv.Opts = { mode: mode === 'value' ? 'literal' : mode };
 
     if (mode === 'literal') {
       opts.literal = {

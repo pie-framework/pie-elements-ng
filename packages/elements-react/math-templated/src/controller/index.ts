@@ -26,11 +26,6 @@ type ResponseCorrectness = {
   correct: boolean;
 };
 
-/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
-type LatexEqualOpts = mv.Opts & {
-  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
-};
-
 /** The model as the delivery view receives it. */
 type MathTemplatedViewModel = {
   prompt: string | null;
@@ -83,7 +78,7 @@ const getIsAnswerCorrect = (
 ) => {
   let answerCorrect = false;
 
-  const opts: LatexEqualOpts = {
+  const opts: mv.Opts = {
     // `defaults` holds `model` and `configuration`, so `defaults.validationDefault` is always undefined.
     mode: correctResponse.validation || (defaults as { validationDefault?: 'literal' | 'symbolic' }).validationDefault,
     ...(correctResponse.validation === 'literal' && {
