@@ -123,6 +123,19 @@
 			}
 		},
 		{
+			"name": "a locale's own other form wins over the fallback's category",
+			"locale": "es",
+			"source": { "max": { "one": "{count} answer", "other": "{count} answers" } },
+			"shipped": { "es": { "max": { "other": "{count} respuestas" } } },
+			"hostMessages": {},
+			"expected": {
+				"locale": "es",
+				"direction": "ltr",
+				"t": { "max": "{count} respuestas" },
+				"plural": [{ "key": "max", "count": 1, "expected": "1 respuestas" }]
+			}
+		},
+		{
 			"name": "a regional host override layers over the shipped parent catalog",
 			"locale": "es-MX",
 			"source": { "a": "A", "b": "B", "c": "C" },

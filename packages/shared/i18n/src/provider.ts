@@ -342,36 +342,48 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
   }
 
   /**
-   * Host messages along the request's truncation chain, the catalog locale's catalog, then host
-   * messages and the catalog for the fallback locale.
+   * Two tiers in lookup order: host messages along the request's truncation chain and the catalog
+   * locale's catalog, then host messages and the catalog for the fallback locale.
    */
-  private sources(): (MessageCatalog | undefined)[] {
+  private sourceTiers(): (MessageCatalog | undefined)[][] {
     return [
-      ...languageTagLookupSequence(this.requested).map((tag) => this.customMessages[tag]),
-      this.catalogLocale === undefined ? undefined : this.catalogs.get(this.catalogLocale),
-      this.customMessages[normalizeLanguageTag(this.fallbackLocale)],
-      this.catalogs.get(this.fallbackLocale),
+      [
+        ...languageTagLookupSequence(this.requested).map((tag) => this.customMessages[tag]),
+        this.catalogLocale === undefined ? undefined : this.catalogs.get(this.catalogLocale),
+      ],
+      [
+        this.customMessages[normalizeLanguageTag(this.fallbackLocale)],
+        this.catalogs.get(this.fallbackLocale),
+      ],
     ];
   }
 
   /**
    * The text for `key`. The first source that has it decides its shape: a string is the text, and
-   * a plural group resolves `category`, else `other`, across every source's plural group in
-   * lookup order. Namespaces are skipped.
+   * a plural group resolves `category`, else `other`, within the first tier that has a group, so a
+   * locale's own `other` wins over the fallback's `one`. Namespaces are skipped.
    */
   private resolveMessage(key: string, category?: keyof PluralTranslation): string | undefined {
-    const groups: PluralTranslation[] = [];
-    for (const source of this.sources()) {
-      const node = readPath(source, key);
-      if (typeof node === 'string') {
-        if (groups.length === 0) return node;
-      } else if (node !== undefined && isPluralGroup(node)) {
-        groups.push(node);
+    const tiers: PluralTranslation[][] = [];
+    for (const tier of this.sourceTiers()) {
+      const groups: PluralTranslation[] = [];
+      for (const source of tier) {
+        const node = readPath(source, key);
+        if (typeof node === 'string') {
+          if (tiers.every((t) => t.length === 0) && groups.length === 0) return node;
+        } else if (node !== undefined && isPluralGroup(node)) {
+          groups.push(node);
+        }
       }
+      tiers.push(groups);
     }
-    const form = (name: keyof PluralTranslation) =>
-      groups.find((group) => typeof group[name] === 'string')?.[name];
-    return (category === undefined ? undefined : form(category)) ?? form('other');
+    for (const groups of tiers) {
+      const form = (name: keyof PluralTranslation) =>
+        groups.find((group) => typeof group[name] === 'string')?.[name];
+      const text = (category === undefined ? undefined : form(category)) ?? form('other');
+      if (text !== undefined) return text;
+    }
+    return undefined;
   }
 
   private selectPluralCategory(count: number): keyof PluralTranslation {
