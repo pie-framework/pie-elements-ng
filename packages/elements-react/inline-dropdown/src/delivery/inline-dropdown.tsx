@@ -38,10 +38,8 @@ const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewProm
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -131,6 +129,7 @@ export class InlineDropdown extends React.Component {
     const { showCorrectAnswer } = this.state;
     const { prompt, mode, model, rationale, teacherInstructions, choices, displayType, language } = this.props;
     const { extraCSSRules } = model || {};
+    const i18n = catalogs.forLocale(language);
     const showCorrectAnswerToggle = mode === 'evaluate';
     let choiceRationalesHaveText = false;
     const showRationale = rationale && (hasText(rationale) || hasMedia(rationale));
@@ -152,13 +151,11 @@ export class InlineDropdown extends React.Component {
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules} containerRef={this.containerRef} style={{ display: `${displayType}` }}>
         {mode === 'gather' && (
-          <SrOnly>{translator.t('inlineDropdown.inlineDropdownQuestion', { lng: language })}</SrOnly>
+          <SrOnly>{i18n.t('inlineDropdownQuestion')}</SrOnly>
         )}
 
         {showTeacherInstructions && (
-          <StyledCollapsible
-            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -176,7 +173,7 @@ export class InlineDropdown extends React.Component {
 
         {choiceRationalesHaveText && (
           <StyledCollapsible
-            labels={{ hidden: translator.t('inlineDropdown.showRationaleForChoices', { lng: language }), visible: translator.t('inlineDropdown.hideRationaleForChoices', { lng: language }) }}
+            labels={{ hidden: i18n.t('showRationaleForChoices'), visible: i18n.t('hideRationaleForChoices') }}
           >
             {choiceRationales.map((choices, index) => (
               <ChoiceRationaleWrapper key={index}>
@@ -196,7 +193,7 @@ export class InlineDropdown extends React.Component {
         )}
 
         {showRationale && (
-          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <Collapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}

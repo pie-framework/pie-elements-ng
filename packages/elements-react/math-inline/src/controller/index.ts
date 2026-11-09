@@ -12,9 +12,6 @@ import type {
 } from '../types.js';
 
 import { ResponseTypes } from './utils.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
@@ -364,7 +361,8 @@ export const model = (question: MathInlineModel, session: MathInlineSession | un
       view: env.mode === 'view',
     };
 
-    const note = normalizedQuestion.note || translator.t('mathInline.primaryCorrectWithAlternates', { lng: language });
+    // Delivery renders the alternates default in the chrome locale in place of a missing or default note.
+    const note = normalizedQuestion.note;
     const showNote =
       (config?.responses?.length ?? 0) > 1 ||
       (config?.responses || []).some(

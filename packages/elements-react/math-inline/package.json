@@ -28,7 +28,6 @@
     "@pie-lib/math-input-mathlive": "workspace:*",
     "@pie-lib/math-toolbar": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
     "clsx": "^2.1.1",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",

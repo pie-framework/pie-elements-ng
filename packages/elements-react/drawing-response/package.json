@@ -15,7 +15,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "konva": "8.3.0",
     "prop-types": "^15.8.1",
     "react-konva": "^18.2.14",

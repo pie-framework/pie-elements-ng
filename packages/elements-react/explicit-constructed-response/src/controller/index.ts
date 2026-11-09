@@ -4,7 +4,6 @@ import { decode } from 'he';
 import { contentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 import type { NormalizeOptions } from '@pie-element/shared-controller-utils';
 import type { PieEnvironment } from '@pie-element/shared-types';
-import Translator from '@pie-lib/translator';
 import defaults from './defaults.js';
 import type {
   Choice,
@@ -31,8 +30,6 @@ type PreparedChoice = {
   correct?: boolean;
   feedback?: string;
 };
-
-const { translator } = Translator;
 
 const log = debug('explicit-constructed-response:controller');
 
@@ -164,9 +161,8 @@ export async function model(
 
   // check if at least one choice has an alternate
   const showNote = Object.values(choices).some((choice) => choice?.length > 1);
-  const note =
-    normalizedQuestion.note ||
-    translator.t('common:commonCorrectAnswerWithAlternates', { lng: normalizedQuestion.language });
+  // Delivery renders the alternates default in the chrome locale in place of a missing or default note.
+  const note = normalizedQuestion.note;
 
   const { maxLengthPerChoice = [], maxLengthPerChoiceEnabled } = normalizedQuestion;
   const undefinedLengths = !maxLengthPerChoice.length;

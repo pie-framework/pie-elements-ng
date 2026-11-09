@@ -3,6 +3,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import Main from './main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import generateModel from './utils.js';
@@ -25,6 +31,11 @@ export default class SelectText extends HTMLElement {
     this._root = null;
     // Tokens the answer eliminator struck out, by `tokenKey`; none can be selected.
     this._eliminatedTokens = new Map();
+    // The locale the player publishes, once it answers; null until then. While
+    // it is null the chrome follows the item's declared language (published,
+    // else `model.language`, else `en-US`; permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   set model(m) {
@@ -139,16 +150,36 @@ export default class SelectText extends HTMLElement {
   }
 
   connectedCallback() {
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this.render();
+        }
+      });
+    }
     this.render();
   }
 
   render() {
     if (this._model && this._session) {
+      // The chrome speaks the locale the player publishes, else the item's
+      // declared language, else `en-US`. Rendered once every catalog on the
+      // render path holds it, so no English frame precedes it.
+      const language = this._interfaceLocale ?? this._model.language;
+      if (!isLocaleReady(language)) {
+        void loadLocale(language).then(() => this.render());
+        return;
+      }
+      // The host names the content language; the chrome roots carry `language`.
+      stampElementLanguage(this, this._model.language);
+
       const el = React.createElement(Main, {
         model: this._model,
         session: this._session,
         onSelectionChange: this.selectionChanged.bind(this),
         eliminatedTokens: [...this._eliminatedTokens.values()],
+        language,
       });
 
       if (!this._root) {
@@ -162,6 +193,8 @@ export default class SelectText extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     if (this._root) {
       this._root.unmount();
       this._root = null;
