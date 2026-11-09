@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectSessionValue, key, openKeypad } from './math-keypad-helpers';
+import { evaluatedResponse, expectSessionValue, key, openKeypad } from './math-keypad-helpers';
 import {
   deliveryContainer,
   getSessionState,
@@ -21,8 +21,9 @@ import { assertTouchEnabled, centerOf, touchTap, waitForSettled } from './touch-
  * - math-inline: in evaluate, the correct-answer toggle sits in an MUI `Tooltip` on the response
  *   (`StyledTooltip`, shown when `disabled && correctness`), and the existing specs open it with
  *   `hover()`. The same tooltip holds the teacher instructions, rationale and feedback, so a
- *   scorer who cannot open it loses those too. The tooltip sets `enterTouchDelay={0}`, but one tap
- *   does not open it; the second does (see the `fixme` below). Covered below.
+ *   scorer who cannot open it loses those too. Covered below. With the MathQuill field, one tap
+ *   did not open it (the field's textarea took and lost focus, which MUI Tooltip read as the
+ *   pointer leaving); that stopped with the move to MathLive (PIE-1470).
  * - hotspot: in evaluate, each shape's correct/incorrect icon shows its text ("Correct", "Incorrect"
  *   and so on) in a Konva tooltip that opens on `mouseenter` only
  *   (hotspot/src/delivery/hotspot/image-konva-tooltip.tsx). Covered below.
@@ -72,9 +73,9 @@ test.describe('hover-only controls under touch', () => {
     await answerByTap(page);
     await switchToEvaluateByTouch(page);
 
-    // Evaluate swaps the response for a `.block-response` target that the tooltip wraps; tap it
-    // once it has stopped moving.
-    const target = deliveryContainer(page).locator('.block-response').first();
+    // Evaluate swaps the response for static math that the tooltip wraps; tap it once it has
+    // stopped moving.
+    const target = evaluatedResponse(deliveryContainer(page));
     await expect(target).toBeVisible({ timeout: 10_000 });
     await waitForSettled(target);
     return { at: await centerOf(target) };
@@ -84,49 +85,18 @@ test.describe('hover-only controls under touch', () => {
   // default, never opens the tooltip at all: MUI starts the open on a timer that `touchend` cancels.
   const FINGER_DOWN_MS = 150;
 
-  test.describe('math-inline correct-answer toggle', () => {
-    const MECHANISM =
-      'The first tap on the response in evaluate does not open the tooltip that holds the ' +
-      'correct-answer toggle, teacher instructions, rationale and feedback; the second does. ' +
-      "Logged on the first tap: the compatibility `mousedown` focuses the response's textarea " +
-      '(focusin), and `focusout` follows about 8ms later with no related target - something blurs ' +
-      "it. MUI Tooltip's `handleBlur` reads that as the pointer leaving and closes the tooltip " +
-      'the touch had just opened (enterTouchDelay is 0). The second tap moves no focus, so the ' +
-      'tooltip stays open. Hover is unaffected because it moves no focus. With `touchend` inside ' +
-      'about 100ms the touch timer is cancelled and the tooltip never opens, however many taps. ' +
-      'Not traced to the call that blurs the field: look at math-inline/src/delivery/main.tsx ' +
-      '`onBlur` / `onFocus` and the math-input mq/static.tsx `blur()`.';
-    const TICKET = 'PIE-1470';
+  test('math-inline: one tap on the response reaches the correct-answer toggle, and tapping it shows the correct answer', async ({
+    page,
+  }) => {
+    const { at } = await openMathInlineEvaluate(page);
+    const toggle = page.getByText('Show correct answer');
+    await expect(toggle).toHaveCount(0);
 
-    test.fixme('one tap on the response opens the toggle', async ({ page }, testInfo) => {
-      testInfo.annotations.push(
-        { type: 'fixme', description: MECHANISM },
-        { type: 'issue', description: `${JIRA}${TICKET}` }
-      );
-      const { at } = await openMathInlineEvaluate(page);
+    await touchTap(page, at, { holdMs: FINGER_DOWN_MS });
+    await expect(toggle).toBeVisible({ timeout: 5_000 });
 
-      await touchTap(page, at, { holdMs: FINGER_DOWN_MS });
-      await expect(page.getByText('Show correct answer')).toBeVisible({ timeout: 5_000 });
-    });
-
-    // What works today: tapping again. It guards the toggle itself, so the case above can be
-    // un-fixme'd without a gap.
-    test('a second tap reaches the toggle, and tapping it shows the correct answer', async ({
-      page,
-    }) => {
-      const { at } = await openMathInlineEvaluate(page);
-      const toggle = page.getByText('Show correct answer');
-      await expect(toggle).toHaveCount(0);
-
-      await touchTap(page, at, { holdMs: FINGER_DOWN_MS });
-      // The first tap's focus change has settled once the response no longer holds focus.
-      await expect(page.locator('.block-response textarea:focus')).toHaveCount(0);
-      await touchTap(page, at, { holdMs: FINGER_DOWN_MS });
-      await expect(toggle).toBeVisible({ timeout: 5_000 });
-
-      await touchTap(page, toggle, { holdMs: FINGER_DOWN_MS });
-      await expect(page.getByText('Hide correct answer')).toBeVisible({ timeout: 5_000 });
-    });
+    await touchTap(page, toggle, { holdMs: FINGER_DOWN_MS });
+    await expect(page.getByText('Hide correct answer')).toBeVisible({ timeout: 5_000 });
   });
 
   test.describe('hotspot evaluate icon', () => {

@@ -1,4 +1,4 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import {
   expectSessionValue,
   expectShown,
@@ -36,34 +36,12 @@ import { rotateTo, touchTap } from './touch-helpers';
  * math-toolbar.touch.spec.ts.
  */
 
-const JIRA = 'https://illuminate.atlassian.net/browse/';
-
 type KeypadCase = {
   element: string;
   demoId?: string;
-  /** A confirmed defect that stops this element taking more than one key at a learner's pace. */
-  knownDefect?: { mechanism: string; ticket: string };
 };
 
-const CASES: KeypadCase[] = [
-  { element: 'math-inline' },
-  {
-    element: 'math-templated',
-    knownDefect: {
-      mechanism:
-        'After the first key, the next key tapped a moment later (about 300ms; two taps in a ' +
-        'burst work) is dropped. Its compatibility `mousedown` focuses the key, taking focus from ' +
-        'the field, and the keypad tooltip is then repositioned - its transform moves from ' +
-        'about translate(103px, 34px) to translate(636px, 34px) - before the compatibility ' +
-        '`mouseup`, about 15ms later. `mouseup` and `click` land on the page, not on the key, so ' +
-        'the key never acts, and the field is left blurred. A mouse sends `mousedown` and ' +
-        '`mouseup` together and finishes before the move. Not traced to the code that moves ' +
-        'it; math-templated/src/delivery/main.tsx `onBlur` and the tooltip `open` state are ' +
-        'where to start. math-inline is unaffected.',
-      ticket: 'PIE-1475',
-    },
-  },
-];
+const CASES: KeypadCase[] = [{ element: 'math-inline' }, { element: 'math-templated' }];
 
 /** How the finger meets the key. */
 const FINGERS = [
@@ -78,27 +56,8 @@ const TAPS = ['1', '1', '2', '3'];
 test.describe('math keypad under touch', () => {
   for (const item of CASES) {
     const title = item.demoId ? `${item.element} [demo=${item.demoId}]` : item.element;
-    const { knownDefect } = item;
 
-    /** A test that needs more than one key: `fixme`, with the mechanism, where the element has the defect. */
-    const sequence = (
-      name: string,
-      body: (args: { page: Page }, info: TestInfo) => Promise<void>
-    ) => {
-      if (!knownDefect) {
-        test(name, body);
-        return;
-      }
-      test.fixme(name, async ({ page }, testInfo) => {
-        testInfo.annotations.push(
-          { type: 'fixme', description: knownDefect.mechanism },
-          { type: 'issue', description: `${JIRA}${knownDefect.ticket}` }
-        );
-        await body({ page }, testInfo);
-      });
-    };
-
-    // What works on every element: the key that follows opening the keypad.
+    // The key that follows opening the keypad.
     test(`${title}: the first keypad tap registers once`, async ({ page }) => {
       const response = await openKeypad(page, item.element, item.demoId);
 
@@ -108,24 +67,21 @@ test.describe('math keypad under touch', () => {
     });
 
     for (const finger of FINGERS) {
-      sequence(
-        `${title}: each keypad tap registers once, finger ${finger.name}`,
-        async ({ page }) => {
-          const response = await openKeypad(page, item.element, item.demoId);
+      test(`${title}: each keypad tap registers once, finger ${finger.name}`, async ({ page }) => {
+        const response = await openKeypad(page, item.element, item.demoId);
 
-          let tapped = '';
-          for (const digit of TAPS) {
-            await touchTap(page, key(page, digit), finger.tap);
-            tapped += digit;
-            await expectShown(response, tapped);
-          }
-
-          await expectSessionValue(page, tapped);
+        let tapped = '';
+        for (const digit of TAPS) {
+          await touchTap(page, key(page, digit), finger.tap);
+          tapped += digit;
+          await expectShown(response, tapped);
         }
-      );
+
+        await expectSessionValue(page, tapped);
+      });
     }
 
-    sequence(`${title}: an operator key and Delete register once`, async ({ page }) => {
+    test(`${title}: an operator key and Delete register once`, async ({ page }) => {
       const response = await openKeypad(page, item.element, item.demoId);
 
       // 1, +, 2, Delete, 3: Delete takes back the 2 and nothing else.
