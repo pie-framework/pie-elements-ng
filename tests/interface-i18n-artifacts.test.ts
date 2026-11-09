@@ -59,6 +59,15 @@ const migratedElements = [
       'packages/lib-react/correct-answer-toggle',
     ],
   },
+  {
+    dir: 'packages/elements-react/graphing-solution-set',
+    catalogPackages: [
+      'packages/elements-react/graphing-solution-set',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/graphing-solution-set',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })
