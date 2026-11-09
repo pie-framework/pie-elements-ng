@@ -28,6 +28,17 @@ describe('charting interface language', () => {
     expect(describeChart('es_ES', []).ariaDescription).toBe('Gráfico de barras. Sin categorías. Valores de 0 a 5.');
   });
 
+  it('picks the Romanian plural form by count', async () => {
+    const onLoad = vi.fn();
+    describeChart('ro', categories, onLoad);
+    await waitFor(() => expect(onLoad).toHaveBeenCalled());
+
+    const many = Array.from({ length: 20 }, (_, i) => ({ label: `C${i + 1}` }));
+    expect(describeChart('ro', categories.slice(0, 1)).ariaDescription).toContain('1 categorie: Apples.');
+    expect(describeChart('ro').ariaDescription).toContain('2 categorii: Apples, Pears.');
+    expect(describeChart('ro', many).ariaDescription).toContain('20 de categorii:');
+  });
+
   it('renders the legend in Spanish, and follows a language change', async () => {
     const { rerender } = render(<KeyLegend language="es" />);
 

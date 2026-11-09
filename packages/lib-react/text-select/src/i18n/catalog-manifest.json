@@ -90,6 +90,20 @@
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "nl-NL": {
+      "status": "generated",
+      "sourceHash": "9f535d2e30e2ba06dea192df824ab2c45dcf36b5886091b20c2e548196c72c69",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md (impersonal infinitive for labels, imperative for learner instructions)",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
+    },
+    "ro": {
+      "status": "generated",
+      "sourceHash": "9f535d2e30e2ba06dea192df824ab2c45dcf36b5886091b20c2e548196c72c69",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other)",
+      "generatedAt": "2026-11-09",
+      "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     }
   }
 }
