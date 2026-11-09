@@ -341,8 +341,10 @@ export class PlacementOrdering extends React.Component {
     const from = ordering.tiles.find((t) => t.id === source.id && t.type === source.type && t.index === source.index);
     const to = target;
     log('[onDropChoice] ', from, to);
+    const i18n = this.getI18n();
+
     this.announce(
-      movedMessage(ordering.tiles, source, to) ?? cancelledMessage(source, getCounts(ordering.tiles)),
+      movedMessage(i18n, ordering.tiles, source, to) ?? cancelledMessage(i18n, source, getCounts(ordering.tiles)),
     );
     const update = reducer({ type: 'move', from, to }, ordering);
     const sessionUpdate = Object.assign({}, session, {
@@ -355,7 +357,7 @@ export class PlacementOrdering extends React.Component {
   onRemoveChoice: any = (target, ordering) => {
     const { onSessionChange, session } = this.props;
     log('[onRemoveChoice]', target);
-    this.announce(movedMessage(ordering.tiles, target, { type: 'choice' }));
+    this.announce(movedMessage(this.getI18n(), ordering.tiles, target, { type: 'choice' }));
     const update = reducer({ type: 'remove', target }, ordering);
     const sessionUpdate = Object.assign({}, session, {
       value: update.response,
@@ -427,7 +429,7 @@ export class PlacementOrdering extends React.Component {
         this.focusTile(this.getDestinationSlotId({ type: 'choice', id: draggedItem.id }));
       } else if (draggedItem) {
         // Dropped where nothing takes it, and nothing moved: the pick-up just ended
-        this.announce(cancelledMessage(draggedItem, getCounts(ordering.tiles)));
+        this.announce(cancelledMessage(this.getI18n(), draggedItem, getCounts(ordering.tiles)));
       }
     }
   };
@@ -455,13 +457,18 @@ export class PlacementOrdering extends React.Component {
     this.dragLive = false;
 
     if (selectedChoice && Date.now() - this.lastPlacementAt >= CLICK_AFTER_DRAG_GUARD_MS) {
-      this.announce(cancelledMessage(selectedChoice, getCounts(this.createOrdering().tiles)));
+      this.announce(cancelledMessage(this.getI18n(), selectedChoice, getCounts(this.createOrdering().tiles)));
     }
 
     this.setState({ draggedTile: null });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
   };
+
+  // The translator for the item's language, as of now: announcements are made as the answer changes.
+  getLanguage: any = () => this.props.language ?? this.props.model?.language;
+
+  getI18n: any = () => catalogs.forLocale(this.getLanguage());
 
   announce: any = (message) => {
     if (message) {
@@ -486,7 +493,9 @@ export class PlacementOrdering extends React.Component {
       onDragStart: ({ active }) => {
         const data = active?.data?.current;
 
-        return data && this.keyboardDrag ? selectedMessage(data, getCounts(this.createOrdering().tiles)) : undefined;
+        return data && this.keyboardDrag
+          ? selectedMessage(this.getI18n(), data, getCounts(this.createOrdering().tiles))
+          : undefined;
       },
       onDragOver: ({ active, over }) => {
         const selected = active?.data?.current;
@@ -499,7 +508,7 @@ export class PlacementOrdering extends React.Component {
 
         const { tiles } = this.createOrdering();
 
-        return focusLabel(tileFor(data, tiles) || data, selected, getCounts(tiles));
+        return focusLabel(this.getI18n(), tileFor(data, tiles) || data, selected, getCounts(tiles));
       },
       onDragEnd: () => undefined,
       onDragCancel: () => undefined,
@@ -524,7 +533,9 @@ export class PlacementOrdering extends React.Component {
     const counts = getCounts(this.createOrdering().tiles);
 
     this.announce(
-      this.isSameChoice(selectedChoice, data) ? cancelledMessage(data, counts) : selectedMessage(data, counts),
+      this.isSameChoice(selectedChoice, data)
+        ? cancelledMessage(this.getI18n(), data, counts)
+        : selectedMessage(this.getI18n(), data, counts),
     );
 
     this.setState((state) => ({
@@ -649,8 +660,8 @@ export class PlacementOrdering extends React.Component {
       disabled,
       teacherInstructions,
     } = model;
-    const language = this.props.language ?? model.language;
-    const i18n = catalogs.forLocale(language);
+    const language = this.getLanguage();
+    const i18n = this.getI18n();
     const showToggle = correctResponse && correctResponse.length > 0;
     const { showingCorrect } = this.state;
     const config = configs || {
@@ -724,6 +735,7 @@ export class PlacementOrdering extends React.Component {
               <InteractiveRegionContent>
                 <OrderingTiler
                   instanceId={this.instanceId}
+                  i18n={i18n}
                   choiceLabel={config.choiceLabel}
                   targetLabel={config.targetLabel}
                   ordering={ordering}

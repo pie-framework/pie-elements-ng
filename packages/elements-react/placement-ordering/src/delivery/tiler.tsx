@@ -25,6 +25,8 @@ const types = {
   tiles: PropTypes.array.isRequired,
   tileSize: PropTypes.string,
   addGuide: PropTypes.bool,
+  // the translator the screen reader text is read in
+  i18n: PropTypes.object.isRequired,
   selectedChoice: PropTypes.object,
   onChoiceClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
@@ -73,16 +75,16 @@ const buildTiles = (props) => {
       return (
         <React.Fragment key={index}>
           {/* the heading of the unsorted column is the choice label, which is read as it is */}
-          {index === firstChoice && <ScreenReaderText>{unsortedHeading(undefined, counts)}</ScreenReaderText>}
+          {index === firstChoice && <ScreenReaderText>{unsortedHeading(props.i18n, undefined, counts)}</ScreenReaderText>}
           {/* the visible target label is hidden from screen readers, which read it here, in the order of the tiles */}
-          {index === firstTarget && <ScreenReaderText>{sortedHeading(props.targetLabel, counts)}</ScreenReaderText>}
-          {tile.type === 'choice' && !tile.empty && <ScreenReaderText>{unsortedObjectPrefix()}</ScreenReaderText>}
+          {index === firstTarget && <ScreenReaderText>{sortedHeading(props.i18n, props.targetLabel, counts)}</ScreenReaderText>}
+          {tile.type === 'choice' && !tile.empty && <ScreenReaderText>{unsortedObjectPrefix(props.i18n)}</ScreenReaderText>}
           {tile.type === 'target' && !tile.empty && (
-            <ScreenReaderText>{sortedObjectPrefix(tile.index)}</ScreenReaderText>
+            <ScreenReaderText>{sortedObjectPrefix(props.i18n, tile.index)}</ScreenReaderText>
           )}
-          <Tile {...tile} ariaLabel={focusLabel(tile, props.selectedChoice, counts)} />
-          {index === lastChoice && <ScreenReaderText>{endOfUnsorted()}</ScreenReaderText>}
-          {index === lastTarget && <ScreenReaderText>{endOfSorted(props.disabled)}</ScreenReaderText>}
+          <Tile {...tile} ariaLabel={focusLabel(props.i18n, tile, props.selectedChoice, counts)} />
+          {index === lastChoice && <ScreenReaderText>{endOfUnsorted(props.i18n)}</ScreenReaderText>}
+          {index === lastTarget && <ScreenReaderText>{endOfSorted(props.i18n, props.disabled)}</ScreenReaderText>}
         </React.Fragment>
       );
     } else {
@@ -133,7 +135,7 @@ export class HorizontalTiler extends React.Component {
   static propTypes = { ...types };
   static defaultProps = { ...defaults };
   render() {
-    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize, disabled } = this.props;
+    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize, disabled, i18n } = this.props;
 
     const rows = includeTargets ? `auto ${tileSize} auto ${tileSize}` : `auto ${tileSize} auto`;
     const columns = includeTargets ? tiles.length / 2 : tiles.length;
@@ -151,7 +153,7 @@ export class HorizontalTiler extends React.Component {
 
     return (
       <StyledHTilerContainer includeTargets={includeTargets} style={style}>
-        {includeTargets && <ScreenReaderText>{readingInstructions(getCounts(tiles), disabled)}</ScreenReaderText>}
+        {includeTargets && <ScreenReaderText>{readingInstructions(i18n, getCounts(tiles), disabled)}</ScreenReaderText>}
         <StyledChoiceLabel
           style={labelStyle}
           dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choiceLabelEnabled ? choiceLabel : '') }}
@@ -173,7 +175,7 @@ export class VerticalTiler extends React.Component {
   static propTypes = { ...types };
   static defaultProps = { ...defaults };
   render() {
-    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize, disabled } = this.props;
+    const { includeTargets, choiceLabelEnabled, choiceLabel, targetLabel, tiles, tileSize, disabled, i18n } = this.props;
 
     const columns = includeTargets ? 2 : 1;
     const rows = includeTargets ? tiles.length / 2 : tiles.length;
@@ -187,7 +189,7 @@ export class VerticalTiler extends React.Component {
 
     return (
       <StyledVTilerContainer includeTargets={includeTargets} style={style}>
-        {includeTargets && <ScreenReaderText>{readingInstructions(getCounts(tiles), disabled)}</ScreenReaderText>}
+        {includeTargets && <ScreenReaderText>{readingInstructions(i18n, getCounts(tiles), disabled)}</ScreenReaderText>}
         <StyledVChoiceLabel
           dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choiceLabelEnabled ? choiceLabel : '') }}
         />

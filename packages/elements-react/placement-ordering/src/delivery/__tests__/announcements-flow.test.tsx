@@ -61,7 +61,7 @@ describe('PlacementOrdering screen reader announcements', () => {
     const text = container.textContent ?? '';
 
     expect(text).toContain('1 of 3 objects are on the sorted list.');
-    expect(text.indexOf('2 unsorted objects')).toBeLessThan(text.indexOf('Target 1 sorted objects'));
+    expect(text.indexOf('2 unsorted objects')).toBeLessThan(text.indexOf('Target 1 sorted object'));
     expect(text).toContain('End of unsorted objects');
     expect(text).toContain('End of sorted objects. Use TAB to move to an object.');
     // the visible heading is left out, as the order of the tiles puts the heading read above after the unsorted ones

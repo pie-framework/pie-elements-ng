@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import PlacementOrderingComponent from '../placement-ordering';
 import { model as buildModel } from '../../controller/index';
+import { catalogs } from '../../i18n/index';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
@@ -39,6 +40,27 @@ const renderItem = async (mode: string, value: (string | undefined)[]) => {
 };
 
 describe('PlacementOrdering announcements for the Antigone item', () => {
+  it('speaks the language of the item', async () => {
+    await catalogs.load('es');
+    const value = ['2', undefined, undefined, '3', undefined];
+    const model = await buildModel({ ...question, language: 'es' } as any, { value } as any, {
+      mode: 'gather',
+      role: 'student',
+    } as any);
+    const { container } = render(<PlacementOrdering model={model} session={{ value }} onSessionChange={() => {}} />);
+    const text = container.textContent ?? '';
+
+    expect(text).toContain('2 de 5 objetos están en la lista ordenada.');
+    expect(text).toContain('3 objetos sin ordenar');
+    expect(text).toContain('Posición 1:');
+    expect(text).not.toContain('unsorted');
+    expect(
+      [...container.querySelectorAll('[data-tile-id][aria-label]')].map((el) => el.getAttribute('aria-label')),
+    ).toContain(
+      'Objeto ordenado Antigone freely admits to Creon that she buried her brother. En la posición 1 de 5. Presiona Intro para seleccionar o Tab para ir a otro objeto',
+    );
+  });
+
   it('reads as the spec’s example does', async () => {
     const { container } = await renderItem('gather', ['2', undefined, undefined, '3', undefined]);
     const text = container.textContent ?? '';
