@@ -32,22 +32,22 @@ describe('inline-dropdown region name', () => {
     ['en_US', 'Inline Dropdown Question'],
     ['es_ES', 'Pregunta con menú desplegable'],
     [undefined, 'Inline Dropdown Question'],
-  ])('follows the %s item language', (language, name) => {
+  ])('follows the %s item language', async (language, name) => {
     const element = mount();
 
     element.model = { markup: '<div></div>', language };
     element.session = {};
 
-    expect(element.getAttribute('aria-label')).toBe(name);
+    await vi.waitFor(() => expect(element.getAttribute('aria-label')).toBe(name));
   });
 
-  it('follows a language change after the first render', () => {
+  it('follows a language change after the first render', async () => {
     const element = mount();
     element.model = { markup: '<div></div>', language: 'en_US' };
     element.session = {};
 
     element.model = { markup: '<div></div>', language: 'es_ES' };
 
-    expect(element.getAttribute('aria-label')).toBe('Pregunta con menú desplegable');
+    await vi.waitFor(() => expect(element.getAttribute('aria-label')).toBe('Pregunta con menú desplegable'));
   });
 });

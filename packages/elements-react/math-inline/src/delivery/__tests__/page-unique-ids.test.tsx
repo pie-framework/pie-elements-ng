@@ -15,13 +15,21 @@ const LOAD = { timeout: 10_000 };
 beforeAll(async () => {
   const { loadMathLive } = await import('@pie-lib/math-input-mathlive');
   await loadMathLive();
+  // The custom element holds its first render until the chrome locale is resident; so does this.
+  const { loadLocale } = await import('@pie-element/shared-i18n');
+  await loadLocale('es_ES');
 });
 
 const { Main } = await import('../main');
 const { default: SimpleQuestionBlock } = await import('../simple-question-block');
 
 // main.tsx is untyped, so its class declares no props.
-const MathInline = Main as unknown as React.ComponentType<{ model: object; session: object; onSessionChange: () => void }>;
+const MathInline = Main as unknown as React.ComponentType<{
+  model: object;
+  session: object;
+  language?: string;
+  onSessionChange: () => void;
+}>;
 
 const item = (language?: string) => (
   <MathInline
@@ -36,6 +44,8 @@ const item = (language?: string) => (
       },
     }}
     session={{ answers: { r1: { value: '' }, r2: { value: '' } } }}
+    // The element passes the player's locale, else the declared language.
+    language={language}
     onSessionChange={vi.fn()}
   />
 );
@@ -83,7 +93,7 @@ describe('math-inline keypad instructions', () => {
     ['en_US', /^This field supports both keypad and keyboard input\./],
     ['es_ES', /^Este campo admite la entrada con el teclado en pantalla y con el teclado físico\./],
     [undefined, /^This field supports both keypad and keyboard input\./],
-  ])('are in the %s item language', async (language, text) => {
+  ])('are in the %s chrome language', async (language, text) => {
     const { container } = await renderItem(language);
 
     for (const id of describedBy(container)) {
