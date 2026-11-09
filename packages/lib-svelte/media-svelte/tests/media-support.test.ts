@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // DOMPurify under happy-dom drops allowed block elements such as <p>.
 import { describe, expect, it } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import {
   DEFAULT_MEDIA_UI_TEXT,
   hasTranscriptContent,
@@ -15,12 +16,14 @@ function parseSanitizedHtml(html: string): HTMLDivElement {
 }
 
 describe('media UI text', () => {
-  it('uses English as the default and fallback language', () => {
+  it('uses English as the default and for a locale it does not ship', async () => {
+    await loadLocale('xx');
     expect(resolveMediaUiText(undefined)).toEqual(DEFAULT_MEDIA_UI_TEXT);
-    expect(resolveMediaUiText('fr-CA')).toEqual(DEFAULT_MEDIA_UI_TEXT);
+    expect(resolveMediaUiText('xx')).toEqual(DEFAULT_MEDIA_UI_TEXT);
   });
 
-  it('resolves Spanish regional tags and applies non-blank overrides last', () => {
+  it('resolves Spanish regional tags and applies non-blank overrides last', async () => {
+    await loadLocale('es-MX');
     expect(
       resolveMediaUiText('es-MX', {
         showTranscript: '   ',

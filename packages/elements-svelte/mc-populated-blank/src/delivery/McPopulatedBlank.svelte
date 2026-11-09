@@ -5,6 +5,7 @@
       model: { type: 'Object' },
       session: { type: 'Object' },
       options: { type: 'Object' },
+      interfaceLocale: { type: 'String' },
       onSessionChange: {},
       onAudioStarted: {},
       onAudioEnded: {},
@@ -34,21 +35,41 @@ import {
   getVariantRootClass,
   VARIANT_CSS_KEY,
 } from './variant-css-map';
-import { t as translate, tCommon } from './i18n';
+import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
+import { residentLanguage } from './resident-language.svelte.js';
 import { selectedChoiceId } from '../shared/session';
 
 const BLANK_TOKEN = '{{blank}}';
 
-let { model, session, onSessionChange, onAudioStarted, onAudioEnded, onAudioFailed } = $props<{
+let {
+  model,
+  session,
+  interfaceLocale = undefined,
+  onSessionChange,
+  onAudioStarted,
+  onAudioEnded,
+  onAudioFailed,
+} = $props<{
   model?: any;
   session?: any;
   options?: any;
+  /** The locale the player publishes; the element shell sets it. */
+  interfaceLocale?: string;
   onSessionChange?: (session: any) => void;
   onAudioStarted?: () => void;
   onAudioEnded?: () => void;
   onAudioFailed?: () => void;
 }>();
-const t = (key: string) => translate(key, model?.language);
+// The chrome speaks the locale the player publishes, else the item's declared
+// language (the controller folds `locale` into `language`), else `en-US`, and
+// renders once that locale's catalogs are resident.
+const language = residentLanguage(() =>
+  model ? interfaceLocale || model.language || undefined : null
+);
+const i18n = $derived(catalogs.forLocale(language.current));
+const chromeLanguageAttributes = $derived(elementLanguageAttributes(language.current));
+const t = (key: Parameters<typeof i18n.t>[0]) => i18n.t(key);
 let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
@@ -176,12 +197,6 @@ const templateDescribedBy = $derived.by(() => (hasVisiblePrompt ? promptId : und
 // ---------------------------------------------------------------------------
 // Misc — locale, audio error, template parsing, variant CSS, style strings
 // ---------------------------------------------------------------------------
-// An item with no language gets no `lang`, so it inherits the host page's instead
-// of being announced as English. `es_MX` is written as the BCP 47 tag `es-MX`.
-const lang = $derived.by(() => {
-  const language = String(model?.language || model?.locale || '').trim();
-  return language ? language.replace(/_/g, '-') : undefined;
-});
 const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
 const variantRootClass = $derived(getVariantRootClass(model?.customType));
 const templateParts = $derived.by(() => {
@@ -297,17 +312,17 @@ $effect(() => {
 });
 </script>
 
+{#if language.current !== null}
 <div
   bind:this={rootEl}
   class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} choice-mode-${choiceMode} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''} ${hasHeader ? 'has-header' : ''}`}
-  lang={lang}
   style={layout.rootStyle}
   data-mpb-css={VARIANT_CSS_KEY}
 >
   {#if hasHeader}
     <div class="pie-header">
       {#if model?.teacherInstructions}
-        <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
+        <TeacherInstructions html={model.teacherInstructions} language={language.current} />
       {/if}
 
       {#if hasVisiblePrompt}
@@ -323,6 +338,7 @@ $effect(() => {
             style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
             aria-pressed={showCorrectAnswer}
             data-testid="show-correct-answer"
+            {...chromeLanguageAttributes}
           >
             <span class="pie-correct-answer-toggle-content">
               <span class="pie-correct-answer-toggle-icon-holder" aria-hidden="true">
@@ -375,7 +391,7 @@ $effect(() => {
                 {/if}
               </span>
               <span class="pie-correct-answer-toggle-label">
-                {tCommon(showCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
+                {t(showCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer')}
               </span>
             </span>
           </button>
@@ -390,7 +406,7 @@ $effect(() => {
     {useFeatureButtonAudio}
     autoplayEnabled={autoplayAudioOn(model)}
     {featureAudioSkin}
-    language={model?.language}
+    language={language.current}
     onaudiostarted={onAudioStarted}
     onaudioended={onAudioEnded}
     onaudiofailed={onAudioFailed}
@@ -413,7 +429,7 @@ $effect(() => {
         blankWidth={layout.blankWidth}
         blankBorderWidth={layout.blankBorderWidth}
         ariaLabel={t('blankLabel')}
-        language={model?.language}
+        language={language.current}
       />{@html sanitizeModelHtml(templateParts.after)}</div>
   {/if}
 
@@ -446,12 +462,13 @@ $effect(() => {
           {isEvaluateMode}
           {instanceId}
           {radioGroupName}
-          language={model?.language}
+          language={language.current}
         />
       {/each}
     </div>
   </fieldset>
 </div>
+{/if}
 
 <style>
   .sr-only {

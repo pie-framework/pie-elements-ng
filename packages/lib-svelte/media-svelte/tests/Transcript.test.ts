@@ -66,6 +66,7 @@ describe('Transcript', () => {
 
     expect(target.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
     expect(target.querySelector('button')?.textContent?.trim()).toBe('Cerrar transcripción');
+    expect(target.querySelector('button')?.getAttribute('lang')).toBe('es-ES');
     expect(target.querySelector('section')?.getAttribute('lang')).toBe('en-US');
     expect(target.querySelector('section')?.hidden).toBe(false);
   });

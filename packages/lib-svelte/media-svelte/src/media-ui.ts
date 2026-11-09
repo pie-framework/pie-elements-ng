@@ -1,31 +1,26 @@
+import { catalogs } from './i18n/index.js';
 import type { MediaUiText } from './types.js';
-
-export const DEFAULT_MEDIA_UI_TEXT: Readonly<MediaUiText> = Object.freeze({
-  showTranscript: 'Show transcript',
-  hideTranscript: 'Hide transcript',
-  viewTranscript: 'View transcript',
-});
-
-const SPANISH_MEDIA_UI_TEXT: Readonly<MediaUiText> = Object.freeze({
-  showTranscript: 'Mostrar transcripción',
-  hideTranscript: 'Ocultar transcripción',
-  viewTranscript: 'Ver transcripción',
-});
 
 function nonBlankOverride(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value : undefined;
 }
 
+/**
+ * The transcript controls' strings in `language`, the chrome language, with the item's non-blank
+ * overrides last. A locale whose catalog is not resident yet reads as English.
+ */
 export function resolveMediaUiText(
   language?: string,
   overrides?: Partial<MediaUiText>
 ): MediaUiText {
-  const baseLanguage = language?.trim().toLowerCase().split(/[-_]/, 1)[0];
-  const defaults = baseLanguage === 'es' ? SPANISH_MEDIA_UI_TEXT : DEFAULT_MEDIA_UI_TEXT;
+  const i18n = catalogs.forLocale(language);
 
   return {
-    showTranscript: nonBlankOverride(overrides?.showTranscript) ?? defaults.showTranscript,
-    hideTranscript: nonBlankOverride(overrides?.hideTranscript) ?? defaults.hideTranscript,
-    viewTranscript: nonBlankOverride(overrides?.viewTranscript) ?? defaults.viewTranscript,
+    showTranscript: nonBlankOverride(overrides?.showTranscript) ?? i18n.t('showTranscript'),
+    hideTranscript: nonBlankOverride(overrides?.hideTranscript) ?? i18n.t('hideTranscript'),
+    viewTranscript: nonBlankOverride(overrides?.viewTranscript) ?? i18n.t('viewTranscript'),
   };
 }
+
+/** The English strings, with no overrides. */
+export const DEFAULT_MEDIA_UI_TEXT: Readonly<MediaUiText> = Object.freeze(resolveMediaUiText());

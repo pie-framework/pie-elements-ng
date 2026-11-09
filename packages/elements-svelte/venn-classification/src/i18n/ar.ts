@@ -1,0 +1,36 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  tray: 'بطاقات للتصنيف',
+  unknownTarget: 'غير معروف',
+  cancelled: 'تم الإلغاء',
+  returnedToTray: 'أُعيد {name} إلى الدرج',
+  placedIn: 'وُضع {name} في {target}',
+  pickedUp: 'التُقط {name}',
+  pickedUpWithKeyboard:
+    'التُقط {name}، الهدف: {target}. استخدام مفاتيح الأسهم لاختيار هدف، وEnter للإفلات، وEscape للإلغاء.',
+  dropTarget: 'الهدف: {target}',
+  unsupportedCircles: {
+    zero: 'لا يمكن عرض هذا المخطط: لا يحتوي على أي دائرة ({count})، ولا يُدعم إلا {supported}.',
+    one: 'لا يمكن عرض هذا المخطط: يحتوي على دائرة واحدة ({count})، ولا يُدعم إلا {supported}.',
+    two: 'لا يمكن عرض هذا المخطط: يحتوي على دائرتين ({count})، ولا يُدعم إلا {supported}.',
+    few: 'لا يمكن عرض هذا المخطط: يحتوي على {count} دوائر، ولا يُدعم إلا {supported}.',
+    many: 'لا يمكن عرض هذا المخطط: يحتوي على {count} دائرةً، ولا يُدعم إلا {supported}.',
+    other: 'لا يمكن عرض هذا المخطط: يحتوي على {count} دائرة، ولا يُدعم إلا {supported}.',
+  },
+  setNumber: 'المجموعة {number}',
+  regionOnly: '{set} فقط',
+  regionNeither: 'لا {first} ولا {second}',
+  regionNoneOf: 'لا شيء من {sets}',
+  regionAndSeparator: ' و',
+  listSeparator: '، ',
+  tileFallbackName: 'بطاقة',
+  tileNotPlaced: 'غير موضوعة',
+  tileInRegion: 'في {region}',
+  tileCorrect: 'صحيحة',
+  tileIncorrect: 'غير صحيحة',
+  showCorrectAnswer: 'عرض الإجابة الصحيحة',
+  hideCorrectAnswer: 'إخفاء الإجابة الصحيحة',
+  showTeacherInstructions: 'عرض تعليمات المعلم',
+  hideTeacherInstructions: 'إخفاء تعليمات المعلم',
+} satisfies MessageCatalog;
