@@ -42,6 +42,16 @@ describe('solution set sections', () => {
     expect(findSelectedSection(sections, { x: 0, y: 2 }, { x: -0.3, y: 2.1 })).toBe(left);
   });
 
+  it('keeps a small section on a small grid', () => {
+    // A triangle of 0.001 square units, a thousandth of this grid
+    const unit = { min: 0, max: 1 };
+    const lines = [line({ x: 0.9, y: 0.6 }, { x: 0.6, y: 0.3 }), line({ x: 1, y: 0.6 }, { x: 0.4, y: 0.1 })];
+    const sections = findSectionsInSolutionSet({ numberOfLines: 2 }, lines, unit, unit).sections;
+
+    expect(sections).toHaveLength(4);
+    expect(findSelectedSection(sections, { x: 0.29, y: 0.01 })).toContainEqual({ x: 0.28, y: 0 });
+  });
+
   it('treats polygon boundaries as inside', () => {
     const square = [
       { x: 0, y: 0 },
