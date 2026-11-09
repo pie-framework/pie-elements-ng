@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
   name?: string;
@@ -19,7 +20,7 @@ export default defineConfig(({ mode, command }) => {
 
   // Build mode: build the library
   return {
-  plugins: [react()],
+  plugins: [react(), thirdPartyLicenses()],
   test: {
     environment: 'happy-dom',
     setupFiles: [resolve(__dirname, 'vitest.setup.ts')],

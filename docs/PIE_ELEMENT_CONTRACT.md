@@ -97,6 +97,10 @@ Every element package also exports `./package.json`, so a host reads the install
 
 Sourcemaps may be published, but they must include source content so consumers can debug without unpacked source files.
 
+### Third-Party License Notices
+
+A package ships the license notices of every third-party package its build output bundles. Each Vite build in the workspace uses `thirdPartyLicenses()` from `tools/vite/third-party-licenses.ts`, which writes the license and NOTICE files of each bundled package to `THIRD_PARTY_LICENSES.txt` at the root of a multi-chunk build, or to `<chunk>.THIRD_PARTY_LICENSES.txt` beside the single chunk of a single-file build (`dist/index.iife.THIRD_PARTY_LICENSES.txt`, `module/print.THIRD_PARTY_LICENSES.txt`). A build that bundles another workspace package's output carries over the notices that output ships, so private packages build with the plugin too, and a build fails when it bundles a vendored copy no notices file covers.
+
 ### Self-Contained Svelte
 
 A client installs a PIE package and nothing else. No publishable manifest lists `svelte` in `dependencies`, `peerDependencies` or `optionalDependencies`, and no shipped JavaScript imports `svelte` or `svelte/*`: Svelte element builds inline the Svelte runtime. `@pie-element/element-bundler` is exempt from the `dependencies` rule, because it compiles elements.
@@ -289,7 +293,7 @@ runtime.
 ### Legacy-Compatible Print Packaging
 
 Packages that declare `exports["./print"]` may additionally publish a second, unrelated print artifact at the package root:
-- `module/print.js` (and its sourcemap `module/print.js.map`)
+- `module/print.js` (and its sourcemap `module/print.js.map`, and `module/print.THIRD_PARTY_LICENSES.txt`)
 - `module/assets/`, the assets the stylesheets `module/print.js` installs reference, as browser ESM chunks do
 
 This exists solely so the unmodified, currently-deployed `@pie-framework/pie-print` client loader — which fetches `<pkg>/module/print.js` directly by CDN path and does a bare `import()` with no import map — can load `pie-elements-ng` print bundles. It is **not** part of the `./browser/print` contract above: `dist/browser/print/index.js` stays the artifact for the new `pie-players/pie-print-player`, which does inject an import map. `module/print.js` is fully self-contained instead (no externals, React included), because its loader injects nothing. See [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) and [`docs/prds/legacy-print-compatibility/PRD.md`](prds/legacy-print-compatibility/PRD.md).
@@ -372,6 +376,7 @@ The aggregate verifier runs the contract-relevant checks for:
 - controller/configure packaging and compatibility shims,
 - runtime-support export coverage,
 - JSON Schema exports on element packages,
-- sourcemap source content.
+- sourcemap source content,
+- third-party license notices.
 
 Release publishing and full lint checks must include this verifier so new and changed packages cannot silently drift from the contract.

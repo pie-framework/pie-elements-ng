@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { noCdnHosts } from './vite.no-cdn';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 const require = createRequire(join(__dirname, 'package.json'));
 const packageDir = (name: string) => realpathSync(dirname(require.resolve(`${name}/package.json`)));
@@ -118,7 +119,7 @@ function bundledMathjax(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [bundledMathjax(), noCdnHosts()],
+  plugins: [bundledMathjax(), noCdnHosts(), thirdPartyLicenses()],
   // The fonts import @mathjax/src without declaring it.
   resolve: { dedupe: ['@mathjax/src', '@mathjax/mathjax-newcm-font'] },
   build: {

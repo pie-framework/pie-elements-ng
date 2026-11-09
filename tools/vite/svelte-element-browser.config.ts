@@ -5,6 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 import { browserPackageIdentity, readPackageIdentity } from './browser-package-identity.ts';
+import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
 const configDir = dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,7 @@ if (Object.keys(entries).length === 0) {
 export default defineConfig({
   root: packageDir,
   plugins: [
+    thirdPartyLicenses(),
     esmExternalRequirePlugin({
       external: allowedBareImportSpecifiers,
     }),

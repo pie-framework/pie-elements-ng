@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { runPublishSurfaceCheck } from './check-publish-surface.mjs';
 import { runSourcemapSourceCheck } from './check-sourcemap-sources.mjs';
+import { runThirdPartyNoticeCheck } from './check-third-party-notices.mjs';
 import { createPackageSnapshots } from './lib/package-inspection.mjs';
 
 const childSteps = [
@@ -46,6 +47,10 @@ export const createContractSteps = ({
   {
     name: 'Sourcemap source contract',
     run: (io) => runSourcemapSourceCheck({ root, snapshots, ...io }),
+  },
+  {
+    name: 'Third-party license notices',
+    run: (io) => runThirdPartyNoticeCheck({ root, snapshots, ...io }),
   },
 ];
 
