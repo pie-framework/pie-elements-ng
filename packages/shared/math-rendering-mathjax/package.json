@@ -27,7 +27,7 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && vite build --config vite.browser.config.ts && vite build --config vite.mathml.config.ts && tsc --emitDeclarationOnly && tsc -p tsconfig.browser.json && bun build-assets.ts",
     "dev": "vite build --watch",
-    "test": "vitest",
+    "test": "bun x vitest run --root ../../.. ./",
     "test:e2e": "playwright test",
     "clean": "rm -rf dist"
   },

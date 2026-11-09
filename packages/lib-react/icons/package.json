@@ -31,7 +31,7 @@
   "scripts": {
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
-    "test": "bun x vitest run"
+    "test": "bun x vitest run --root ../../.. ./"
   },
   "devDependencies": {
     "vite": "^8.3.6",
