@@ -1,0 +1,45 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  actions: 'الإجراءات',
+  add: 'إضافة',
+  delete: 'حذف',
+  newLabel: 'تسمية جديدة',
+  categoryLabel: 'تسمية الفئة {index}',
+  categoryLabelValue: 'تسمية الفئة {index}: {label}',
+  category: 'الفئة {index}',
+  warning: 'تحذير',
+  reachedLimit: {
+    zero: 'لا يمكن أن يكون هناك أكثر من {count} فئة.',
+    one: 'لا يمكن أن يكون هناك أكثر من فئة واحدة ({count}).',
+    two: 'لا يمكن أن يكون هناك أكثر من فئتين ({count}).',
+    few: 'لا يمكن أن يكون هناك أكثر من {count} فئات.',
+    many: 'لا يمكن أن يكون هناك أكثر من {count} فئةً.',
+    other: 'لا يمكن أن يكون هناك أكثر من {count} فئة.',
+  },
+  key: 'مفتاح الرموز',
+  keyLegend: {
+    incorrectAnswer: 'إجابة الطالب غير الصحيحة',
+    correctAnswer: 'إجابة الطالب الصحيحة',
+    correctKeyAnswer: 'صحيح وفق مفتاح الإجابة',
+  },
+  chartTypes: {
+    bar: 'مخطط أعمدة',
+    histogram: 'مدرج تكراري',
+    lineDot: 'مخطط خطي بنقاط',
+    lineCross: 'مخطط خطي بعلامات تقاطع',
+    dotPlot: 'مخطط نقطي',
+    linePlot: 'مخطط خطي للتكرارات',
+  },
+  categoriesNone: 'لا توجد فئات.',
+  categories: {
+    zero: 'لا توجد فئات ({count}): {categories}.',
+    one: 'فئة واحدة ({count}): {categories}.',
+    two: 'فئتان ({count}): {categories}.',
+    few: '{count} فئات: {categories}.',
+    many: '{count} فئةً: {categories}.',
+    other: '{count} فئة: {categories}.',
+  },
+  valueRange: 'القيم من {min} إلى {max}.',
+  labelledValueRange: '{label} من {min} إلى {max}.',
+} satisfies MessageCatalog;

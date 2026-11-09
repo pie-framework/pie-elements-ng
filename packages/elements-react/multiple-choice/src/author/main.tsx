@@ -21,6 +21,7 @@ import { generateValidationMessage } from './utils.js';
 import type { MultipleChoiceValidationErrors } from '../controller/index.js';
 import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 import type { Choice, MultipleChoiceConfiguration, MultipleChoiceModel } from '../types.js';
+import { labelIsNameless } from '../label-name.js';
 
 /** The model the author edits; the host sets `errors` from the controller's `validate()`. */
 export type AuthorModel = Partial<MultipleChoiceModel> & {
@@ -110,6 +111,12 @@ const StyledTooltip: any = styled(Tooltip)(({ theme }) => ({
     whiteSpace: 'pre',
     maxWidth: '500px',
   },
+}));
+
+const HintText: any = styled('div')(({ theme }) => ({
+  fontSize: theme.typography.fontSize - 2,
+  color: theme.palette.text.secondary,
+  paddingTop: theme.spacing(1),
 }));
 
 const ErrorText: any = styled('div')(({ theme }) => ({
@@ -336,6 +343,9 @@ const Design = (props: DesignProps) => {
             uploadSoundSupport={uploadSoundSupport}
             mathMlOptions={mathMlOptions}
           />
+          {choice.label?.includes('<img') && labelIsNameless(choice.label) && (
+            <HintText>Add alt text to the image so screen readers can name this choice.</HintText>
+          )}
 
           {rationaleEnabled && (
             <RationaleHolder key={`rationale-${index}`} label={rationale.label}>

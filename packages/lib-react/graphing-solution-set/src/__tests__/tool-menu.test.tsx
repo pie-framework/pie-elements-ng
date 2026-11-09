@@ -54,3 +54,20 @@ describe('ToolMenu line selection', () => {
     expect(ids()).toEqual(before);
   });
 });
+
+describe('ToolMenu line type buttons', () => {
+  it('exposes the selected line type as pressed', () => {
+    render(<ToolMenu gssLineData={lineData(1)} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Solid' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Dashed' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('takes its labels from the catalog', async () => {
+    render(<ToolMenu gssLineData={lineData(2)} onChange={vi.fn()} language="es" />);
+
+    expect(await screen.findByRole('radio', { name: 'Línea B' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Conjunto solución' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Discontinua' })).toHaveLength(2);
+  });
+});

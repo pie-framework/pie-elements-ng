@@ -190,6 +190,11 @@ export default {
       correctMarkLabel: 'Etiqueta correcta en ({{x}}, {{y}})',
       redo: 'Rehacer',
       reset: 'Reiniciar',
+      lineA: 'Línea A',
+      lineB: 'Línea B',
+      solutionSet: 'Conjunto solución',
+      solid: 'Continua',
+      dashed: 'Discontinua',
       keyLegend: {
         missingRequiredLabel: 'Falta una etiqueta obligatoria',
         answerKeyCorrect: 'Clave de respuesta correcta',

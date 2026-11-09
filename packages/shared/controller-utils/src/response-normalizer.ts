@@ -25,6 +25,12 @@ export interface NormalizeOptions {
    * because it changes what counts as correct spelling.
    */
   foldLetterVariants?: boolean;
+  /** Collapse each run of whitespace, non-breaking spaces included, to one space and trim the ends. */
+  collapseWhitespace?: boolean;
+  /** Remove whitespace around `/`, so `3 / 4` compares equal to `3/4`. */
+  ignoreSlashSpacing?: boolean;
+  /** Remove the combining diacritics U+0300–U+036F, so `é` compares equal to `e`. */
+  ignoreAccents?: boolean;
 }
 
 // U+061C ALM, LRM, RLM, the embeddings and overrides U+202A–U+202E, the
@@ -141,7 +147,8 @@ export const foldCase = (value: string, language?: string): string => {
  * when the options ask for it; bidi controls and tatweel removed; Arabic
  * presentation forms folded to base letters; NFC; every decimal digit folded
  * to 0–9; `٫` and `٬` replaced by the content language's decimal and group
- * marks. Arabic letter variants fold only when the options ask for it.
+ * marks. Arabic letter variants, accents, whitespace runs and the spacing
+ * around `/` fold only when the options ask for it.
  */
 export const normalizeResponse = (value: string, options: NormalizeOptions = {}): string => {
   const marks = marksFor(options.language);
@@ -164,6 +171,18 @@ export const normalizeResponse = (value: string, options: NormalizeOptions = {})
       .replace(ALEF_FORMS, '\u0627')
       .replace(/\u0629/g, '\u0647')
       .replace(/\u0649/g, '\u064A');
+  }
+  if (options.ignoreAccents) {
+    result = result
+      .normalize('NFD')
+      .replace(/[\u0300-\u036F]/g, '')
+      .normalize('NFC');
+  }
+  if (options.collapseWhitespace) {
+    result = result.replace(/\s+/g, ' ').trim();
+  }
+  if (options.ignoreSlashSpacing) {
+    result = result.replace(/\s*\/\s*/g, '/');
   }
   return result;
 };
