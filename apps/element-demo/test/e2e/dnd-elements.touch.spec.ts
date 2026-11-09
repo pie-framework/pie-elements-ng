@@ -298,6 +298,31 @@ const centresOf = (choices: Locator, print: string) =>
     print
   );
 
+/**
+ * The centre of an element in its layout: its place on screen plus how far the page and every
+ * container around it are scrolled, so scrolling alone does not move it.
+ */
+const layoutPosition = (el: Locator) =>
+  el.evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    let x = box.x + box.width / 2;
+    let y = box.y + box.height / 2;
+    // The page's own scroll is the root element's, so the walk covers it.
+    for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+      x += parent.scrollLeft;
+      y += parent.scrollTop;
+    }
+    return { x, y };
+  });
+
+const DROP_MARK = 'data-e2e-drop-target';
+
+/** Tags a drop target, so it can be found again after a drop whatever the locator then finds. */
+const markDropTarget = (target: Locator, name: string) =>
+  target.evaluate((el, [attr, value]) => el.setAttribute(attr, value), [DROP_MARK, name] as const);
+
+const markedDropTarget = (page: Page, name: string) => page.locator(`[${DROP_MARK}="${name}"]`);
+
 /** Whether a point is in the box, give or take what a placed choice overhangs it by. */
 const inBox = (point: { x: number; y: number }, box: Box, margin = 24) =>
   point.x >= box.x - margin &&
@@ -341,6 +366,7 @@ test.describe('drag-and-drop elements under touch', () => {
           const choice = item.choices(root).first();
           await centreInViewport(choice, item.target(root));
           const start = await centerOf(choice);
+          const startInLayout = await layoutPosition(choice);
           await recordPointers(page, 'pointercancel');
           await touchDragCancelled(page, start, await centerOf(item.target(root)));
           // The cancel reached the page; otherwise "nothing happened" proves nothing.
@@ -355,8 +381,13 @@ test.describe('drag-and-drop elements under touch', () => {
           expect(await choice.evaluate((el) => getComputedStyle(el).transform)).toMatch(
             /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/
           );
-          const end = await centerOf(choice);
-          expect(Math.abs(end.x - start.x) + Math.abs(end.y - start.y)).toBeLessThan(4);
+          // Where the choice sits in the layout, not on screen: the drag may have autoscrolled the
+          // page or a container (match-list scrolls sideways on a phone), and the cancel leaves
+          // that scroll as it is.
+          const end = await layoutPosition(choice);
+          expect(
+            Math.abs(end.x - startInLayout.x) + Math.abs(end.y - startInLayout.y)
+          ).toBeLessThan(4);
 
           // Not wedged: the same choice can still be dragged in.
           await touchDragBetween(page, choice, item.target(root), {
@@ -382,15 +413,16 @@ test.describe('drag-and-drop elements under touch', () => {
           const secondChoice = await fingerprint(choices.nth(1));
           expect(firstChoice).not.toBe('');
           expect(secondChoice).not.toBe(firstChoice);
-          // Where the targets are before anything lands in them, as a placed choice moves what is
-          // around it.
           await centreInViewport(choices.first(), item.target(root), item.otherTarget(root));
           // An element whose placed choices are not in the DOM under their target is read from the
           // session, by the id on the tile.
           const firstKey = (await choices.first().getAttribute('data-tile-id')) ?? '';
           const secondKey = (await choices.nth(1).getAttribute('data-tile-id')) ?? '';
-          const targetBox = await boxOf(item.target(root));
-          const otherBox = await boxOf(item.otherTarget(root));
+          // Mark both targets now: placing a choice can change which element a target locator
+          // finds (the first empty blank moves on), and on a phone it reflows the page, so the
+          // check after the drop measures these same elements where they then are.
+          await markDropTarget(item.target(root), 'target');
+          await markDropTarget(item.otherTarget(root), 'other');
           await recordPointers(page, 'pointerdown');
           // The second finger picks up another choice and heads for another target, so a drag
           // started under it would place a second choice.
@@ -423,6 +455,8 @@ test.describe('drag-and-drop elements under touch', () => {
             );
             expect(item.landedIn(session, secondKey), "the second finger's choice").toBeNull();
           } else {
+            const targetBox = await boxOf(markedDropTarget(page, 'target'));
+            const otherBox = await boxOf(markedDropTarget(page, 'other'));
             const first = await centresOf(choices, firstChoice);
             const second = await centresOf(choices, secondChoice);
             expect(
