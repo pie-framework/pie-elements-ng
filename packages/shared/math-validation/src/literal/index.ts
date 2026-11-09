@@ -3,8 +3,6 @@ import type { MathNode } from 'mathjs';
 import { sort } from '../node-sort.js';
 import type { LiteralOpts } from '../options.js';
 
-export type { LiteralOpts };
-
 const { simplify } = mathjs;
 
 export const isMathEqual = (a: MathNode, b: MathNode, opts?: LiteralOpts) => {

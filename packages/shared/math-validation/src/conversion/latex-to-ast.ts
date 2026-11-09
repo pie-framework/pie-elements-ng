@@ -25,8 +25,6 @@ import { flatten } from './flatten.js';
  *
  */
 
-// UPDATETHIS: Is this grammar still correct?
-
 /* Grammar:
 
    statement_list =
@@ -493,12 +491,12 @@ export const DEFAULT_OPTS: Opts = {
   functionSymbols: ['f', 'g'],
   parseLeibnizNotation: true,
   missingFactor: missingFactorDefaultBehavior,
-  unknownCommandBehavior: 'error',
+  // 'passthrough' reads an unknown command such as \foo as the variable foo
+  unknownCommandBehavior: 'passthrough',
   keepMixedNumbers: false,
 };
 
 export class LatexToAst {
-  private unknownCommandBehavior?: string;
   private lexer: lexer;
   private token!: Token;
   private opts: Opts;
@@ -1037,26 +1035,15 @@ export class LatexToAst {
             last_token = this.token.token_type;
             this.advance();
           } else {
-            if (
-              // biome-ignore lint/correctness/noConstantCondition: always true as inherited; tightening it would change what parses.
-              last_token === '&' ||
-              last_token === 'LINEBREAK' ||
-              'BEGINENVIRONMENT'
-            ) {
-              row.push(
-                this.statement({
-                  parse_absolute_value: parse_absolute_value,
-                  unknownCommands: unknownCommands,
-                })
-              );
-              n_this_row += 1;
-              last_token = ' ';
-            } else {
-              throw new ParseError(
-                'Invalid location of ' + this.token.original_text,
-                this.lexer.location
-              );
-            }
+            // any other token starts an entry, wherever it is
+            row.push(
+              this.statement({
+                parse_absolute_value: parse_absolute_value,
+                unknownCommands: unknownCommands,
+              })
+            );
+            n_this_row += 1;
+            last_token = ' ';
           }
         }
 
@@ -1254,7 +1241,7 @@ export class LatexToAst {
           this.opts.allowedLatexSymbols.includes(result);
 
         if (!isKnownCommand) {
-          if (this.unknownCommandBehavior === 'error') {
+          if (this.opts.unknownCommandBehavior === 'error') {
             throw new ParseError(
               'Unrecognized latex command ' + this.token.original_text,
               this.lexer.location

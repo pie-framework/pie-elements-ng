@@ -1,6 +1,5 @@
 import { LatexToAst } from './conversion/latex-to-ast.js';
-
-export type Latex = string;
+import type { Latex } from './options.js';
 
 /** A rational in lowest terms with a positive denominator, so equal values have equal parts. */
 type Rational = { n: number; d: number };

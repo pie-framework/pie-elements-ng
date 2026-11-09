@@ -39,15 +39,8 @@ const operators: Record<string, (operands: any) => any> = {
   '/': (operands) => new m.OperatorNode('/', 'divide', operands),
   '-': (operands) => new m.OperatorNode('-', 'unaryMinus', [operands[0]]),
   '^': (operands) => new m.OperatorNode('^', 'pow', operands),
-  //"prime": function(operands) { return operands[0] + "'"; },
-  // tuple: function (operands) {
-  //   return new m.ArrayNode(operands);
-  // },
   list: (operands) => new m.ArrayNode(operands),
-  //"array": function(operands) { return '\\left[ ' + operands.join( ', ' ) + ' \\right]';},
-  //"set": function(operands) { return '\\left\\{ ' + operands.join( ', ' ) + ' \\right\\}';},
   vector: (operands) => new m.ArrayNode(operands),
-  //"interval": function(operands) { return '\\left( ' + operands.join( ', ' ) + ' \\right)';},
   and: (operands) => new m.OperatorNode('and', 'and', operands),
   or: (operands) => new m.OperatorNode('or', 'or', operands),
   not: (operands) => new m.OperatorNode('not', 'not', [operands[0]]),
@@ -61,8 +54,6 @@ const operators: Record<string, (operands: any) => any> = {
     return result;
   },
   ne: (operands) => new m.OperatorNode('!=', 'unequal', operands),
-  //"union": function (operands) { return operands.join(' \\cup '); },
-  //"intersect": function (operands) { return operands.join(' \\cap '); },
   tzn: (operands) => new m.FunctionNode('tzn', operands),
   '≈': (operands) => new m.FunctionNode('≈', operands),
   '≉': (operands) => new m.FunctionNode('≉', operands),
@@ -73,26 +64,13 @@ const operators: Record<string, (operands: any) => any> = {
   '≆': (operands) => new m.FunctionNode('≆', operands),
 };
 
-export type AstToMathJsOpts = {
-  number?: string;
-};
-
 export class AstToMathJs {
-  /**
-   * Note: we use fractions as the default number format.
-   * So by default AstToMathJs will generate fractions too.
-   */
-  constructor(private opts: AstToMathJsOpts = { number: 'Fraction' }) {}
-
+  // numbers become fractions, matching the Fraction config of the shared mathjs instance
   convert(tree: any): any {
     if (typeof tree === 'number') {
       if (Number.isFinite(tree)) {
-        if (this.opts.number === 'Fraction') {
-          const f = new m.Fraction([new m.ConstantNode(tree), new m.ConstantNode(1)]);
-          return new m.ConstantNode(f);
-        } else {
-          return new m.ConstantNode(tree);
-        }
+        const f = new m.Fraction([new m.ConstantNode(tree), new m.ConstantNode(1)]);
+        return new m.ConstantNode(f);
       }
 
       if (Number.isNaN(tree)) return new m.SymbolNode('NaN');

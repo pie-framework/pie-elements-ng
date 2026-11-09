@@ -7,13 +7,10 @@ import { compareNumbers } from './value.js';
 
 import type { Latex, Opts } from './options.js';
 
-export type { Latex, Opts };
-export type RawAst = any[];
-
 const lta = new LatexToAst();
 const atm = new AstToMathJs();
 
-export const latexEqual = (a: Latex, b: Latex, opts: Opts) => {
+export const latexEqual = (a: Latex, b: Latex, opts: Opts): boolean => {
   const isNumeric = (str: string): boolean => /^\s*-?\d+(\.\d+)?\s*$/.test(str);
 
   if (!a || !b) {
