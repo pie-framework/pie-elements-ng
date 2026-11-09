@@ -1,0 +1,38 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: 'Coordinate graph',
+  axisRange: '{axis} axis from {min} to {max}.',
+  plottedNone: 'Nothing plotted.',
+  plotted: {
+    one: '{count} object plotted: {marks}.',
+    other: '{count} objects plotted: {marks}.',
+  },
+  point: 'Point',
+  circle: 'Circle',
+  line: 'Line',
+  parabola: 'Parabola',
+  absolute: 'Absolute Value',
+  exponential: 'Exponential',
+  polygon: 'Polygon',
+  ray: 'Ray',
+  segment: 'Segment',
+  sine: 'Sine',
+  vector: 'Vector',
+  label: 'Label',
+  markLabel: 'Label at ({x}, {y})',
+  correctMarkLabel: 'Correct label at ({x}, {y})',
+  undo: 'Undo',
+  redo: 'Redo',
+  reset: 'Reset',
+  key: 'Key',
+  keyLegend: {
+    missingRequiredLabel: 'Missing Required Label',
+    answerKeyCorrect: 'Answer Key Correct',
+    answerKeyCorrectLabel: 'Answer Key Correct Label',
+    studentIncorrect: 'Student Incorrect',
+    incorrectStudentLabel: 'Incorrect Student Label',
+    studentCorrect: 'Student Correct',
+    studentCorrectLabel: 'Student Correct Label',
+  },
+} satisfies MessageCatalog;

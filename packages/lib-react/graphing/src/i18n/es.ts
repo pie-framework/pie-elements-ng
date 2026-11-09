@@ -1,0 +1,38 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: 'Gráfica de coordenadas',
+  axisRange: 'Eje {axis} de {min} a {max}.',
+  plottedNone: 'Nada trazado.',
+  plotted: {
+    one: '{count} objeto trazado: {marks}.',
+    other: '{count} objetos trazados: {marks}.',
+  },
+  point: 'Punto',
+  circle: 'Circulo',
+  line: 'Línea',
+  parabola: 'Parábola',
+  absolute: 'Valor absoluto',
+  exponential: 'Exponencial',
+  polygon: 'Polígono',
+  ray: 'Semirrecta',
+  segment: 'Segmento ',
+  sine: 'Seno',
+  vector: 'Vector',
+  label: 'Etiqueta',
+  markLabel: 'Etiqueta en ({x}, {y})',
+  correctMarkLabel: 'Etiqueta correcta en ({x}, {y})',
+  undo: 'Deshacer',
+  redo: 'Rehacer',
+  reset: 'Reiniciar',
+  key: 'Clave',
+  keyLegend: {
+    missingRequiredLabel: 'Falta una etiqueta obligatoria',
+    answerKeyCorrect: 'Clave de respuesta correcta',
+    answerKeyCorrectLabel: 'Etiqueta correcta de la clave de respuesta',
+    studentIncorrect: 'Respuesta incorrecta del estudiante',
+    incorrectStudentLabel: 'Etiqueta incorrecta del estudiante',
+    studentCorrect: 'Respuesta correcta del estudiante',
+    studentCorrectLabel: 'Etiqueta correcta del estudiante',
+  },
+} satisfies MessageCatalog;

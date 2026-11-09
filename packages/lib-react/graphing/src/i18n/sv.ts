@@ -1,0 +1,38 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  graph: 'Koordinatsystem',
+  axisRange: '{axis}-axeln från {min} till {max}.',
+  plottedNone: 'Inget ritat.',
+  plotted: {
+    one: '{count} objekt ritat: {marks}.',
+    other: '{count} objekt ritade: {marks}.',
+  },
+  point: 'Punkt',
+  circle: 'Cirkel',
+  line: 'Linje',
+  parabola: 'Parabel',
+  absolute: 'Absolutbelopp',
+  exponential: 'Exponentiell',
+  polygon: 'Polygon',
+  ray: 'Stråle',
+  segment: 'Sträcka',
+  sine: 'Sinus',
+  vector: 'Vektor',
+  label: 'Etikett',
+  markLabel: 'Etikett vid ({x}; {y})',
+  correctMarkLabel: 'Rätt etikett vid ({x}; {y})',
+  undo: 'Ångra',
+  redo: 'Gör om',
+  reset: 'Återställ',
+  key: 'Teckenförklaring',
+  keyLegend: {
+    missingRequiredLabel: 'Obligatorisk etikett saknas',
+    answerKeyCorrect: 'Rätt enligt facit',
+    answerKeyCorrectLabel: 'Rätt etikett enligt facit',
+    studentIncorrect: 'Elevens felaktiga svar',
+    incorrectStudentLabel: 'Elevens felaktiga etikett',
+    studentCorrect: 'Elevens rätta svar',
+    studentCorrectLabel: 'Elevens rätta etikett',
+  },
+} satisfies MessageCatalog;

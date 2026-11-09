@@ -1,13 +1,11 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useReducer } from 'react';
 import { styled } from '@mui/material/styles';
 import Check from '@mui/icons-material/Check';
 import Close from '@mui/icons-material/Close';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 const rule = `1px solid ${color.v('pie')('border-light', 'lightgrey')}`;
 
@@ -70,20 +68,23 @@ const StyledIncorrectCloseIcon: any = styled(Close)(() => ({
 }));
 
 export const Legend = ({ language, showOnlyCorrect }) => {
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
+  const i18n = catalogs.forLocale(language, relabel);
   const legendItems = [
     {
       Icon: StyledCorrectCheckIcon,
-      label: translator.t('selectText.correctAnswerSelected', { lng: language }),
+      label: i18n.t('correctAnswerSelected'),
       Container: StyledCorrectContainer,
     },
     {
       Icon: StyledIncorrectCloseIcon,
-      label: translator.t('selectText.incorrectSelection', { lng: language }),
+      label: i18n.t('incorrectSelection'),
       Container: StyledIncorrectContainer,
     },
     {
       Icon: StyledIncorrectCloseIcon,
-      label: translator.t('selectText.correctAnswerNotSelected', { lng: language }),
+      label: i18n.t('correctAnswerNotSelected'),
       Container: StyledMissingContainer,
     },
   ];
@@ -94,7 +95,7 @@ export const Legend = ({ language, showOnlyCorrect }) => {
 
   return (
     <StyledFlexContainer>
-      <StyledKey>{translator.t('selectText.key', { lng: language })}</StyledKey>
+      <StyledKey>{i18n.t('key')}</StyledKey>
       {legendItems.map(({ Icon, label, Container }, idx) => (
         <Container key={idx}>
           <Icon />
