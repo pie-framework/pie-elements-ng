@@ -1,6 +1,6 @@
 import { logger } from '../log';
 import { mathjs } from '../mathjs';
-import { all, create, MathNode } from 'mathjs';
+import { all, create, type MathNode } from 'mathjs';
 import { sort } from '../node-sort';
 import { compareEquations } from './compare-equations';
 import { compareCompoundInequations } from './compare-compound-inequations';
@@ -191,7 +191,7 @@ const normalize = (a: string | MathNode | any) => {
   let pi = false;
   let containsInverseFlag = false;
 
-  r.traverse(function (node: any) {
+  r.traverse((node: any) => {
     if (node.isArrayNode) {
       containsArrayNode = true;
       node.items = node.items.map((item: any) => simplify(item));
@@ -368,22 +368,22 @@ export const isMathEqual = (a: any, b: any) => {
 
   // check for compound inequalities/3-way inequalities
   if (
-    //@ts-ignore
+    //@ts-expect-error
     as?.conditionals?.length === bs?.conditionals?.length &&
-    //@ts-ignore
+    //@ts-expect-error
     as?.conditionals?.length === 2 &&
-    //@ts-ignore
+    //@ts-expect-error
     as?.conditionals?.toString() === bs?.conditionals?.toString()
   ) {
     const params = ['smaller', 'smallerEq', 'larger', 'largerEq', 'equal', 'unequal'];
 
     const paramsIncludedA = params.some((param) =>
-      //@ts-ignore
+      //@ts-expect-error
       as.conditionals.includes(param)
     );
 
     const paramsIncludedB = params.some((param) =>
-      //@ts-ignore
+      //@ts-expect-error
       bs.conditionals.includes(param)
     );
 

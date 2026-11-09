@@ -1,5 +1,5 @@
 import { mathjs } from '../mathjs';
-import { all, create, MathNode } from 'mathjs';
+import { all, create, type MathNode } from 'mathjs';
 import { simplify as customSimplify } from './';
 const { simplify } = mathjs;
 
@@ -28,7 +28,7 @@ export const expressionsCanBeCompared = (
   let symbolNode: boolean = false;
   let seriesNode: boolean = false;
 
-  firstEquation.traverse(function (node) {
+  firstEquation.traverse((node) => {
     if (node.isSymbolNode) {
       firstSymbolNode = true;
       seriesNode = seriesNode || node.name!.includes('[');
@@ -36,7 +36,7 @@ export const expressionsCanBeCompared = (
     noFunctionOrArray = noFunctionOrArray || !!node.isFunctionNode || !!node.isArrayNode;
   });
 
-  secondEquation.traverse(function (node) {
+  secondEquation.traverse((node) => {
     if (node.isFunctionNode || node.isArrayNode) {
       noFunctionOrArray = false;
     }
@@ -205,7 +205,7 @@ const haveProportionalValues = (
 
   return factors.some((factor) => {
     const scaled = ratios.map(({ point, ratio }) =>
-      Object.keys(factor).reduce((acc, v) => acc / Math.pow(point[v], factor[v]), ratio)
+      Object.keys(factor).reduce((acc, v) => acc / point[v] ** factor[v], ratio)
     );
 
     return (
@@ -292,7 +292,7 @@ export const transformEqualityInExpression = (equality: MathNode) =>
 export const getVariables = (equation: MathNode) => {
   let variableNames: string[] = [];
 
-  equation.traverse(function (node) {
+  equation.traverse((node) => {
     if (node.isSymbolNode && node.name!.length === 1 && !variableNames.includes(node.name!)) {
       variableNames.push(node.name!);
     }

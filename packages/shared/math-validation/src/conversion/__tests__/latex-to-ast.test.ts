@@ -165,7 +165,7 @@ const fixtures = [
 const lta = new LatexToAst();
 
 describe('bugs in lta', () => {
-  // @ts-ignore
+  // @ts-expect-error
   it.each(fixtures)('%s => %s', (input, expected) => {
     // console.time("l-u");
     // const ast = latexParser.parse(input as string, { timeout: 5000 });

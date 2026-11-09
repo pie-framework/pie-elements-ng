@@ -1,5 +1,5 @@
 import { mathjs } from '../mathjs';
-import { MathNode } from 'mathjs';
+import type { MathNode } from 'mathjs';
 import { sort } from '../node-sort';
 import type { LiteralOpts } from '../options';
 

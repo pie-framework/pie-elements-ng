@@ -123,21 +123,21 @@ export const demo = () => {
       showAndHideLiteralOptions(mode);
       submit = true;
     }
-    // @ts-ignore
+    // @ts-expect-error
     document.querySelector('#validation-type').onchange = (event) => {
       showAndHideLiteralOptions(event.target);
     };
 
     allowTrailingZeros = document.getElementById('trailing-zeros') as HTMLInputElement;
 
-    // @ts-ignore
+    // @ts-expect-error
     allowTrailingZeros.checked = urlParams.get('trailing-zeros')
       ? decodeURIComponent(urlParams.get('trailing-zeros'))
       : false;
 
     ignoreOrder = document.getElementById('ignore-order') as HTMLInputElement;
 
-    // @ts-ignore
+    // @ts-expect-error
     ignoreOrder.checked = urlParams.get('ignore-order')
       ? decodeURIComponent(urlParams.get('ignore-order'))
       : false;

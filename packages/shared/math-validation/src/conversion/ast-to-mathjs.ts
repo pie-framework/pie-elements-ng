@@ -25,10 +25,8 @@ const log = logger('mv:ast-to-math');
 const m: any = mjs;
 
 const operators: Record<string, (operands: any) => any> = {
-  '+': function (operands) {
-    return new m.OperatorNode('+', 'add', operands);
-  },
-  '*': function (operands) {
+  '+': (operands) => new m.OperatorNode('+', 'add', operands),
+  '*': (operands) => {
     const [left, right] = operands;
     if (left?.type === 'ConstantNode' && right?.isUnit && typeof left.value === 'object') {
       const leftVal = left.value.valueOf();
@@ -38,83 +36,41 @@ const operators: Record<string, (operands: any) => any> = {
     }
     return new m.OperatorNode('*', 'multiply', operands);
   },
-  '/': function (operands) {
-    return new m.OperatorNode('/', 'divide', operands);
-  },
-  '-': function (operands) {
-    return new m.OperatorNode('-', 'unaryMinus', [operands[0]]);
-  },
-  '^': function (operands) {
-    return new m.OperatorNode('^', 'pow', operands);
-  },
+  '/': (operands) => new m.OperatorNode('/', 'divide', operands),
+  '-': (operands) => new m.OperatorNode('-', 'unaryMinus', [operands[0]]),
+  '^': (operands) => new m.OperatorNode('^', 'pow', operands),
   //"prime": function(operands) { return operands[0] + "'"; },
   // tuple: function (operands) {
   //   return new m.ArrayNode(operands);
   // },
-  list: function (operands) {
-    return new m.ArrayNode(operands);
-  },
+  list: (operands) => new m.ArrayNode(operands),
   //"array": function(operands) { return '\\left[ ' + operands.join( ', ' ) + ' \\right]';},
   //"set": function(operands) { return '\\left\\{ ' + operands.join( ', ' ) + ' \\right\\}';},
-  vector: function (operands) {
-    return new m.ArrayNode(operands);
-  },
+  vector: (operands) => new m.ArrayNode(operands),
   //"interval": function(operands) { return '\\left( ' + operands.join( ', ' ) + ' \\right)';},
-  and: function (operands) {
-    return new m.OperatorNode('and', 'and', operands);
-  },
-  or: function (operands) {
-    return new m.OperatorNode('or', 'or', operands);
-  },
-  not: function (operands) {
-    return new m.OperatorNode('not', 'not', [operands[0]]);
-  },
-  '<': function (operands) {
-    return new m.OperatorNode('<', 'smaller', operands);
-  },
-  '>': function (operands) {
-    return new m.OperatorNode('>', 'larger', operands);
-  },
-  le: function (operands) {
-    return new m.OperatorNode('<=', 'smallerEq', operands);
-  },
-  ge: function (operands) {
-    return new m.OperatorNode('>=', 'largerEq', operands);
-  },
-  _: function (operands) {
+  and: (operands) => new m.OperatorNode('and', 'and', operands),
+  or: (operands) => new m.OperatorNode('or', 'or', operands),
+  not: (operands) => new m.OperatorNode('not', 'not', [operands[0]]),
+  '<': (operands) => new m.OperatorNode('<', 'smaller', operands),
+  '>': (operands) => new m.OperatorNode('>', 'larger', operands),
+  le: (operands) => new m.OperatorNode('<=', 'smallerEq', operands),
+  ge: (operands) => new m.OperatorNode('>=', 'largerEq', operands),
+  _: (operands) => {
     const [arrayName, ...position] = operands;
     const result = new m.SymbolNode(`${arrayName}[${position}]`);
     return result;
   },
-  ne: function (operands) {
-    return new m.OperatorNode('!=', 'unequal', operands);
-  },
+  ne: (operands) => new m.OperatorNode('!=', 'unequal', operands),
   //"union": function (operands) { return operands.join(' \\cup '); },
   //"intersect": function (operands) { return operands.join(' \\cap '); },
-  tzn: function (operands) {
-    return new m.FunctionNode('tzn', operands);
-  },
-  '≈': function (operands) {
-    return new m.FunctionNode('≈', operands);
-  },
-  '≉': function (operands) {
-    return new m.FunctionNode('≉', operands);
-  },
-  '~': function (operands) {
-    return new m.FunctionNode('~', operands);
-  },
-  '≃': function (operands) {
-    return new m.FunctionNode('≃', operands);
-  },
-  '≁': function (operands) {
-    return new m.FunctionNode('≁', operands);
-  },
-  '≅': function (operands) {
-    return new m.FunctionNode('≅', operands);
-  },
-  '≆': function (operands) {
-    return new m.FunctionNode('≆', operands);
-  },
+  tzn: (operands) => new m.FunctionNode('tzn', operands),
+  '≈': (operands) => new m.FunctionNode('≈', operands),
+  '≉': (operands) => new m.FunctionNode('≉', operands),
+  '~': (operands) => new m.FunctionNode('~', operands),
+  '≃': (operands) => new m.FunctionNode('≃', operands),
+  '≁': (operands) => new m.FunctionNode('≁', operands),
+  '≅': (operands) => new m.FunctionNode('≅', operands),
+  '≆': (operands) => new m.FunctionNode('≆', operands),
 };
 
 export type AstToMathJsOpts = {

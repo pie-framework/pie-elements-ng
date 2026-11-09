@@ -1,5 +1,5 @@
 import { mathjs } from '../mathjs';
-import { MathNode } from 'mathjs';
+import type { MathNode } from 'mathjs';
 import {
   getVariables,
   equationsHaveTheSameVariables,
@@ -94,7 +94,6 @@ export const compareEquations = (
           );
         }
 
-        //@ts-ignore
         return (
           rootsFirstEquation[0].re === rootsSecondEquation[0].re &&
           rootsFirstEquation[1].re === rootsSecondEquation[1].re &&

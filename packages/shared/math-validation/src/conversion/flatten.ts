@@ -19,9 +19,7 @@ export function flatten(expr: any): any {
   var operator = tree[0];
   var operands = tree.slice(1);
 
-  operands = operands.map(function (v: any) {
-    return flatten(v);
-  });
+  operands = operands.map((v: any) => flatten(v));
 
   if (is_associative[operator]) {
     let result: any[] = [];
@@ -40,7 +38,7 @@ export function flatten(expr: any): any {
   return [operator].concat(operands);
 }
 
-export const unflattenRight = function (expr: any): any {
+export const unflattenRight = (expr: any): any => {
   // unflatten tree with associate operators
   // into a right heavy tree;
 
@@ -51,9 +49,7 @@ export const unflattenRight = function (expr: any): any {
   var operator = tree[0];
   var operands = tree.slice(1);
 
-  operands = operands.map(function (v: any) {
-    return unflattenRight(v);
-  });
+  operands = operands.map((v: any) => unflattenRight(v));
 
   if (operands.length > 2 && is_associative[operator]) {
     let result = [operator, operands[0], undefined];
@@ -72,7 +68,7 @@ export const unflattenRight = function (expr: any): any {
   return [operator].concat(operands);
 };
 
-export const unflattenLeft = function (expr: any): any {
+export const unflattenLeft = (expr: any): any => {
   // unflatten tree with associate operator op
   // into a left heavy tree;
 
@@ -83,9 +79,7 @@ export const unflattenLeft = function (expr: any): any {
   var operator = tree[0];
   var operands = tree.slice(1);
 
-  operands = operands.map(function (v: any) {
-    return unflattenLeft(v);
-  });
+  operands = operands.map((v: any) => unflattenLeft(v));
 
   if (operands.length > 2 && is_associative[operator]) {
     let result = [operator, undefined, operands[operands.length - 1]];
@@ -104,7 +98,7 @@ export const unflattenLeft = function (expr: any): any {
   return [operator].concat(operands);
 };
 
-export const allChildren = function (tree: any): any[] {
+export const allChildren = (tree: any): any[] => {
   // find all children of operator of tree as though it had been flattened
 
   if (!Array.isArray(tree)) return [];
@@ -114,7 +108,7 @@ export const allChildren = function (tree: any): any[] {
 
   if (!is_associative[operator]) return operands;
 
-  return operands.reduce(function (a: any[], b: any) {
+  return operands.reduce((a: any[], b: any) => {
     if (Array.isArray(b) && b[0] === operator) {
       return a.concat(allChildren(b));
     } else return a.concat([b]);

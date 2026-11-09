@@ -2,7 +2,7 @@ import { logger } from './log';
 
 import { mathjs as mjs } from './mathjs';
 
-import { MathNode } from 'mathjs';
+import type { MathNode } from 'mathjs';
 
 const m: any = mjs;
 
@@ -252,7 +252,7 @@ export const sort = (node: MathNode) => {
 
   if (
     node.isFunctionNode &&
-    // @ts-ignore
+    // @ts-expect-error
     node.fn.name.match(relationOperators)
   ) {
     node.args = node.args!.sort(newCompare);
@@ -270,7 +270,7 @@ export const sort = (node: MathNode) => {
   }
 
   if (node.isArrayNode) {
-    // @ts-ignore
+    // @ts-expect-error
     node.items = node.items.sort(newCompare);
     return node;
   }

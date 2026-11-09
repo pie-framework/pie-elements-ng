@@ -1,4 +1,4 @@
-const get_tree = function (expr_or_tree: any) {
+const get_tree = (expr_or_tree: any) => {
   if (expr_or_tree === undefined || expr_or_tree === null) return undefined;
 
   var tree: any;

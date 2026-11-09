@@ -1,5 +1,5 @@
 import { ParseError } from './error';
-import lexer, { Token } from './lexer';
+import lexer, { type Token } from './lexer';
 import { flatten } from './flatten';
 
 // UPDATETHIS: Delete or change to new license & package name
@@ -465,7 +465,7 @@ const appliedFunctionSymbolsDefault = [
   'arg',
 ];
 
-const missingFactorDefaultBehavior = function (_token: Token, e: Error): never {
+const missingFactorDefaultBehavior = (_token: Token, e: Error): never => {
   throw e;
 };
 
@@ -789,7 +789,7 @@ export class LatexToAst {
         this.advance();
       } else {
         this.advance();
-        // @ts-ignore
+        // @ts-expect-error
         if (operation === '+' && this.token.token_type === '-') {
           negative = true;
           this.advance();
@@ -940,7 +940,7 @@ export class LatexToAst {
       parse_absolute_value: parse_absolute_value,
       unknownCommands: unknownCommands,
     });
-    // @ts-ignore
+    // @ts-expect-error
     if (this.token.token_type !== '}') {
       throw new ParseError('Expecting }', this.lexer.location);
     }
@@ -1010,9 +1010,9 @@ export class LatexToAst {
 
         this.advance();
 
-        //@ts-ignore
+        //@ts-expect-error
         while (this.token.token_type !== 'ENDENVIRONMENT') {
-          //@ts-ignore
+          //@ts-expect-error
           if (this.token.token_type === '&') {
             if (last_token === '&' || last_token === 'LINEBREAK') {
               // blank entry, let entry be zero
@@ -1021,7 +1021,7 @@ export class LatexToAst {
             }
             last_token = this.token.token_type;
             this.advance();
-            //@ts-ignore
+            //@ts-expect-error
           } else if (this.token.token_type === 'LINEBREAK') {
             if (last_token === '&' || last_token === 'LINEBREAK') {
               // blank entry, let entry be zero
@@ -1079,18 +1079,16 @@ export class LatexToAst {
         this.advance();
 
         // create matrix
-        // @ts-ignore
         result = ['matrix', ['tuple', n_rows, n_cols]];
         let body = ['tuple'];
         for (let r of all_rows) {
           let new_row = ['tuple'].concat(r);
-          //@ts-ignore
+          //@ts-expect-error
           for (let i = r.length; i < n_cols; i += 1) new_row.push(0);
 
-          // @ts-ignore
+          // @ts-expect-error
           body.push(new_row);
         }
-        // @ts-ignore
         result.push(body);
 
         return result;
@@ -1100,7 +1098,6 @@ export class LatexToAst {
     }
 
     if (this.token.token_type === 'NUMBER') {
-      // @ts-ignore
       result = this.token.token_text.replace(/,/g, '');
 
       let removeLeadingZeros = (result: string) =>
@@ -1108,7 +1105,6 @@ export class LatexToAst {
           ? result.replace(/^[0]*([0-9])(.*)/, '$1$2')
           : result.replace(/0*([1-9]*)/, '$1');
 
-      // @ts-ignore
       let parsedNumber = result === '0' ? result : removeLeadingZeros(result);
 
       if (parsedNumber.startsWith('.')) {
@@ -1119,27 +1115,21 @@ export class LatexToAst {
 
       /** trailing zero number ['tzn', number, countOfZeros] */
 
-      // @ts-ignore
       if (parsedNumber !== number.toString()) {
         const p = number.toString();
-        // @ts-ignore
         const sub = parsedNumber
-          // @ts-ignore
           .substring(p.length)
           .split('')
           .filter((c: string) => c === '0');
         const noOfTrailingZeros = sub.length;
 
-        // @ts-ignore
         result = ['tzn', number, noOfTrailingZeros];
       } else {
-        // @ts-ignore
         result = number;
       }
 
       this.advance();
     } else if (this.token.token_type === 'INFINITY') {
-      // @ts-ignore
       result = Infinity;
 
       this.advance();
@@ -1147,7 +1137,6 @@ export class LatexToAst {
       // conversion of degrees in radians - angle configuration
       const degree = Math.PI / 180;
 
-      // @ts-ignore
       result = ['*', degree];
 
       this.advance();
@@ -1155,11 +1144,9 @@ export class LatexToAst {
       //conversion of gradians in radians - angle configuration
       const gradian = Math.PI / 200;
 
-      // @ts-ignore
       result = ['*', gradian];
       this.advance();
     } else if (this.token.token_type === 'UNIT') {
-      // @ts-ignore
       result = ['unit', this.token.token_text];
 
       this.advance();
@@ -1168,7 +1155,7 @@ export class LatexToAst {
 
       let root = 2;
       let parameter: any;
-      // @ts-ignore
+      // @ts-expect-error
       if (this.token.token_type === '[') {
         this.advance();
         parameter = this.statement({
@@ -1184,14 +1171,13 @@ export class LatexToAst {
         root = parameter;
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       if (this.token.token_type === '{') {
         this.advance();
         parameter = this.statement({
           parse_absolute_value: parse_absolute_value,
           unknownCommands: unknownCommands,
         });
-        // @ts-ignore
         if (this.token.token_type !== '}') {
           throw new ParseError('Expecting }', this.lexer.location);
         }
@@ -1204,9 +1190,7 @@ export class LatexToAst {
         });
       }
 
-      // @ts-ignore
       if (root === 2) result = ['apply', 'sqrt', parameter];
-      // @ts-ignore
       else result = ['^', parameter, ['/', 1, root]];
     } else if (this.token.token_type === 'LOG' || this.token.token_type === 'LN') {
       // function log(x) in JS returns ln(x)
@@ -1214,10 +1198,9 @@ export class LatexToAst {
       let parameter: any;
 
       this.advance();
-      // @ts-ignore
+      // @ts-expect-error
       if (this.token.token_type === '_') {
         this.advance();
-        // @ts-ignore
         if (this.token.token_type === '{') {
           this.advance();
           parameter = this.statement({
@@ -1233,7 +1216,7 @@ export class LatexToAst {
         }
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       if (this.token.token_type === '(') {
         this.advance();
         parameter = this.statement({
@@ -1252,30 +1235,22 @@ export class LatexToAst {
         this.advance();
       }
 
-      // @ts-ignore
       if (base === 10) result = ['apply', 'log', ['tuple', parameter, base]];
-      // @ts-ignore
       else if (base === 'e') result = ['apply', 'log', parameter];
-      // @ts-ignore
       else result = ['apply', 'log', ['tuple', parameter, base]];
     } else if (
       this.token.token_type === 'VAR' ||
       this.token.token_type === 'LATEXCOMMAND' ||
       this.token.token_type === 'VARMULTICHAR'
     ) {
-      // @ts-ignore
       result = this.token.token_text;
 
       if (this.token.token_type === 'LATEXCOMMAND') {
-        // @ts-ignore
         result = result.slice(1);
 
         const isKnownCommand =
-          // @ts-ignore
           this.opts.appliedFunctionSymbols.includes(result) ||
-          // @ts-ignore
           this.opts.functionSymbols.includes(result) ||
-          // @ts-ignore
           this.opts.allowedLatexSymbols.includes(result);
 
         if (!isKnownCommand) {
@@ -1288,23 +1263,20 @@ export class LatexToAst {
         }
       } else if (this.token.token_type === 'VARMULTICHAR') {
         // strip out name of variable from \var command
-        // @ts-ignore
+        // @ts-expect-error
         result = /\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(result)[1];
       }
 
       if (
-        // @ts-ignore
         this.opts.appliedFunctionSymbols.includes(result) ||
-        // @ts-ignore
         this.opts.functionSymbols.includes(result)
       ) {
         let must_apply = false;
-        // @ts-ignore
         if (this.opts.appliedFunctionSymbols.includes(result)) must_apply = true;
 
         this.advance();
 
-        // @ts-ignore
+        // @ts-expect-error
         if (this.token.token_type === '_') {
           this.advance();
           let subresult = this.baseFactor({
@@ -1322,25 +1294,22 @@ export class LatexToAst {
               );
             }
           }
-          // @ts-ignore
           result = ['_', result, subresult];
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         while (this.token.token_type === "'") {
-          // @ts-ignore
           result = ['prime', result];
           this.advance();
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         if (this.token.token_type === '^') {
           this.advance();
-          // @ts-ignore
           result = ['^', result, this.factor({ parse_absolute_value: parse_absolute_value })];
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         if (this.token.token_type === '{' || this.token.token_type === '(') {
           let expected_right: any;
           if (this.token.token_type === '{') expected_right = '}';
@@ -1354,19 +1323,16 @@ export class LatexToAst {
           }
           this.advance();
 
-          // @ts-ignore
           result = ['apply', result, parameters];
         } else {
           // if was an applied function symbol,
           // cannot omit argument
           if (must_apply) {
-            // @ts-ignore
             if (!this.opts.allowSimplifiedFunctionApplication)
               throw new ParseError('Expecting ( after function', this.lexer.location);
 
             // if allow simplied function application
             // let the argument be the next factor
-            // @ts-ignore
             result = ['apply', result, this.factor({ parse_absolute_value: parse_absolute_value })];
           }
         }
@@ -1396,12 +1362,10 @@ export class LatexToAst {
       }
 
       this.advance();
-      // @ts-ignore
       result = this.statement_list();
 
       let n_elements = 1;
       if (result[0] === 'list') {
-        // @ts-ignore
         n_elements = result.length - 1;
       }
 
@@ -1414,12 +1378,10 @@ export class LatexToAst {
 
         // half-open interval
         result[0] = 'list';
-        // @ts-ignore
         result = ['interval', result];
         let closed: any;
         if (token_left === '(') closed = ['list', false, true];
         else closed = ['list', true, false];
-        // @ts-ignore
         result.push(closed);
       } else if (n_elements >= 2) {
         if (token_left === '(' || token_left === '{') {
@@ -1431,10 +1393,8 @@ export class LatexToAst {
         }
       } else if (token_left === 'LBRACE') {
         if (result[0] === '|' || result[0] === ':') {
-          // @ts-ignore
           result = ['set', result]; // set builder notation
         } else {
-          // @ts-ignore
           result = ['set', result]; // singleton set
         }
       }
@@ -1462,7 +1422,6 @@ export class LatexToAst {
         inside_absolute_value: inside_absolute_value,
         unknownCommands: unknownCommands,
       });
-      // @ts-ignore
       result = ['apply', 'abs', result];
 
       if (this.token.token_type !== '|') {
@@ -1482,7 +1441,7 @@ export class LatexToAst {
       });
 
       if (subresult === false) {
-        // @ts-ignore
+        // @ts-expect-error
         if (this.token.token_type === 'EOF') {
           throw new ParseError('Unexpected end of input', this.lexer.location);
         } else {
@@ -1522,7 +1481,7 @@ export class LatexToAst {
 
     this.advance();
 
-    // @ts-ignore
+    // @ts-expect-error
     if (this.token.token_type === '^') {
       // so far have d or ∂ followed by ^
       // must be followed by an integer
@@ -1563,13 +1522,12 @@ export class LatexToAst {
     // a VAR, a VARMULTICHAR, or a LATEXCOMMAND that is in allowedLatexSymbols
 
     if (this.token.token_type === 'VAR') var1 = this.token.token_text;
-    // @ts-ignore
+    // @ts-expect-error
     else if (this.token.token_type === 'VARMULTICHAR') {
       // strip out name of variable from \var command
       var1 = /\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(this.token.token_text)![1];
     } else if (this.token.token_type === 'LATEXCOMMAND') {
       result = this.token.token_text.slice(1);
-      // @ts-ignore
       if (this.opts.allowedLatexSymbols.includes(result)) var1 = result;
       else return false;
     }
@@ -1579,7 +1537,7 @@ export class LatexToAst {
 
     this.advance();
 
-    // @ts-ignore
+    // @ts-expect-error
     if (this.token.token_type !== '}') {
       return false;
     }
@@ -1629,7 +1587,7 @@ export class LatexToAst {
         var2s.push(/\\var\s*\{\s*([a-zA-Z0-9]+)\s*\}/.exec(this.token.token_text)![1]);
       } else if (this.token.token_type === 'LATEXCOMMAND') {
         let r = this.token.token_text.slice(1);
-        // @ts-ignore
+        // @ts-expect-error
         if (this.allowedLatexSymbols.includes(r)) var2s.push(r);
         else {
           return false;
@@ -1695,12 +1653,12 @@ export class LatexToAst {
         let result_name = 'derivative_leibniz';
         if (deriv_symbol === '∂') result_name = 'partial_' + result_name;
 
-        // @ts-ignore
+        // @ts-expect-error
         result = [result_name];
 
-        // @ts-ignore
+        // @ts-expect-error
         if (n_deriv === 1) result.push(var1);
-        // @ts-ignore
+        // @ts-expect-error
         else result.push(['tuple', var1, n_deriv]);
 
         let r2: any[] = [];
@@ -1710,7 +1668,7 @@ export class LatexToAst {
         }
         r2 = ['tuple'].concat(r2);
 
-        // @ts-ignore
+        // @ts-expect-error
         result.push(r2);
 
         return result;

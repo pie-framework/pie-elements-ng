@@ -1,5 +1,4 @@
 import { flattenNode, sort as s } from '../node-sort';
-// @ts-ignore
 import { replacer, parse } from '../mathjs';
 import { logger } from '../log';
 const log = logger('mv:node-sort.spec');
@@ -180,13 +179,13 @@ expect.extend({
 
 describe.each(fixtures)('%s => %s', (input, expected) => {
   const testInput = Array.isArray(input) ? input : [input];
-  //@ts-ignore
+  //@ts-expect-error
   it.each(testInput as any)('%s', (ii) => {
     let i = parse(ii);
 
     const sorted = s(i);
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(sorted).toEqualExpression(expected);
   });
 });
