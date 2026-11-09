@@ -13,7 +13,8 @@ import {
 
 // Five sort positions; positions 1 and 5 (indexes 0 and 4) hold objects, the rest are empty.
 const tile = (index: number, label?: string) => ({ type: 'target', index, label, empty: !label });
-const tiles = [tile(0, 'Alpha'), tile(1), tile(2), tile(3), tile(4, '<p>Omega</p>')];
+const pool = [1, 2, 3].map((n) => ({ type: 'choice', id: `c${n}`, label: `Choice ${n}` }));
+const tiles = [...pool, tile(0, 'Alpha'), tile(1), tile(2), tile(3), tile(4, '<p>Omega</p>')];
 const counts = getCounts(tiles);
 
 describe('announcements', () => {
@@ -23,6 +24,11 @@ describe('announcements', () => {
 
   it('counts the sorted and unsorted objects', () => {
     expect(counts).toEqual({ sorted: 2, unsorted: 3, total: 5 });
+  });
+
+  it('counts the objects in the unsorted column when a choice can be placed more than once', () => {
+    // Three choices, two placed, and still all three in the column
+    expect(getCounts([...pool, tile(0, 'Alpha'), tile(1, 'Beta'), tile(2)])).toEqual({ sorted: 2, unsorted: 3, total: 3 });
   });
 
   it('reads the instructions and count before the objects (row 1)', () => {
@@ -155,11 +161,9 @@ describe('focus labels with an object selected', () => {
     );
   });
 
-  it('only names the objects of a disabled item', () => {
-    expect(focusLabel({ type: 'choice', label: 'Beta', disabled: true }, null, counts5)).toBe('Unsorted object Beta');
-    expect(focusLabel({ type: 'target', index: 0, label: 'Alpha', disabled: true }, null, counts5)).toBe(
-      'Sorted object Alpha In position 1 of 5.',
-    );
+  it('labels nothing in a disabled item, whose tiles have no role to carry a label', () => {
+    expect(focusLabel({ type: 'choice', label: 'Beta', disabled: true }, null, counts5)).toBeUndefined();
+    expect(focusLabel({ type: 'target', index: 0, label: 'Alpha', disabled: true }, null, counts5)).toBeUndefined();
     expect(readingInstructions(counts5, true)).toBe('2 of 5 objects are on the sorted list.');
   });
 });

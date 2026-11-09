@@ -469,8 +469,10 @@ export class PlacementOrdering extends React.Component {
   // changes is announced by `announce` above, which the click path to the same changes shares, so dnd-kit's
   // own messages for them are left empty.
   getAnnouncements: any = () => {
+    // The drop data of a slot says what it is and what it held when the drag began, not whether it is
+    // empty now, which the ordering does.
     const tileFor = (data, tiles) =>
-      data.type === 'target' ? tiles.find((t) => t.type === 'target' && t.index === data.index) : data;
+      tiles.find((t) => t.type === data.type && (data.type === 'target' ? t.index === data.index : t.id === data.id));
 
     return {
       onDragStart: ({ active }) => {
@@ -508,6 +510,15 @@ export class PlacementOrdering extends React.Component {
   // Click-to-select semantics: selecting the currently-selected choice again clears
   // the selection instead of re-selecting it.
   toggleChoiceSelection: any = (data) => {
+    // A click, which is also how a screen reader or a touch screen activates a tile, makes no drag, so
+    // dnd-kit has nothing to announce for it.
+    const { selectedChoice } = this.state;
+    const counts = getCounts(this.createOrdering().tiles);
+
+    this.announce(
+      this.isSameChoice(selectedChoice, data) ? cancelledMessage(data, counts) : selectedMessage(data, counts),
+    );
+
     this.setState((state) => ({
       selectedChoice: this.isSameChoice(state.selectedChoice, data) ? null : data,
     }));

@@ -71,5 +71,7 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     expect(text).not.toContain('Press ENTER');
     expect(text).toContain('1 of 5 objects are on the sorted list.');
     expect(container.querySelector('[aria-live="polite"]')).not.toBeNull();
+    // tiles of a disabled item have no role, which a label needs
+    expect(container.querySelectorAll('[data-tile-id][aria-label]')).toHaveLength(0);
   });
 });

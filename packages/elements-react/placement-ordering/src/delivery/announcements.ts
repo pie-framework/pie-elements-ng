@@ -46,8 +46,11 @@ export type Counts = { sorted: number; unsorted: number; total: number };
 export const getCounts = (tiles: OrderingTile[]): Counts => {
   const targets = tiles.filter((t) => t.type === 'target');
   const sorted = targets.filter((t) => !t.empty).length;
+  // The objects in the unsorted column, which is every choice still there: with a choice allowed in
+  // more than one position, placing one does not take it out of the column.
+  const unsorted = tiles.filter((t) => t.type === 'choice' && !t.empty).length;
 
-  return { sorted, unsorted: targets.length - sorted, total: targets.length };
+  return { sorted, unsorted, total: targets.length };
 };
 
 const sortedCount = ({ sorted, total }: Counts) =>
@@ -79,7 +82,7 @@ export const endOfSorted = (disabled = false) =>
 /**
  * What an object, or an empty sort position, announces when it gets focus (rows 8, 9, 12 and 13),
  * given the object that is selected, if any. `tile` is a tile of the ordering; `selected` is the drag
- * data of the selected tile. A disabled item names its objects and says nothing of how to move them.
+ * data of the selected tile. A disabled item's tiles have no role to carry a label, so they are read as their text.
  */
 export const focusLabel = (
   tile: { type: string; id?: string; index?: number; label?: string; empty?: boolean; disabled?: boolean },
@@ -93,9 +96,8 @@ export const focusLabel = (
   if (tile.type === 'target') {
     const position = (tile.index ?? 0) + 1;
 
-    if (tile.disabled) {
-      return tile.empty ? undefined : `Sorted object ${text} In position ${position} of ${counts.total}.`;
-    }
+    // A disabled tile has no role to carry a label, so it is read as its text, after the prefix before it
+    if (tile.disabled) return undefined;
 
     if (!selected) {
       // Row 9
@@ -117,9 +119,7 @@ export const focusLabel = (
   }
 
   if (tile.type === 'choice') {
-    if (tile.disabled) {
-      return tile.empty ? undefined : `Unsorted object ${text}`;
-    }
+    if (tile.disabled) return undefined;
 
     // Rows 14 and 15: the unsorted list, as the selected object's own place in it
     if (selected && (isSelected || (tile.empty && tile.id === selected.id))) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import PlacementOrderingComponent from '../placement-ordering';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -93,6 +93,34 @@ describe('PlacementOrdering screen reader announcements', () => {
       'On sort position 1 of 3, which contains object Blueberry.',
     );
     expect(accessibility.announcements.onDragEnd({ active })).toBeUndefined();
+  });
+
+  it('names the selected object on the unsorted list it came from, from the drop data dnd-kit gives', () => {
+    setup(['c1']);
+    const { announcements } = provider.props.accessibility;
+    // the drop data of a slot has no `empty`: whether it is empty is for the ordering to say
+    const gap = { id: 'c1', type: 'choice', instanceId: 'x', value: undefined, index: undefined };
+
+    expect(announcements.onDragOver({ active: dragged(target(0, 'c1', 'Blueberry')), over: over(gap) })).toBe(
+      'On unsorted list. Press ENTER to return selected object Blueberry to unsorted or use TAB to move to a sort position.',
+    );
+    // the slot of an object that is still unsorted, for that object
+    expect(
+      announcements.onDragOver({ active: dragged(choice('c2', 'Lemon')), over: over({ ...gap, id: 'c2', value: 'Lemon' }) }),
+    ).toBe('On unsorted list. Press ENTER to leave object Lemon unsorted or use TAB to move to a sort position.');
+  });
+
+  it('announces a selection made by a click, which makes no drag', () => {
+    const { container, status } = setup(['c1']);
+    const lemon = () => container.querySelector('[data-tile-id$=":choice-c2"]') as HTMLElement;
+
+    fireEvent.click(lemon());
+    expect(status()).toBe('Selected object Lemon Use TAB to move to a sorted position.');
+
+    fireEvent.click(lemon());
+    expect(status()).toBe(
+      'Object Lemon is no longer selected. 1 of 3 objects on sorted list. Use TAB to move to another object.',
+    );
   });
 
   it('announces placing an object on the simple success path', () => {
