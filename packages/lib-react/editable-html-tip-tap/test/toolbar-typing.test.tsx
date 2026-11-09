@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, createEvent, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 vi.mock('../src/components/respArea/DragInTheBlank/DragInTheBlank.js', () => ({ default: () => null }));
@@ -24,10 +24,19 @@ const toolbarButton = (name: string) =>
   document.querySelector(`[role="toolbar"] button[aria-label="${name}"]`) as HTMLButtonElement;
 const panelButtons = () =>
   [...(document.querySelector('.insert-character-dialog')?.querySelectorAll('button') ?? [])] as HTMLButtonElement[];
-const key = (k: string, opts: Record<string, unknown> = {}) => {
+// `altGraph` is the AltGr key's state. happy-dom reports AltGraph whenever Alt is held, which a
+// browser does not, so the tests that hold Alt set it themselves.
+const key = (k: string, { altGraph, ...opts }: Record<string, unknown> = {}) => {
+  const event = createEvent.keyDown(document.activeElement as Element, { key: k, ...opts });
+  if (altGraph !== undefined) {
+    const getModifierState = event.getModifierState.bind(event);
+    Object.defineProperty(event, 'getModifierState', {
+      value: (name: string) => (name === 'AltGraph' ? altGraph : getModifierState(name)),
+    });
+  }
   let notPrevented = true;
   act(() => {
-    notPrevented = fireEvent.keyDown(document.activeElement as Element, { key: k, ...opts });
+    notPrevented = fireEvent(document.activeElement as Element, event);
   });
   return notPrevented;
 };
@@ -49,7 +58,7 @@ const setup = async ({ interfaceLocale, ...props }: Record<string, unknown> = {}
   );
   const box = await waitFor(() => screen.getByRole('textbox'));
   act(() => box.focus());
-  await waitFor(() => expect(toolbarButton(SPANISH).closest('[inert]')).toBeNull());
+  await waitFor(() => expect(document.querySelector('[role="toolbar"]')?.closest('[inert]')).toBeNull());
   act(() => {
     tiptap.commands.setTextSelection(3);
   });
@@ -68,13 +77,20 @@ describe('typing while the formatting toolbar has focus', () => {
     expect(document.activeElement).toBe(button);
   });
 
+  it('inserts capitals and shifted punctuation', async () => {
+    const tiptap = await setup();
+    act(() => toolbarButton('Bulleted list').focus());
+
+    for (const k of ['A', '?']) expect(key(k, { shiftKey: true })).toBe(false);
+
+    expect(tiptap.getText()).toBe('HoA?la');
+  });
+
   it('inserts an AltGr character', async () => {
     const tiptap = await setup();
     act(() => toolbarButton('Bulleted list').focus());
-    const e = document.activeElement as Element;
-    act(() => {
-      fireEvent.keyDown(e, { key: 'ñ', ctrlKey: true, altKey: true, modifierAltGraph: true });
-    });
+    // AltGr is reported as Ctrl+Alt.
+    expect(key('ñ', { ctrlKey: true, altKey: true, altGraph: true })).toBe(false);
 
     expect(tiptap.getText()).toBe('Hoñla');
   });
@@ -83,13 +99,35 @@ describe('typing while the formatting toolbar has focus', () => {
     const tiptap = await setup();
     act(() => toolbarButton('Bulleted list').focus());
 
-    for (const opts of [{ key: ' ' }, { key: 'Enter' }, { key: 'a', ctrlKey: true }]) {
+    for (const opts of [
+      { key: ' ' },
+      { key: 'Enter' },
+      { key: 'Enter', shiftKey: true },
+      { key: 'Tab' },
+      { key: 'a', ctrlKey: true },
+      { key: 'b', metaKey: true },
+      { key: 'f', altKey: true, altGraph: false },
+    ]) {
       expect(key(opts.key, opts)).toBe(true);
     }
-    // The arrows move focus along the toolbar.
-    key('ArrowRight');
 
     expect(tiptap.getText()).toBe('Hola');
+  });
+
+  it('moves focus along the toolbar with the arrows, without moving the cursor', async () => {
+    const tiptap = await setup();
+    const buttons = [...document.querySelectorAll('[role="toolbar"] button')] as HTMLButtonElement[];
+    const first = buttons.indexOf(toolbarButton('Bulleted list'));
+    act(() => buttons[first].focus());
+
+    key('ArrowRight');
+    expect(document.activeElement).toBe(buttons[first + 1]);
+
+    key('ArrowLeft');
+    expect(document.activeElement).toBe(buttons[first]);
+
+    key('x');
+    expect(tiptap.getText()).toBe('Hoxla');
   });
 
   it('inserts typed characters from inside the character panel', async () => {
@@ -124,7 +162,8 @@ describe('typing while the formatting toolbar has focus', () => {
   it('keeps an open option group open, with focus on the option', async () => {
     const tiptap = await setup({ markup: '<p>Say merci</p>', language: 'en_US', interfaceLocale: 'fr-FR' });
     const trigger = await waitFor(() => {
-      const button = toolbarButton('Text language');
+      // Labelled in the page's language.
+      const button = toolbarButton('Langue du texte');
       expect(button).toBeTruthy();
       return button;
     });
