@@ -173,6 +173,61 @@ const migratedElements = [
       'packages/lib-svelte/media-svelte',
     ],
   },
+  {
+    dir: 'packages/elements-react/match-list',
+    catalogPackages: [
+      'packages/elements-react/match-list',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/number-line',
+    catalogPackages: [
+      'packages/elements-react/number-line',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/matrix',
+    catalogPackages: ['packages/lib-react/render-ui'],
+  },
+  {
+    dir: 'packages/elements-react/likert',
+    catalogPackages: ['packages/lib-react/render-ui'],
+  },
+  {
+    dir: 'packages/elements-react/multi-trait-rubric',
+    catalogPackages: ['packages/elements-react/multi-trait-rubric'],
+  },
+  {
+    dir: 'packages/elements-react/fraction-model',
+    catalogPackages: [
+      'packages/elements-react/fraction-model',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/graphing-solution-set',
+    catalogPackages: [
+      'packages/elements-react/graphing-solution-set',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/graphing-solution-set',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/math-templated',
+    catalogPackages: [
+      'packages/elements-react/math-templated',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/mask-markup',
+      'packages/lib-react/math-input-mathlive',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })

@@ -41,10 +41,9 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
+import { alternatesNote } from './default-note.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -280,7 +279,15 @@ export class Main extends React.Component {
     session: PropTypes.object.isRequired,
     onSessionChange: PropTypes.func,
     model: PropTypes.object.isRequired,
+    /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+    language: PropTypes.string,
   };
+
+  /** Re-renders once the chrome language's catalog lands, for a host that did not preload it. */
+  relabel = () => this.forceUpdate();
+
+  /** The locale the chrome follows: the element's interface locale, else the item's language. */
+  chromeLanguage = () => this.props.language ?? this.props.model?.language;
 
   constructor(props) {
     super(props);
@@ -591,7 +598,7 @@ export class Main extends React.Component {
       showTeacherInstructions && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model?.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model?.language }) }}>
+            <Collapsible variant="teacherInstructions" language={this.chromeLanguage()}>
               {teacherInstructionsDiv}
             </Collapsible>
           ) : (
@@ -612,7 +619,9 @@ export class Main extends React.Component {
       showRationale && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: model?.language }), visible: translator.t('common:hideRationale', { lng: model?.language }) }}>{rationaleDiv}</Collapsible>
+            <Collapsible variant="rationale" language={this.chromeLanguage()}>
+              {rationaleDiv}
+            </Collapsible>
           ) : (
             rationaleDiv
           )}
@@ -635,8 +644,8 @@ export class Main extends React.Component {
       env: { mode } = {},
       printMode,
       alwaysShowCorrect,
-      language,
     } = model || {};
+    const language = this.chromeLanguage();
 
     const emptyResponse = isEmpty(responses);
     const additionalKeys = generateAdditionalKeys(customKeys);
@@ -757,13 +766,17 @@ export class Main extends React.Component {
       extraCSSRules,
       correctness,
       responses,
-      language,
       showNote,
       note,
     } = model || {};
+    const language = this.chromeLanguage();
+    const i18n = catalogs.forLocale(language, this.relabel);
     const emptyResponse = isEmpty(responses);
     const showCorrectAnswerToggle = !emptyResponse && correctness && correctness.correctness !== 'correct';
-    const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
+    const displayNote =
+      (showCorrect || (mode === 'view' && role === 'instructor')) && showNote
+        ? alternatesNote(note, language, model?.language)
+        : null;
 
     return (
       <StyledUiLayout
@@ -775,7 +788,7 @@ export class Main extends React.Component {
         <MainContainer>
           {/* what is srOnly ? */}
           {mode === 'gather' && (
-            <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+            <SrOnly>{i18n.t('mathEquationResponseQuestion')}</SrOnly>
           )}
 
           <MainContainer>
@@ -794,7 +807,7 @@ export class Main extends React.Component {
 
           <Readable false>{this.renderPlayerContent()}</Readable>
 
-          {displayNote && <Note className="note" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
+          {displayNote && <Note className="note" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(displayNote) }} />}
 
           {this.renderRationale()}
         </MainContainer>
