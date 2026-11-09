@@ -191,7 +191,7 @@ The saved MathML keeps its source LaTeX in `data-pie-latex`, never `data-latex`:
 
 ## Authoring Tools
 
-React author views use `@pie-lib/editable-html-tip-tap` (`packages/lib-react/editable-html-tip-tap`). Its TipTap math extension edits math with MathQuill through `@pie-lib/math-input` and renders it with this adapter.
+React author views use `@pie-lib/editable-html-tip-tap` (`packages/lib-react/editable-html-tip-tap`). Its TipTap math extension edits math with MathLive through `@pie-lib/math-input-mathlive` and renders it with this adapter.
 
 Svelte author views use `@pie-lib/editable-html-tiptap-svelte`, which has no math editing. Svelte delivery and print views that show math call `renderMath` from the adapter.
 

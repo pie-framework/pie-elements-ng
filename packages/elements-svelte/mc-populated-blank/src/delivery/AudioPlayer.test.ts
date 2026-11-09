@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';
+import { loadLocale } from '@pie-element/shared-i18n';
 import AudioPlayer from './AudioPlayer.svelte';
 
 const BASE_PROPS = {
@@ -76,7 +77,9 @@ describe('AudioPlayer — audio element', () => {
     expect(alts).toContain('Instructions are playing');
   });
 
-  it('labels the feature button in Spanish when the language is Spanish', () => {
+  // The element holds its render until the locale is resident, so it is loaded first here.
+  it('labels the feature button in Spanish when the language is Spanish', async () => {
+    await loadLocale('es_MX');
     const { target, component } = mountPlayer({ useFeatureButtonAudio: true, language: 'es_MX' });
     mounts.push({ target, component });
     flushSync();

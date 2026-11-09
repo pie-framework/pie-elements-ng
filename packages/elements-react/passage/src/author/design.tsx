@@ -47,10 +47,20 @@ export class Main extends React.Component<MainProps, MainState> {
 
   getInnerText = (html: string) => (html || '').replaceAll(/<[^>]*>/g, '');
 
+  // React keys that follow each passage through a reorder or removal, so an editor keeps its own
+  // passage's content. Passages carry no id of their own.
+  private passageKeys: number[] = [];
+  private nextPassageKey = 0;
+
+  keysFor = (count: number) => {
+    while (this.passageKeys.length < count) this.passageKeys.push(this.nextPassageKey++);
+    this.passageKeys.length = count;
+    return this.passageKeys;
+  };
+
   onDelete = (model: AuthorModel, indexToRemove: number, onModelChanged: (model: AuthorModel) => void) => {
-    let updatedPassages = model.passages;
-    updatedPassages.splice(indexToRemove, 1);
-    onModelChanged({ ...model, passages: updatedPassages });
+    this.passageKeys.splice(indexToRemove, 1);
+    onModelChanged({ ...model, passages: model.passages.filter((_passage, index) => index !== indexToRemove) });
 
     this.setState({
       showConfirmationDialog: false,
@@ -96,6 +106,34 @@ export class Main extends React.Component<MainProps, MainState> {
     onModelChanged({ ...model, passages: updatedPassages });
   };
 
+  // Move buttons by passage key and direction, so focus can follow a passage to its new position.
+  private moveButtons = new Map<string, HTMLButtonElement>();
+  private pendingMoveFocus: { key: number; direction: 'up' | 'down' } | null = null;
+
+  moveButtonRef = (key: number, direction: 'up' | 'down') => (node: HTMLButtonElement | null) => {
+    if (node) this.moveButtons.set(`${key}-${direction}`, node);
+    else this.moveButtons.delete(`${key}-${direction}`);
+  };
+
+  movePassage = (from: number, to: number) => {
+    const { model, onModelChanged } = this.props;
+    const passages = [...model.passages];
+    [passages[from], passages[to]] = [passages[to], passages[from]];
+    [this.passageKeys[from], this.passageKeys[to]] = [this.passageKeys[to], this.passageKeys[from]];
+    this.pendingMoveFocus = { key: this.passageKeys[to], direction: to < from ? 'up' : 'down' };
+    onModelChanged({ ...model, passages });
+  };
+
+  componentDidUpdate() {
+    if (!this.pendingMoveFocus) return;
+    const { key, direction } = this.pendingMoveFocus;
+    const opposite = direction === 'up' ? 'down' : 'up';
+    const button = this.moveButtons.get(`${key}-${direction}`) ?? this.moveButtons.get(`${key}-${opposite}`);
+    if (!button) return;
+    this.pendingMoveFocus = null;
+    button.focus();
+  }
+
   render() {
     const { model, configuration, imageSupport, onConfigurationChanged, onModelChanged, uploadSoundSupport } =
       this.props;
@@ -111,6 +149,9 @@ export class Main extends React.Component<MainProps, MainState> {
       additionalPassage = {},
     } = configuration || {};
     const { extraCSSRules, passages } = model || {};
+    const keys = this.keysFor(passages.length);
+    const canAddPassage =
+      additionalPassage.enabled && (additionalPassage.max === undefined || passages.length < additionalPassage.max);
 
     const panelSettings = {
       titleEnabled: title && title.settings && toggle(title.label),
@@ -151,7 +192,7 @@ export class Main extends React.Component<MainProps, MainState> {
         }
       >
         {passages.map((_passage, passageIndex) => (
-          <React.Fragment key={passageIndex}>
+          <React.Fragment key={keys[passageIndex]}>
             {passageIndex > 0 && (
               <AdditionalPassageHeading variant="h5">
                 {additionalPassage.label}
@@ -172,7 +213,23 @@ export class Main extends React.Component<MainProps, MainState> {
                 onClick={() => this.removeAdditionalPassage(passageIndex)}
               />
             )}
-            {passageIndex === 0 && additionalPassage.enabled && passages.length < 2 && (
+            {passageIndex > 0 && additionalPassage.enabled && (
+              <PassageButton
+                type={'up'}
+                label={`Move passage ${passageIndex + 1} up`}
+                buttonRef={this.moveButtonRef(keys[passageIndex], 'up')}
+                onClick={() => this.movePassage(passageIndex, passageIndex - 1)}
+              />
+            )}
+            {passageIndex < passages.length - 1 && additionalPassage.enabled && (
+              <PassageButton
+                type={'down'}
+                label={`Move passage ${passageIndex + 1} down`}
+                buttonRef={this.moveButtonRef(keys[passageIndex], 'down')}
+                onClick={() => this.movePassage(passageIndex, passageIndex + 1)}
+              />
+            )}
+            {passageIndex === passages.length - 1 && canAddPassage && (
               <PassageButton label={`Add ${additionalPassage.label}`} onClick={this.addAdditionalPassage} />
             )}
           </React.Fragment>

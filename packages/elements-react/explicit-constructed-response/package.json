@@ -2,6 +2,7 @@
   "name": "@pie-element/explicit-constructed-response",
   "version": "12.1.2",
   "description": "",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -24,7 +25,6 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
     "clsx": "^2.1.1",
     "debug": "^4.4.3",
     "he": "^2.0.0",

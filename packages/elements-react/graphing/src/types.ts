@@ -228,6 +228,8 @@ export interface GraphingModel extends PieModel {
   titleEnabled?: boolean;
   /** Indicates the tools that have to be displayed in toolbar */
   toolbarTools?: GraphingTool[];
+  /** Indicates the most marks a student can place with each tool, keyed by tool; a tool without one is unlimited */
+  markLimits?: Partial<Record<MarkType, number>>;
 }
 
 /** A student response */

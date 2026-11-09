@@ -23,10 +23,9 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   return maybeSymbol;
 }
 const Text = unwrapReactInteropSymbol(TextImport, 'Text');
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../../i18n/index.js';
 import { isComposingKeyEvent } from '@pie-element/shared-utils';
 
-const { translator } = Translator;
 import Transformer from './drawable-transformer.js';
 
 export const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
@@ -64,7 +63,7 @@ export default class TextDrawable {
       id: id,
       text: '',
       isDefault: true,
-      label: translator.t('drawingResponse.onDoubleClick', { lng: language }),
+      label: catalogs.forLocale(language).t('onDoubleClick'),
       width: 200,
       x: (all.length + 1) * 5 + 50,
       y: (all.length + 1) * 5 + 50,

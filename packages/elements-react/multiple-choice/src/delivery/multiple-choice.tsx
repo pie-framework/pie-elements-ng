@@ -394,12 +394,7 @@ export class MultipleChoice extends React.Component {
         {teacherInstructions && (
           <TeacherInstructions>
             {!animationsDisabled ? (
-              <Collapsible
-                labels={{
-                  hidden: i18n.t('showTeacherInstructions'),
-                  visible: i18n.t('hideTeacherInstructions'),
-                }}
-              >
+              <Collapsible variant="teacherInstructions" language={language}>
                 {teacherInstructionsDiv}
               </Collapsible>
             ) : (
@@ -461,6 +456,7 @@ export class MultipleChoice extends React.Component {
                 displayKey={this.indexToSymbol(index)}
                 isSelectionButtonBelow={isSelectionButtonBelow}
                 pickTheAnswerBelow={i18n.t('pickTheAnswerBelowA11y')}
+                choiceName={i18n.t('choiceNameA11y', { key: this.indexToSymbol(index) || `${index + 1}` })}
               />
             ))}
           </LayoutComponent>

@@ -1,10 +1,23 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { render, waitFor } from '@testing-library/react';
 
 import { Main } from '../main';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
+vi.mock('mathlive', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  MathfieldElement: (await import('./fake-mathlive')).FakeMathfieldElement,
+}));
+
+// The first render waits for MathLive's module graph to load.
+const LOAD = { timeout: 10_000 };
+
+// Load MathLive before the first field mounts, as on a page that already shows math.
+beforeAll(async () => {
+  const { loadMathLive } = await import('@pie-lib/math-input-mathlive');
+  await loadMathLive();
+});
 
 // main.tsx is untyped, so its class declares no props.
 const MathInline = Main as unknown as React.ComponentType<{ model: object; session: object; onSessionChange: () => void }>;
@@ -31,10 +44,11 @@ const tabStops = (root: ParentNode) =>
   );
 
 describe('math-inline tab stops', () => {
-  // A focusable wrapper around the fields has no role or name, so it is an empty stop before the first one.
-  it('are the answer fields alone', () => {
+  // A focusable wrapper around the field has no role or name, so it is an empty stop before it. The
+  // answer blocks are prompts of one MathLive field, which is a single stop.
+  it('are the answer field alone', async () => {
     const { container } = render(item);
 
-    expect(tabStops(container).map((el) => el.tagName)).toEqual(['TEXTAREA', 'TEXTAREA']);
+    await waitFor(() => expect(tabStops(container).map((el) => el.tagName)).toEqual(['MATH-FIELD']), LOAD);
   });
 });

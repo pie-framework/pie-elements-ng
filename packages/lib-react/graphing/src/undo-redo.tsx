@@ -6,9 +6,7 @@ import classNames from 'clsx';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 const StyledButton: any = styled(Button)(({ theme }) => ({
   color: color.text(),
@@ -32,13 +30,17 @@ export class UndoRedo extends React.Component {
   };
   static defaultProps = {};
 
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   render() {
     const { className, onUndo, onRedo, onReset, language } = this.props;
+    const i18n = catalogs.forLocale(language, this.relabel);
     return (
       <div className={classNames(className)}>
-        <StyledButton onClick={() => onUndo(true)}>{translator.t('common:undo', { lng: language })}</StyledButton>
-        <StyledButton onClick={() => onRedo(true)}>{translator.t('graphing.redo', { lng: language })}</StyledButton>
-        <StyledButton onClick={() => onReset()}>{translator.t('graphing.reset', { lng: language })}</StyledButton>
+        <StyledButton onClick={() => onUndo(true)}>{i18n.t('undo')}</StyledButton>
+        <StyledButton onClick={() => onRedo(true)}>{i18n.t('redo')}</StyledButton>
+        <StyledButton onClick={() => onReset()}>{i18n.t('reset')}</StyledButton>
       </div>
     );
   }

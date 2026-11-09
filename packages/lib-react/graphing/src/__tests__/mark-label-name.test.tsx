@@ -43,10 +43,10 @@ describe('graphing mark label inputs', () => {
     expect(screen.getByRole('textbox', { name: 'Label at (-1, -1)' })).toHaveValue('D');
   });
 
-  it('names the label in the item language', () => {
+  it('names the label in the item language', async () => {
     renderGraph([{ type: 'point', x: 1.5, y: -2, label: 'A' }], 'es_ES');
 
-    expect(screen.getByRole('textbox', { name: 'Etiqueta en (1.5, -2)' })).toHaveValue('A');
+    expect(await screen.findByRole('textbox', { name: 'Etiqueta en (1.5, -2)' })).toHaveValue('A');
   });
 
   it('tells the student label from the correct label it is evaluated against', () => {

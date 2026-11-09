@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { catalogs } from '../i18n/index.js';
 
 const ControlsContainer: any = styled('div')(({ theme }) => ({
   marginLeft: 'auto',
@@ -58,6 +59,8 @@ export class AnswerGrid extends React.Component {
     rows: PropTypes.array.isRequired,
     headers: PropTypes.array.isRequired,
     answers: PropTypes.object.isRequired,
+    /** The locale the grid's own strings follow. */
+    language: PropTypes.string,
   };
 
   // Ids that tie each control to its row title and column header, and each row group to its title.
@@ -120,7 +123,7 @@ export class AnswerGrid extends React.Component {
   };
 
   render() {
-    const { headers, rows, choiceMode, answers, disabled } = this.props;
+    const { headers, rows, choiceMode, answers, disabled, language } = this.props;
     const Tag = choiceMode === 'radio' ? Radio : Checkbox;
     const headerId = (idx) => `${this.instanceId}-header-${idx}`;
     const rowTitleId = (idx) => `${this.instanceId}-row-${idx}`;
@@ -129,9 +132,7 @@ export class AnswerGrid extends React.Component {
     if (!rows || rows.length === 0) {
       return (
         <ControlsContainer>
-          <EmptyTypography component="div">
-            There are currently no questions to show.
-          </EmptyTypography>
+          <EmptyTypography component="div">{catalogs.forLocale(language).t('noQuestions')}</EmptyTypography>
         </ControlsContainer>
       );
     }

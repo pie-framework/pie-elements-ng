@@ -7,7 +7,7 @@
  * can share them.
  */
 
-import { t } from '../i18n.js';
+import { catalogs } from '../i18n/index.js';
 import type { Region, VennCircle, VennClassificationModel } from '../types.js';
 
 /**
@@ -75,22 +75,25 @@ export function composeRegionLabel(
   region: Region,
   language?: string
 ): string {
+  const i18n = catalogs.forLocale(language);
   const norm = normalizeRegion(region);
-  const setLabel = (i: number) => circles[i]?.label ?? t('setNumber', language, { number: i + 1 });
+  const setLabel = (i: number) => circles[i]?.label ?? i18n.t('setNumber', { number: i + 1 });
   const labels = norm.map(setLabel);
 
   if (norm.length === 0) {
     if (circles.length === 2) {
-      return t('regionNeither', language, { first: setLabel(0), second: setLabel(1) });
+      return i18n.t('regionNeither', { first: setLabel(0), second: setLabel(1) });
     }
-    return t('regionNoneOf', language, { sets: circles.map((_, i) => setLabel(i)).join(', ') });
+    return i18n.t('regionNoneOf', {
+      sets: circles.map((_, i) => setLabel(i)).join(i18n.t('listSeparator')),
+    });
   }
 
   if (norm.length === 1) {
-    return t('regionOnly', language, { set: labels[0] });
+    return i18n.t('regionOnly', { set: labels[0] });
   }
 
-  return labels.join(t('regionAndSeparator', language));
+  return labels.join(i18n.t('regionAndSeparator'));
 }
 
 /**

@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import { TextField } from '@mui/material';
 import { createUniqueId } from '@pie-lib/render-ui';
 import { isComposingKeyEvent } from '@pie-element/shared-utils';
+import { catalogs } from '../i18n/index.js';
 
 const GroupInline: any = styled('div')({
   alignItems: 'center',
@@ -41,6 +42,7 @@ export class AnswerFraction extends React.Component {
     showCorrect: PropTypes.bool.isRequired,
     onAnswerChange: PropTypes.func.isRequired,
     answers: PropTypes.object.isRequired,
+    language: PropTypes.string,
   };
 
   idPrefix = createUniqueId('fraction-model');
@@ -81,7 +83,8 @@ export class AnswerFraction extends React.Component {
   });
 
   render() {
-    const { model, showCorrect, answers, disabled } = this.props;
+    const { model, showCorrect, answers, disabled, language } = this.props;
+    const i18n = catalogs.forLocale(language);
     const noOfModel = showCorrect ? model.maxModelSelected : answers.noOfModel;
     const partsPerModel = showCorrect ? model.partsPerModel : answers.partsPerModel;
 
@@ -90,9 +93,7 @@ export class AnswerFraction extends React.Component {
         {model.allowedStudentConfig && (
           <GroupInline>
             <Group>
-              <InputLabel htmlFor={`${this.idPrefix}-number-of-models`}>
-                Number of Models
-              </InputLabel>
+              <InputLabel htmlFor={`${this.idPrefix}-number-of-models`}>{i18n.t('numberOfModels')}</InputLabel>
               <StyledTextField
                 id={`${this.idPrefix}-number-of-models`}
                 inputProps={this.countInputProps('noOfModel', noOfModel)}
@@ -106,9 +107,7 @@ export class AnswerFraction extends React.Component {
               />
             </Group>
             <Group>
-              <InputLabel htmlFor={`${this.idPrefix}-parts-per-model`}>
-                Parts per Model
-              </InputLabel>
+              <InputLabel htmlFor={`${this.idPrefix}-parts-per-model`}>{i18n.t('partsPerModel')}</InputLabel>
               <StyledTextField
                 id={`${this.idPrefix}-parts-per-model`}
                 inputProps={this.countInputProps('partsPerModel', partsPerModel)}

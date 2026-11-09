@@ -188,6 +188,11 @@ export default {
       correctMarkLabel: 'Correct label at ({{x}}, {{y}})',
       redo: 'Redo',
       reset: 'Reset',
+      lineA: 'Line A',
+      lineB: 'Line B',
+      solutionSet: 'Solution Set',
+      solid: 'Solid',
+      dashed: 'Dashed',
       keyLegend: {
         missingRequiredLabel: 'Missing Required Label',
         answerKeyCorrect: 'Answer Key Correct',

@@ -1,12 +1,11 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
+import { catalogs } from './i18n/index.js';
 
 // The label swatches below stay white: they match the graph's mark labels, which keep a fixed
 // light palette in both schemes. The legend itself follows the theme, opaque white without one.
@@ -39,11 +38,14 @@ const StyledText: any = styled('div')({
 });
 
 const KeyLegend = ({ className, isLabelAvailable, language }) => {
-  const t = (key) => translator.t(`graphing.keyLegend.${key}`, { lng: language });
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
+  const i18n = catalogs.forLocale(language, relabel);
+  const t = (key) => i18n.t(dynamicMessageKey(`keyLegend.${key}`));
 
   return (
     <StyledContainer className={className}>
-      <StyledTitle>{translator.t('selectText.key', { lng: language })}</StyledTitle>
+      <StyledTitle>{i18n.t('key')}</StyledTitle>
       {isLabelAvailable && (
         <StyledRow>
           <StyledText>{t('missingRequiredLabel')}</StyledText>

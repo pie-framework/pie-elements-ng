@@ -5,6 +5,12 @@ import { createRoot } from 'react-dom/client';
 import { ModelSetEvent } from '@pie-element/shared-player-events';
 import Main from './main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 
 export default class MultiTraitRubric extends HTMLElement {
   constructor() {
@@ -14,6 +20,10 @@ export default class MultiTraitRubric extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // The locale the player publishes, once it answers; until then the chrome
+    // follows the item's declared language, else `en-US`.
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   // React commits asynchronously, so a queueMicrotask(renderMath) can run before
@@ -69,13 +79,31 @@ export default class MultiTraitRubric extends HTMLElement {
 
   connectedCallback() {
     this._initMathObserver();
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this._render();
+        }
+      });
+    }
     this._render();
   }
 
   _render() {
     this._initMathObserver();
 
-    const el = React.createElement(Main, { model: this._model, session: this._session });
+    const declaredLanguage = this._model?.language;
+    // Rendered once every catalog on the render path holds the chrome language,
+    // so no English frame precedes it.
+    const language = this._interfaceLocale ?? declaredLanguage;
+    if (!isLocaleReady(language)) {
+      void loadLocale(language).then(() => this._render());
+      return;
+    }
+    stampElementLanguage(this, declaredLanguage);
+
+    const el = React.createElement(Main, { model: this._model, session: this._session, language });
 
     if (!this._root) {
       this._root = createRoot(this);
@@ -85,6 +113,8 @@ export default class MultiTraitRubric extends HTMLElement {
 
   disconnectedCallback() {
     this._disconnectMathObserver();
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     if (this._root) {
       this._root.unmount();
       this._root = null;

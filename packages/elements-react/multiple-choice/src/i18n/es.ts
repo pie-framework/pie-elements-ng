@@ -11,9 +11,8 @@ export default {
     one: 'Solo se permite {count} respuesta.',
     other: 'Solo se permiten {count} respuestas.',
   },
-  showTeacherInstructions: 'Mostrar instrucciones para el maestro',
-  hideTeacherInstructions: 'Ocultar instrucciones para el maestro',
   answerChoicesA11y: 'Opciones de respuesta',
   partAnswerChoicesA11y: '{partLabel}, opciones de respuesta',
   pickTheAnswerBelowA11y: 'Seleccione la respuesta de abajo',
+  choiceNameA11y: 'Opción {key}',
 } satisfies MessageCatalog;

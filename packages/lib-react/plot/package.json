@@ -2,6 +2,7 @@
   "name": "@pie-lib/plot",
   "version": "5.0.7",
   "description": "Some underlying components for building charts/graphs",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

@@ -38,9 +38,6 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 
 import Container from './container.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -139,7 +136,6 @@ class HotspotComponent extends React.Component {
         teacherInstructions,
         strokeWidth,
         responseCorrect,
-        language,
         fontSizeFactor,
         autoplayAudioEnabled,
         autoplayAudioHeld,
@@ -147,6 +143,7 @@ class HotspotComponent extends React.Component {
       },
       onSelectChoice,
     } = this.props;
+    const language = this.props.language ?? this.props.model.language;
     const { showCorrect } = this.state;
     const isEvaluateMode = mode === 'evaluate';
     const isGatherMode = mode === 'gather';
@@ -158,7 +155,7 @@ class HotspotComponent extends React.Component {
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules} containerRef={this.containerRef} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
-          <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt className="prompt" prompt={teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -205,7 +202,7 @@ class HotspotComponent extends React.Component {
         ) : null}
 
         {showRationale && (
-          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <Collapsible variant="rationale" language={language}>
             <PreviewPrompt className="prompt" prompt={rationale} />
           </Collapsible>
         )}
@@ -218,6 +215,8 @@ HotspotComponent.propTypes = {
   model: PropTypes.object.isRequired,
   onSelectChoice: PropTypes.func.isRequired,
   session: PropTypes.object.isRequired,
+  /** The locale the chrome follows; the item's declared language when omitted. */
+  language: PropTypes.string,
 };
 
 export default HotspotComponent;

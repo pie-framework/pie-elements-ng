@@ -5,9 +5,7 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import Button from './button.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../../../i18n/index.js';
 
 const iconHeight = 41;
 const iconWidth = 42;
@@ -164,6 +162,8 @@ export class PointChooser extends React.Component {
       language,
     } = this.props;
 
+    const i18n = catalogs.forLocale(language);
+
     return (
       <PointChooserContainer>
         <Points selected={elementType} selectPoint={onElementType} icons={icons} />
@@ -175,11 +175,11 @@ export class PointChooser extends React.Component {
           )}
           <Button
             onClick={onUndoElement}
-            label={translator.t('common:undo', { lng: language })}
+            label={i18n.t('undo')}
           />
           <Button
             onClick={onClearElements}
-            label={translator.t('numberLine.clearAll', { lng: language })}
+            label={i18n.t('clearAll')}
           />
         </Controls>
       </PointChooserContainer>

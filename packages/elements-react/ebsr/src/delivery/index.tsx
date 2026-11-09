@@ -5,10 +5,14 @@ import MultipleChoice from '@pie-element/multiple-choice';
 import { get } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import { createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
-
-const { translator } = Translator;
 
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
 const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
@@ -76,6 +80,19 @@ export default class Ebsr extends HTMLElement {
     super();
     this._model = {};
     this._session = {};
+    // The locale the player publishes; null until it answers, and then the chrome follows the
+    // declared language (permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._unsubscribeInterfaceLocale = null;
+  }
+
+  /** The item's declared language, read where ebsr has always read it. */
+  get declaredLanguage() {
+    return this._model?.language ?? this._model?.partA?.language;
+  }
+
+  chromeLanguage() {
+    return this._interfaceLocale ?? this.declaredLanguage;
   }
 
   // The item-level rules nest under a class only this element carries, as each part's rules nest
@@ -108,10 +125,28 @@ export default class Ebsr extends HTMLElement {
     this._updateRegionName();
     this._updateExtraCSSRules();
 
-    customElements.whenDefined(MC_TAG_NAME).then(() => {
-      this.setPartModel(this.partA, 'partA');
-      this.setPartModel(this.partB, 'partB');
-    });
+    customElements.whenDefined(MC_TAG_NAME).then(() => this.setPartModels());
+  }
+
+  /** The parts' models carry their labels in the chrome language, so they wait until it is resident. */
+  setPartModels() {
+    const language = this.chromeLanguage();
+    if (!isLocaleReady(language)) {
+      void loadLocale(language).then(() => this.setPartModels());
+      return;
+    }
+    this.setPartModel(this.partA, 'partA');
+    this.setPartModel(this.partB, 'partB');
+  }
+
+  partLabel(key) {
+    if (!this._model?.partLabels) {
+      return undefined;
+    }
+    const letters = this._model.partLabelType === 'Letters';
+    const index = key === 'partA' ? (letters ? 'A' : '1') : letters ? 'B' : '2';
+
+    return catalogs.forLocale(this.chromeLanguage()).t('part', { index });
   }
 
   set session(s) {
@@ -133,8 +168,11 @@ export default class Ebsr extends HTMLElement {
 
       part.model = {
         ...this._model[key],
+        // A part that declares no language takes the item's.
+        language: this._model[key].language ?? this.declaredLanguage,
         mode,
         keyMode: this._model[key].choicePrefix,
+        partLabel: this.partLabel(key),
         // A hold on the item holds both parts.
         ...(this._model.autoplayAudioHeld && { autoplayAudioHeld: true }),
       };
@@ -189,12 +227,22 @@ export default class Ebsr extends HTMLElement {
   }
 
   connectedCallback() {
+    // The parts subscribe on their own; their requests bubble through this element to the player.
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = subscribeInterfaceLocale(this, ({ locale }) => {
+      if (locale === this._interfaceLocale) return;
+      this._interfaceLocale = locale;
+      this._updateRegionName();
+      customElements.whenDefined(MC_TAG_NAME).then(() => this.setPartModels());
+    });
     this._render();
     this._initPlayerObserver();
     this.addEventListener(SESSION_CHANGED, this.onSessionUpdated);
   }
 
   disconnectedCallback() {
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = null;
     this._disconnectPlayerObserver();
     this.removeEventListener(SESSION_CHANGED, this.onSessionUpdated);
   }
@@ -219,11 +267,9 @@ export default class Ebsr extends HTMLElement {
     }
   }
 
-  /** The item-level name in the item language, which the parts carry when the item sets none. */
+  /** The item-level name in the chrome language; it is renamed once that locale loads. */
   get regionName() {
-    const language = this._model?.language ?? this._model?.partA?.language;
-
-    return translator.t('ebsr.twoPartQuestion', { lng: language });
+    return catalogs.forLocale(this.chromeLanguage(), () => this._updateRegionName()).t('twoPartQuestion');
   }
 
   /** A model set can change the language; the heading is renamed in place so the parts stay mounted. */
@@ -232,6 +278,7 @@ export default class Ebsr extends HTMLElement {
       return;
     }
 
+    stampElementLanguage(this, this.declaredLanguage);
     this.setAttribute('aria-label', this.regionName);
 
     const heading = this.querySelector(':scope > .srOnly');
@@ -252,6 +299,13 @@ export default class Ebsr extends HTMLElement {
   }
 
   _render() {
+    const language = this.chromeLanguage();
+    if (!isLocaleReady(language)) {
+      void loadLocale(language).then(() => this.isConnected && this._render());
+      return;
+    }
+
+    stampElementLanguage(this, this.declaredLanguage);
     this.setAttribute('aria-label', this.regionName);
     this.role = 'region';
     this.classList.add(this.cssScope);
@@ -283,8 +337,7 @@ export default class Ebsr extends HTMLElement {
     // when item is re-rendered (due to connectedCallback), if the custom element is already defined,
     // we need to set the model and session, otherwise the setters are not reached again
     if (customElements.get(MC_TAG_NAME)) {
-      this.setPartModel(this.partA, 'partA');
-      this.setPartModel(this.partB, 'partB');
+      this.setPartModels();
       this.setPartSession(this.partA, 'partA');
       this.setPartSession(this.partB, 'partB');
     }

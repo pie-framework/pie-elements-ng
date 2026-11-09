@@ -80,7 +80,7 @@ describe('paragraph direction buttons', () => {
 
   it('are named in the item language', async () => {
     await open({ markup: '<p>Hola</p>', activePlugins: ['text-direction'], language: 'es_ES' });
-    expect(toolbarButton('Párrafo de izquierda a derecha')).toBeTruthy();
+    await waitFor(() => expect(toolbarButton('Párrafo de izquierda a derecha')).toBeTruthy());
     expect(toolbarButton('Párrafo de derecha a izquierda')).toBeTruthy();
   });
 
@@ -90,7 +90,7 @@ describe('paragraph direction buttons', () => {
     document.body.innerHTML = '';
 
     await open({ markup: '<p>مرحبا</p>', language: 'ar' });
-    expect(toolbarButton(RTL)).toBeTruthy();
+    await waitFor(() => expect(toolbarButton('فقرة من اليمين إلى اليسار')).toBeTruthy());
   });
 
   it('follow `pluginProps`, which can offer them anywhere or remove them from a right-to-left field', async () => {
@@ -236,11 +236,11 @@ describe('text language control', () => {
     expect(toolbarButton(TRIGGER)).toBeNull();
   });
 
-  it('marks the selection in the page’s language when it differs from the field’s', async () => {
+  it('marks the selection in the page’s language when it differs from the field’s, labelled in it', async () => {
     const tiptap = await open({ markup: '<p>Say merci</p>', language: 'en_US', interfaceLocale: 'fr-FR' });
     selectWord(tiptap, 5, 10);
-    await waitFor(() => expect(toolbarButton('Text language')).toBeTruthy());
-    press(toolbarButton(TRIGGER));
+    await waitFor(() => expect(toolbarButton('Langue du texte')).toBeTruthy());
+    press(toolbarButton('Langue du texte'));
     expect(options().map((button) => button.textContent)).toEqual(['anglais américain', 'français (France)']);
 
     press(option('français')!);

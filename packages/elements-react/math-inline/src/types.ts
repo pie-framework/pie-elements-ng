@@ -62,9 +62,10 @@ export interface MathInlineResponse {
   id: number | string;
   /**
    * Indicates what type of validation should be applied on the response; the model's
-   * `validationDefault` applies when it is not set
+   * `validationDefault` applies when it is not set. `value` accepts a single number — integer,
+   * decimal or fraction — equal in value to the answer, and rejects any expression with an operation
    */
-  validation?: 'literal' | 'symbolic';
+  validation?: 'literal' | 'symbolic' | 'value';
   /**
    * Indicates if the order of expression elements in literal validation can be ignore - whilst the expression is still mathematically correct;
    * the model's `ignoreOrderDefault` applies when it is not set
@@ -121,7 +122,7 @@ export interface MathInlineModelSettings {
    * Indicates the default value for validation, in case that it's not set on a response
    * @default "literal"
    */
-  validationDefault?: 'literal' | 'symbolic';
+  validationDefault?: 'literal' | 'symbolic' | 'value';
   /**
    * Indicates the default value for ignoreOrder, in case that it's not set
    * @default false

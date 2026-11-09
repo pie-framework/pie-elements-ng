@@ -13,12 +13,12 @@ export default {
     one: 'Only {count} answer is allowed.',
     other: 'Only {count} answers are allowed.',
   },
-  showTeacherInstructions: 'Show Teacher Instructions',
-  hideTeacherInstructions: 'Hide Teacher Instructions',
   /** Visually hidden name of the answer choices' group; the prompt renders before it (PIE-1244). */
   answerChoicesA11y: 'Answer choices',
   /** The same group's name in a two-part question, so its parts' groups stay apart. */
   partAnswerChoicesA11y: '{partLabel}, answer choices',
   /** Visually hidden note after a choice's key, naming a choice whose math is read in the content. */
   pickTheAnswerBelowA11y: 'Pick the answer below',
+  /** Visually hidden name of a choice with no text and no image description, from its key or position. */
+  choiceNameA11y: 'Choice {key}',
 };

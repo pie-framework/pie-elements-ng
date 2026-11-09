@@ -1,6 +1,5 @@
 import debug from 'debug';
 import { isEmpty } from '@pie-element/shared-lodash';
-import Translator from '@pie-lib/translator';
 import * as mv from '@pie-framework/math-validation';
 import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import type {
@@ -15,7 +14,6 @@ import type {
 import defaults from './defaults.js';
 import { normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 
-const { translator } = Translator;
 const log = debug('@pie-element:math-templated:controller');
 
 /** The learner's answers, keyed `r<index>` by response area index. */
@@ -338,8 +336,9 @@ export const model = (
     session = session || {};
     const normalizedQuestion = createDefaultModel(question);
     const correctness = getCorrectness(normalizedQuestion as MathTemplatedModel, env, session);
-    const { responses, language } = normalizedQuestion;
-    let { note } = normalizedQuestion;
+    const { responses } = normalizedQuestion;
+    // Left as authored: delivery renders the default in the interface locale when it is absent.
+    const { note } = normalizedQuestion;
     let showNote = false;
 
     // check if there is at least one alternate response or if the validation for at least one response is not literal
@@ -351,10 +350,6 @@ export const model = (
         showNote = true;
       }
     });
-
-    if (!note) {
-      note = translator.t('mathInline.primaryCorrectWithAlternates', { lng: language });
-    }
 
     const out: MathTemplatedViewModel = {
       prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,

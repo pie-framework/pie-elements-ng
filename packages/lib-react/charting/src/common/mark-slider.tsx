@@ -1,12 +1,10 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 import { styled } from '@mui/material/styles';
 import { keyboard } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 
 import { textOf } from '../utils.js';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 type SliderGraphProps = {
   range: { min: number; max: number; step?: number; labelStep?: number };
@@ -60,6 +58,9 @@ const FocusRing = ({ x, y, width, height }: FocusBox) => (
  */
 export const MarkSlider = React.forwardRef<SVGGElement, MarkSliderProps>(
   ({ enabled, label, index, value, graphProps, language, focusBox, onChange, children, ...rest }, ref) => {
+    // Re-renders once the language's catalog lands, for an element that did not preload it.
+    const [, relabel] = useReducer((n: number) => n + 1, 0);
+
     if (!enabled) {
       return (
         <g ref={ref} {...rest}>
@@ -80,7 +81,7 @@ export const MarkSlider = React.forwardRef<SVGGElement, MarkSliderProps>(
     const min = keyboard.fitToRange(range.min, slider);
     const max = keyboard.fitToRange(range.max, slider);
     const now = Number.isFinite(value) ? value : min;
-    const name = textOf(label) || translator.t('charting.category', { lng: language, index: index + 1 });
+    const name = textOf(label) || catalogs.forLocale(language, relabel).t('category', { index: index + 1 });
 
     const onKeyDown = (event: React.KeyboardEvent<SVGGElement>) => {
       const next = keyboard.sliderKeyValue(event.key, now, slider);

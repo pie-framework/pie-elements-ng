@@ -1,16 +1,22 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { loadLocale } from '@pie-element/shared-i18n';
 
 // MathJax loads off a CDN and has no bearing on the response's name.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
 const { Main } = await import('../main');
 
+// The custom element holds its first render until the chrome locale is resident; so does this.
+beforeAll(() => loadLocale('es_ES'));
+
 const renderMain = (model: Record<string, unknown>) =>
   render(
     <Main
       model={{ disabled: false, ...model }}
+      // The element passes the player's locale, else the declared language.
+      language={model.language as string}
       session={{}}
       onValueChange={vi.fn()}
       onAnnotationsChange={vi.fn()}
