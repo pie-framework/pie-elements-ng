@@ -1,6 +1,6 @@
 import { all, create, type MathJsStatic } from 'mathjs';
 
-// @types/mathjs types `create` as returning a Partial; `all` loads every function.
+// mathjs types `create` as returning a Partial; `all` loads every function.
 export const mathjs = create(all, { number: 'Fraction' }) as MathJsStatic & {
   replacer: (key: string, value: unknown) => unknown;
 };
