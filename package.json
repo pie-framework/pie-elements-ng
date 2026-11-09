@@ -100,7 +100,7 @@
     "@types/prop-types": "^15.7.15",
     "@vitejs/plugin-react": "^6.2.1",
     "@vitest/coverage-v8": "^5.0.5",
-    "@vitest/ui": "^5.0.5",
+    "@vitest/ui": "^5.1.0",
     "ajv": "^8.20.0",
     "bun-types": "^1.4.4",
     "glob": "^14.0.3",
