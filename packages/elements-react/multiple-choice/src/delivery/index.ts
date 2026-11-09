@@ -197,8 +197,8 @@ export default class MultipleChoice extends HTMLElement {
     this._mathObserver = null;
     this._mathRenderPending = false;
     // The locale the player publishes, once it answers; null until then. While
-    // it is null the chrome follows the item's declared language, the
-    // transitional precedence (published, else `model.language`, else `en-US`).
+    // it is null the chrome follows the item's declared language (published,
+    // else `model.language`, else `en-US`; permanent, see the PRD's invariant).
     this._interfaceLocale = null;
     this._disconnectInterfaceLocale = null;
 
