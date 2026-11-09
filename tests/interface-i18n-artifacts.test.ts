@@ -23,6 +23,76 @@ const migratedElements = [
     dir: 'packages/elements-react/passage',
     catalogPackages: ['packages/elements-react/passage', 'packages/lib-react/render-ui'],
   },
+  {
+    dir: 'packages/elements-react/select-text',
+    catalogPackages: [
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/text-select',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/match',
+    catalogPackages: [
+      'packages/elements-react/match',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/drawing-response',
+    catalogPackages: ['packages/elements-react/drawing-response', 'packages/lib-react/render-ui'],
+  },
+  {
+    dir: 'packages/elements-react/hotspot',
+    catalogPackages: [
+      'packages/elements-react/hotspot',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/placement-ordering',
+    catalogPackages: [
+      'packages/elements-react/placement-ordering',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/categorize',
+    catalogPackages: [
+      'packages/elements-react/categorize',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/graphing',
+    catalogPackages: [
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/graphing',
+    ],
+    // MathLive, which the IIFE bundles, ships its own Spanish "Undo" tooltip.
+    iifeAlso: ['Deshacer'],
+  },
+  {
+    dir: 'packages/elements-react/image-cloze-association',
+    catalogPackages: [
+      'packages/elements-react/image-cloze-association',
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+    ],
+  },
+  {
+    dir: 'packages/elements-react/charting',
+    catalogPackages: [
+      'packages/lib-react/render-ui',
+      'packages/lib-react/correct-answer-toggle',
+      'packages/lib-react/charting',
+    ],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })
@@ -76,7 +146,7 @@ describe('migrated catalog packages', () => {
   });
 });
 
-describe.each(migratedElements)('$dir delivery bundles', ({ dir, catalogPackages }) => {
+describe.each(migratedElements)('$dir delivery bundles', ({ dir, catalogPackages, iifeAlso }) => {
   const dist = join(root, dir, 'dist');
   const views = ['delivery', 'print'].filter((view) =>
     existsSync(join(dist, 'browser', view, 'index.js'))
@@ -111,7 +181,7 @@ describe.each(migratedElements)('$dir delivery bundles', ({ dir, catalogPackages
           value
         );
         expect(lazySource, value).toContain(value);
-        expect(iife, value).not.toContain(value);
+        if (!iifeAlso?.includes(value)) expect(iife, value).not.toContain(value);
       }
     }
   );

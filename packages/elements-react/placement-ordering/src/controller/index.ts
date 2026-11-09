@@ -17,9 +17,6 @@ import type {
 } from '../types.js';
 
 const log = debug('@pie-element:placement-ordering:controller');
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 export const questionError = () => new Error('Question is missing required array: correctResponse');
 
@@ -239,10 +236,6 @@ export async function model(
   };
 
   base.disabled = env.mode !== 'gather';
-
-  if (!base.note) {
-    base.note = translator.t('common:commonCorrectAnswerWithAlternates', { lng: normalizedQuestion.language });
-  }
 
   if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
     base.rationale = normalizedQuestion.rationaleEnabled ? normalizedQuestion.rationale : null;
