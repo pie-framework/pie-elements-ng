@@ -47,6 +47,10 @@ const migratedElements = [
     dir: 'packages/elements-react/likert',
     catalogPackages: ['packages/lib-react/render-ui'],
   },
+  {
+    dir: 'packages/elements-react/multi-trait-rubric',
+    catalogPackages: ['packages/elements-react/multi-trait-rubric'],
+  },
 ];
 
 const catalogPackages = globSync('packages/*/*/src/i18n/catalog-manifest.json', { cwd: root })
