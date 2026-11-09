@@ -15,6 +15,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
+import { alternateLatex } from '../controller/utils.js';
 
 // TODO once we support individual response correctness, we need to remove this constant
 const INDIVIDUAL_RESPONSE_CORRECTNESS_SUPPORTED = false;
@@ -363,7 +364,7 @@ class Response extends React.Component {
                   controlledKeypad
                   keypadMode={mode}
                   showKeypad={showKeypad[alternateId] || false}
-                  latex={alternates[alternateId] || ''}
+                  latex={alternateLatex(alternates[alternateId])}
                   onChange={this.onAlternateAnswerChange(alternateId)}
                   onFocus={this.onAlternateFocus(alternateId)}
                   onDone={this.onAlternateDone(alternateId)}
