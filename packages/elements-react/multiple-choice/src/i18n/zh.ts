@@ -15,4 +15,5 @@ export default {
   answerChoicesA11y: '答案选项',
   partAnswerChoicesA11y: '{partLabel}，答案选项',
   pickTheAnswerBelowA11y: '请选择下面的答案',
+  choiceNameA11y: '选项 {key}',
 } satisfies MessageCatalog;

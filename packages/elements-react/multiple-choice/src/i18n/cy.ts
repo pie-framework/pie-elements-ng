@@ -20,4 +20,5 @@ export default {
   answerChoicesA11y: 'Dewisiadau ateb',
   partAnswerChoicesA11y: '{partLabel}, dewisiadau ateb',
   pickTheAnswerBelowA11y: 'Dewiswch yr ateb isod',
+  choiceNameA11y: 'Dewis {key}',
 } satisfies MessageCatalog;

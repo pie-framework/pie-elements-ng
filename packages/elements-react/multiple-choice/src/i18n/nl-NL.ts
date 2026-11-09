@@ -16,4 +16,5 @@ export default {
   answerChoicesA11y: 'Antwoordkeuzes',
   partAnswerChoicesA11y: '{partLabel}, antwoordkeuzes',
   pickTheAnswerBelowA11y: 'Selecteer het antwoord hieronder',
+  choiceNameA11y: 'Keuze {key}',
 } satisfies MessageCatalog;

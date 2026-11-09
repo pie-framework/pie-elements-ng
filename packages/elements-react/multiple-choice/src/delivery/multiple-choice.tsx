@@ -461,6 +461,7 @@ export class MultipleChoice extends React.Component {
                 displayKey={this.indexToSymbol(index)}
                 isSelectionButtonBelow={isSelectionButtonBelow}
                 pickTheAnswerBelow={i18n.t('pickTheAnswerBelowA11y')}
+                choiceName={i18n.t('choiceNameA11y', { key: this.indexToSymbol(index) || `${index + 1}` })}
               />
             ))}
           </LayoutComponent>
