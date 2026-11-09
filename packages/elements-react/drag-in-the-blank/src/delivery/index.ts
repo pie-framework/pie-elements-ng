@@ -34,6 +34,12 @@ const renderUi =
     : renderUiNamespaceAny;
 const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import Main from './main.js';
 
 export const isComplete = (session, model, promptAudio, elementContext) => {
@@ -69,6 +75,14 @@ export default class DragInTheBlank extends HTMLElement {
     this._model = null;
     this._session = null;
     this._root = null;
+    // The locale the player publishes; null until it answers, and then the chrome follows the
+    // declared language (permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._unsubscribeInterfaceLocale = null;
+  }
+
+  chromeLanguage() {
+    return this._interfaceLocale ?? this._model?.language;
   }
 
   set model(m) {
@@ -103,10 +117,20 @@ export default class DragInTheBlank extends HTMLElement {
 
   _render: any = () => {
     if (this._model && this._session) {
+      // Rendered once every catalog on the render path holds the chrome language, so no English
+      // frame precedes it.
+      const language = this.chromeLanguage();
+      if (!isLocaleReady(language)) {
+        void loadLocale(language).then(() => this._render());
+        return;
+      }
+      stampElementLanguage(this, this._model.language);
+
       let elem = React.createElement(Main, {
         model: this._model,
         value: this._session.value,
         onChange: this.changeSession,
+        language,
       });
 
       if (!this._root) {
@@ -135,12 +159,20 @@ export default class DragInTheBlank extends HTMLElement {
   };
 
   connectedCallback() {
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = subscribeInterfaceLocale(this, ({ locale }) => {
+      if (locale === this._interfaceLocale) return;
+      this._interfaceLocale = locale;
+      this._render();
+    });
     this._render();
 
     this._promptAudioWatcher.connect();
   }
 
   disconnectedCallback() {
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = null;
     this._promptAudioWatcher.disconnect();
 
     if (this._root) {
