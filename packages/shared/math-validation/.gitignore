@@ -1,0 +1,7 @@
+node_modules
+.vscode
+lib
+playground
+jest-stare
+.idea
+.npmrc
