@@ -8,7 +8,7 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () =>
 
 const passage = (title: string) => ({ ...defaults.model.passages[0], title });
 
-const renderMain = (passages: ReturnType<typeof passage>[], max?: number) => {
+const renderMain = (passages: ReturnType<typeof passage>[], max?: number | null) => {
   const onModelChanged = vi.fn();
   const configuration = {
     ...defaults.configuration,
@@ -44,6 +44,24 @@ describe('additional passages', () => {
   it('stops adding at the configured maximum', () => {
     renderMain([passage('a'), passage('b'), passage('c')], 3);
     expect(screen.queryByRole('button', { name: /^Add Additional Passage/ })).toBeNull();
+  });
+
+  it('keeps adding when the cap is null', () => {
+    renderMain([passage('a'), passage('b'), passage('c')], null);
+    expect(screen.getByRole('button', { name: /^Add Additional Passage/ })).toBeTruthy();
+  });
+
+  it('keeps adding when the cap is 0', () => {
+    renderMain([passage('a'), passage('b'), passage('c')], 0);
+    expect(screen.getByRole('button', { name: /^Add Additional Passage/ })).toBeTruthy();
+  });
+
+  it('numbers each Remove button by its passage', () => {
+    renderMain([passage('a'), passage('b'), passage('c')]);
+    expect(screen.getAllByRole('button', { name: /^Remove passage/ })).toEqual([
+      screen.getByRole('button', { name: 'Remove passage 2' }),
+      screen.getByRole('button', { name: 'Remove passage 3' }),
+    ]);
   });
 
   it('reorders any passage, the first included', () => {
