@@ -45,7 +45,7 @@
     "@pie-lib/config-ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/utilities": "^3.2.2",
-    "d3-shape": "^3.2.0"
+    "d3-shape": "^3.2.1"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -66,9 +66,9 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "vitest": "^5.0.5",
