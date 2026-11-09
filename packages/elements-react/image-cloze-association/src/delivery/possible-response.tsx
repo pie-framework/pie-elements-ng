@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
-import { color } from '@pie-lib/render-ui';
+import { color, hasTextAlternative } from '@pie-lib/render-ui';
 
 import EvaluationIcon from './evaluation-icon.js';
 import StaticHTMLSpan from './static-html-span.js';
@@ -63,13 +63,6 @@ const StyledSpan: any = styled(StaticHTMLSpan)(() => ({
     visibility: 'hidden',
   },
 }));
-
-// Text, or an image with an `alt`, names the tile; an image with an empty `alt` leaves it unnamed.
-const hasTextAlternative = (html) => {
-  const content = new DOMParser().parseFromString(html || '', 'text/html').body;
-
-  return !!content.textContent.trim() || [...content.querySelectorAll('img')].some((img) => img.alt.trim());
-};
 
 const PossibleResponse = ({
   canDrag,

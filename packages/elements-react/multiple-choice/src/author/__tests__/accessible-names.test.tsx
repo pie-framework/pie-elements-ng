@@ -52,12 +52,13 @@ describe('multiple-choice image-only choices (PIE-1484)', () => {
       choices: [
         { label: '<img src="a.png" alt="">', value: '0', correct: true },
         { label: '<img src="b.png" alt="A red triangle">', value: '1', correct: false },
+        { label: '<img src="c.png" alt="" data-type="image-upload-node">', value: '2', correct: false },
       ],
     };
     render(
       <Main model={withImages} configuration={configuration} onModelChanged={vi.fn()} onConfigurationChanged={vi.fn()} />,
     );
 
-    expect(await screen.findAllByText(/Add alt text to the image/)).toHaveLength(1);
+    expect(await screen.findAllByText(/Add alt text to the image/)).toHaveLength(2);
   });
 });

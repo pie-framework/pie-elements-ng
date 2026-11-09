@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import { Feedback as FeedbackImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { Feedback as FeedbackImport, color, createUniqueId, hasTextAlternative, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -40,7 +40,6 @@ import Radio from '@mui/material/Radio';
 import classNames from 'clsx';
 
 import FeedbackTick from './feedback-tick.js';
-import { labelIsNameless } from '../label-name.js';
 
 const MATH_MARKERS = ['<math', '\\(', '\\[', 'data-latex', 'data-raw', '<mjx-container'];
 
@@ -54,7 +53,7 @@ const labelContent = (label) => {
     math: MATH_MARKERS.some((marker) => html.includes(marker)),
     table: html.includes('<table'),
     image: html.includes('<img'),
-    nameless: labelIsNameless(html),
+    nameless: !hasTextAlternative(html),
   };
 };
 
