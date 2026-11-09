@@ -218,6 +218,9 @@ export class PlacementOrdering extends React.Component {
     this.lastDragEndAt = 0;
     // When the last placement was made, so the cancel it causes in a live keyboard drag is not announced.
     this.lastPlacementAt = 0;
+    // Whether a drag is live, and whether it was started from the keyboard, which is the one it is announced for.
+    this.dragLive = false;
+    this.keyboardDrag = false;
     // Records the pointer of the drag in progress, for onDragEnd.
     this.dragCollision = createDragCollision({ detect: placementAreaCollision });
 
@@ -387,6 +390,7 @@ export class PlacementOrdering extends React.Component {
 
   onDragEnd: any = (event) => {
     const { over, active, activatorEvent } = event;
+    this.dragLive = false;
     const ordering = this.createOrdering();
 
     // A real drag (pointer or keyboard) just ended — whatever mirrored selection it
@@ -432,6 +436,9 @@ export class PlacementOrdering extends React.Component {
     const { active } = event;
 
     this.dragCollision.reset();
+    this.dragLive = true;
+    // dnd-kit announces a drag to every sensor, in words for a keyboard: a pointer or touch drag is not spoken to
+    this.keyboardDrag = event.activatorEvent?.type === 'keydown';
 
     this.setState({ draggedTile: active?.data?.current || null });
 
@@ -445,6 +452,7 @@ export class PlacementOrdering extends React.Component {
 
   onDragCancel: any = () => {
     const { selectedChoice } = this.state;
+    this.dragLive = false;
 
     if (selectedChoice && Date.now() - this.lastPlacementAt >= CLICK_AFTER_DRAG_GUARD_MS) {
       this.announce(cancelledMessage(selectedChoice, getCounts(this.createOrdering().tiles)));
@@ -478,13 +486,13 @@ export class PlacementOrdering extends React.Component {
       onDragStart: ({ active }) => {
         const data = active?.data?.current;
 
-        return data ? selectedMessage(data, getCounts(this.createOrdering().tiles)) : undefined;
+        return data && this.keyboardDrag ? selectedMessage(data, getCounts(this.createOrdering().tiles)) : undefined;
       },
       onDragOver: ({ active, over }) => {
         const selected = active?.data?.current;
         const data = over?.data?.current;
 
-        if (!selected || !data) return undefined;
+        if (!selected || !data || !this.keyboardDrag) return undefined;
 
         // The unsorted list is only a stop in the cycle as the selected object's own place in it
         if (data.type === 'choice' && data.id !== selected.id) return undefined;
@@ -539,7 +547,10 @@ export class PlacementOrdering extends React.Component {
   // no-op).
   endAnyLiveKeyboardDrag: any = () => {
     // The drag is ended by the placement, not cancelled by the student, so it is not announced as cancelled.
-    this.lastPlacementAt = Date.now();
+    if (this.dragLive) {
+      this.lastPlacementAt = Date.now();
+    }
+
     document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
   };
 

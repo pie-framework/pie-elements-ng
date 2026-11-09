@@ -2,7 +2,18 @@
 // The wording is the 'Screen Reader Announcement Final Spec: Ordering with Placement Areas'
 // (PIE-835); the row numbers in the comments below are that spec's.
 
-const stripTags = (html: string) => html.replace(/<[^>]*>/g, ' ');
+const stripTags = (html: string) =>
+  html.replace(/<img\b[^>]*\balt=(["'])(.*?)\1[^>]*>/gi, ' $2 ').replace(/<[^>]*>/g, ' ');
+
+// What a screen reader is told of content that has no text of its own: an image by its alternative text,
+// and math by its `alttext`, when it has one.
+const readAlternatives = (body: HTMLElement) => {
+  body.querySelectorAll('img, math').forEach((node) => {
+    const alternative = node.tagName === 'IMG' ? node.getAttribute('alt') : node.getAttribute('alttext');
+
+    node.replaceWith(` ${alternative ?? ''} `);
+  });
+};
 
 const plainTextCache = new Map<string, string>();
 const PLAIN_TEXT_CACHE_SIZE = 500;
@@ -18,13 +29,18 @@ export const toPlainText = (html?: string | null): string => {
   const cached = plainTextCache.get(html);
   if (cached !== undefined) return cached;
 
-  const text = (
-    typeof DOMParser !== 'undefined'
-      ? (new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '')
-      : stripTags(html)
-  )
-    .replace(/\s+/g, ' ')
-    .trim();
+  let raw: string;
+
+  if (typeof DOMParser !== 'undefined') {
+    const { body } = new DOMParser().parseFromString(html, 'text/html');
+
+    readAlternatives(body);
+    raw = body.textContent ?? '';
+  } else {
+    raw = stripTags(html);
+  }
+
+  const text = raw.replace(/\s+/g, ' ').trim();
 
   if (plainTextCache.size >= PLAIN_TEXT_CACHE_SIZE) plainTextCache.clear();
   plainTextCache.set(html, text);

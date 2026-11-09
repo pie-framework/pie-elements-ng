@@ -83,6 +83,8 @@ describe('PlacementOrdering screen reader announcements', () => {
     const { accessibility } = provider.props;
     const active = dragged(choice('c2', 'Lemon'));
 
+    act(() => provider.props.onDragStart({ active, activatorEvent: new KeyboardEvent('keydown', { code: 'Enter' }) }));
+
     expect(accessibility.announcements.onDragStart({ active })).toBe(
       'Selected object Lemon Use TAB to move to a sorted position.',
     );
@@ -98,6 +100,12 @@ describe('PlacementOrdering screen reader announcements', () => {
   it('names the selected object on the unsorted list it came from, from the drop data dnd-kit gives', () => {
     setup(['c1']);
     const { announcements } = provider.props.accessibility;
+    act(() =>
+      provider.props.onDragStart({
+        active: dragged(choice('c2', 'Lemon')),
+        activatorEvent: new KeyboardEvent('keydown', { code: 'Enter' }),
+      }),
+    );
     // the drop data of a slot has no `empty`: whether it is empty is for the ordering to say
     const gap = { id: 'c1', type: 'choice', instanceId: 'x', value: undefined, index: undefined };
 
@@ -108,6 +116,17 @@ describe('PlacementOrdering screen reader announcements', () => {
     expect(
       announcements.onDragOver({ active: dragged(choice('c2', 'Lemon')), over: over({ ...gap, id: 'c2', value: 'Lemon' }) }),
     ).toBe('On unsorted list. Press ENTER to leave object Lemon unsorted or use TAB to move to a sort position.');
+  });
+
+  it('does not speak a pointer drag the keyboard words', () => {
+    setup(['c1']);
+    const { announcements } = provider.props.accessibility;
+    const active = dragged(choice('c2', 'Lemon'));
+
+    act(() => provider.props.onDragStart({ active, activatorEvent: new MouseEvent('pointerdown') }));
+
+    expect(announcements.onDragStart({ active })).toBeUndefined();
+    expect(announcements.onDragOver({ active, over: over(target(1, 'c1', '')) })).toBeUndefined();
   });
 
   it('announces a selection made by a click, which makes no drag', () => {
@@ -121,6 +140,21 @@ describe('PlacementOrdering screen reader announcements', () => {
     expect(status()).toBe(
       'Object Lemon is no longer selected. 1 of 3 objects on sorted list. Use TAB to move to another object.',
     );
+  });
+
+  it('still announces a cancel made just after a placement that ended no drag', () => {
+    const { container, status } = setup(['c1']);
+    const at = (slot: string) => container.querySelector(`[data-tile-id$=":${slot}"]`) as HTMLElement;
+
+    fireEvent.click(at('choice-c2'));
+    fireEvent.click(at('target-1'));
+    expect(status()).toContain('Placed object Lemon in sort position 2 of 3.');
+
+    const active = dragged(choice('c3', 'Cherry'));
+    act(() => provider.props.onDragStart({ active, activatorEvent: new KeyboardEvent('keydown', { code: 'Enter' }) }));
+    act(() => provider.props.onDragCancel());
+
+    expect(status()).toContain('Object Cherry is no longer selected.');
   });
 
   it('announces placing an object on the simple success path', () => {

@@ -22,6 +22,13 @@ describe('announcements', () => {
     expect(toPlainText('<p>Fish &amp; <b>chips</b></p>')).toBe('Fish & chips');
   });
 
+  it('reads an image by its alternative text and math by its alttext', () => {
+    expect(toPlainText('<p><img src="t.png" alt="triangle"> with <math alttext="x squared"><mi>x</mi></math></p>')).toBe(
+      'triangle with x squared',
+    );
+    expect(toPlainText('<img src="t.png">')).toBe('');
+  });
+
   it('counts the sorted and unsorted objects', () => {
     expect(counts).toEqual({ sorted: 2, unsorted: 3, total: 5 });
   });
