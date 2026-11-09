@@ -1,0 +1,22 @@
+{
+  "locales": {
+    "es": {
+      "status": "reviewed",
+      "from": "showTeacherInstructions and hideTeacherInstructions carried over from the @pie-lib/translator es catalog; passageRegion and passageNumber added on 2026-11-05 by Claude (Anthropic) for PIE-1486",
+      "awaitingReview": {
+        "keys": [
+          "passageRegion",
+          "passageNumber"
+        ],
+        "note": "translated on 2026-11-05 by Claude (Anthropic) for PIE-1486; anchored so the gate passes, not yet reviewed by a person"
+      },
+      "english": {
+        "passageRegion": "Passage",
+        "passageNumber": "Passage {number}",
+        "showTeacherInstructions": "Show Teacher Instructions",
+        "hideTeacherInstructions": "Hide Teacher Instructions"
+      },
+      "reviewedAt": "2026-11-05"
+    }
+  }
+}

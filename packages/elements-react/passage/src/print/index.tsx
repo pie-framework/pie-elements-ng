@@ -28,7 +28,7 @@ const preparePrintPassage = (model, opts) => {
     teacherInstructions: isEnabled(passage.teacherInstructionsEnabled, teacherInstructionsEnabled)
       ? (isInstructor && passage.teacherInstructions) || ''
       : '',
-    label: passage.title || `Passage ${index + 1}`,
+    label: passage.title || '',
     title: isEnabled(passage.titleEnabled, titleEnabled) ? passage.title || '' : '',
     author: isEnabled(passage.authorEnabled, authorEnabled) ? passage.author || '' : '',
     subtitle: isEnabled(passage.subtitleEnabled, subtitleEnabled) ? passage.subtitle || '' : '',
@@ -52,6 +52,7 @@ export default class PassagePrint extends HTMLElement {
 
             const element = React.createElement(StimulusTabs, {
               disabledTabs: true,
+              language: this._model.language,
               tabs: printPassage,
             });
 
