@@ -18,7 +18,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
+    "@pie-element/shared-i18n": "workspace:*",
     "debug": "^4.1.1",
     "decimal.js": "^10.0.0",
     "prop-types": "^15.8.1",

@@ -86,7 +86,9 @@ export interface VideoStimulusModel extends PieModel {
    */
   media: MediaAssetRef;
   /**
-   * The learner-facing strings' language, a BCP 47 tag; an invalid tag reads as `en`.
+   * The item's declared language, a BCP 47 tag: the `lang` of its content, and of the
+   * learner-facing strings when the player publishes no interface locale. An invalid tag reads as
+   * undeclared.
    * @default "en"
    */
   language?: string;
@@ -94,7 +96,7 @@ export interface VideoStimulusModel extends PieModel {
   presentation?: VideoStimulusPresentation;
   /** The author's accessibility declarations */
   accessibilityProfile?: VideoStimulusAccessibilityProfile;
-  /** Overrides of the learner-facing strings by name; a blank value keeps the default */
+  /** Overrides of the learner-facing strings by name, in every interface locale; a blank value keeps the default */
   uiText?: Partial<VideoStimulusUiText>;
 }
 
@@ -144,9 +146,11 @@ export interface VideoStimulusViewModel {
   id?: string;
   element: string;
   media: VideoStimulusMediaViewModel;
-  language: string;
+  /** The item's declared language, when valid. */
+  language?: string;
   presentation: Required<VideoStimulusPresentation>;
-  uiText: VideoStimulusUiText;
+  /** The authored overrides with a non-blank value; delivery resolves the rest in the chrome language. */
+  uiText?: Partial<VideoStimulusUiText>;
   mode?: string;
 }
 

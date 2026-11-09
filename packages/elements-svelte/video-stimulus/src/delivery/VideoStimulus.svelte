@@ -3,6 +3,7 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
+      interfaceLocale: { type: 'String' },
     },
   }}
 />
@@ -13,7 +14,9 @@ let instanceNumber = 0;
 
 <script lang="ts">
   import { Transcript, hasTranscriptContent } from '@pie-lib/media-svelte';
-  import { resolveVideoStimulusUiText } from '../i18n.js';
+  import { elementLanguageAttributes } from '@pie-element/shared-i18n';
+  import { resolveVideoStimulusUiText } from '../ui-text.js';
+  import { residentLanguage } from './resident-language.svelte.js';
   import type { VideoStimulusViewModel } from '../types.js';
 
   type FailureKind = 'media' | 'track' | 'configuration';
@@ -23,7 +26,14 @@ let instanceNumber = 0;
   };
 
 
-  let { model }: { model?: VideoStimulusViewModel } = $props();
+  let {
+    model,
+    interfaceLocale = undefined,
+  }: {
+    model?: VideoStimulusViewModel;
+    /** The locale the player publishes; the element sets it. */
+    interfaceLocale?: string;
+  } = $props();
   let videoElement = $state<HTMLVideoElement>();
   let retryButton = $state<HTMLButtonElement>();
   let failure = $state<MediaFailure | null>(null);
@@ -35,7 +45,14 @@ let instanceNumber = 0;
   const sources = $derived(media?.sources ?? []);
   const tracks = $derived(media?.tracks ?? []);
   const transcript = $derived(media?.transcript);
-  const messages = $derived(resolveVideoStimulusUiText(model?.language, model?.uiText));
+  // The chrome speaks the locale the player publishes, else the item's declared
+  // language, else `en-US`, and renders once that locale's catalogs are resident.
+  const language = residentLanguage(() =>
+    model ? interfaceLocale || model.language || undefined : null
+  );
+  const chromeLanguage = $derived(language.current ?? undefined);
+  const chromeLanguageAttributes = $derived(elementLanguageAttributes(chromeLanguage));
+  const messages = $derived(resolveVideoStimulusUiText(chromeLanguage, model?.uiText));
   const hasTranscript = $derived.by(() => {
     try {
       return hasTranscriptContent(transcript);
@@ -145,13 +162,14 @@ let instanceNumber = 0;
   });
 </script>
 
+{#if language.current !== null}
 <section class="video-stimulus" aria-labelledby={labelId} lang={model?.language}>
   <figure class="video-figure">
     <figcaption
       id={labelId}
       class:visually-hidden={!showLabel}
       class="video-caption"
-      lang={media?.lang}
+      lang={media?.label ? media.lang : chromeLanguageAttributes?.lang}
     >
       {label}
     </figcaption>
@@ -167,7 +185,7 @@ let instanceNumber = 0;
           initiallyExpanded={model.presentation.transcriptInitiallyExpanded}
           uiText={model.uiText}
           label={transcriptLabel}
-          language={model.language}
+          language={chromeLanguage}
           contentLanguage={media?.lang}
         />
       </div>
@@ -212,7 +230,7 @@ let instanceNumber = 0;
     {/if}
 
     {#if displayedFailure}
-      <div class="media-status" role="alert" aria-atomic="true">
+      <div class="media-status" role="alert" aria-atomic="true" {...chromeLanguageAttributes}>
         <span class="status-icon" aria-hidden="true">!</span>
         <div class="status-copy">
           <strong>{failureTitle(displayedFailure)}</strong>
@@ -227,6 +245,7 @@ let instanceNumber = 0;
     {/if}
   </figure>
 </section>
+{/if}
 
 <style>
   .video-stimulus,

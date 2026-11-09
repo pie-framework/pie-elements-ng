@@ -1,6 +1,11 @@
 // @ts-nocheck
 
-import { stampElementLanguage } from '@pie-element/shared-i18n';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
@@ -10,9 +15,7 @@ import {
   createSessionNotifier,
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 // Inlined from the legacy configure/lib/defaults, which is ESM-incompatible and was not ported
 const defaults = {
@@ -32,6 +35,10 @@ export default class MathInline extends HTMLElement {
     super();
     this._root = null;
     this._configuration = defaults.configuration;
+    // The locale the player publishes, once it answers; null until then. While it is null the
+    // chrome follows the item's declared language, else `en-US` (permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._unsubscribeInterfaceLocale = null;
     // Session state is already written synchronously in `sessionChanged`; only
     // this dispatch is coalesced, and `disconnectedCallback` flushes it.
     this._sessionNotifier = createSessionNotifier(
@@ -59,9 +66,16 @@ export default class MathInline extends HTMLElement {
     }
   }
 
-  /** Names the region in the item language, which can change with any model set. */
+  /** The language of the chrome: the player's interface locale, else the item's declared language. */
+  chromeLanguage() {
+    return this._interfaceLocale ?? this._model?.language;
+  }
+
+  /** Names the region in the chrome language, which can change with any model set. */
   setRegionLabel() {
-    this.setAttribute('aria-label', translator.t('mathInline.mathResponseQuestion', { lng: this._model?.language }));
+    // Relabels once the locale lands, for a model set before any session renders.
+    const i18n = catalogs.forLocale(this.chromeLanguage(), () => this.setRegionLabel());
+    this.setAttribute('aria-label', i18n.t('mathResponseQuestion'));
   }
 
   set model(m) {
@@ -99,6 +113,17 @@ export default class MathInline extends HTMLElement {
     this.setRegionLabel();
     this.setAttribute('role', 'region');
 
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = subscribeInterfaceLocale(this, ({ locale }) => {
+      if (locale === this._interfaceLocale) {
+        return;
+      }
+
+      this._interfaceLocale = locale;
+      this.setRegionLabel();
+      this._render();
+    });
+
     this._render();
   }
 
@@ -107,9 +132,18 @@ export default class MathInline extends HTMLElement {
       return;
     }
 
+    // Rendered once every catalog on the render path holds the chrome language, so no English
+    // frame precedes it, and the declared one, against which a stored default note is compared.
+    const language = this.chromeLanguage();
+    if (!isLocaleReady(language) || !isLocaleReady(this._model.language)) {
+      void Promise.all([loadLocale(language), loadLocale(this._model.language)]).then(() => this._render());
+      return;
+    }
+
     const el = React.createElement(Main, {
       model: this._model,
       session: this._session,
+      language,
       configuration: this._configuration,
       onSessionChange: this.sessionChanged.bind(this),
     });
@@ -121,6 +155,8 @@ export default class MathInline extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = null;
     flushSessionNotifiers(this);
 
     if (this._root) {

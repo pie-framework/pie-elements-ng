@@ -23,7 +23,6 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-lib/translator": "workspace:*",
     "clsx": "^2.1.1",
     "debug": "^4.1.1",
     "lodash.throttle": "^4.1.1",

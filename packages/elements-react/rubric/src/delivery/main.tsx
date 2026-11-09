@@ -35,10 +35,8 @@ const renderUi =
     : renderUiNamespaceAny;
 const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
 import PropTypes from 'prop-types';
-import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -148,6 +146,8 @@ class Rubric extends React.Component {
     model: PropTypes.object.isRequired,
     animationsDisabled: PropTypes.bool,
     value: RubricType,
+    /** The chrome language: the player's interface locale, else the declared language. */
+    language: PropTypes.string,
   };
 
   toggleRubric() {
@@ -163,7 +163,8 @@ class Rubric extends React.Component {
   };
 
   render() {
-    const { model, value } = this.props;
+    const { model, value, language } = this.props;
+    const i18n = catalogs.forLocale(language);
     let { animationsDisabled } = this.props;
     animationsDisabled = animationsDisabled || value.animationsDisabled;
 
@@ -184,7 +185,7 @@ class Rubric extends React.Component {
                 <React.Fragment key={index}>
                   <StyledListItem key={`P${index}`}>
                     <TitleText>
-                      {pointsLabel === 1 ? `${pointsLabel} PT` : `${pointsLabel} PTS`}
+                      {i18n.plural('points', { count: pointsLabel })}
                     </TitleText>
                     <Text dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(desc) }} />
                   </StyledListItem>
@@ -192,7 +193,7 @@ class Rubric extends React.Component {
                   {sampleAnswers && sampleAnswers[index] && (
                     <StyledListItem key={`S${index}`}>
                       <SampleTitleText>
-                        Sample Answer
+                        {i18n.t('sampleAnswer')}
                       </SampleTitleText>
                       <Text dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(sampleAnswers[index]) }} />
                     </StyledListItem>
@@ -206,7 +207,7 @@ class Rubric extends React.Component {
       return (
         <StyledUiLayout extraCSSRules={extraCSSRules}>
           {/* screen reader only heading for navigation as per PD-5057 */}
-          <HiddenScreenReader>{translator.t('rubric.rubric', { lng: value.language })}</HiddenScreenReader>
+          <HiddenScreenReader>{i18n.t('rubric')}</HiddenScreenReader>
           {!animationsDisabled ? (
             <React.Fragment>
               <RubricToggle
@@ -216,9 +217,7 @@ class Rubric extends React.Component {
                 aria-controls={`${this.idPrefix}-content`}
                 onClick={this.toggleRubric}
               >
-                {translator.t(this.state.rubricOpen ? 'rubric.hideRubric' : 'rubric.showRubric', {
-                  lng: value.language,
-                })}
+                {i18n.t(this.state.rubricOpen ? 'hideRubric' : 'showRubric')}
                 <ChevronStyle aria-hidden="true">
                   {this.state.rubricOpen ? (
                     <svg
