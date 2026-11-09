@@ -19,7 +19,7 @@
     "dev": "vite build --watch",
     "test": "vitest",
     "demo": "vite --config vite.demo.config.ts",
-    "build:demo": "vite build --config vite.demo.config.ts",
+    "build:demo": "tsc -p demo && vite build --config vite.demo.config.ts",
     "clean": "rm -rf dist demo/dist"
   },
   "dependencies": {

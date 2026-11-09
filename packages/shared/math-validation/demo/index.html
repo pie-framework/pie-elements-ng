@@ -2,123 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Demo</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="css/jest-stare.css" rel="stylesheet" type="text/css" />
-    <link href="./demo.css" rel="stylesheet" type="text/css" />
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script type="module">
-      import { demo } from "./main.ts";
-      console.log("demo:", demo);
-      demo();
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Math Equality Checker</title>
+    <link href="./demo.css" rel="stylesheet" />
+    <script type="module" src="./main.ts"></script>
   </head>
 
   <body>
-    <header>
-      <!-- Fixed navbar -->
-      <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <span class="navbar-brand" id="navbar-title">equality-checker</span>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarCollapse"
-          aria-controls="navbarCollapse"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <span class="nav-link" aria-current="page">Demo</span>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </header>
+    <main>
+      <h1>Math equality checker</h1>
+      <p class="lede">
+        Compares two LaTeX expressions with <code>@pie-framework/math-validation</code>. The URL keeps
+        the last check, so it can be shared.
+      </p>
 
-    <!-- Begin page content -->
-    <main class="container">
-      <h1 class="page-header text-center margin">Math equality checker</h1>
-      <form action="" id="equality-form" class="margin form-horizontal">
-        <div class="clearfix"></div>
-        <div class="form-content">
-          <div class="form-group">
-            <label for="validation-type">Choose Validation Type:</label>
-            <select id="validation-type" class="form-control">
-              <option value="literal">Literal</option>
-              <option value="symbolic">Symbolic</option>
-            </select>
+      <form id="equality-form">
+        <label for="mode">Validation mode</label>
+        <select id="mode" name="mode">
+          <option value="symbolic">Symbolic</option>
+          <option value="literal">Literal</option>
+        </select>
+
+        <fieldset id="literal-options" hidden>
+          <legend>Literal options</legend>
+          <label><input type="checkbox" name="allowTrailingZeros" /> Allow trailing zeros</label>
+          <label><input type="checkbox" name="ignoreOrder" /> Ignore order</label>
+          <label><input type="checkbox" name="compareNumbersByValue" /> Compare numbers by value</label>
+        </fieldset>
+
+        <div class="expressions">
+          <div>
+            <label for="a">Expression I</label>
+            <input id="a" name="a" required autocomplete="off" spellcheck="false" />
           </div>
-
-          <div class="form-group d-none" id="literal-options">
-            <div class="form-group">Choose literal options</div>
-
-            <div class="form-check form-switch">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                value=""
-                id="trailing-zeros"
-              />
-              <label class="form-check-label" for="trailing-zeros">
-                Allow trailing zeros
-              </label>
-            </div>
-            <div class="form-check form-switch">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                value=""
-                id="ignore-order"
-              />
-              <label class="form-check-label" for="ignore-order"
-                >Ignore order True</label
-              >
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-5">
-              <div class="form-group">
-                <label for="math-expression1">Mathematical expression I</label>
-                <input type="text" id="math-expression1" class="form-control" />
-              </div>
-            </div>
-
-            <div class="col-md-2">
-              <text id="equality-result" class="sign text-center"></text>
-            </div>
-
-            <div class="col-md-5">
-              <div class="form-group">
-                <label for="math-expression2">Mathematical expression II</label>
-                <input type="text" id="math-expression2" class="form-control" />
-              </div>
-            </div>
-          </div>
-          <br />
-
-          <div class="form-group">
-            <button class="btn btn-outline-success" type="submit">
-              Check I equal II
-            </button>
+          <div>
+            <label for="b">Expression II</label>
+            <input id="b" name="b" required autocomplete="off" spellcheck="false" />
           </div>
         </div>
+
+        <button type="submit">Compare</button>
       </form>
 
-      <br />
-      <div id="response" class="alert"></div>
+      <output id="result" for="a b mode" aria-live="polite"></output>
     </main>
-
-    <footer class="footer">
-      <div class="container">
-        <span class="text-muted">Enjoy playground! 2021</span>
-      </div>
-    </footer>
   </body>
 </html>
