@@ -4,10 +4,12 @@
  * A host sets one locale on its player; the player answers the
  * `interfaceLocaleContext` composition context from `@pie-players/pie-context`
  * for every element in it, and republishes when the locale changes or a lazily
- * loaded catalog becomes resident. With no player the request goes unanswered
- * and the callback never fires, so the caller keeps its fallback
- * (`model.language`, then `en-US` — the transitional precedence while
- * `@pie-lib/translator` has dependents).
+ * loaded catalog becomes resident. A player answers only once its host
+ * chooses a locale; until then, and with no player, the request goes
+ * unanswered and the callback never fires. The caller then falls back to the
+ * item's declared language, then `en-US`. That fallback is permanent: items
+ * declaring Spanish keep Spanish chrome through it under hosts that set no
+ * locale, so an element never maps "unanswered" to `en-US` directly.
  */
 import {
   connectContextWithRetry,

@@ -8,11 +8,11 @@ Elements localize their own strings through `@pie-lib/translator`, an i18next si
 
 The data does not support keying chrome on the model. Across the four live PIE installations, one element on one installation declares `language`: about 90% of that installation's multiple-choice models carry it, and a tenth of all of them declare Spanish. Every other model sampled declares none, Spanish items included; their language lives in item search metadata the element never receives (about 1.7% of production items are tagged Spanish). No session, assignment, organization, user or PNP record carries a locale. So Spanish items render English chrome almost everywhere today, and the Spanish chrome that does render comes from a field that also describes content.
 
-pie-players settled the same question for its own chrome: the interface locale is a deployment fact the player publishes as a [composition context](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/composition-context.md), `en-US` when nothing publishes, independent of content language ([internationalization](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/internationalization.md#interface-locale), [adoption record](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/i18n-interface-locale-adoption.md)). This PRD puts elements on that contract and ports its engine. [`notes/migration.md`](./notes/migration.md) has the rollout.
+pie-players settled the same question for its own chrome: the interface locale is a deployment fact the player publishes as a [composition context](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/composition-context.md), published only once a host chooses a locale, independent of content language ([internationalization](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/internationalization.md#interface-locale), [adoption record](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/i18n-interface-locale-adoption.md)). This PRD puts elements on that contract and ports its engine. [`notes/migration.md`](./notes/migration.md) has the rollout.
 
 ## Goals
 
-- A host sets one interface locale on its player, and every migrated element and library renders its own strings in it. A host that sets none gets `en-US` throughout, so a learner sees chrome only in a language the host chose.
+- A host sets one interface locale on its player, and every migrated element and library renders its own strings in it. A host that sets none gets each item's declared language, else `en-US`, as pie-elements renders today, so moving a host onto pie-players changes no learner's chrome.
 - A page that shows only English loads no i18next and no locale data beyond English.
 - Each package owns its catalogs: a new locale or key touches and releases that package alone.
 - A host can rename any string, or serve a locale no package ships, in every build shape, IIFE included, with no rebuild.
@@ -45,13 +45,15 @@ Every bundled copy of the engine shares one page registry at `Symbol.for('pie-el
 
 ### Interface locale
 
-End-state precedence: the locale the player publishes, else `en-US`. `model.language` stops selecting chrome and describes content only ([lang and dir](#lang-and-dir)).
+Precedence, permanent: the locale the player publishes, else the item's declared language (`model.language`, or where the element has always read it, such as ebsr's `partA.language`), else `en-US`. The declared language stays the fallback because one live installation's multiple-choice models declare `es_ES` and render Spanish chrome through it, under hosts that set no locale; removing it would turn that content English on their move to pie-players. `lang` and `dir` follow the declared language alone ([lang and dir](#lang-and-dir)).
+
+**Invariant:** an element treats an unanswered `interfaceLocaleContext` request as "no locale chosen" and falls back to the declared language, never to `en-US` directly. pie-players holds the other half: a player answers only once a host chooses a locale (`locale` set, or a supplied provider resolving another locale than `en-US`), so the fallback is reached under every host that chooses none. A host that wants English chrome over Spanish content sets `locale="en-US"`. Each migrated element's interface-locale test renders a Spanish-declaring item with no player and asserts Spanish chrome.
 
 The channel is a composition context in `@pie-players/pie-context` at `Symbol.for('pie.interfaceLocale')`, published by the item and section players from their `locale` attribute. Elements already consume `sessionCommitContext` the same way for the idle-save delay (`packages/shared/player-events/src/idle-save-delay.ts`). The custom element subscribes in `connectedCallback`, re-renders on republish, and passes the locale into the `language` prop its libraries already take. Two alternatives lose:
 - An `env` field: pie-players reserves `Env.locale` for content language, an input to filtering authored data.
 - A custom-element attribute: the player would have to enumerate its elements, and a library nested inside one cannot see it.
 
-While `@pie-lib/translator` has dependents, a migrated element resolves the published locale, else `model.language`, else `en-US`. Unmigrated elements can only follow `model.language`, and a migrated element ignoring it would split one Spanish item's chrome across two languages. Phase 1 has no publisher yet, so it follows `model.language` exactly as the translator does.
+Unmigrated elements can only follow `model.language`, and the shared precedence keeps a page of migrated and unmigrated elements in one language when no locale is published.
 
 ### Catalogs and loading
 
@@ -109,7 +111,7 @@ The third rule carries the risk. On production, 25–37% of sampled Spanish ECR 
 
 ### Releases
 
-Each package releases its catalogs with a changeset; a new locale or key is a patch. The engine starts at 0.1.0 and needs a trusted publisher before its first publish. Dropping the `model.language` fallback changes what a Spanish item renders where nothing publishes a locale, and its changesets say so.
+Each package releases its catalogs with a changeset; a new locale or key is a patch. The engine starts at 0.1.0 and needs a trusted publisher before its first publish.
 
 ### Contracts touched
 
@@ -140,10 +142,10 @@ In Phase 1, with no publisher, the toggle follows `es_ES` and reads "Mostrar res
 
 ## Open questions
 
-- [ ] When the `model.language` fallback goes: with the translator's last dependent, or once the installation whose models declare Spanish publishes each assessment's locale, which its assessments already carry.
 - [ ] Whether `@pie-lib/translator` honours the published locale during the transition, so a host's `en-US` pin also covers unmigrated elements. Its calls carry no host element, so it would need a page-wide value, which a composition context deliberately is not.
 - [ ] Whether elements read content language from `Env.locale`, pie-players' planned slice 2, which decides whether an undeclared item ever gets a content `lang` from its element.
 
 ## Status log
 
 - Proposal → Accepted. Phase 1 shipped in #475.
+- The declared-language fallback is permanent, and pie-players answers `interfaceLocaleContext` only once a host chooses a locale (2026-11-09).

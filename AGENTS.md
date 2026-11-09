@@ -57,6 +57,10 @@ bun run verify:element-contracts
 bun run lint:all && bun run test
 ```
 
+## Interface Locale Invariant
+
+An element treats an unanswered `interfaceLocaleContext` request as "no locale chosen" and labels its chrome in the language its item declares (`model.language`, or the field it has always read, such as ebsr's `partA.language`), else `en-US`. Never map "unanswered" straight to `en-US`, and never drop the declared-language fallback: content declaring `es_ES` renders Spanish chrome through it under hosts that set no locale, and pie-players answers the context only once a host chooses one so that this holds. Every migrated element's interface-locale test covers a Spanish-declaring item with no player. The rule is in [`docs/prds/interface-i18n/PRD.md`](docs/prds/interface-i18n/PRD.md#interface-locale).
+
 ## Shared Infra Guardrails
 
 Shared infrastructure stays generic. Do not introduce element-specific or package-specific workarounds in:
