@@ -202,6 +202,14 @@ const migratedElements = [
     catalogPackages: ['packages/elements-react/multi-trait-rubric'],
   },
   {
+    dir: 'packages/elements-react/complex-rubric',
+    catalogPackages: [
+      'packages/elements-react/rubric',
+      'packages/elements-react/multi-trait-rubric',
+      'packages/lib-react/render-ui',
+    ],
+  },
+  {
     dir: 'packages/elements-react/fraction-model',
     catalogPackages: [
       'packages/elements-react/fraction-model',

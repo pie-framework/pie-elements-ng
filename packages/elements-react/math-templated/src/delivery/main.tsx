@@ -42,8 +42,8 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
-import { alternatesNote } from './default-note.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -775,7 +775,7 @@ export class Main extends React.Component {
     const showCorrectAnswerToggle = !emptyResponse && correctness && correctness.correctness !== 'correct';
     const displayNote =
       (showCorrect || (mode === 'view' && role === 'instructor')) && showNote
-        ? alternatesNote(note, language, model?.language)
+        ? authoredOrDefault(note, (locale) => catalogs.forLocale(locale).t('primaryCorrectWithAlternates'), language, model?.language)
         : null;
 
     return (
