@@ -10,8 +10,6 @@ export default {
   maxSelections: {
     other: '最多只能选择{count}个答案。',
   },
-  showTeacherInstructions: '显示教师指引',
-  hideTeacherInstructions: '隐藏教师指引',
   answerChoicesA11y: '答案选项',
   partAnswerChoicesA11y: '{partLabel}，答案选项',
   pickTheAnswerBelowA11y: '请选择下面的答案',

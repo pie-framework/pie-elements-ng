@@ -12,8 +12,6 @@ export default {
     many: 'Somente {count} respostas são permitidas.',
     other: 'Somente {count} respostas são permitidas.',
   },
-  showTeacherInstructions: 'Mostrar instruções do professor',
-  hideTeacherInstructions: 'Ocultar instruções do professor',
   answerChoicesA11y: 'Alternativas de resposta',
   partAnswerChoicesA11y: '{partLabel}, alternativas de resposta',
   pickTheAnswerBelowA11y: 'Selecione a resposta abaixo',

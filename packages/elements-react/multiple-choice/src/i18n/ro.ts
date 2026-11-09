@@ -12,8 +12,6 @@ export default {
     few: 'Sunt permise doar {count} răspunsuri.',
     other: 'Sunt permise doar {count} de răspunsuri.',
   },
-  showTeacherInstructions: 'Afișează instrucțiunile pentru profesor',
-  hideTeacherInstructions: 'Ascunde instrucțiunile pentru profesor',
   answerChoicesA11y: 'Variante de răspuns',
   partAnswerChoicesA11y: '{partLabel}, variante de răspuns',
   pickTheAnswerBelowA11y: 'Alege răspunsul de mai jos',

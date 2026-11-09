@@ -4,6 +4,4 @@ export default {
   passageRegion: 'Passage',
   /** Tab label of an untitled passage, or of every passage when the tabs are too narrow for titles. */
   passageNumber: 'Passage {number}',
-  showTeacherInstructions: 'Show Teacher Instructions',
-  hideTeacherInstructions: 'Hide Teacher Instructions',
 };

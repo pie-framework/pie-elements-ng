@@ -63,6 +63,9 @@ export default class Static extends React.Component {
     this.inputRef = React.createRef();
   }
 
+  /** Renames the fields once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => labelFieldTextareas(this.inputRef?.current, this.props.language);
+
   componentDidMount() {
     this.update();
     updateSpans();
@@ -233,7 +236,7 @@ export default class Static extends React.Component {
     }
 
     // Setting the latex rebuilds the response fields, and with them their textareas.
-    labelFieldTextareas(this.inputRef?.current, this.props.language);
+    labelFieldTextareas(this.inputRef?.current, this.props.language, this.relabel);
   };
 
   blur: any = () => {

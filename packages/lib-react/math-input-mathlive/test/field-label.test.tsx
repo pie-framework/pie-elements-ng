@@ -52,11 +52,13 @@ describe('math field name', () => {
     await waitFor(() => expect(mathField(container)).not.toBeNull());
     rerender(<Input latex="" language="es-ES" />);
 
-    expect(mathField(container)).toHaveAccessibleName('Escribe la respuesta');
+    await waitFor(() => expect(mathField(container)).toHaveAccessibleName('Escribe la respuesta'));
   });
 
   it('names the keyboard input inside the field, which the field\'s own label does not reach', async () => {
     const { labelMathField } = await import('../src/mf/field-label');
+    const { loadLocale } = await import('@pie-element/shared-i18n');
+    await loadLocale('es-ES');
     const field = document.createElement('div');
     const sink = document.createElement('span');
 

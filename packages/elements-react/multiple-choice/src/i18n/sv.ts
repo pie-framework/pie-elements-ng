@@ -11,8 +11,6 @@ export default {
     one: 'Endast {count} svar är tillåtet.',
     other: 'Endast {count} svar är tillåtna.',
   },
-  showTeacherInstructions: 'Visa lärarinstruktioner',
-  hideTeacherInstructions: 'Dölj lärarinstruktioner',
   answerChoicesA11y: 'Svarsalternativ',
   partAnswerChoicesA11y: '{partLabel}, svarsalternativ',
   pickTheAnswerBelowA11y: 'Välj svaret nedan',

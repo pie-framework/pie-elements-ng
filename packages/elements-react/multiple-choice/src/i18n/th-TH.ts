@@ -10,8 +10,6 @@ export default {
   maxSelections: {
     other: 'เลือกได้เพียง {count} รายการ',
   },
-  showTeacherInstructions: 'แสดงคำแนะนำสำหรับครู',
-  hideTeacherInstructions: 'ซ่อนคำแนะนำสำหรับครู',
   answerChoicesA11y: 'ตัวเลือกคำตอบ',
   partAnswerChoicesA11y: '{partLabel}, ตัวเลือกคำตอบ',
   pickTheAnswerBelowA11y: 'เลือกคำตอบด้านล่าง',
