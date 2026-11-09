@@ -1,12 +1,12 @@
-import { logger } from "./log";
+import { logger } from './log';
 
-import { mathjs as mjs } from "./mathjs";
+import { mathjs as mjs } from './mathjs';
 
-import { MathNode } from "mathjs";
+import { MathNode } from 'mathjs';
 
 const m: any = mjs;
 
-const log = logger("mv:node-sort");
+const log = logger('mv:node-sort');
 
 //import { string } from "mathjs";
 /**
@@ -18,8 +18,8 @@ const log = logger("mv:node-sort");
 
 const newCompare = (a: MathNode, b: MathNode): number => {
   // log(a.type);
-  log("[compareNodes]: a:", a.toString(), a.type);
-  log("[compareNodes]: b:", b.toString(), b.type);
+  log('[compareNodes]: a:', a.toString(), a.type);
+  log('[compareNodes]: b:', b.toString(), b.type);
 
   if (a.isSymbolNode && b.isSymbolNode) {
     // log(a.name, "> ", b.name);
@@ -28,8 +28,8 @@ const newCompare = (a: MathNode, b: MathNode): number => {
 
   // both constants - sort by value
   if (a.isConstantNode && b.isConstantNode) {
-    log("a.value", a.value);
-    log("b.value", b.value);
+    log('a.value', a.value);
+    log('b.value', b.value);
     return a.value - b.value; //(b.name);
   }
 
@@ -52,9 +52,7 @@ const newCompare = (a: MathNode, b: MathNode): number => {
   }
 
   if (a.isOperatorNode && b.isOperatorNode) {
-    const localeCompareResult = a.args!
-      .toString()
-      .localeCompare(b.args!.toString());
+    const localeCompareResult = a.args!.toString().localeCompare(b.args!.toString());
 
     return -localeCompareResult;
   }
@@ -71,7 +69,7 @@ const applySort = (node: MathNode) => {
   // log("node: ", node.toString());
   // log("path: ", path);
   // log("parent: ", parent);
-  if (node.fn === "add" || node.fn === "multiply") {
+  if (node.fn === 'add' || node.fn === 'multiply') {
     node.args = node.args!.sort(newCompare);
     node.args = node.args.map(applySort);
   }
@@ -98,8 +96,7 @@ export const flattenNode = (node: MathNode) => {
   node = node.transform((currentNode, _path, parent) => {
     if (
       currentNode.isParenthesisNode &&
-      (parent?.op !== "*" ||
-        (parent?.op === "*" && currentNode.content!.op !== "+"))
+      (parent?.op !== '*' || (parent?.op === '*' && currentNode.content!.op !== '+'))
     ) {
       while (currentNode.isParenthesisNode) currentNode = currentNode.content!;
     }
@@ -107,22 +104,19 @@ export const flattenNode = (node: MathNode) => {
     return currentNode;
   });
 
-  if (node.fn === "multiply" && (node as any).implicit) {
+  if (node.fn === 'multiply' && (node as any).implicit) {
     (node as any).implicit = false;
   }
 
   let resultNode = node;
 
   resultNode = resultNode.transform((currentNode) => {
-    while (
-      firstChildOperator(currentNode, currentNode.fn) &&
-      !currentNode.isArrayNode
-    ) {
+    while (firstChildOperator(currentNode, currentNode.fn) && !currentNode.isArrayNode) {
       const flatten = currentNode;
 
       flatten.traverse((node, path, parent) => {
         if (parent?.fn === node.fn) {
-          const indexToRemove = path.replace(/[^0-9]/g, "");
+          const indexToRemove = path.replace(/[^0-9]/g, '');
 
           parent.args!.splice(+indexToRemove, 1) || [];
 
@@ -134,7 +128,7 @@ export const flattenNode = (node: MathNode) => {
 
           node = new m.OperatorNode(node.op, node.fn, argstoAdd);
 
-          if (node.fn === "multiply" && (node as any).implicit) {
+          if (node.fn === 'multiply' && (node as any).implicit) {
             (node as any).implicit = false;
           }
         }
@@ -146,19 +140,13 @@ export const flattenNode = (node: MathNode) => {
   });
 
   resultNode = resultNode.transform((currentNode) => {
-    if (
-      currentNode.fn === "multiply" &&
-      firstChildOperator(currentNode.args, "divide")
-    ) {
+    if (currentNode.fn === 'multiply' && firstChildOperator(currentNode.args, 'divide')) {
       let divisionNode = currentNode;
 
-      if (
-        divisionNode.fn === "multiply" &&
-        firstChildOperator(divisionNode, "divide")
-      ) {
+      if (divisionNode.fn === 'multiply' && firstChildOperator(divisionNode, 'divide')) {
         let newNode!: MathNode;
         divisionNode = divisionNode.traverse((node, _path, parent) => {
-          if (parent && parent.fn === "multiply" && node.fn === "divide") {
+          if (parent && parent.fn === 'multiply' && node.fn === 'divide') {
             if (node.args![0].isOperatorNode) {
               parent.args!.forEach((arg) => {
                 if (!arg.isOperatorNode) {
@@ -176,7 +164,7 @@ export const flattenNode = (node: MathNode) => {
                 }
               });
 
-              node.args![0] = new m.OperatorNode("*", "multiply", newArgs);
+              node.args![0] = new m.OperatorNode('*', 'multiply', newArgs);
             }
             newNode = node;
           }
@@ -192,10 +180,10 @@ export const flattenNode = (node: MathNode) => {
 };
 
 export const sortRelationalNode = (node: any) => {
-  log("THIS IS THE START ++++", JSON.stringify(node));
+  log('THIS IS THE START ++++', JSON.stringify(node));
 
-  const smaller = ["smaller", "smallerEq"];
-  const bigger = ["larger", "largerEq"];
+  const smaller = ['smaller', 'smallerEq'];
+  const bigger = ['larger', 'largerEq'];
 
   const resultNode = node.transform((node: any, _path: string, parent: any) => {
     let reverse = false;
@@ -205,22 +193,20 @@ export const sortRelationalNode = (node: any) => {
         smaller.some((small) => node.conditionals.includes(small)) &&
         bigger.some((big) => node.conditionals.includes(big));
 
-      if (node.conditionals.includes("equal")) {
+      if (node.conditionals.includes('equal')) {
         node.params.sort(newCompare);
       } else if (smallerAndBigger && node.params) {
-        if (
-          newCompare(node.params[0], node.params[node.params.length - 1]) > -1
-        ) {
+        if (newCompare(node.params[0], node.params[node.params.length - 1]) > -1) {
           node.params.reverse();
         }
       } else {
         node.conditionals = node.conditionals.map((cond: any) => {
-          if (cond === "smaller") {
+          if (cond === 'smaller') {
             reverse = true;
-            cond = "larger";
-          } else if (cond === "smallerEq") {
+            cond = 'larger';
+          } else if (cond === 'smallerEq') {
             reverse = true;
-            cond = "largerEq";
+            cond = 'largerEq';
           }
 
           return cond;
@@ -233,7 +219,7 @@ export const sortRelationalNode = (node: any) => {
       node.params.reverse();
     }
 
-    if (parent && parent.type === "RelationalNode" && node.args) {
+    if (parent && parent.type === 'RelationalNode' && node.args) {
       node = sort(node);
     }
 
@@ -246,23 +232,23 @@ export const sortRelationalNode = (node: any) => {
 export const sort = (node: MathNode) => {
   let resultNode = node;
 
-  if (node.type === "RelationalNode") {
+  if (node.type === 'RelationalNode') {
     return sortRelationalNode(node);
   }
 
-  if (node.isOperatorNode && node.fn === "smaller") {
-    node.op = ">";
-    node.fn = "larger";
+  if (node.isOperatorNode && node.fn === 'smaller') {
+    node.op = '>';
+    node.fn = 'larger';
     node.args = node.args!.reverse();
   }
 
-  if (node.isOperatorNode && node.fn === "smallerEq") {
-    node.op = ">=";
-    node.fn = "largerEq";
+  if (node.isOperatorNode && node.fn === 'smallerEq') {
+    node.op = '>=';
+    node.fn = 'largerEq';
     node.args = node.args!.reverse();
   }
 
-  const relationOperators = "=|NE|≃|≈|≈|≉|~|≃|≁|≅|≆";
+  const relationOperators = '=|NE|≃|≈|≈|≉|~|≃|≁|≅|≆';
 
   if (
     node.isFunctionNode &&
@@ -274,14 +260,11 @@ export const sort = (node: MathNode) => {
 
   if (
     node.isOperatorNode &&
-    (node.fn === "larger" ||
-      node.fn === "largerEq" ||
-      node.fn === "equal" ||
-      node.fn === "unequal")
+    (node.fn === 'larger' || node.fn === 'largerEq' || node.fn === 'equal' || node.fn === 'unequal')
   ) {
     node.args = node.args!.map(sort);
 
-    if (node.fn === "equal" || node.fn === "unequal") {
+    if (node.fn === 'equal' || node.fn === 'unequal') {
       node.args = node.args.sort(newCompare);
     }
   }

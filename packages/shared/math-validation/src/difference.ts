@@ -1,7 +1,7 @@
-import debug from "debug";
-import { RawAst } from "./latex-equal";
+import debug from 'debug';
+import { RawAst } from './latex-equal';
 
-const log = debug("difference");
+const log = debug('difference');
 
 export const differenceIsTooGreat = (a: RawAst, b: RawAst) => {
   const smallest = Math.min(a.toString().length, b.toString().length);
@@ -10,7 +10,7 @@ export const differenceIsTooGreat = (a: RawAst, b: RawAst) => {
   const limit = (1 / smallest) * 100 + 10 + errorAcceptance;
   const diff = biggest - smallest;
 
-  log("a:", a.toString(), "b:", b.toString(), "limit:", limit, "diff:", diff);
+  log('a:', a.toString(), 'b:', b.toString(), 'limit:', limit, 'diff:', diff);
 
   if (diff > limit) {
     return true;

@@ -1,6 +1,6 @@
-import { mathjs } from "../mathjs";
-import { all, create, MathNode } from "mathjs";
-import { simplify as customSimplify } from "./";
+import { mathjs } from '../mathjs';
+import { all, create, MathNode } from 'mathjs';
+import { simplify as customSimplify } from './';
 const { simplify } = mathjs;
 
 const m: any = mathjs;
@@ -9,15 +9,14 @@ const m: any = mathjs;
 const numeric: any = create(all);
 
 let simplifyRules = [
-  { l: "-((n1)*(n2))", r: "(n1)*(n2)" },
-  { l: "(n1-n2)/n3", r: "n1/n3-n2/n3" },
-  { l: "(n1+n2)/n3", r: "n1/n3+n2/n3" },
-  { l: "(n1-n2)*n3/n4", r: "(n1*n3)/n4-(n2*n3)/n4" },
-  { l: "(n1+n2)*n3/n4", r: "(n1*n3)/n4+(n2*n3)/n4" },
+  { l: '-((n1)*(n2))', r: '(n1)*(n2)' },
+  { l: '(n1-n2)/n3', r: 'n1/n3-n2/n3' },
+  { l: '(n1+n2)/n3', r: 'n1/n3+n2/n3' },
+  { l: '(n1-n2)*n3/n4', r: '(n1*n3)/n4-(n2*n3)/n4' },
+  { l: '(n1+n2)*n3/n4', r: '(n1*n3)/n4+(n2*n3)/n4' },
 ];
 
-const customRound = (number: number) =>
-  Math.round(number * 10000000000000) / 10000000000000;
+const customRound = (number: number) => Math.round(number * 10000000000000) / 10000000000000;
 
 // expressions can be compared if we have at least one symbol node and has no function node or array; do not treat math series as equations
 export const expressionsCanBeCompared = (
@@ -32,10 +31,9 @@ export const expressionsCanBeCompared = (
   firstEquation.traverse(function (node) {
     if (node.isSymbolNode) {
       firstSymbolNode = true;
-      seriesNode = seriesNode || node.name!.includes("[");
+      seriesNode = seriesNode || node.name!.includes('[');
     }
-    noFunctionOrArray =
-      noFunctionOrArray || !!node.isFunctionNode || !!node.isArrayNode;
+    noFunctionOrArray = noFunctionOrArray || !!node.isFunctionNode || !!node.isArrayNode;
   });
 
   secondEquation.traverse(function (node) {
@@ -55,7 +53,7 @@ export const hasSymbolicExponent = (node: MathNode): boolean => {
   node.traverse((n) => {
     if (
       n.isOperatorNode &&
-      n.op === "^" &&
+      n.op === '^' &&
       !n.args![1]?.isConstantNode // Exponent is symbolic or compound
     ) {
       found = true;
@@ -80,11 +78,14 @@ export const getSamplePoints = (variables: string[], count: number = 12) => {
   const random = seededRandom(443);
 
   return Array.from({ length: count }, () =>
-    variables.reduce((acc, v) => {
-      const size = 0.5 + 4 * random();
-      acc[v] = random() < 0.5 ? -size : size;
-      return acc;
-    }, {} as Record<string, number>)
+    variables.reduce(
+      (acc, v) => {
+        const size = 0.5 + 4 * random();
+        acc[v] = random() < 0.5 ? -size : size;
+        return acc;
+      },
+      {} as Record<string, number>
+    )
   );
 };
 
@@ -101,7 +102,7 @@ const evaluateAtPoints = (expr: MathNode, points: Record<string, number>[]) => {
   return points.map((scope) => {
     try {
       const result = compiled.evaluate({ ...scope });
-      return typeof result === "number" ? result : NaN;
+      return typeof result === 'number' ? result : NaN;
     } catch {
       return NaN;
     }
@@ -122,17 +123,13 @@ export const areNumericallyEquivalent = (
   const valuesA = evaluateAtPoints(exprA, points);
   const valuesB = evaluateAtPoints(exprB, points);
 
-  const compared = valuesA.filter(
-    (a, i) => Number.isFinite(a) && Number.isFinite(valuesB[i])
-  );
+  const compared = valuesA.filter((a, i) => Number.isFinite(a) && Number.isFinite(valuesB[i]));
 
   return (
     compared.length >= 3 &&
     valuesA.every(
       (a, i) =>
-        !Number.isFinite(a) ||
-        !Number.isFinite(valuesB[i]) ||
-        areClose(a, valuesB[i], tolerance)
+        !Number.isFinite(a) || !Number.isFinite(valuesB[i]) || areClose(a, valuesB[i], tolerance)
     )
   );
 };
@@ -202,22 +199,17 @@ const haveProportionalValues = (
   // for inequalities only even powers are allowed, since an odd power of a variable can be negative and reverse the sign
   const factors = allowVariableFactor
     ? getVariableFactors(variables, 2).filter(
-        (factor) =>
-          !positiveOnly || Object.values(factor).every((power) => power % 2 === 0)
+        (factor) => !positiveOnly || Object.values(factor).every((power) => power % 2 === 0)
       )
     : [{} as Record<string, number>];
 
   return factors.some((factor) => {
     const scaled = ratios.map(({ point, ratio }) =>
-      Object.keys(factor).reduce(
-        (acc, v) => acc / Math.pow(point[v], factor[v]),
-        ratio
-      )
+      Object.keys(factor).reduce((acc, v) => acc / Math.pow(point[v], factor[v]), ratio)
     );
 
     return (
-      (!positiveOnly || scaled[0] > 0) &&
-      scaled.every((r) => areClose(r, scaled[0], tolerance))
+      (!positiveOnly || scaled[0] > 0) && scaled.every((r) => areClose(r, scaled[0], tolerance))
     );
   });
 };
@@ -237,7 +229,7 @@ const isTooLargeToRationalize = (expr: MathNode) => {
     tooLarge =
       tooLarge ||
       (n.isOperatorNode &&
-        n.op === "^" &&
+        n.op === '^' &&
         n.args[1]?.isConstantNode &&
         Math.abs(Number(n.args[1].value)) > MAX_NUMERATOR_POWER);
   });
@@ -251,11 +243,7 @@ const getNumerator = (expr: MathNode): MathNode | undefined => {
   }
 
   try {
-    const { numerator, denominator } = numeric.rationalize(
-      expr.toString(),
-      {},
-      true
-    );
+    const { numerator, denominator } = numeric.rationalize(expr.toString(), {}, true);
 
     return denominator ? numerator : undefined;
   } catch {
@@ -272,9 +260,7 @@ export const areEquationsNumericallyEquivalent = (
   variables: string[],
   options: { allowVariableFactor?: boolean; positiveOnly?: boolean } = {}
 ): boolean => {
-  if (
-    haveProportionalValues(firstExpression, secondExpression, variables, options)
-  ) {
+  if (haveProportionalValues(firstExpression, secondExpression, variables, options)) {
     return true;
   }
 
@@ -300,18 +286,14 @@ export const areEquationsNumericallyEquivalent = (
 // move the terms of the equations to the left hand side
 export const transformEqualityInExpression = (equality: MathNode) =>
   // remove added/subtracted numbers/variables from both sides of the equation
-  customSimplify(new m.OperatorNode("-", "subtract", equality.args));
+  customSimplify(new m.OperatorNode('-', 'subtract', equality.args));
 
 // check if equation is valid and find out the number of variables and their name
 export const getVariables = (equation: MathNode) => {
   let variableNames: string[] = [];
 
   equation.traverse(function (node) {
-    if (
-      node.isSymbolNode &&
-      node.name!.length === 1 &&
-      !variableNames.includes(node.name!)
-    ) {
+    if (node.isSymbolNode && node.name!.length === 1 && !variableNames.includes(node.name!)) {
       variableNames.push(node.name!);
     }
   });
@@ -337,7 +319,7 @@ export const getCoefficients = (equation: MathNode, isInequality: boolean) => {
     if (isInequality) {
       equation = simplify(equation, simplifyRules);
     } else {
-      simplifyRules.push({ l: "-(n)", r: "n" });
+      simplifyRules.push({ l: '-(n)', r: 'n' });
       equation = simplify(equation, simplifyRules);
     }
 
@@ -360,19 +342,15 @@ export const solveQuadraticEquation = (coefficients: number[]) => {
   let subtractDiscriminant: any;
 
   try {
-    addDiscriminant = m.compile(
-      m.fraction(-b + m.sqrt(discriminant)) / (2 * a)
-    );
+    addDiscriminant = m.compile(m.fraction(-b + m.sqrt(discriminant)) / (2 * a));
   } catch {
-    addDiscriminant = m.compile("(-b+sqrt(discriminant))/(2*a)");
+    addDiscriminant = m.compile('(-b+sqrt(discriminant))/(2*a)');
   }
 
   try {
-    subtractDiscriminant = m.compile(
-      m.fraction(-b - m.sqrt(discriminant)) / (2 * a)
-    );
+    subtractDiscriminant = m.compile(m.fraction(-b - m.sqrt(discriminant)) / (2 * a));
   } catch {
-    subtractDiscriminant = m.compile("(-b-sqrt(discriminant))/(2*a)");
+    subtractDiscriminant = m.compile('(-b-sqrt(discriminant))/(2*a)');
   }
 
   let firstRoot = addDiscriminant.evaluate({
@@ -445,8 +423,6 @@ export const equationsHaveTheSameVariables = (
     Array.isArray(firstEquationVariables) &&
     Array.isArray(secondEquationVariables) &&
     firstEquationVariables.length === secondEquationVariables.length &&
-    firstEquationVariables.every(
-      (variable, index) => variable === secondEquationVariables[index]
-    )
+    firstEquationVariables.every((variable, index) => variable === secondEquationVariables[index])
   );
 };

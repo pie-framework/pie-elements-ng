@@ -1,11 +1,11 @@
-import { LatexToAst } from "./conversion/latex-to-ast";
-import { AstToMathJs } from "./conversion/ast-to-mathjs";
-import { isMathEqual as isSymbolicEqual } from "./symbolic";
-import { isMathEqual as isLiteralEqual } from "./literal";
-import { differenceIsTooGreat } from "./difference";
-import { compareNumbers } from "./value";
+import { LatexToAst } from './conversion/latex-to-ast';
+import { AstToMathJs } from './conversion/ast-to-mathjs';
+import { isMathEqual as isSymbolicEqual } from './symbolic';
+import { isMathEqual as isLiteralEqual } from './literal';
+import { differenceIsTooGreat } from './difference';
+import { compareNumbers } from './value';
 
-import type { Latex, Opts } from "./options";
+import type { Latex, Opts } from './options';
 
 export type { Latex, Opts };
 export type RawAst = any[];
@@ -24,19 +24,18 @@ export const latexEqual = (a: Latex, b: Latex, opts: Opts) => {
     return true;
   }
 
-  if (opts.mode === "literal" && opts.literal?.compareNumbersByValue) {
+  if (opts.mode === 'literal' && opts.literal?.compareNumbersByValue) {
     const byValue = compareNumbers(a, b);
     if (byValue !== undefined) {
       return byValue;
     }
   }
 
-  if (opts.mode === "symbolic" && isNumeric(a) && isNumeric(b)) {
+  if (opts.mode === 'symbolic' && isNumeric(a) && isNumeric(b)) {
     const numA = parseFloat(a);
     const numB = parseFloat(b);
 
     if (numA === numB) {
-      
       return true;
     }
   }
@@ -52,7 +51,7 @@ export const latexEqual = (a: Latex, b: Latex, opts: Opts) => {
 
   const bmo = atm.convert(bl);
 
-  if (opts.mode === "literal") {
+  if (opts.mode === 'literal') {
     return isLiteralEqual(amo, bmo, opts.literal);
   } else {
     return isSymbolicEqual(amo, bmo);

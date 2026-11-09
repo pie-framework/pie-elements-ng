@@ -1,12 +1,12 @@
-import { logger } from "../log";
-import { mathjs } from "../mathjs";
-import { all, create, MathNode } from "mathjs";
-import { sort } from "../node-sort";
-import { compareEquations } from "./compare-equations";
-import { compareCompoundInequations } from "./compare-compound-inequations";
+import { logger } from '../log';
+import { mathjs } from '../mathjs';
+import { all, create, MathNode } from 'mathjs';
+import { sort } from '../node-sort';
+import { compareEquations } from './compare-equations';
+import { compareCompoundInequations } from './compare-compound-inequations';
 
 const m: any = mathjs;
-const log = logger("mv:symbolic");
+const log = logger('mv:symbolic');
 
 // an angle counts as k quarter turns (90°, 180°, ...) only when it is one up to floating-point error,
 // which keeps angles that are only close, like 89.9999°, 1.5708 or 9090.001°, from being matched
@@ -23,59 +23,59 @@ const RELATIVE_EPSILON = 1e-13;
 // it covers residues such as sin(200pi) and cos(100.5pi) while still rejecting 0 vs 0.0000000000001
 const ABSOLUTE_EPSILON = 1e-14;
 
-export type { SymbolicOpts } from "../options";
+export type { SymbolicOpts } from '../options';
 
 const { simplify: ms, rationalize } = mathjs;
 
 const SIMPLIFY_RULES = [
-  { l: "n1^(1/n2)", r: "nthRoot(n1, n2)" },
-  { l: "sqrt(n1)", r: "nthRoot(n1, 2)" },
-  { l: "nthRoot(-1, 2)", r: "i" },
-  { l: "(v1-v2)/n", r: "v1/n-v2/n" },
-  { l: "(v1-n)/n", r: "v1/n-1" },
-  { l: "n/n1-c1", r: "(n-c1*n1)/n1" },
-  { l: "i^2", r: "-1" },
-  { l: "pi", r: "3.141592653589793" },
-  { l: "n/(n*n1)", r: "1/n1" },
-  { l: "c1/(c2*(n3))", r: "(c1/c2)*(1/n3)" },
-  { l: "n1/(n(n+1)+1(n+1))", r: "n1/((n+1)^2)" },
+  { l: 'n1^(1/n2)', r: 'nthRoot(n1, n2)' },
+  { l: 'sqrt(n1)', r: 'nthRoot(n1, 2)' },
+  { l: 'nthRoot(-1, 2)', r: 'i' },
+  { l: '(v1-v2)/n', r: 'v1/n-v2/n' },
+  { l: '(v1-n)/n', r: 'v1/n-1' },
+  { l: 'n/n1-c1', r: '(n-c1*n1)/n1' },
+  { l: 'i^2', r: '-1' },
+  { l: 'pi', r: '3.141592653589793' },
+  { l: 'n/(n*n1)', r: '1/n1' },
+  { l: 'c1/(c2*(n3))', r: '(c1/c2)*(1/n3)' },
+  { l: 'n1/(n(n+1)+1(n+1))', r: 'n1/((n+1)^2)' },
 
   // perfect square formula
-  { l: "(n1 + n2) ^ 2", r: "(n1 ^ 2) + 2*n1*n2 + (n2 ^ 2)" },
+  { l: '(n1 + n2) ^ 2', r: '(n1 ^ 2) + 2*n1*n2 + (n2 ^ 2)' },
 
-  { l: "tzn(n1, n2)", r: "n1" },
-  { l: "n1/(-n2)", r: "-(n1/n2)" },
-  { l: "sin(n*pi)", r: "0" },
+  { l: 'tzn(n1, n2)', r: 'n1' },
+  { l: 'n1/(-n2)', r: '-(n1/n2)' },
+  { l: 'sin(n*pi)', r: '0' },
 
   // logarithm rules
-  { l: "log(n1*n2, n3)", r: "log(n1, n3)+log(n2,n3)" },
-  { l: "log(n1/n2, n3)", r: "log(n1, n3)-log(n2,n3)" },
-  { l: "log(n1^n2, n3)", r: "n2*log(n1,n3)" },
+  { l: 'log(n1*n2, n3)', r: 'log(n1, n3)+log(n2,n3)' },
+  { l: 'log(n1/n2, n3)', r: 'log(n1, n3)-log(n2,n3)' },
+  { l: 'log(n1^n2, n3)', r: 'n2*log(n1,n3)' },
 
   // trigonometry: defining relations for tangent, cotangent, secant, and cosecant in terms of sine and cosine
-  { l: "sin(n)/cos(n)", r: "tan(n)" },
-  { l: "csc(n)", r: "1/sin(n)" },
-  { l: "sec(n)", r: "1/cos(n)" },
-  { l: "cot(n)", r: "1/tan(n)", r1: "cos(n)/sin(n)" },
-  { l: "1/tan(n)", r: "cos(n)/sin(n)" },
+  { l: 'sin(n)/cos(n)', r: 'tan(n)' },
+  { l: 'csc(n)', r: '1/sin(n)' },
+  { l: 'sec(n)', r: '1/cos(n)' },
+  { l: 'cot(n)', r: '1/tan(n)', r1: 'cos(n)/sin(n)' },
+  { l: '1/tan(n)', r: 'cos(n)/sin(n)' },
 
   // TO DO: the Pythagorean formula for sines and cosines.
 
   // inverse trigonometric functions relations
-  { l: "n1 == asin(n)", r: "n == sin(n1)" },
-  { l: "n1 == acos(n)", r: "n == cos(n1)" },
-  { l: "n1 == atan(n)", r: "n == tan(n1)" },
-  { l: "n1 == acot(n)", r: "n == cot(n1)" },
-  { l: "n1 == asec(n)", r: "n == sec(n1)" },
-  { l: "n1 == acsc(n)", r: "n == csc(n1)" },
+  { l: 'n1 == asin(n)', r: 'n == sin(n1)' },
+  { l: 'n1 == acos(n)', r: 'n == cos(n1)' },
+  { l: 'n1 == atan(n)', r: 'n == tan(n1)' },
+  { l: 'n1 == acot(n)', r: 'n == cot(n1)' },
+  { l: 'n1 == asec(n)', r: 'n == sec(n1)' },
+  { l: 'n1 == acsc(n)', r: 'n == csc(n1)' },
 
   // relationships between trigonometric functions and inverse trigonometric functions
-  { l: "sin(asin(n))", r: "n" },
-  { l: "cos(acos(n))", r: "n" },
-  { l: "tan(atan(n))", r: "n" },
-  { l: "sin(acsc(n))", r: "1/n" },
-  { l: "cos(asec(n))", r: "1/n" },
-  { l: "tan(acot(n))", r: "1/n" },
+  { l: 'sin(asin(n))', r: 'n' },
+  { l: 'cos(acos(n))', r: 'n' },
+  { l: 'tan(atan(n))', r: 'n' },
+  { l: 'sin(acsc(n))', r: '1/n' },
+  { l: 'cos(asec(n))', r: '1/n' },
+  { l: 'tan(acot(n))', r: '1/n' },
 ];
 
 export const simplify = (v: any) => {
@@ -88,7 +88,7 @@ const hasSymbol = (node: MathNode, matches: (name: string) => boolean) => {
 
   // the name of a function such as sqrt is a symbol too, under the path "fn"
   node.traverse((n: any, path: string) => {
-    found = found || (n.isSymbolNode && path !== "fn" && matches(n.name));
+    found = found || (n.isSymbolNode && path !== 'fn' && matches(n.name));
   });
 
   return found;
@@ -97,13 +97,13 @@ const hasSymbol = (node: MathNode, matches: (name: string) => boolean) => {
 // evaluates a constant expression as a plain number, undefined if it has variables;
 // any symbol other than pi and Infinity is a variable, even names mathjs knows as constants such as e, E or phi
 const evaluateNumber = (node: MathNode): number | undefined => {
-  if (hasSymbol(node, (name) => name !== "pi" && name !== "Infinity")) {
+  if (hasSymbol(node, (name) => name !== 'pi' && name !== 'Infinity')) {
     return undefined;
   }
 
   try {
     const value = numeric.evaluate(node.toString());
-    return typeof value === "number" ? value : undefined;
+    return typeof value === 'number' ? value : undefined;
   } catch (e) {
     return undefined;
   }
@@ -120,9 +120,7 @@ const quarterTurns = (angle: MathNode): number | undefined => {
   const turns = value / (Math.PI / 2);
   const k = Math.round(turns);
 
-  return Math.abs(turns - k) <= ANGLE_TOLERANCE * Math.max(1, Math.abs(k))
-    ? k
-    : undefined;
+  return Math.abs(turns - k) <= ANGLE_TOLERANCE * Math.max(1, Math.abs(k)) ? k : undefined;
 };
 
 // replace trigonometric functions evaluated at an angle where they are zero or undefined
@@ -145,23 +143,23 @@ const snapTrigonometricValues = (node: MathNode) => {
     let snapped = n;
 
     switch (n.fn.name) {
-      case "sin":
+      case 'sin':
         snapped = odd ? n : new m.ConstantNode(0);
         break;
-      case "cos":
+      case 'cos':
         snapped = odd ? new m.ConstantNode(0) : n;
         break;
-      case "tan":
-        snapped = odd ? new m.SymbolNode("Infinity") : new m.ConstantNode(0);
+      case 'tan':
+        snapped = odd ? new m.SymbolNode('Infinity') : new m.ConstantNode(0);
         break;
-      case "cot":
-        snapped = odd ? new m.ConstantNode(0) : new m.SymbolNode("Infinity");
+      case 'cot':
+        snapped = odd ? new m.ConstantNode(0) : new m.SymbolNode('Infinity');
         break;
-      case "sec":
-        snapped = odd ? new m.SymbolNode("Infinity") : n;
+      case 'sec':
+        snapped = odd ? new m.SymbolNode('Infinity') : n;
         break;
-      case "csc":
-        snapped = odd ? n : new m.SymbolNode("Infinity");
+      case 'csc':
+        snapped = odd ? n : new m.SymbolNode('Infinity');
         break;
     }
 
@@ -184,7 +182,7 @@ const normalize = (a: string | MathNode | any) => {
   const snappedValue = snapped.changed ? evaluateNumber(r) : undefined;
   const valueWithSnappedTrigonometry =
     snappedValue !== undefined &&
-    (!isFinite(snappedValue) || hasSymbol(r, (name) => name === "Infinity"))
+    (!isFinite(snappedValue) || hasSymbol(r, (name) => name === 'Infinity'))
       ? snappedValue
       : undefined;
   let onlyConstant = true;
@@ -200,19 +198,14 @@ const normalize = (a: string | MathNode | any) => {
     }
 
     if (node.isSymbolNode) {
-      pi = pi || node.name === "pi";
-      containsInverseFlag = containsInverseFlag || node.name === "f^{-1}";
+      pi = pi || node.name === 'pi';
+      containsInverseFlag = containsInverseFlag || node.name === 'f^{-1}';
     }
   });
 
   if (r.args) {
     r.args = r.args.map((arg: any) => {
-      if (
-        !arg.isFunctionNode &&
-        !arg.isArrayNode &&
-        !containsInverseFlag &&
-        !pi
-      ) {
+      if (!arg.isFunctionNode && !arg.isArrayNode && !containsInverseFlag && !pi) {
         try {
           arg = simplify(arg);
         } catch (e) {
@@ -242,7 +235,7 @@ const normalize = (a: string | MathNode | any) => {
     }
   }
 
-  if (r.fn !== "equal") {
+  if (r.fn !== 'equal') {
     try {
       onlyConstant = false;
       r = rationalize(r, {}, true).expression;
@@ -260,20 +253,20 @@ const normalize = (a: string | MathNode | any) => {
     } catch (e) {}
   }
 
-  log("[normalize] input: ", a.toString(), "output: ", r.toString());
+  log('[normalize] input: ', a.toString(), 'output: ', r.toString());
 
   // an undefined value has no sign, so -tan(90°) and -1/cos(90°) are Infinity as well;
   // an indeterminate result such as tan(90°) - tan(90°) or 0 * tan(90°) is NaN and must not simplify to a number
   if (valueWithSnappedTrigonometry !== undefined) {
     r = isNaN(valueWithSnappedTrigonometry)
-      ? new m.SymbolNode("NaN")
+      ? new m.SymbolNode('NaN')
       : isFinite(valueWithSnappedTrigonometry)
-      ? new m.ConstantNode(valueWithSnappedTrigonometry)
-      : new m.SymbolNode("Infinity");
+        ? new m.ConstantNode(valueWithSnappedTrigonometry)
+        : new m.SymbolNode('Infinity');
   }
 
-  if (r.toString() === "Infinity") {
-    r = new m.SymbolNode("Infinity");
+  if (r.toString() === 'Infinity') {
+    r = new m.SymbolNode('Infinity');
   }
 
   return r;
@@ -289,7 +282,7 @@ const constantValue = (node: any): number | undefined => {
     const result = node.evaluate();
 
     // equations and inequalities without variables evaluate to booleans
-    if (typeof result === "boolean") {
+    if (typeof result === 'boolean') {
       return undefined;
     }
 
@@ -301,10 +294,9 @@ const constantValue = (node: any): number | undefined => {
 };
 
 const areNearlyEqual = (a: number, b: number) =>
-  Math.abs(a - b) <
-  ABSOLUTE_EPSILON + RELATIVE_EPSILON * Math.max(Math.abs(a), Math.abs(b));
+  Math.abs(a - b) < ABSOLUTE_EPSILON + RELATIVE_EPSILON * Math.max(Math.abs(a), Math.abs(b));
 
-const isIndeterminate = (node: any) => node?.isSymbolNode && node.name === "NaN";
+const isIndeterminate = (node: any) => node?.isSymbolNode && node.name === 'NaN';
 
 export const isMathEqual = (a: any, b: any) => {
   let as: MathNode;
@@ -314,22 +306,13 @@ export const isMathEqual = (a: any, b: any) => {
     try {
       return m.equal(a, b);
     } catch (e) {
-      log(
-        "[isMathEqual] Error comparing units:",
-        a?.toString?.(),
-        b?.toString?.(),
-        e
-      );
+      log('[isMathEqual] Error comparing units:', a?.toString?.(), b?.toString?.(), e);
       return false;
     }
   }
 
   if (a?.isUnit || b?.isUnit) {
-    log(
-      "[isMathEqual] Mismatched unit comparison:",
-      a?.toString?.(),
-      b?.toString?.()
-    );
+    log('[isMathEqual] Mismatched unit comparison:', a?.toString?.(), b?.toString?.());
     return false;
   }
 
@@ -338,7 +321,7 @@ export const isMathEqual = (a: any, b: any) => {
 
   bs = b.conditionals ? normalize(b) : sort(normalize(b));
 
-  log("[isMathEqual]", as.toString(), "==?", bs.toString());
+  log('[isMathEqual]', as.toString(), '==?', bs.toString());
 
   // an indeterminate result such as tan(90°) - tan(90°) is not equal to anything, not even another indeterminate result
   if (isIndeterminate(as) || isIndeterminate(bs)) {
@@ -363,22 +346,22 @@ export const isMathEqual = (a: any, b: any) => {
   }
 
   // if both expressions are equations
-  if (as.fn === "equal" && bs.fn === "equal") {
+  if (as.fn === 'equal' && bs.fn === 'equal') {
     return compareEquations(as, bs, false);
   }
 
   // if both expressions are inequalities treat greater sign as equal sign
   if (
-    (as.fn === "larger" && bs.fn === "larger") ||
-    (as.fn === "largerEq" && bs.fn === "largerEq")
+    (as.fn === 'larger' && bs.fn === 'larger') ||
+    (as.fn === 'largerEq' && bs.fn === 'largerEq')
   ) {
     // solving a 2 way inequality is the same as solving an equation, we can treat the greater sign as an equal sign
     // the difference is that solution should be plotted on a number line (or interval)
     // if we have the same signs and the same direction, the interval will always be the same, starting with the solution
-    as.fn = "equal";
-    bs.fn = "equal";
-    as.op = "=";
-    bs.op = "=";
+    as.fn = 'equal';
+    bs.fn = 'equal';
+    as.op = '=';
+    bs.op = '=';
 
     return compareEquations(as, bs, true);
   }
@@ -392,14 +375,7 @@ export const isMathEqual = (a: any, b: any) => {
     //@ts-ignore
     as?.conditionals?.toString() === bs?.conditionals?.toString()
   ) {
-    const params = [
-      "smaller",
-      "smallerEq",
-      "larger",
-      "largerEq",
-      "equal",
-      "unequal",
-    ];
+    const params = ['smaller', 'smallerEq', 'larger', 'largerEq', 'equal', 'unequal'];
 
     const paramsIncludedA = params.some((param) =>
       //@ts-ignore

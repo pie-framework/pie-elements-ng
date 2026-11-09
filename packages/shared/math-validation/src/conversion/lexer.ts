@@ -11,9 +11,9 @@
 
 //   Third element (optional): replacement for actual string matched
 
-import { logger } from "../log";
+import { logger } from '../log';
 
-const log = logger("mv:lexer");
+const log = logger('mv:lexer');
 export type TokenRule = [RegExp, string, string?];
 
 export type Token = {
@@ -30,8 +30,8 @@ class lexer {
   private rules: TokenRule[];
   private whitespace: RegExp;
 
-  constructor(rawRules: string[][], ws: string = "\\s") {
-    this.input = "";
+  constructor(rawRules: string[][], ws: string = '\\s') {
+    this.input = '';
     this.location = 0;
 
     // regular expression to identify whitespace at beginning
@@ -54,7 +54,7 @@ class lexer {
   }
 
   set_input(input: string) {
-    if (typeof input !== "string") throw new Error("Input must be a string");
+    if (typeof input !== 'string') throw new Error('Input must be a string');
 
     this.input = input;
     this.location = 0;
@@ -72,7 +72,7 @@ class lexer {
   }
 
   advance({ remove_initial_space = true } = {}): Token {
-    log("[advance] input: ", this.input);
+    log('[advance] input: ', this.input);
     // Find next token at beginning of input and delete from input.
     // Update location to be the position in original input corresponding
     // to end of match.
@@ -81,19 +81,19 @@ class lexer {
     // if(this.input.(",")){}
     let result = this.whitespace.exec(this.input);
     const m = this.input.match(this.whitespace);
-    log("input:", this.input, "result:", result, m);
+    log('input:', this.input, 'result:', result, m);
 
-    log("ws result:", result);
+    log('ws result:', result);
     if (result) {
       //first find any initial whitespace and adjust location
       let n_whitespace = result[0].length;
       this.input = this.input.slice(n_whitespace);
       this.location += n_whitespace;
-      log("location:", this.location, "input now:", this.input);
+      log('location:', this.location, 'input now:', this.input);
       // don't remove initial space, return it as next token
       if (!remove_initial_space) {
         return {
-          token_type: "SPACE",
+          token_type: 'SPACE',
           token_text: result[0],
           original_text: result[0],
         };
@@ -105,9 +105,9 @@ class lexer {
     // check for EOF
     if (this.input.length === 0) {
       return {
-        token_type: "EOF",
-        token_text: "",
-        original_text: "",
+        token_type: 'EOF',
+        token_text: '',
+        original_text: '',
       };
     }
 
@@ -128,7 +128,7 @@ class lexer {
     // case that didn't find any matches
     if (result === null) {
       return {
-        token_type: "INVALID",
+        token_type: 'INVALID',
         token_text: this.input[0],
         original_text: this.input[0],
       };
@@ -157,7 +157,7 @@ class lexer {
   unput(string: string) {
     // add string to beginning of input and adjust location
 
-    if (typeof string !== "string") throw new Error("Input must be a string");
+    if (typeof string !== 'string') throw new Error('Input must be a string');
 
     this.location -= string.length;
     this.input = string + this.input;

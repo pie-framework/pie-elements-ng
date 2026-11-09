@@ -1,4 +1,4 @@
-import { LatexToAst } from "./conversion/latex-to-ast";
+import { LatexToAst } from './conversion/latex-to-ast';
 
 export type Latex = string;
 
@@ -28,32 +28,32 @@ const isNode = (node: unknown, operator: string, arity: number): node is any[] =
 
 /** An unsigned number, read from its shortest decimal form so `0.1` is exactly 1/10. */
 const decimal = (node: unknown): Rational | undefined => {
-  const x = isNode(node, "tzn", 2) ? node[1] : node;
-  if (typeof x !== "number" || !Number.isFinite(x) || x < 0) {
+  const x = isNode(node, 'tzn', 2) ? node[1] : node;
+  if (typeof x !== 'number' || !Number.isFinite(x) || x < 0) {
     return undefined;
   }
   const m = /^(\d+)(?:\.(\d+))?(?:e([+-]\d+))?$/.exec(String(x));
   if (!m) {
     return undefined;
   }
-  const [, whole, decimals = "", exponent = "0"] = m;
+  const [, whole, decimals = '', exponent = '0'] = m;
   const digits = Number(whole + decimals);
   const shift = Number(exponent) - decimals.length;
   return shift >= 0 ? rational(digits * 10 ** shift, 1) : rational(digits, 10 ** -shift);
 };
 
 const integer = (node: unknown): Rational | undefined =>
-  typeof node === "number" && Number.isInteger(node) ? decimal(node) : undefined;
+  typeof node === 'number' && Number.isInteger(node) ? decimal(node) : undefined;
 
 /** A fraction's numerator or denominator: a decimal with at most one minus sign. */
 const part = (node: unknown): Rational | undefined =>
-  isNode(node, "-", 1) ? negate(decimal(node[1])) : decimal(node);
+  isNode(node, '-', 1) ? negate(decimal(node[1])) : decimal(node);
 
 const unsigned = (node: unknown): Rational | undefined => {
-  if (isNode(node, "/", 2)) {
+  if (isNode(node, '/', 2)) {
     return divide(part(node[1]), part(node[2]));
   }
-  if (isNode(node, "mixed", 2) && isNode(node[2], "/", 2)) {
+  if (isNode(node, 'mixed', 2) && isNode(node[2], '/', 2)) {
     const whole = integer(node[1]);
     const fraction = divide(integer(node[2][1]), integer(node[2][2]));
     return whole && fraction && rational(whole.n * fraction.d + fraction.n, fraction.d);
@@ -67,7 +67,7 @@ const unsigned = (node: unknown): Rational | undefined => {
  * else, an operation, constant, unit or percentage included.
  */
 const parseValue = (latex: Latex): Rational | undefined => {
-  if (typeof latex !== "string" || !latex.trim()) {
+  if (typeof latex !== 'string' || !latex.trim()) {
     return undefined;
   }
   let tree: unknown;
@@ -76,7 +76,7 @@ const parseValue = (latex: Latex): Rational | undefined => {
   } catch (e) {
     return undefined;
   }
-  return isNode(tree, "-", 1) ? negate(unsigned(tree[1])) : unsigned(tree);
+  return isNode(tree, '-', 1) ? negate(unsigned(tree[1])) : unsigned(tree);
 };
 
 /**

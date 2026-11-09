@@ -1,8 +1,8 @@
-import { get_tree } from "./util";
+import { get_tree } from './util';
 
 export var is_associative: Record<string, boolean> = {
-  "+": true,
-  "*": true,
+  '+': true,
+  '*': true,
   and: true,
   or: true,
   union: true,

@@ -1,5 +1,5 @@
-import { mathjs } from "../mathjs";
-import { MathNode } from "mathjs";
+import { mathjs } from '../mathjs';
+import { MathNode } from 'mathjs';
 import {
   getVariables,
   equationsHaveTheSameVariables,
@@ -11,7 +11,7 @@ import {
   hasSymbolicExponent,
   areNumericallyEquivalent,
   areEquationsNumericallyEquivalent,
-} from "./utils";
+} from './utils';
 
 const m: any = mathjs;
 
@@ -39,48 +39,29 @@ export const compareEquations = (
     let firstEquationVariablesName = getVariables(firstExpression);
     let secondEquationVariablesName = getVariables(secondExpression);
 
-    if (
-      !equationsHaveTheSameVariables(
-        firstEquationVariablesName,
-        secondEquationVariablesName
-      )
-    ) {
+    if (!equationsHaveTheSameVariables(firstEquationVariablesName, secondEquationVariablesName)) {
       return false;
     }
 
     let firstEquationCoefficients!: number[];
     let secondEquationCoefficients!: number[];
 
-    if (
-      hasSymbolicExponent(firstExpression) ||
-      hasSymbolicExponent(secondExpression)
-    ) {
+    if (hasSymbolicExponent(firstExpression) || hasSymbolicExponent(secondExpression)) {
       const isEquivalent = areNumericallyEquivalent(
         firstExpression,
         secondExpression,
         firstEquationVariablesName
       );
-     
+
       return isEquivalent;
     }
 
     if (firstEquationVariablesName.length === 1) {
-      firstEquationCoefficients = getCoefficients(
-        firstExpression,
-        isInequality
-      );
-      secondEquationCoefficients = getCoefficients(
-        secondExpression,
-        isInequality
-      );
+      firstEquationCoefficients = getCoefficients(firstExpression, isInequality);
+      secondEquationCoefficients = getCoefficients(secondExpression, isInequality);
 
       // if coefficients are equal, there is no need for further calculations => equations are equivalent
-      if (
-        compareCoefficients(
-          firstEquationCoefficients,
-          secondEquationCoefficients
-        )
-      ) {
+      if (compareCoefficients(firstEquationCoefficients, secondEquationCoefficients)) {
         return true;
       }
 
@@ -99,23 +80,17 @@ export const compareEquations = (
           secondEquationCoefficients = secondEquationCoefficients.splice(1, 3);
         }
 
-        let rootsFirstEquation = solveQuadraticEquation(
-          firstEquationCoefficients
-        );
+        let rootsFirstEquation = solveQuadraticEquation(firstEquationCoefficients);
 
-        let rootsSecondEquation = solveQuadraticEquation(
-          secondEquationCoefficients
-        );
+        let rootsSecondEquation = solveQuadraticEquation(secondEquationCoefficients);
 
         let firstRoot: any = m.complex(rootsFirstEquation);
         let secondRoot: any = m.complex(rootsSecondEquation);
 
         if (rootsFirstEquation[0].im === 0 && rootsFirstEquation[1].im === 0) {
           return (
-            (firstRoot[0].equals(secondRoot[0]) &&
-              firstRoot[1].equals(secondRoot[1])) ||
-            (firstRoot[0].equals(secondRoot[1]) &&
-              firstRoot[1].equals(secondRoot[0]))
+            (firstRoot[0].equals(secondRoot[0]) && firstRoot[1].equals(secondRoot[1])) ||
+            (firstRoot[0].equals(secondRoot[1]) && firstRoot[1].equals(secondRoot[0]))
           );
         }
 
@@ -123,21 +98,15 @@ export const compareEquations = (
         return (
           rootsFirstEquation[0].re === rootsSecondEquation[0].re &&
           rootsFirstEquation[1].re === rootsSecondEquation[1].re &&
-          rootsFirstEquation[0].im.toFixed(13) ===
-            rootsSecondEquation[0].im.toFixed(13) &&
-          rootsFirstEquation[1].im.toFixed(13) ===
-            rootsSecondEquation[1].im.toFixed(13)
+          rootsFirstEquation[0].im.toFixed(13) === rootsSecondEquation[0].im.toFixed(13) &&
+          rootsFirstEquation[1].im.toFixed(13) === rootsSecondEquation[1].im.toFixed(13)
         );
       }
 
       // if both equations are linear in one variable then we solve "x" for both. If x has the same value then equations are equivalent
       // solve linear equations
-      const solutionForFirstEquation = solveLinearEquation(
-        firstEquationCoefficients
-      );
-      const solutionForSecondEquation = solveLinearEquation(
-        secondEquationCoefficients
-      );
+      const solutionForFirstEquation = solveLinearEquation(firstEquationCoefficients);
+      const solutionForSecondEquation = solveLinearEquation(secondEquationCoefficients);
 
       equivalence =
         solutionForFirstEquation === solutionForSecondEquation &&
@@ -146,8 +115,7 @@ export const compareEquations = (
       // equations that are neither linear nor quadratic can't be solved above; compare them numerically instead
       if (
         !isInequality &&
-        (solutionForFirstEquation === undefined ||
-          solutionForSecondEquation === undefined)
+        (solutionForFirstEquation === undefined || solutionForSecondEquation === undefined)
       ) {
         return areEquationsNumericallyEquivalent(
           firstExpression,

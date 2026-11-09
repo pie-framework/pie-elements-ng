@@ -1,33 +1,33 @@
-import { latexEqual } from "../index";
-import type { Opts } from "../options";
+import { latexEqual } from '../index';
+import type { Opts } from '../options';
 
 type FixtureData = {
   target: string;
-  mode?: "symbolic" | "literal";
+  mode?: 'symbolic' | 'literal';
   skip?: boolean;
   only?: boolean;
   label?: string;
-  opts?: Omit<Opts, "mode">;
+  opts?: Omit<Opts, 'mode'>;
   eq: string | string[];
   ne: string | string[];
 };
 
 type FixtureModule = {
-  mode?: "symbolic" | "literal";
+  mode?: 'symbolic' | 'literal';
   only?: boolean;
   skip?: boolean;
   tests: FixtureData[];
 };
 
 // Narrow the run with vitest's own filters, for example `vitest -t PD-303`.
-const modules = import.meta.glob<FixtureModule>("../fixtures/latex-equal/**/*.ts", {
+const modules = import.meta.glob<FixtureModule>('../fixtures/latex-equal/**/*.ts', {
   eager: true,
-  import: "default",
+  import: 'default',
 });
 
 const testData = Object.keys(modules)
   .sort()
-  .map((f) => ({ data: modules[f], filename: f.replace(/^\.\.\//, "src/") }));
+  .map((f) => ({ data: modules[f], filename: f.replace(/^\.\.\//, 'src/') }));
 
 const skipTest = (root: FixtureModule, test: FixtureData) => {
   if (process.env.NO_SKIP) {
@@ -51,19 +51,19 @@ const getLabel = (t: FixtureData) => {
 
 const optsLabel = (mode, o) => {
   if (!o) {
-    return "";
+    return '';
   }
 
-  if (mode === "symbolic") {
+  if (mode === 'symbolic') {
     if (o.exception) {
-      return `(exception:${o.exception.join(",")})`;
+      return `(exception:${o.exception.join(',')})`;
     }
-    return "";
+    return '';
   }
   return `(${Object.entries(o)
     .map(([k, v]) => (v ? k : undefined))
     .filter((v) => !!v)
-    .join(",")})`;
+    .join(',')})`;
 };
 
 testData.forEach((d) => {
@@ -85,7 +85,6 @@ testData.forEach((d) => {
       const mode = t.mode || d.data.mode;
 
       dfn(`[${mode}] ${label}`, () => {
-
         // console.log(t.label || t.target, "eq.length", eq.length);
         // console.log("mode!!", mode);
         const l = optsLabel(mode, t.opts);
