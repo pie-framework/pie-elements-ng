@@ -1,11 +1,11 @@
-import { LatexToAst } from './conversion/latex-to-ast';
-import { AstToMathJs } from './conversion/ast-to-mathjs';
-import { isMathEqual as isSymbolicEqual } from './symbolic';
-import { isMathEqual as isLiteralEqual } from './literal';
-import { differenceIsTooGreat } from './difference';
-import { compareNumbers } from './value';
+import { LatexToAst } from './conversion/latex-to-ast.js';
+import { AstToMathJs } from './conversion/ast-to-mathjs.js';
+import { isMathEqual as isSymbolicEqual } from './symbolic/index.js';
+import { isMathEqual as isLiteralEqual } from './literal/index.js';
+import { differenceIsTooGreat } from './difference.js';
+import { compareNumbers } from './value.js';
 
-import type { Latex, Opts } from './options';
+import type { Latex, Opts } from './options.js';
 
 export type { Latex, Opts };
 export type RawAst = any[];

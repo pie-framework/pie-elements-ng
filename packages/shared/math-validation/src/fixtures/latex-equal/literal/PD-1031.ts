@@ -1,4 +1,4 @@
-import { Triage } from '../../triage';
+import { Triage } from '../../triage.js';
 
 export default {
   mode: 'literal',

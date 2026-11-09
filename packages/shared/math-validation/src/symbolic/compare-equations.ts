@@ -1,4 +1,4 @@
-import { mathjs } from '../mathjs';
+import { mathjs } from '../mathjs.js';
 import type { MathNode } from 'mathjs';
 import {
   getVariables,
@@ -11,7 +11,7 @@ import {
   hasSymbolicExponent,
   areNumericallyEquivalent,
   areEquationsNumericallyEquivalent,
-} from './utils';
+} from './utils.js';
 
 const m: any = mathjs;
 

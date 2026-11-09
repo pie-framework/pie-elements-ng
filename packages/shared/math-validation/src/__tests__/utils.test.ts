@@ -1,6 +1,6 @@
-import { AstToMathJs } from '../conversion/ast-to-mathjs';
-import { LatexToAst } from '../conversion/latex-to-ast';
-import { simplify } from '../symbolic';
+import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
+import { LatexToAst } from '../conversion/latex-to-ast.js';
+import { simplify } from '../symbolic/index.js';
 
 import {
   getVariables,
@@ -12,7 +12,7 @@ import {
   getSamplePoints,
   areNumericallyEquivalent,
   areEquationsNumericallyEquivalent,
-} from '../symbolic/utils';
+} from '../symbolic/utils.js';
 
 const lta = new LatexToAst();
 const atm = new AstToMathJs();

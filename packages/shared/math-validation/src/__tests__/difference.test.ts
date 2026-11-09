@@ -1,5 +1,5 @@
-import { LatexToAst } from '../conversion/latex-to-ast';
-import { differenceIsTooGreat } from '../difference';
+import { LatexToAst } from '../conversion/latex-to-ast.js';
+import { differenceIsTooGreat } from '../difference.js';
 
 const lta = new LatexToAst();
 

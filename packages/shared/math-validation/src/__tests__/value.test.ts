@@ -1,5 +1,5 @@
-import { latexEqual } from '../index';
-import { compareNumbers } from '../value';
+import { latexEqual } from '../index.js';
+import { compareNumbers } from '../value.js';
 
 describe('compareNumbers', () => {
   it.each([

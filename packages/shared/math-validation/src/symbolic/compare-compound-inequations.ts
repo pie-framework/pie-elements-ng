@@ -1,4 +1,4 @@
-import { mathjs } from '../mathjs';
+import { mathjs } from '../mathjs.js';
 import type { MathNode } from 'mathjs';
 import {
   expressionsCanBeCompared,
@@ -7,7 +7,7 @@ import {
   transformEqualityInExpression,
   getCoefficients,
   solveLinearEquation,
-} from './utils';
+} from './utils.js';
 
 const m: any = mathjs;
 

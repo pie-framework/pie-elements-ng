@@ -1,5 +1,5 @@
 import debug from 'debug';
-import type { RawAst } from './latex-equal';
+import type { RawAst } from './latex-equal.js';
 
 const log = debug('difference');
 

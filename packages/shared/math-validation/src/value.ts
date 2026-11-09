@@ -1,4 +1,4 @@
-import { LatexToAst } from './conversion/latex-to-ast';
+import { LatexToAst } from './conversion/latex-to-ast.js';
 
 export type Latex = string;
 

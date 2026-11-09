@@ -1,7 +1,7 @@
-import { AstToMathJs } from '../conversion/ast-to-mathjs';
-import { LatexToAst } from '../conversion/latex-to-ast';
+import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
+import { LatexToAst } from '../conversion/latex-to-ast.js';
 
-import { splitInequality } from '../symbolic/compare-compound-inequations';
+import { splitInequality } from '../symbolic/compare-compound-inequations.js';
 
 const lta = new LatexToAst();
 const atm = new AstToMathJs();

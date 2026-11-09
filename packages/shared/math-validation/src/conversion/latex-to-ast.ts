@@ -1,6 +1,6 @@
-import { ParseError } from './error';
-import lexer, { type Token } from './lexer';
-import { flatten } from './flatten';
+import { ParseError } from './error.js';
+import lexer, { type Token } from './lexer.js';
+import { flatten } from './flatten.js';
 
 // UPDATETHIS: Delete or change to new license & package name
 

@@ -19,8 +19,8 @@
  *
  */
 
-import { mathjs as mjs } from '../mathjs';
-import { logger } from '../log';
+import { mathjs as mjs } from '../mathjs.js';
+import { logger } from '../log.js';
 const log = logger('mv:ast-to-math');
 const m: any = mjs;
 

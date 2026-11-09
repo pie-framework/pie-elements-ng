@@ -1,4 +1,4 @@
-import { LatexToAst } from '../latex-to-ast';
+import { LatexToAst } from '../latex-to-ast.js';
 // import { latexParser } from "latex-utensils";
 
 // conversion of degrees in radians - angle configuration

@@ -1,6 +1,6 @@
-import { logger } from './log';
+import { logger } from './log.js';
 
-import { mathjs as mjs } from './mathjs';
+import { mathjs as mjs } from './mathjs.js';
 
 import type { MathNode } from 'mathjs';
 

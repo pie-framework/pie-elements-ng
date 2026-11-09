@@ -1,9 +1,9 @@
-import { logger } from '../log';
-import { mathjs } from '../mathjs';
+import { logger } from '../log.js';
+import { mathjs } from '../mathjs.js';
 import { all, create, type MathNode } from 'mathjs';
-import { sort } from '../node-sort';
-import { compareEquations } from './compare-equations';
-import { compareCompoundInequations } from './compare-compound-inequations';
+import { sort } from '../node-sort.js';
+import { compareEquations } from './compare-equations.js';
+import { compareCompoundInequations } from './compare-compound-inequations.js';
 
 const m: any = mathjs;
 const log = logger('mv:symbolic');
@@ -23,7 +23,7 @@ const RELATIVE_EPSILON = 1e-13;
 // it covers residues such as sin(200pi) and cos(100.5pi) while still rejecting 0 vs 0.0000000000001
 const ABSOLUTE_EPSILON = 1e-14;
 
-export type { SymbolicOpts } from '../options';
+export type { SymbolicOpts } from '../options.js';
 
 const { simplify: ms, rationalize } = mathjs;
 

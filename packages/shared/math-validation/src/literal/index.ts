@@ -1,7 +1,7 @@
-import { mathjs } from '../mathjs';
+import { mathjs } from '../mathjs.js';
 import type { MathNode } from 'mathjs';
-import { sort } from '../node-sort';
-import type { LiteralOpts } from '../options';
+import { sort } from '../node-sort.js';
+import type { LiteralOpts } from '../options.js';
 
 export type { LiteralOpts };
 

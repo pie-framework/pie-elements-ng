@@ -11,7 +11,7 @@
 
 //   Third element (optional): replacement for actual string matched
 
-import { logger } from '../log';
+import { logger } from '../log.js';
 
 const log = logger('mv:lexer');
 export type TokenRule = [RegExp, string, string?];

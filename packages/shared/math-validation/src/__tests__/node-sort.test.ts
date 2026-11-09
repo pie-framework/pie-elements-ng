@@ -1,9 +1,9 @@
-import { flattenNode, sort as s } from '../node-sort';
-import { replacer, parse } from '../mathjs';
-import { logger } from '../log';
+import { flattenNode, sort as s } from '../node-sort.js';
+import { replacer, parse } from '../mathjs.js';
+import { logger } from '../log.js';
 const log = logger('mv:node-sort.spec');
-import { AstToMathJs } from '../conversion/ast-to-mathjs';
-import { LatexToAst } from '../conversion/latex-to-ast';
+import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
+import { LatexToAst } from '../conversion/latex-to-ast.js';
 
 type Fixture = [
   /**

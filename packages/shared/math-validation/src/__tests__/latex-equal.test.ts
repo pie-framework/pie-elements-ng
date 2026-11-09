@@ -1,5 +1,5 @@
-import { latexEqual } from '../index';
-import type { Opts } from '../options';
+import { latexEqual } from '../index.js';
+import type { Opts } from '../options.js';
 
 type FixtureData = {
   target: string;

@@ -1,6 +1,6 @@
-import { mathjs } from '../mathjs';
+import { mathjs } from '../mathjs.js';
 import { all, create, type MathNode } from 'mathjs';
-import { simplify as customSimplify } from './';
+import { simplify as customSimplify } from './index.js';
 const { simplify } = mathjs;
 
 const m: any = mathjs;
