@@ -7,7 +7,6 @@ import debug from 'debug';
 import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
 import { mqInkStyles } from './common-mq-styles.js';
-import { keepCursorWhileKeypadFocused } from './inactive-cursor.js';
 
 const log = debug('math-input:mq:input');
 
@@ -43,11 +42,6 @@ export class Input extends React.Component {
 
     this.updateLatex();
     labelFieldTextareas(this.input, this.props.language, this.relabel);
-    this.stopKeepingCursor = keepCursorWhileKeypadFocused(this.mathField);
-  }
-
-  componentWillUnmount() {
-    this.stopKeepingCursor?.();
   }
 
   componentDidUpdate() {

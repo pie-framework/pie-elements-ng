@@ -4,6 +4,7 @@ import debug from 'debug';
 import { NEWLINE_EMBED, toAccessibleLatex, toMathLive, withVisibleEmptySlots } from './latex-bridge.js';
 import { ROOT_INDEX_CSS, PARALLEL_CSS } from './mf/common-styles.js';
 import { fixLongDivisionWhenReady } from './longdiv.js';
+import { KEYPAD_CARET_CSS } from './mf/inactive-caret.js';
 
 const log = debug('pie-lib:math-input-mathlive:instance');
 
@@ -307,7 +308,8 @@ const SHADOW_CSS =
   OVERLINE_GAP_CSS +
   FRAC_BAR_CENTER_CSS +
   FRAC_BAR_FILLED_CSS +
-  PLACEHOLDER_CARET_CSS;
+  PLACEHOLDER_CARET_CSS +
+  KEYPAD_CARET_CSS;
 
 /**
  * Keep {@link PLACEHOLDER_CARET_CLASS} in step with the selection.
