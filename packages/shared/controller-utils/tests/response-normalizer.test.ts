@@ -3,6 +3,7 @@ import {
   contentLanguage,
   foldCase,
   foldDigits,
+  mathContentLanguage,
   normalizeResponse,
 } from '../src/response-normalizer.js';
 import { DIGIT_ZEROS as ZEROS, inSystem } from './digit-systems.js';
@@ -195,16 +196,61 @@ describe('normalizeResponse with latexNumbers', () => {
     }
   });
 
-  it('reads a semicolon as the list separator there, and keeps the TeX space', () => {
-    expect(latex('(1;2,5)', 'es-ES')).toBe('(1,2.5)');
+  it('reads a semicolon as a spaced list separator there, and keeps the TeX space and HTML entities', () => {
+    expect(latex('(1;2,5)', 'es-ES')).toBe('(1, 2.5)');
+    expect(latex('(2;500)', 'de-DE')).toBe('(2, 500)');
     expect(latex('x\\;y', 'de-DE')).toBe('x\\;y');
-    expect(latex('p&aacute;ginas;2&#233;', 'es-ES')).toBe('p&aacute;ginas,2&#233;');
+    expect(latex('p&aacute;ginas;2&#233;;3&#xE9;', 'es-ES')).toBe(
+      'p&aacute;ginas, 2&#233;, 3&#xE9;'
+    );
   });
 
-  it('keeps a point as a decimal point, and a comma that is not between digits', () => {
+  it('reads a semicolon after a matrix column as a list separator', () => {
+    expect(latex('\\begin{pmatrix}1;2&3;4\\end{pmatrix}', 'es-ES')).toBe(
+      '\\begin{pmatrix}1, 2&3, 4\\end{pmatrix}'
+    );
+  });
+
+  it('reads the comma of a repeating decimal', () => {
+    expect(latex('0,\\overline{3}', 'es-ES')).toBe('0.\\overline{3}');
+    expect(latex('1{,}2\\overline{45}', 'de-DE')).toBe('1.2\\overline{45}');
+  });
+
+  it('keeps a point as a decimal point, a comma that is not between digits, and a number with two marks', () => {
     expect(latex('2.5', 'es-ES')).toBe('2.5');
     expect(latex('1,x', 'es-ES')).toBe('1,x');
     expect(latex('1\\,000', 'es-ES')).toBe('1\\,000');
+    expect(latex('1.000,5', 'de-DE')).toBe('1.000,5');
+    expect(latex('1,2,3', 'de-DE')).toBe('1,2,3');
+    expect(latex('f(x,5)', 'de-DE')).toBe('f(x,5)');
+  });
+
+  it('decides the decimal comma from a fixed CLDR table, alike on every runtime', () => {
+    const commaRegions = [
+      'es-AR',
+      'fr-CH',
+      'en-ZA',
+      'pt-BR',
+      'sr-Latn-RS',
+      'nl-BE',
+      'de-AT',
+      'ar-DZ',
+      'en-DE',
+    ];
+    const pointRegions = [
+      'es-MX',
+      'es-419',
+      'de-CH',
+      'it-CH',
+      'en-US',
+      'en-GB',
+      'ar-EG',
+      'ja-JP',
+      'zh-CN',
+      'ms-MY',
+    ];
+    for (const language of commaRegions) expect(latex('2,5', language), language).toBe('2.5');
+    for (const language of pointRegions) expect(latex('2,5', language), language).toBe('2,5');
   });
 
   it('keeps commas and semicolons as written without a region or in a point-decimal region', () => {
@@ -244,22 +290,41 @@ describe('contentLanguage', () => {
     expect(contentLanguage({ language: ' ' }, {})).toBeUndefined();
   });
 
-  it('reads an underscore code as its language alone, so it selects no number convention', () => {
-    expect(contentLanguage({ language: 'es_ES' })).toBe('es');
-    expect(contentLanguage({ language: 'tr_TR' })).toBe('tr');
-    expect(contentLanguage({}, { locale: 'en_us' })).toBe('en');
-    expect(
-      normalizeResponse('2,5', {
-        language: contentLanguage({ language: 'es_ES' }),
-        latexNumbers: true,
-      })
-    ).toBe('2,5');
+  it('reads an underscore code with its region', () => {
+    expect(contentLanguage({ language: 'es_ES' })).toBe('es-ES');
+    expect(contentLanguage({}, { locale: 'ar_MA' })).toBe('ar-MA');
+    expect(normalizeResponse('٣٫٥', { language: contentLanguage({ language: 'ar_MA' }) })).toBe(
+      '3,5'
+    );
   });
 
   it('canonicalises a hyphenated tag and passes over one that names no language', () => {
     expect(contentLanguage({ language: 'EN-us' })).toBe('en-US');
     expect(contentLanguage({ language: 'not a tag!' }, { locale: 'de-DE' })).toBe('de-DE');
     expect(contentLanguage({ language: 'Spanish' })).toBeUndefined();
+    for (const language of ['und', 'zxx', 'mul', 'mis', 'und-ES']) {
+      expect(contentLanguage({ language }, { locale: 'de-DE' }), language).toBe('de-DE');
+    }
+  });
+});
+
+describe('mathContentLanguage', () => {
+  it('reads an underscore code as its language alone, so it selects no number convention', () => {
+    expect(mathContentLanguage({ language: 'es_ES' })).toBe('es');
+    expect(mathContentLanguage({ language: 'tr_TR' })).toBe('tr');
+    expect(mathContentLanguage({}, { locale: 'en_us' })).toBe('en');
+    expect(
+      normalizeResponse('2,5', {
+        language: mathContentLanguage({ language: 'es_ES' }),
+        latexNumbers: true,
+      })
+    ).toBe('2,5');
+  });
+
+  it('keeps a hyphenated tag and falls through as contentLanguage does', () => {
+    expect(mathContentLanguage({ language: 'es-ES' })).toBe('es-ES');
+    expect(mathContentLanguage({ language: 'und' }, { locale: 'de-DE' })).toBe('de-DE');
+    expect(mathContentLanguage({}, {})).toBeUndefined();
   });
 });
 

@@ -36,10 +36,12 @@ export interface NormalizeOptions {
   /**
    * Write numbers in the form math-validation computes on. `٫` becomes `.` and `٬` becomes `,`
    * whatever the language. Where the language's region writes a decimal comma (`es-ES`, `de-DE`),
-   * a `,` or `{,}` between digits becomes `.`, and `;` becomes the `,` between list items; a `.`
-   * stays a decimal point. A tag without a region keeps the point, because US Spanish content
-   * declares `es`, which CLDR gives a decimal comma. The option reads text written in the
-   * language's convention, so a second pass over its output would read a list comma as a decimal.
+   * a number's one `,` or `{,}`, also before a repeating `\overline`, becomes `.`, and `;` becomes
+   * `, ` between list items, spaced so that math-validation does not read `(2;500)` as 2500. A `.`
+   * stays a decimal point, and a number with two marks (`1.000,5`) stays as typed. A tag without
+   * a region keeps the point, because US Spanish content declares `es`, which CLDR gives a decimal
+   * comma. The option reads text written in the language's convention, so a second pass over its
+   * output would read a list comma as a decimal.
    */
   latexNumbers?: boolean;
 }
@@ -56,9 +58,41 @@ const DECIMAL_DIGIT = /\p{Nd}/u;
 const NON_ASCII_DIGITS = /(?![0-9])\p{Nd}/gu;
 const ARABIC_DECIMAL_SEPARATOR = /\u066B/g;
 const ARABIC_THOUSANDS_SEPARATOR = /\u066C/g;
-const DECIMAL_COMMA = /(?<=[0-9])(?:,|\{,\})(?=[0-9])/g;
-// `\;` is a TeX space and `&aacute;` an HTML entity, not list separators.
-const LIST_SEMICOLON = /(?<!\\|&#?[a-zA-Z0-9]+);/g;
+// A number with marks between its digits, and a comma that ends one before a repeating `\overline`.
+const NUMBER_RUN = /[0-9]+(?:(?:[.,]|\{,\})[0-9]+)*(?:(?:,|\{,\})(?=\\overline))?/g;
+const NUMBER_MARK = /[.,]|\{,\}/g;
+// `\;` is a TeX space and `&aacute;`, `&#233;` and `&#xE9;` HTML entities, not list separators.
+// A matrix column `&` before a digit starts no entity.
+const LIST_SEMICOLON = /(?<!\\|&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+));/g;
+
+/** A number's one decimal comma as a point. A number with two marks, `1.000,5` or `1,2,3`, has no one reading. */
+const readDecimalComma = (run: string): string => {
+  const marks = run.match(NUMBER_MARK) ?? [];
+  return marks.length === 1 && marks[0] !== '.' ? run.replace(NUMBER_MARK, '.') : run;
+};
+
+// CLDR 48 (ICU 78), Latin digits: the two-letter languages whose numbers take a decimal comma,
+// and per language the regions that write the other mark. A fixed table, so that every runtime
+// scores alike: Safari and Node disagree on `fr-CH`, and ICU versions on `en-ZA`.
+const DECIMAL_COMMA_LANGUAGES = new Set(
+  (
+    'af az be bg br bs ca cs cv da de el eo es et eu ff fi fo fr fy gl hr hu hy ia id ie is it jv ' +
+    'ka kk kl ku ky lb ln lo lt lu lv mk nb nl nn no oc os pl ps pt rm rn ro ru rw sc se sg sk sl ' +
+    'sq sr su sv tg tk tr tt uk uz vi wo'
+  ).split(' ')
+);
+const OTHER_MARK_REGIONS: Record<string, readonly string[]> = {
+  ar: ['DZ', 'LB', 'LY', 'MA', 'MR', 'TN'],
+  de: ['CH', 'LI'],
+  en: 'AT BE CZ DE DK EE ES FI FR GE HU ID IT LT LV NL NO PL PT RO SE SI SK UA ZA'.split(' '),
+  es: '419 BR BZ CU DO GT HN MX NI PA PE PR SV US'.split(' '),
+  it: ['CH'],
+  kk: ['CN'],
+  ku: ['IQ'],
+  ms: ['BN', 'ID'],
+  qu: ['BO'],
+  sw: ['CD'],
+};
 
 const ALEF_FORMS = /[\u0622\u0623\u0625\u0671]/g;
 // Fathatan to sukun, the extended marks up to U+065F, and superscript alef.
@@ -120,41 +154,41 @@ const marksFor = (language: string | undefined): NumberMarks => {
   return marks;
 };
 
-const decimalCommas = new Map<string, boolean>();
-
 /**
  * Whether the tag names a region and that region writes a decimal comma. `es` has
  * no region, so it keeps the point that US Spanish content is written with.
  */
 const writesDecimalComma = (language: string | undefined): boolean => {
   if (!language) return false;
-  const cached = decimalCommas.get(language);
-  if (cached !== undefined) return cached;
-  let decimalComma = false;
   try {
-    decimalComma = Boolean(new Intl.Locale(language).region) && marksFor(language).decimal === ',';
+    const { language: primary, region } = new Intl.Locale(language);
+    if (!region) return false;
+    return (
+      DECIMAL_COMMA_LANGUAGES.has(primary) !==
+      (OTHER_MARK_REGIONS[primary]?.includes(region) ?? false)
+    );
   } catch {
     // An invalid tag keeps the point.
+    return false;
   }
-  decimalCommas.set(language, decimalComma);
-  return decimalComma;
 };
 
-/**
- * The canonical BCP 47 tag for a language code, or `undefined` when it names no
- * language. An underscore code (`es_ES`, `tr_TR`) yields its language alone: its
- * producers, the authoring dropdown and the Learnosity transform, write `es_ES` for
- * Spanish of any region, and content tagged `es_ES` mostly uses US number conventions.
- * A region, and with it a number convention, comes only from a hyphenated tag.
- */
-const languageTag = (code: string): string | undefined =>
-  canonicalLanguageTag(code.includes('_') ? code.slice(0, code.indexOf('_')) : code);
+// The codes BCP 47 reserves for no particular language: undetermined, no linguistic
+// content, multiple languages and uncoded.
+const NO_LANGUAGE = new Set(['und', 'zxx', 'mul', 'mis']);
 
-/**
- * The language a comparison runs in: the element's `model.language`, then the
- * item's `env.locale`. A value that names no language passes to the next.
- */
-export const contentLanguage = (model?: object | null, env?: object | null): string | undefined => {
+/** The canonical BCP 47 tag for a language code, or `undefined` when it names no language. */
+const languageTag = (code: string): string | undefined => {
+  const tag = canonicalLanguageTag(code);
+  return tag && !NO_LANGUAGE.has(tag.split('-')[0]) ? tag : undefined;
+};
+
+/** The first of `model.language` and `env.locale` that `read` finds a language in. */
+const firstLanguage = (
+  model: object | null | undefined,
+  env: object | null | undefined,
+  read: (code: string) => string | undefined
+): string | undefined => {
   // Typed as `object` so that any element's model and environment type is
   // accepted, whatever else it declares.
   const tags = [
@@ -162,11 +196,33 @@ export const contentLanguage = (model?: object | null, env?: object | null): str
     (env as { locale?: unknown } | null)?.locale,
   ];
   for (const tag of tags) {
-    const language = typeof tag === 'string' ? languageTag(tag) : undefined;
+    const language = typeof tag === 'string' ? read(tag) : undefined;
     if (language) return language;
   }
   return undefined;
 };
+
+/**
+ * The language a comparison runs in: the element's `model.language`, then the
+ * item's `env.locale`. A value that names no language passes to the next.
+ */
+export const contentLanguage = (model?: object | null, env?: object | null): string | undefined =>
+  firstLanguage(model, env, languageTag);
+
+/**
+ * The language math scoring reads numbers in, to pass with `latexNumbers`: as `contentLanguage`
+ * finds it, except that an underscore code (`es_ES`, `tr_TR`) yields its language alone. Its
+ * producers, the authoring dropdown and the Learnosity transform, write `es_ES` for Spanish of any
+ * region, and content tagged `es_ES` mostly uses US number conventions, so a decimal comma comes
+ * only from a hyphenated tag.
+ */
+export const mathContentLanguage = (
+  model?: object | null,
+  env?: object | null
+): string | undefined =>
+  firstLanguage(model, env, (code) =>
+    languageTag(code.includes('_') ? code.slice(0, code.indexOf('_')) : code)
+  );
 
 // The languages whose dotted and dotless i fold apart. Lithuanian's
 // special casing keeps the dot on accented i, so `Ì` would no longer fold to
@@ -209,7 +265,7 @@ export const normalizeResponse = (value: string, options: NormalizeOptions = {})
   result = foldDigits(result);
   // Before the Arabic marks fold, so that a `٬` group mark does not become a comma read as a decimal.
   if (options.latexNumbers && writesDecimalComma(options.language)) {
-    result = result.replace(DECIMAL_COMMA, '.').replace(LIST_SEMICOLON, ',');
+    result = result.replace(NUMBER_RUN, readDecimalComma).replace(LIST_SEMICOLON, ', ');
   }
   result = result
     .replace(ARABIC_DECIMAL_SEPARATOR, marks.decimal)

@@ -15,7 +15,7 @@ import { ResponseTypes, acceptedAnswers, alternateLatex } from './utils.js';
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
-import { contentLanguage, normalizeResponse } from '@pie-element/shared-controller-utils';
+import { mathContentLanguage, normalizeResponse } from '@pie-element/shared-controller-utils';
 
 const log = debug('@pie-element:math-inline:controller');
 
@@ -169,7 +169,7 @@ const getCorrectness = (
       question.responseType === ResponseTypes.advanced
         ? (session && session.completeAnswer) || ''
         : session && session.response,
-      contentLanguage(question, env),
+      mathContentLanguage(question, env),
       isOutcome,
     );
   }

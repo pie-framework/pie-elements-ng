@@ -31,6 +31,10 @@ describe('a decimal comma', () => {
       expect(await score('2.5', '2,5', locale), locale).toBe(0);
     }
   });
+
+  it('does not read a list of two numbers as one number with a thousands comma', async () => {
+    expect(await score('2500', '(2;500)', 'de-DE')).toBe(0);
+  });
 });
 
 describe('every Unicode digit system', () => {

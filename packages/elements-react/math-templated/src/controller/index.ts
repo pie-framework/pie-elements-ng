@@ -12,7 +12,7 @@ import type {
 } from '../types.js';
 
 import defaults from './defaults.js';
-import { contentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
+import { mathContentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 
 const log = debug('@pie-element:math-templated:controller');
 
@@ -160,7 +160,7 @@ export const getCorrectness = (
   session: MathTemplatedSession | null | undefined,
 ): ResponseCorrectness | undefined => {
   if (env.mode === 'evaluate') {
-    return getResponseCorrectness(question, session && session.answers, contentLanguage(question, env));
+    return getResponseCorrectness(question, session && session.answers, mathContentLanguage(question, env));
   }
 };
 
@@ -235,7 +235,7 @@ export const getLogTrace = (
     }
 
     if (studentValue) {
-      const isCorrect = getIsAnswerCorrect(correctResponse, answerItem, contentLanguage(question, env));
+      const isCorrect = getIsAnswerCorrect(correctResponse, answerItem, mathContentLanguage(question, env));
       if (isCorrect) {
         correctCount++;
         traceLog.push(`Response area ${index + 1} is correct.`);
@@ -370,7 +370,7 @@ export const model = (
       Object.keys(responses).forEach((responseId) => {
         const answerItem = answers['r' + responseId];
         const correctResponse = responses[responseId];
-        feedback[responseId] = getIsAnswerCorrect(correctResponse, answerItem, contentLanguage(normalizedQuestion, env));
+        feedback[responseId] = getIsAnswerCorrect(correctResponse, answerItem, mathContentLanguage(normalizedQuestion, env));
       });
     }
 

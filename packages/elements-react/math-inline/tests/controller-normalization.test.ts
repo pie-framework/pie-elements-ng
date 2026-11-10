@@ -55,6 +55,19 @@ describe('a decimal comma', () => {
   it('reads a semicolon as the list separator there', async () => {
     expect(await score('(1;5)', '(1;5)', { locale: 'es-ES' })).toBe(1);
     expect(await score('(1;5)', '(1,5)', { locale: 'es-ES' })).toBe(0);
+    expect(await score('(2;500)', '\\left(2; 500\\right)', { locale: 'de-DE' })).toBe(1);
+  });
+
+  it('does not read a list of two numbers as one number with a thousands comma', async () => {
+    for (const validation of ['symbolic', 'literal'] as const) {
+      expect(await score('2500', '(2;500)', { locale: 'de-DE' }, validation), validation).toBe(0);
+      expect(await score('2500', '2;500', { locale: 'de-DE' }, validation), validation).toBe(0);
+    }
+  });
+
+  it('reads a repeating decimal and leaves a number with two marks as typed', async () => {
+    expect(await score('0.\\overline{3}', '0,\\overline{3}', { locale: 'es-ES' })).toBe(1);
+    expect(await score('1000.5', '1.000,5', { locale: 'de-DE' })).toBe(0);
   });
 
   it('keeps the comma a list separator without a region or in a point-decimal region', async () => {
