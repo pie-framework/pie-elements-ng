@@ -1,19 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import fixturesJson from './i18n-conformance-fixtures.json';
+import fixturesJson from '@pie-players/pie-language-tags/i18n-conformance-fixtures.json';
+import { languageTagLookupSequence } from '@pie-players/pie-language-tags';
 import { defineCatalogs, loadLocale, registerMessages } from '../src/catalogs.js';
-import { languageTagLookupSequence } from '../src/language-tags.js';
 import { localeDirection, SimpleI18n } from '../src/provider.js';
 import type { MessageCatalog } from '../src/types.js';
 
 /**
  * Conformance of this engine to the cross-repository spec.
  *
- * `i18n-conformance-fixtures.json` is the semantics the two PIE engines share:
- * this one and pie-players' `players-shared/src/i18n`, which this engine ports
- * without sharing code. Each repository runs the same file against its own
- * engine, so a case one engine passes and the other fails is drift made
- * visible. The copies are kept byte-identical; the fixture's `$comment` names
- * both paths.
+ * `@pie-players/pie-language-tags/i18n-conformance-fixtures.json` is the semantics
+ * the two PIE engines share: this one and pie-players' `players-shared/src/i18n`.
+ * Both import their language-tag code from that package and keep their own
+ * providers, and both run this one file against their own engine, so a case one
+ * engine passes and the other fails is drift made visible.
  */
 
 interface Fixtures {

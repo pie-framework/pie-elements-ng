@@ -9,7 +9,7 @@
  * Nothing here touches `document.documentElement`, which belongs to the page.
  */
 
-import { canonicalLanguageTag } from './language-tags.js';
+import { canonicalLanguageTag } from '@pie-players/pie-language-tags';
 import { localeDirection } from './provider.js';
 import type { TextDirection, Translator } from './types.js';
 

@@ -4,14 +4,12 @@ Interface strings for PIE elements and the libraries they render through: one ty
 package, `en-US` resident in the bundle, every other locale loaded on demand, and one page-wide
 registry that a host call reaches across every bundled copy of this engine.
 
-The engine is a port of pie-players' `players-shared/src/i18n`. The two repositories share its
-semantics (tag resolution, lookup order, plural handling, host messages) and no code. What
-"shared semantics" means is written down once:
-[`tests/i18n-conformance-fixtures.json`](./tests/i18n-conformance-fixtures.json), a byte-identical
-copy of the file pie-players keeps at `packages/players-shared/tests/`, which each repository runs
+The engine's provider is a port of pie-players' `players-shared/src/i18n`, and both engines import
+their language-tag code from `@pie-players/pie-language-tags`. The two share their semantics (tag
+resolution, lookup order, plural handling, host messages), which that package writes down once in
+`@pie-players/pie-language-tags/i18n-conformance-fixtures.json`. Each repository runs that one file
 against its own engine. A case one engine passes and the other fails is drift; the fix goes to the
-engine. A semantics change edits both copies in the same breath. `biome.json` leaves that one file
-unformatted so the bytes stay the other repository's: byte identity is the whole point of the copy.
+engine.
 
 `@pie-lib/translator` stays in place for every package not yet migrated;
 [`docs/prds/interface-i18n/PRD.md`](../../../docs/prds/interface-i18n/PRD.md) has the design and
@@ -175,6 +173,5 @@ every loader eager. A newly migrated element joins its `migratedElements` list.
 | --------------------- | -------------------------------------------------------------------------------------- |
 | `provider.ts`         | `SimpleI18n`: lookup, interpolation, plurals, direction, formatting                    |
 | `catalogs.ts`         | `defineCatalogs`, the page registry, `isLocaleReady`, `loadLocale`, `registerMessages` |
-| `language-tags.ts`    | Tag normalization and script-aware RFC 4647 matching                                   |
 | `element-language.ts` | `lang` and `dir` for an element's host                                                 |
 | `types.ts`            | Catalog, key and translator types                                                      |
