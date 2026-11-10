@@ -1,4 +1,5 @@
-import { mathjs, type ExpressionNode } from '../mathjs.js';
+import { mathjs } from '../mathjs.js';
+import type { MathNode } from 'mathjs';
 import {
   expressionsCanBeCompared,
   haveSameElements,
@@ -11,8 +12,8 @@ import {
 const m: any = mathjs;
 
 export type NodePair = {
-  left: ExpressionNode;
-  right: ExpressionNode;
+  left: MathNode;
+  right: MathNode;
 };
 
 export type Range = {
@@ -51,7 +52,7 @@ export const splitInequality = (compoundInequality: any): NodePair => ({
   ),
 });
 
-const solve = (inequality: ExpressionNode) =>
+const solve = (inequality: MathNode) =>
   solveLinearEquation(getCoefficients(transformEqualityInExpression(inequality), true))!;
 
 // the interval between the solutions of the two inequalities
