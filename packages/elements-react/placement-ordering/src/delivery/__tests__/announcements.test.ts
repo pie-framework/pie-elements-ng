@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   cancelledMessage,
   focusLabel,
@@ -33,7 +33,41 @@ describe('announcements', () => {
   });
 
   it('reads math without an alttext by its own text', () => {
-    expect(toPlainText('<math><mn>3</mn><mo>/</mo><mn>4</mn></math>')).toBe('3/4');
+    expect(toPlainText('<math><mn>3</mn><mo>/</mo><mn>4</mn></math>')).toBe('3 / 4');
+  });
+
+  it('reads the tokens of math with no alttext apart, and not its annotation', () => {
+    expect(toPlainText('<math><mfrac><mn>1</mn><mn>2</mn></mfrac></math>')).toBe('1 2');
+    expect(toPlainText('<math><msup><mi>x</mi><mn>2</mn></msup></math>')).toBe('x 2');
+    expect(
+      toPlainText(
+        '<math><semantics><mrow><mn>3</mn><mo>/</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">\\frac{3}{4}</annotation></semantics></math>',
+      ),
+    ).toBe('3 / 4');
+  });
+
+  it('reads the tokens of math whose alttext is empty, and nothing of an image whose alt is', () => {
+    expect(toPlainText('<math alttext=""><mn>3</mn></math>')).toBe('3');
+    expect(toPlainText('<p>a <img src="d.png" alt=""> b</p>')).toBe('a b');
+  });
+
+  it('reads math and images the same way where there is no DOM parser', () => {
+    vi.stubGlobal('DOMParser', undefined);
+
+    try {
+      expect(toPlainText('<math alttext="x squared"><mi>x</mi><mn>2</mn></math>')).toBe('x squared');
+      expect(toPlainText('<p>a <img src="t.png" alt="triangle"> b</p>')).toBe('a triangle b');
+      expect(toPlainText('<math><mn>3</mn><mo>/</mo><mn>4</mn></math>')).toBe('3 / 4');
+      expect(toPlainText('<math alttext=""><mn>3</mn></math>')).toBe('3');
+      expect(toPlainText('<p>a <img src="d.png" alt=""> b</p>')).toBe('a b');
+      expect(
+        toPlainText(
+          '<math><semantics><mn>3</mn><annotation encoding="application/x-tex">\\frac{3}{4}</annotation></semantics></math>',
+        ),
+      ).toBe('3');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('counts the sorted and unsorted objects', () => {
