@@ -12,12 +12,11 @@
 
 import {
   canonicalLanguageTag,
-  findBestLanguageMatch,
+  findClosestLanguageMatch,
   languageTagLookupSequence,
-  languageTagScriptsMatch,
   normalizeLanguageTag,
   toLanguageTag,
-} from './language-tags.js';
+} from '@pie-players/pie-language-tags';
 import type {
   DynamicMessageKey,
   I18nConfig,
@@ -301,22 +300,12 @@ export class SimpleI18n<C extends MessageCatalog = MessageCatalog>
 
   /**
    * Script-aware RFC 4647 lookup over the shipped catalogs first, so `es-MX` reaches an `es`
-   * catalog; then primary-subtag widening, so a bare `es` or a POSIX `es_ES` reaches a regional
-   * catalog. Widening stays within the request's script: `zh` never reaches `zh-TW`, and
-   * `sr-Latn` may reach `sr-ME`.
+   * catalog; then widening to a sibling with the same script and variant subtags, so a bare `es`
+   * or a POSIX `es_ES` reaches a regional catalog. `zh` never reaches `zh-TW`, `sr-Latn` may
+   * reach `sr-ME`, and `de-CH-1996` reaches no `de-DE`.
    */
   private resolveCatalogLocale(locale: string): string | undefined {
-    const available = this.shippedLocales();
-    const exactOrPrefix = findBestLanguageMatch(locale, available);
-    if (exactOrPrefix) return exactOrPrefix;
-
-    const requestedLanguage = normalizeLanguageTag(locale).split('-')[0];
-    if (!requestedLanguage) return undefined;
-    return available.find(
-      (candidate) =>
-        normalizeLanguageTag(candidate).split('-')[0] === requestedLanguage &&
-        languageTagScriptsMatch(locale, candidate)
-    );
+    return findClosestLanguageMatch(locale, this.shippedLocales());
   }
 
   /** The most specific host-message tag on the request's truncation chain, normalized. */

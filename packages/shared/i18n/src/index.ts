@@ -25,7 +25,7 @@ export {
   languageTagsEqual,
   normalizeLanguageTag,
   toLanguageTag,
-} from './language-tags.js';
+} from '@pie-players/pie-language-tags';
 export { DEFAULT_LOCALE, dynamicMessageKey, localeDirection, SimpleI18n } from './provider.js';
 export type {
   CatalogLoader,
