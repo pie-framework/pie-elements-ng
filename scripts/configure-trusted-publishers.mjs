@@ -3,7 +3,8 @@
  * Configure npm trusted publishers (OIDC) for every publishable package in this repo.
  *
  * The npm docs for trusted publishers present the npm website as the only way to set
- * this up. That is out of date: npm 12 ships `npm trust`, so it is scriptable.
+ * this up. That is out of date: npm ships `npm trust` (11.17 and 12 both do), so it is
+ * scriptable.
  *
  *   npm trust github <pkg> --file <workflow> --repository <owner/repo> \
  *                          --allow-publish --allow-stage-publish
@@ -54,9 +55,10 @@
  * time. So the ledger is part of the deliverable: commit it after applying.
  *
  * Requirements:
- * - npm >= 12, which itself requires Node ^22.22.2 || ^24.15.0 || >=26.0.0. npm only
- *   warns on older Node, but this writes security configuration to a production account,
- *   so an unsupported runtime is treated as an error.
+ * - An npm with `npm trust`. The installed npm is used when it has one; otherwise npm 12
+ *   is bootstrapped into a temp prefix. npm 12 requires Node ^22.22.2 || ^24.15.0 ||
+ *   >=26.0.0 and only warns on older Node, but this writes security configuration to a
+ *   production account, so running npm 12 on an unsupported runtime is an error.
  * - An authenticated npm session (`npm login`). This script never handles credentials.
  * - Both reading and writing trusted publisher config are 2FA-protected, and npm does
  *   not reuse the authentication between invocations, so expect an OTP prompt per
@@ -187,25 +189,33 @@ function nodeSupportsNpm12(version) {
   return (maj === 22 && min >= 22) || (maj === 24 && min >= 15) || maj >= 26;
 }
 
-if (!nodeSupportsNpm12(process.version)) {
+function requireNodeForNpm12() {
+  if (nodeSupportsNpm12(process.version)) return;
   fail(
-    `this script needs a Node that npm 12 supports (^22.22.2 || ^24.15.0 || >=26.0.0); running ${process.version}.`,
+    `npm 12 needs Node ^22.22.2 || ^24.15.0 || >=26.0.0; running ${process.version}.`,
     'Install one (e.g. `nvm install 24.15.0`) and re-run with it.'
   );
 }
 
+const hasTrust = (argv) =>
+  spawnSync(argv[0], [...argv.slice(1), 'trust', '--help'], { stdio: 'ignore' }).status === 0;
+
 /**
- * Resolve an npm >= 12 without touching the globally installed npm.
+ * Resolve an npm that has `npm trust`, without touching the globally installed npm.
  *
- * `npm trust` needs npm 12, but npm 12 also changes install-time defaults (dependency
- * lifecycle scripts, git deps and remote tarballs are all off by default). Forcing a
- * global upgrade just to run a one-off configuration task would push that change onto
- * everything else on the machine, so npm 12 is bootstrapped into a temp prefix and
- * invoked directly instead.
+ * The installed npm is used when it has the command (11.17 does). Otherwise npm 12 is
+ * bootstrapped into a temp prefix and invoked directly: npm 12 also changes install-time
+ * defaults (dependency lifecycle scripts, git deps and remote tarballs are all off by
+ * default), and a global upgrade for a one-off configuration task would push that change
+ * onto everything else on the machine.
  */
-function resolveNpm12() {
+function resolveNpm() {
   const local = execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim();
-  if (Number(local.split('.')[0]) >= 12) return { argv: ['npm'], version: local };
+  if (hasTrust(['npm'])) {
+    if (Number(local.split('.')[0]) >= 12) requireNodeForNpm12();
+    return { argv: ['npm'], version: local };
+  }
+  requireNodeForNpm12();
 
   const prefix = path.join(os.tmpdir(), 'pie-elements-ng-npm12');
   const cli = path.join(prefix, 'node_modules', 'npm', 'bin', 'npm-cli.js');
@@ -227,13 +237,11 @@ function resolveNpm12() {
   return { argv: [process.execPath, cli], version };
 }
 
-const { argv: NPM, version: npmVersion } = resolveNpm12();
-if (Number(npmVersion.split('.')[0]) < 12) {
-  fail(`resolved npm ${npmVersion}, which does not provide \`npm trust\`; npm >= 12 is required.`);
-}
+const { argv: NPM, version: npmVersion } = resolveNpm();
+if (!hasTrust(NPM)) fail(`resolved npm ${npmVersion}, which does not provide \`npm trust\`.`);
 
 /**
- * Run the resolved npm 12.
+ * Run the resolved npm.
  *
  * Two stdio shapes, because 2FA constrains what may be captured:
  *
@@ -241,7 +249,7 @@ if (Number(npmVersion.split('.')[0]) < 12) {
  *   confirmation and an OTP and waits for input.
  * - default pipes stdout and stderr, for reads whose output is parsed. npm only runs its
  *   own 2FA prompt when both stdin AND stdout are a TTY (`otplease` in npm's
- *   lib/utils/auth.js, npm 12.2.1), so a piped read never prompts — it fails with EOTP
+ *   lib/utils/auth.js, npm 11.17 and 12.2.1), so a piped read never prompts — it fails with EOTP
  *   and the caller has to run the browser round trip itself (see `otpFor`).
  */
 function npm(args, { interactive = false } = {}) {
