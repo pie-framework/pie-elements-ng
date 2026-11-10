@@ -3,9 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true,
-    // mathjs 9 ships its own types, but its exports map has no types condition to reach them.
-    "paths": { "mathjs": ["./node_modules/mathjs/types/index.d.ts"] }
+    "declaration": true
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/__tests__/**", "src/fixtures/**"]

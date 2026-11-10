@@ -56,13 +56,19 @@ const operators: Record<string, (operands: any) => any> = {
   '≆': (operands) => new m.FunctionNode('≆', operands),
 };
 
+// exact: fraction.js 5 approximates a number argument and does not parse exponent notation
+const toFraction = (n: number) => {
+  const [mantissa, exponent] = String(n).split('e');
+  const f = m.fraction(mantissa);
+  return exponent ? f.mul(m.fraction(10).pow(Number(exponent))) : f;
+};
+
 export class AstToMathJs {
   // numbers become fractions, matching the Fraction config of the shared mathjs instance
   convert(tree: any): any {
     if (typeof tree === 'number') {
       if (Number.isFinite(tree)) {
-        const f = new m.Fraction([new m.ConstantNode(tree), new m.ConstantNode(1)]);
-        return new m.ConstantNode(f);
+        return new m.ConstantNode(toFraction(tree));
       }
 
       if (Number.isNaN(tree)) return new m.SymbolNode('NaN');

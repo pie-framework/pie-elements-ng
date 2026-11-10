@@ -1,8 +1,6 @@
 import { logger } from './log.js';
 
-import { mathjs as mjs } from './mathjs.js';
-
-import type { MathNode } from 'mathjs';
+import { mathjs as mjs, type ExpressionNode } from './mathjs.js';
 
 const m: any = mjs;
 
@@ -16,7 +14,7 @@ const log = logger('mv:node-sort');
  * With symbols sorted - we shoud be able to call `node.equals(other)` and avoid having to call evaluate.
  */
 
-const newCompare = (a: MathNode, b: MathNode): number => {
+const newCompare = (a: ExpressionNode, b: ExpressionNode): number => {
   // log(a.type);
   log('[compareNodes]: a:', a.toString(), a.type);
   log('[compareNodes]: b:', b.toString(), b.type);
@@ -65,7 +63,7 @@ const newCompare = (a: MathNode, b: MathNode): number => {
   return NaN;
 };
 
-const applySort = (node: MathNode) => {
+const applySort = (node: ExpressionNode) => {
   // log("node: ", node.toString());
   // log("path: ", path);
   // log("parent: ", parent);
@@ -88,12 +86,12 @@ const firstChildOperator = (args: any, operator?: string) => {
   return result;
 };
 
-export const flattenNode = (node: MathNode) => {
+export const flattenNode = (node: ExpressionNode) => {
   while (node.isParenthesisNode && node.content) {
     node = node.content;
   }
 
-  node = node.transform((currentNode, _path, parent) => {
+  node = node.transform((currentNode, _path, parent: ExpressionNode) => {
     if (
       currentNode.isParenthesisNode &&
       (parent?.op !== '*' || (parent?.op === '*' && currentNode.content!.op !== '+'))
@@ -114,7 +112,7 @@ export const flattenNode = (node: MathNode) => {
     while (firstChildOperator(currentNode, currentNode.fn) && !currentNode.isArrayNode) {
       const flatten = currentNode;
 
-      flatten.traverse((node, path, parent) => {
+      flatten.traverse((node: ExpressionNode, path, parent: ExpressionNode) => {
         if (parent?.fn === node.fn) {
           const indexToRemove = path.replace(/[^0-9]/g, '');
 
@@ -144,8 +142,8 @@ export const flattenNode = (node: MathNode) => {
       let divisionNode = currentNode;
 
       if (divisionNode.fn === 'multiply' && firstChildOperator(divisionNode, 'divide')) {
-        let newNode!: MathNode;
-        divisionNode = divisionNode.traverse((node, _path, parent) => {
+        let newNode!: ExpressionNode;
+        divisionNode.traverse((node: ExpressionNode, _path, parent: ExpressionNode) => {
           if (parent && parent.fn === 'multiply' && node.fn === 'divide') {
             if (node.args![0].isOperatorNode) {
               parent.args!.forEach((arg) => {
@@ -229,7 +227,7 @@ export const sortRelationalNode = (node: any) => {
   return resultNode;
 };
 
-export const sort = (node: MathNode) => {
+export const sort = (node: ExpressionNode) => {
   let resultNode = node;
 
   if (node.type === 'RelationalNode') {
