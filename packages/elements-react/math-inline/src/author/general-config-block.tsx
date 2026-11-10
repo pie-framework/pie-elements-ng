@@ -262,6 +262,7 @@ class GeneralConfigBlock extends React.Component {
       prompt: cPrompt = {},
       ignoreOrder: cIgnoreOrder = {},
       allowTrailingZeros: cAllowTrailingZeros = {},
+      compareNumbersByValue: cCompareNumbersByValue = {},
       maxResponseAreas,
       maxImageWidth = {},
       maxImageHeight = {},
@@ -396,6 +397,7 @@ class GeneralConfigBlock extends React.Component {
             index={idx}
             cIgnoreOrder={cIgnoreOrder}
             cAllowTrailingZeros={cAllowTrailingZeros}
+            cCompareNumbersByValue={cCompareNumbersByValue}
             error={responsesErrors && responsesErrors[idx]}
           />
         ))}

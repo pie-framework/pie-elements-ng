@@ -5,8 +5,8 @@ import { outcome, validate } from '../src/controller/index.js';
 import { DIGIT_ZEROS, inSystem, systemName } from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 const EVALUATE = { mode: 'evaluate' } as const;
-const question = (answer: string, validation: 'literal' | 'symbolic' | 'value' = 'symbolic') =>
-  ({ responseType: 'Simple', responses: [{ id: '1', answer, validation, alternates: {} }] }) as any;
+const question = (answer: string, validation: 'literal' | 'symbolic' = 'symbolic', options = {}) =>
+  ({ responseType: 'Simple', responses: [{ id: '1', answer, validation, alternates: {}, ...options }] }) as any;
 
 describe('response normalization', () => {
   it('scores digits typed in another system against an ASCII answer', async () => {
@@ -44,31 +44,43 @@ describe('every Unicode digit system', () => {
   });
 });
 
-describe('value validation', () => {
-  const score = async (answer: string, response: string) =>
-    (await outcome(question(answer, 'value'), { id: '1', response } as any, EVALUATE as any)).score;
+describe('literal validation that compares numbers by value', () => {
+  const score = async (answer: string, response: string, compareNumbersByValue = true) =>
+    (await outcome(question(answer, 'literal', { compareNumbersByValue }), { id: '1', response } as any, EVALUATE as any))
+      .score;
 
   it('accepts a single number equal in value', async () => {
     expect(await score('6', '6.0')).toBe(1);
     expect(await score('\\frac{2}{3}', '4/6')).toBe(1);
+    expect(await score('2/4', '1/2')).toBe(1);
+    expect(await score('2/2', '1')).toBe(1);
     expect(await score('0.5', '\\frac{1}{2}')).toBe(1);
     expect(await score('-0.75', '−\\frac{3}{4}')).toBe(1);
     expect(await score('-3', '\\frac{-6}{2}')).toBe(1);
   });
 
+  it('accepts mixed numbers, a sign, parentheses and thousands separators', async () => {
+    expect(await score('2\\frac{1}{2}', '2.5')).toBe(1);
+    expect(await score('-2\\frac{1}{2}', '-\\frac{5}{2}')).toBe(1);
+    expect(await score('6', '+6')).toBe(1);
+    expect(await score('6', '(6)')).toBe(1);
+    expect(await score('1000', '1,000')).toBe(1);
+  });
+
   it('rejects an expression with an operation or a different value', async () => {
     expect(await score('6', '3+3')).toBe(0);
     expect(await score('6', '2\\cdot3')).toBe(0);
+    expect(await score('2\\frac{1}{2}', '2+\\frac{1}{2}')).toBe(0);
     expect(await score('6', '7')).toBe(0);
     expect(await score('1', '1/0')).toBe(0);
   });
-});
 
-describe('value validation in authoring', () => {
-  it('is an error on an Advanced Multi response, which scores the whole expression', () => {
-    const responses = [{ id: '1', answer: '3+2=5', validation: 'value', alternates: {} }];
-    const advanced = validate({ responseType: 'Advanced Multi', expression: '{{response}} + 2 = 5', responses } as any);
-    expect(advanced.responsesErrors?.[0]?.answer).toMatch(/Simple/);
-    expect(validate({ responseType: 'Simple', responses } as any).responsesErrors).toBeUndefined();
+  it('compares a key that is not a single number as literal', async () => {
+    expect(await score('3+3', '3+3')).toBe(1);
+    expect(await score('3+3', '6')).toBe(0);
+  });
+
+  it('is off unless the response sets it', async () => {
+    expect(await score('\\frac{2}{3}', '4/6', false)).toBe(0);
   });
 });
