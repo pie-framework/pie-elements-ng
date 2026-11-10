@@ -1,0 +1,335 @@
+import { logger } from '../log.js';
+import { mathjs, numeric } from '../mathjs.js';
+import type { MathNode } from 'mathjs';
+import { sort } from '../node-sort.js';
+import { simplify } from './simplify.js';
+import { compareEquations } from './compare-equations.js';
+import { compareCompoundInequations } from './compare-compound-inequations.js';
+
+const m: any = mathjs;
+const log = logger('mv:symbolic');
+const { rationalize } = mathjs;
+
+// an angle counts as k quarter turns (90°, 180°, ...) only when it is one up to floating-point error,
+// which keeps angles that are only close, like 89.9999°, 1.5708 or 9090.001°, from being matched
+const ANGLE_TOLERANCE = 1e-9;
+
+// tolerances for floating-point noise from trig functions, pi and angle conversions (PIE-905);
+// the noise grows with the angle, e.g. sin(2pi) = -2.4e-16, sin(200pi) = 3.9e-15, tan(36045°) - 1 = -5.4e-14,
+// so a value is accepted only when it agrees with the target to about 13 significant digits
+const RELATIVE_EPSILON = 1e-13;
+// floor for comparisons with 0, where a relative tolerance alone would require an exact match;
+// it covers residues such as sin(200pi) and cos(100.5pi) while still rejecting 0 vs 0.0000000000001
+const ABSOLUTE_EPSILON = 1e-14;
+
+const hasSymbol = (node: MathNode, matches: (name: string) => boolean) => {
+  let found = false;
+
+  // the name of a function such as sqrt is a symbol too, under the path "fn"
+  node.traverse((n: any, path: string) => {
+    found = found || (n.isSymbolNode && path !== 'fn' && matches(n.name));
+  });
+
+  return found;
+};
+
+// evaluates a constant expression as a plain number, undefined if it has variables;
+// any symbol other than pi and Infinity is a variable, even names mathjs knows as constants such as e, E or phi
+const evaluateNumber = (node: MathNode): number | undefined => {
+  if (hasSymbol(node, (name) => name !== 'pi' && name !== 'Infinity')) {
+    return undefined;
+  }
+
+  try {
+    const value = numeric.evaluate(node.toString());
+    return typeof value === 'number' ? value : undefined;
+  } catch (e) {
+    return undefined;
+  }
+};
+
+// returns k when the constant angle is (within tolerance) a multiple k of pi/2
+const quarterTurns = (angle: MathNode): number | undefined => {
+  const value = evaluateNumber(angle);
+
+  if (value === undefined || !isFinite(value)) {
+    return undefined;
+  }
+
+  const turns = value / (Math.PI / 2);
+  const k = Math.round(turns);
+
+  return Math.abs(turns - k) <= ANGLE_TOLERANCE * Math.max(1, Math.abs(k)) ? k : undefined;
+};
+
+// replace trigonometric functions evaluated at an angle where they are zero or undefined
+// with their exact value, so that tan(90°) becomes Infinity instead of a large finite number
+const snapTrigonometricValues = (node: MathNode) => {
+  let changed = false;
+
+  const r: MathNode | any = node.transform((n: any) => {
+    if (!n.isFunctionNode || n.args?.length !== 1) {
+      return n;
+    }
+
+    const k = quarterTurns(n.args[0]);
+
+    if (k === undefined) {
+      return n;
+    }
+
+    const odd = Math.abs(k) % 2 === 1;
+    let snapped = n;
+
+    switch (n.fn.name) {
+      case 'sin':
+        snapped = odd ? n : new m.ConstantNode(0);
+        break;
+      case 'cos':
+        snapped = odd ? new m.ConstantNode(0) : n;
+        break;
+      case 'tan':
+        snapped = odd ? new m.SymbolNode('Infinity') : new m.ConstantNode(0);
+        break;
+      case 'cot':
+        snapped = odd ? new m.ConstantNode(0) : new m.SymbolNode('Infinity');
+        break;
+      case 'sec':
+        snapped = odd ? new m.SymbolNode('Infinity') : n;
+        break;
+      case 'csc':
+        snapped = odd ? n : new m.SymbolNode('Infinity');
+        break;
+    }
+
+    changed = changed || snapped !== n;
+
+    return snapped;
+  });
+
+  // keep the original node when nothing was replaced, later steps rely on its identity
+  return { r: changed ? r : node, changed };
+};
+
+const normalize = (a: string | MathNode | any) => {
+  const snapped = snapTrigonometricValues(a);
+  let r: string | MathNode | any = snapped.r;
+
+  // simplify and rationalize treat Infinity as a variable (1 / Infinity + 3 becomes (1 + 3 * Infinity) / Infinity)
+  // and keep the sign of a division by zero, so a constant expression with an Infinity or a division by zero is evaluated before it is normalized;
+  // other constant expressions keep their exact value, such as 1/3 in sin(0) + 1/3
+  const snappedValue = snapped.changed ? evaluateNumber(r) : undefined;
+  const valueWithSnappedTrigonometry =
+    snappedValue !== undefined &&
+    (!isFinite(snappedValue) || hasSymbol(r, (name) => name === 'Infinity'))
+      ? snappedValue
+      : undefined;
+  let onlyConstant = true;
+  let containsFunctionNode = false;
+  let containsArrayNode = false;
+  let pi = false;
+  let containsInverseFlag = false;
+
+  r.traverse((node: any) => {
+    if (node.isArrayNode) {
+      containsArrayNode = true;
+      node.items = node.items.map((item: any) => simplify(item));
+    }
+
+    if (node.isSymbolNode) {
+      pi = pi || node.name === 'pi';
+      containsInverseFlag = containsInverseFlag || node.name === 'f^{-1}';
+    }
+  });
+
+  if (r.args) {
+    r.args = r.args.map((arg: any) => {
+      if (!arg.isFunctionNode && !arg.isArrayNode && !containsInverseFlag && !pi) {
+        try {
+          arg = simplify(arg);
+        } catch (e) {
+          // ok;
+        }
+      }
+
+      containsFunctionNode = containsFunctionNode || arg.isFunctionNode;
+
+      onlyConstant = onlyConstant && !!arg.isConstantNode;
+
+      return arg;
+    });
+
+    if (containsFunctionNode || containsInverseFlag) {
+      r.args = r.args.map((arg: any) => {
+        if (!arg.isFunctionNode && !arg.isArrayNode) {
+          try {
+            arg = rationalize(simplify(arg), {}, true).expression;
+          } catch (e) {
+            // ok;
+          }
+        }
+
+        return arg;
+      });
+    }
+  }
+
+  if (r.fn !== 'equal') {
+    try {
+      onlyConstant = false;
+      r = rationalize(r, {}, true).expression;
+    } catch {}
+  }
+
+  if (r.conditionals && r.params) {
+    r.params = r.params.map((param: any) => sort(simplify(param)));
+  }
+
+  if (!containsArrayNode && !onlyConstant) {
+    // overcome TypeError
+    try {
+      r = simplify(r);
+    } catch (e) {}
+  }
+
+  log('[normalize] input: ', a.toString(), 'output: ', r.toString());
+
+  // an undefined value has no sign, so -tan(90°) and -1/cos(90°) are Infinity as well;
+  // an indeterminate result such as tan(90°) - tan(90°) or 0 * tan(90°) is NaN and must not simplify to a number
+  if (valueWithSnappedTrigonometry !== undefined) {
+    r = isNaN(valueWithSnappedTrigonometry)
+      ? new m.SymbolNode('NaN')
+      : isFinite(valueWithSnappedTrigonometry)
+        ? new m.ConstantNode(valueWithSnappedTrigonometry)
+        : new m.SymbolNode('Infinity');
+  }
+
+  if (r.toString() === 'Infinity') {
+    r = new m.SymbolNode('Infinity');
+  }
+
+  return r;
+};
+
+// numeric value of an expression without variables, such as 5, -5 or -1/2; undefined for anything else
+const constantValue = (node: any): number | undefined => {
+  if (node.filter((n: any) => n.isSymbolNode).length > 0) {
+    return undefined;
+  }
+
+  try {
+    const result = node.evaluate();
+
+    // equations and inequalities without variables evaluate to booleans
+    if (typeof result === 'boolean') {
+      return undefined;
+    }
+
+    const value = +result;
+    return Number.isFinite(value) ? value : undefined;
+  } catch (e) {
+    return undefined;
+  }
+};
+
+const areNearlyEqual = (a: number, b: number) =>
+  Math.abs(a - b) < ABSOLUTE_EPSILON + RELATIVE_EPSILON * Math.max(Math.abs(a), Math.abs(b));
+
+const isIndeterminate = (node: any) => node?.isSymbolNode && node.name === 'NaN';
+
+export const isMathEqual = (a: any, b: any) => {
+  let as: MathNode;
+  let bs: MathNode;
+
+  if (a?.isUnit && b?.isUnit) {
+    try {
+      return m.equal(a, b);
+    } catch (e) {
+      log('[isMathEqual] Error comparing units:', a?.toString?.(), b?.toString?.(), e);
+      return false;
+    }
+  }
+
+  if (a?.isUnit || b?.isUnit) {
+    log('[isMathEqual] Mismatched unit comparison:', a?.toString?.(), b?.toString?.());
+    return false;
+  }
+
+  // apply sort if we are not in a relationalNode
+  as = a.conditionals ? normalize(a) : sort(normalize(a));
+
+  bs = b.conditionals ? normalize(b) : sort(normalize(b));
+
+  log('[isMathEqual]', as.toString(), '==?', bs.toString());
+
+  // an indeterminate result such as tan(90°) - tan(90°) is not equal to anything, not even another indeterminate result
+  if (isIndeterminate(as) || isIndeterminate(bs)) {
+    return false;
+  }
+
+  const isSortingEnough = sort(a).equals(sort(b));
+  const isTexEnough = as.toTex().trim() === bs.toTex().trim();
+
+  let equality = isTexEnough || as.equals(bs) || isSortingEnough;
+
+  if (equality) {
+    return true;
+  }
+
+  // compare constant results numerically, allowing only for floating-point noise
+  const aValue = constantValue(as);
+  const bValue = constantValue(bs);
+
+  if (aValue !== undefined && bValue !== undefined) {
+    return areNearlyEqual(aValue, bValue);
+  }
+
+  // if both expressions are equations
+  if (as.fn === 'equal' && bs.fn === 'equal') {
+    return compareEquations(as, bs, false);
+  }
+
+  // if both expressions are inequalities treat greater sign as equal sign
+  if (
+    (as.fn === 'larger' && bs.fn === 'larger') ||
+    (as.fn === 'largerEq' && bs.fn === 'largerEq')
+  ) {
+    // solving a 2 way inequality is the same as solving an equation, we can treat the greater sign as an equal sign
+    // the difference is that solution should be plotted on a number line (or interval)
+    // if we have the same signs and the same direction, the interval will always be the same, starting with the solution
+    as.fn = 'equal';
+    bs.fn = 'equal';
+    as.op = '=';
+    bs.op = '=';
+
+    return compareEquations(as, bs, true);
+  }
+
+  // check for compound inequalities/3-way inequalities
+  if (
+    //@ts-expect-error
+    as?.conditionals?.length === bs?.conditionals?.length &&
+    //@ts-expect-error
+    as?.conditionals?.length === 2 &&
+    //@ts-expect-error
+    as?.conditionals?.toString() === bs?.conditionals?.toString()
+  ) {
+    const params = ['smaller', 'smallerEq', 'larger', 'largerEq', 'equal', 'unequal'];
+
+    const paramsIncludedA = params.some((param) =>
+      //@ts-expect-error
+      as.conditionals.includes(param)
+    );
+
+    const paramsIncludedB = params.some((param) =>
+      //@ts-expect-error
+      bs.conditionals.includes(param)
+    );
+
+    if (paramsIncludedA && paramsIncludedB) {
+      return compareCompoundInequations(as, bs);
+    }
+  }
+
+  return equality;
+};

@@ -25,7 +25,7 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/math-toolbar": "workspace:*",
     "@pie-element/shared-i18n": "workspace:*",
-    "@pie-framework/math-validation": "^1.4.3",
+    "@pie-framework/math-validation": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
