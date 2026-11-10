@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { foldCase, foldDigits, normalizeResponse } from '../src/response-normalizer.js';
+import {
+  contentLanguage,
+  foldCase,
+  foldDigits,
+  normalizeResponse,
+} from '../src/response-normalizer.js';
 import { DIGIT_ZEROS as ZEROS, inSystem } from './digit-systems.js';
 
 // A fixed-seed generator, so a failure reproduces.
@@ -193,6 +198,7 @@ describe('normalizeResponse with latexNumbers', () => {
   it('reads a semicolon as the list separator there, and keeps the TeX space', () => {
     expect(latex('(1;2,5)', 'es-ES')).toBe('(1,2.5)');
     expect(latex('x\\;y', 'de-DE')).toBe('x\\;y');
+    expect(latex('p&aacute;ginas;2&#233;', 'es-ES')).toBe('p&aacute;ginas,2&#233;');
   });
 
   it('keeps a point as a decimal point, and a comma that is not between digits', () => {
@@ -228,6 +234,31 @@ describe('normalizeResponse with latexNumbers', () => {
 
   it('reads a decimal comma between digits of another system', () => {
     expect(latex('٣,٥', 'ar-MA')).toBe('3.5');
+  });
+});
+
+describe('contentLanguage', () => {
+  it("takes the model's language, then the environment's locale", () => {
+    expect(contentLanguage({ language: 'fr-FR' }, { locale: 'de-DE' })).toBe('fr-FR');
+    expect(contentLanguage({}, { locale: 'de-DE' })).toBe('de-DE');
+    expect(contentLanguage({ language: ' ' }, {})).toBeUndefined();
+  });
+
+  it('reads an underscore code as its language alone, so it selects no number convention', () => {
+    expect(contentLanguage({ language: 'es_ES' })).toBe('es');
+    expect(contentLanguage({ language: 'tr_TR' })).toBe('tr');
+    expect(contentLanguage({}, { locale: 'en_us' })).toBe('en');
+    expect(
+      normalizeResponse('2,5', {
+        language: contentLanguage({ language: 'es_ES' }),
+        latexNumbers: true,
+      })
+    ).toBe('2,5');
+  });
+
+  it('canonicalises a hyphenated tag and keeps one it cannot read', () => {
+    expect(contentLanguage({ language: 'EN-us' })).toBe('en-US');
+    expect(contentLanguage({ language: 'not a tag!' })).toBe('not a tag!');
   });
 });
 

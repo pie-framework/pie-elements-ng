@@ -55,8 +55,8 @@ const NON_ASCII_DIGITS = /(?![0-9])\p{Nd}/gu;
 const ARABIC_DECIMAL_SEPARATOR = /\u066B/g;
 const ARABIC_THOUSANDS_SEPARATOR = /\u066C/g;
 const DECIMAL_COMMA = /(?<=[0-9])(?:,|\{,\})(?=[0-9])/g;
-// `\;` is a TeX space, not a list separator.
-const LIST_SEMICOLON = /(?<!\\);/g;
+// `\;` is a TeX space and `&aacute;` an HTML entity, not list separators.
+const LIST_SEMICOLON = /(?<!\\|&#?[a-zA-Z0-9]+);/g;
 
 const ALEF_FORMS = /[\u0622\u0623\u0625\u0671]/g;
 // Fathatan to sukun, the extended marks up to U+065F, and superscript alef.
@@ -139,9 +139,24 @@ const writesDecimalComma = (language: string | undefined): boolean => {
 };
 
 /**
+ * The BCP 47 tag for a language code. An underscore code (`es_ES`, `tr_TR`) yields its
+ * language alone: its producers, the authoring dropdown and the Learnosity transform,
+ * write `es_ES` for Spanish of any region, and content tagged `es_ES` mostly uses US
+ * number conventions. A region, and with it a number convention, comes only from a
+ * hyphenated tag.
+ */
+const languageTag = (code: string): string => {
+  const tag = code.includes('_') ? code.slice(0, code.indexOf('_')) : code;
+  try {
+    return Intl.getCanonicalLocales(tag)[0] ?? tag;
+  } catch {
+    return tag;
+  }
+};
+
+/**
  * The language a comparison runs in: the element's `model.language`, then the
- * item's `env.locale`. The translator's underscore form (`tr_TR`) becomes a
- * BCP 47 tag.
+ * item's `env.locale`.
  */
 export const contentLanguage = (model?: object | null, env?: object | null): string | undefined => {
   // Typed as `object` so that any element's model and environment type is
@@ -151,7 +166,7 @@ export const contentLanguage = (model?: object | null, env?: object | null): str
     (env as { locale?: unknown } | null)?.locale,
   ];
   for (const tag of tags) {
-    if (typeof tag === 'string' && tag.trim()) return tag.trim().replace(/_/g, '-');
+    if (typeof tag === 'string' && tag.trim()) return languageTag(tag.trim());
   }
   return undefined;
 };

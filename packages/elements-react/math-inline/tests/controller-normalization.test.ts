@@ -47,6 +47,11 @@ describe('a decimal comma', () => {
     expect(await score('2.5', '2,5', { locale: 'fr-FR' }, 'symbolic', { language: 'en-US' })).toBe(0);
   });
 
+  it('keeps the point for an underscore code, which names no region', async () => {
+    expect(await score('2.5', '2,5', { locale: 'en-US' }, 'symbolic', { language: 'es_ES' })).toBe(0);
+    expect(await score('1000', '1,000', {}, 'literal', { language: 'es_ES' })).toBe(1);
+  });
+
   it('reads a semicolon as the list separator there', async () => {
     expect(await score('(1;5)', '(1;5)', { locale: 'es-ES' })).toBe(1);
     expect(await score('(1;5)', '(1,5)', { locale: 'es-ES' })).toBe(0);
