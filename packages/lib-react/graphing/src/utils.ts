@@ -224,3 +224,11 @@ export const isDuplicatedMark = (mark, marks, oldMark) => {
 
   return !!duplicated;
 };
+
+// Whether the student has placed as many marks of a tool type as its limit allows. Only a limit
+// above 0 counts. A mark still being drawn is left out, so the student can finish it.
+export const markLimitReached = (marks, markLimits, type) => {
+  const limit = markLimits?.[type];
+
+  return limit > 0 && (marks || []).filter((m) => m.type === type && !m.building).length >= limit;
+};

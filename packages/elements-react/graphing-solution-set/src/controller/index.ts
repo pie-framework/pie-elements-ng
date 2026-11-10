@@ -2,7 +2,7 @@ import debug from 'debug';
 import { cloneDeep, isEmpty, uniqWith } from '@pie-element/shared-lodash';
 import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
-import { equalMarks, sortedAnswers, removeInvalidAnswers } from './utils.js';
+import { equalMarks, equalPolygon, keyRegionSections, sortedAnswers, removeInvalidAnswers } from './utils.js';
 import type {
   Answer,
   Arrows,
@@ -67,8 +67,9 @@ const initializeGraphMap = (): PossibleAnswer & { line: Mark[] } => ({
  * Function to compare two marks
  * @param {Object} mark1 - first mark
  * @param {Object} mark2 - second mark
+ * @param {Map} regions - today's sections each key region stands for, from keyRegionSections
  * */
-export const compareMarks = (mark1: Mark | undefined, mark2: Mark | undefined) => {
+export const compareMarks = (mark1: Mark | undefined, mark2: Mark | undefined, regions?: ReadonlyMap<Mark, Mark[]>) => {
   // marks can be compared with equalMarks[type] function only if they have the same type;
   // if type is different, they are clearly not equal
   return !!(
@@ -76,7 +77,7 @@ export const compareMarks = (mark1: Mark | undefined, mark2: Mark | undefined) =
     mark2 &&
     mark1.type === mark2.type &&
     equalMarks[mark1.type] &&
-    equalMarks[mark1.type](mark1, mark2)
+    (equalMarks[mark1.type](mark1, mark2) || !!regions?.get(mark2)?.some((section) => equalPolygon(mark1, section)))
   );
 };
 
@@ -88,24 +89,26 @@ export const compareMarks = (mark1: Mark | undefined, mark2: Mark | undefined) =
 export const getAnswerCorrected = ({
   sessionAnswers: sessionAnswersInput,
   marks: correctAnswersInput,
+  regions,
 }: {
   sessionAnswers?: Mark[];
   marks?: Mark[];
+  regions?: ReadonlyMap<Mark, Mark[]>;
 }): CorrectedMark[] => {
   const sessionAnswers = sessionAnswersInput || [];
   const correctAnswers = correctAnswersInput || [];
   const rez = cloneDeep(sessionAnswers).reduce<CorrectedMark[]>((correctedAnswer, sessionMark) => {
-    const answerIsCorrect = correctAnswers.find((mark) => compareMarks(sessionMark, mark));
+    const answerIsCorrect = correctAnswers.find((mark) => compareMarks(sessionMark, mark, regions));
     const correctness: Correctness = answerIsCorrect ? 'correct' : 'incorrect';
     const answer: CorrectedMark = Object.assign(sessionMark, { correctness });
     return [...correctedAnswer, answer];
   }, []);
-  // add missing objects from correct answer
-  const missingAnswers = cloneDeep(correctAnswers).reduce<CorrectedMark[]>((correctedAnswer, answer) => {
-    const answerIndex = sessionAnswers.find((mark) => compareMarks(answer, mark));
+  // add missing objects from correct answer; compared before cloning, since regions holds the key's own marks
+  const missingAnswers = correctAnswers.reduce<CorrectedMark[]>((correctedAnswer, answer) => {
+    const answerIndex = sessionAnswers.find((mark) => compareMarks(mark, answer, regions));
     if (!answerIndex) {
       // means that corrected answer is missing from session, so we mark it as missing object
-      return [...correctedAnswer, { ...answer, correctness: 'missing' }];
+      return [...correctedAnswer, { ...cloneDeep(answer), correctness: 'missing' }];
     }
     return correctedAnswer;
   }, []);
@@ -156,7 +159,14 @@ export const getBestAnswer = (
         return acc;
       }
       // returns array of marks, each having 'correctness' property
-      const correctedAnswer = getAnswerCorrected({ sessionAnswers, marks });
+      // outcome() passes the stored model, so fall back to the default grid the element draws
+      const regions = keyRegionSections(
+        marks,
+        question?.domain ?? defaults.domain,
+        question?.range ?? defaults.range,
+        question?.gssLineData?.sections,
+      );
+      const correctedAnswer = getAnswerCorrected({ sessionAnswers, marks, regions });
       const correctMarks = correctedAnswer.filter((answer) => answer.correctness === 'correct');
       // filter out missing objects because they do not affect the calculation of the score
       // only correct and incorrect are needed

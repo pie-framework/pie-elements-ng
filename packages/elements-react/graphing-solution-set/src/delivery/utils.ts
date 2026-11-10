@@ -111,13 +111,15 @@ export const findSectionsInSolutionSet = (gssLineData, answers, domain, range) =
     { x: domain.min, y: range.min },
   ];
   const lines = answers.slice(0, gssLineData.numberOfLines === 1 ? 1 : 2);
+  // Rounding leaves slivers; anything under a millionth of the grid, about a quarter pixel, is one.
+  const minArea = 1e-6 * (domain.max - domain.min) * (range.max - range.min);
   const sections = lines.reduce(
     (parts, mark) => parts.flatMap((part) => [clipToSideOfLine(part, mark, 1), clipToSideOfLine(part, mark, -1)]),
     [graph],
   );
   gssLineData.sections = sections
     .map((section) => removeDuplicatePoints(section.map(({ x, y }) => ({ x: round(x), y: round(y) }))))
-    .filter((section) => section.length > 2 && polygonArea(section) > TOLERANCE);
+    .filter((section) => section.length > 2 && polygonArea(section) > minArea);
   return gssLineData;
 };
 

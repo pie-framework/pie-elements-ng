@@ -25,6 +25,7 @@ export default {
   undo: 'Deshacer',
   redo: 'Rehacer',
   reset: 'Reiniciar',
+  markLimitReached: '{tool}: se alcanzó el límite de {limit}. No se pueden colocar más.',
   key: 'Clave',
   keyLegend: {
     missingRequiredLabel: 'Falta una etiqueta obligatoria',

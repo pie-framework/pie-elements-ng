@@ -24,6 +24,7 @@ export default {
   undo: '撤销',
   redo: '重做',
   reset: '重置',
+  markLimitReached: '{tool}：已达到上限 {limit} 个，无法再放置。',
   key: '图例',
   keyLegend: {
     missingRequiredLabel: '缺少必填标签',

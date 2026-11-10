@@ -151,7 +151,7 @@ export class Main extends React.Component<MainProps, MainState> {
     const { extraCSSRules, passages } = model || {};
     const keys = this.keysFor(passages.length);
     const canAddPassage =
-      additionalPassage.enabled && (additionalPassage.max === undefined || passages.length < additionalPassage.max);
+      additionalPassage.enabled && (!additionalPassage.max || passages.length < additionalPassage.max);
 
     const panelSettings = {
       titleEnabled: title && title.settings && toggle(title.label),
@@ -209,7 +209,7 @@ export class Main extends React.Component<MainProps, MainState> {
             {passageIndex > 0 && additionalPassage.enabled && (
               <PassageButton
                 type={'remove'}
-                label={`Remove ${additionalPassage.label}`}
+                label={`Remove passage ${passageIndex + 1}`}
                 onClick={() => this.removeAdditionalPassage(passageIndex)}
               />
             )}

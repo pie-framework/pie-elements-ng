@@ -13,6 +13,8 @@ const CHOICES = [
   { value: 'a', label: '<img src="a.png" alt="">' },
   { value: 'b', label: '<img src="b.png" alt="A red triangle">' },
   { value: 'c', label: 'Twelve' },
+  // The editor writes `data-type` after `alt`.
+  { value: 'd', label: '<img src="d.png" alt="" data-type="image-upload-node">' },
 ];
 
 const item = (keyMode: string) => (
@@ -38,6 +40,7 @@ describe('choices with no text and no image description (PIE-1484)', () => {
     expect(screen.getByRole('radio', { name: 'Choice A' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /A red triangle/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Twelve/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Choice D' })).toBeInTheDocument();
   });
 
   it('are named from their position when choices have no key', () => {

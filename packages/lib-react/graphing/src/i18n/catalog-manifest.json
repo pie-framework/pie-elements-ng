@@ -28,6 +28,7 @@
         "undo": "Undo",
         "redo": "Redo",
         "reset": "Reset",
+        "markLimitReached": "{tool}: limit of {limit} reached. No more can be placed.",
         "key": "Key",
         "keyLegend.missingRequiredLabel": "Missing Required Label",
         "keyLegend.answerKeyCorrect": "Answer Key Correct",
@@ -37,96 +38,102 @@
         "keyLegend.studentCorrect": "Student Correct",
         "keyLegend.studentCorrectLabel": "Student Correct Label"
       },
-      "reviewedAt": "2026-11-09"
+      "reviewedAt": "2026-11-09",
+      "awaitingReview": {
+        "keys": [
+          "markLimitReached"
+        ],
+        "note": "markLimitReached translated on 2026-11-09 by Claude (Anthropic) for PIE-1481; anchored so the gate passes, not yet reviewed by a person"
+      }
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, identical to en-US because no key here carries a British form",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, identical to en-US because no key here carries a British form; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md (impersonal infinitive for labels, imperative for learner instructions)",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md (impersonal infinitive for labels, imperative for learner instructions); markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ro": {
       "status": "generated",
-      "sourceHash": "2e1dd3e8088ca2ecc504489cc236c0c93b90820bd32f0c213f5980b1ffb426c1",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other)",
+      "sourceHash": "f65a4d3c06ea6c1fb0c8edd761d43966889b491693dbb888f0af4b38d18c446e",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other); markLimitReached added on 2026-11-09 by Claude (Anthropic) for PIE-1481, unreviewed",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     }

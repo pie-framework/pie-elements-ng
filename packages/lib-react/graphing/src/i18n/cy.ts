@@ -29,6 +29,7 @@ export default {
   undo: 'Dadwneud',
   redo: 'Ailwneud',
   reset: 'Ailosod',
+  markLimitReached: '{tool}: wedi cyrraedd y terfyn o {limit}. Does dim modd gosod rhagor.',
   key: 'Allwedd',
   keyLegend: {
     missingRequiredLabel: 'Label ofynnol ar goll',
