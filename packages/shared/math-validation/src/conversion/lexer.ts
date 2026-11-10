@@ -55,7 +55,8 @@ class lexer {
        *   convert first element of each rule to a regular expression that
        * starts at the beginning of the string
        */
-      const matcher = new RegExp(`^${m}`);
+      // A rule naming a Unicode property needs the `u` flag, which the others' escapes don't allow.
+      const matcher = new RegExp(`^${m}`, m.includes('\\p{') ? 'u' : '');
       const out: TokenRule = [matcher, char];
       if (extra) {
         out.push(extra);

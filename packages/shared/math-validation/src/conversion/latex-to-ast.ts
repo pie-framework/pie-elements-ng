@@ -145,13 +145,15 @@ const measurmentUnit = lengthUnit + volumeUnit + '{1}';
 // Between groups of three digits: `,`, `{,}` (a comma without punctuation spacing) or the thin space `\,`.
 const groupMark = '(?:,|\\{,\\}|\\\\,)';
 const numberWithCommasAsThousandsSeparator = `[0-9]{1,3}(${groupMark}[0-9]{3})+(?![0-9])(\\.[0-9]+)*`;
+// The letters of the Arabic script, which the lexer compiles with the `u` flag.
+const arabicLetter = '(?=\\p{Script=Arabic})\\p{L}';
 
 // const latex_rules = [["\\\\neq(?![a-zA-Z])", "NE"]];
 export const latex_rules = [
   [measurmentUnit, 'UNIT'],
   ['\\$', 'TEXT'],
   ['\\\\' + '\\$', 'TEXT'],
-  ['\\\\text{[a-zA-Z0-9\\s\\\\,\\\\.]+?}', 'TEXT'],
+  ['\\\\text\\{[\\p{L}\\p{M}\\p{N}\\s\\\\,.]+?\\}', 'TEXT'],
   // A spacing command between the whole number and a numeric fraction, as in `2\ \frac{1}{2}`.
   [
     '[0-9]+\\s*(\\\\[ ,]\\s*)+\\\\[dt]?frac(?=\\s*\\{\\s*[0-9]+\\s*\\}\\s*\\{\\s*[0-9]+\\s*\\})',
@@ -162,6 +164,7 @@ export const latex_rules = [
   ['[0-9]+(\\.[0-9]*)?' + sci_notat_exp_regex, 'NUMBER'],
   ['\\.[0-9]+' + sci_notat_exp_regex, 'NUMBER'],
   [',', ','],
+  ['،', ','],
   ['\\*', '*'],
   ['\\×', '*'],
   ['\\•', '*'],
@@ -372,7 +375,7 @@ export const latex_rules = [
   ['\\\\var\\s*{\\s*[a-zA-Z0-9]+\\s*}', 'VARMULTICHAR'],
 
   ['\\\\[a-zA-Z]+(?![a-zA-Z])', 'LATEXCOMMAND'],
-  ['[a-zA-Z]', 'VAR'],
+  [`(?:[a-zA-Z]|${arabicLetter})`, 'VAR'],
 ];
 
 // defaults for parsers if not overridden by context

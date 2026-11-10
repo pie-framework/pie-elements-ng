@@ -13,7 +13,7 @@ The package is ES modules only. LaTeX is parsed into an AST (`src/conversion/lat
 
 ## Input
 
-Both modes read `\dfrac` and `\tfrac` as `\frac`, and `,`, `{,}` or `\,` between groups of three digits as a thousands separator, so `1{,}000` is `1000`; any other comma separates list items. A whole number before a fraction is a mixed number, also with a spacing command between them when the fraction is numeric (`2\ \frac{1}{2}`). Digits are ASCII only: math-inline and math-templated fold other digit systems and the Arabic decimal and thousands marks before they compare.
+Both modes read `\dfrac` and `\tfrac` as `\frac`, and `,`, `{,}` or `\,` between groups of three digits as a thousands separator, so `1{,}000` is `1000`; any other comma separates list items, as does the Arabic comma `،`. A whole number before a fraction is a mixed number, also with a spacing command between them when the fraction is numeric (`2\ \frac{1}{2}`). Variables are single Latin or Arabic letters, and `\text{}` takes letters of any script. Digits are ASCII only: math-inline and math-templated fold other digit systems and the Arabic decimal and thousands marks before they compare.
 
 ## Modes
 

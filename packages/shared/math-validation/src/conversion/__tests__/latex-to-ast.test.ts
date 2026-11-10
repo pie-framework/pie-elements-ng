@@ -41,6 +41,12 @@ const fixtures = [
   ['2\\,\\frac{1}{2}', ['+', 2, ['/', 1, 2]]],
   ['2\\ \\frac{m}{s}', ['*', 2, ['/', 'm', 's']]],
 
+  // Arabic: the list comma, letters as variables and inside \text
+  ['(1،2)', ['list', 1, 2]],
+  ['س+2ص', ['+', 'س', ['*', 2, 'ص']]],
+  ['5\\text{سم}', ['*', 5, 'text{سم}']],
+  ['5\\text{café}', ['*', 5, 'text{café}']],
+
   // dollar sign
   ['1000$', ['*', 1000, '$']],
   ['1000\\$', ['*', 1000, '$']],
