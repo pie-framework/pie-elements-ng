@@ -281,6 +281,15 @@ function staticGraph(entry: string): string[] {
 
 const read = (files: string[]) => files.map((file) => readFileSync(file, 'utf-8')).join('\n');
 
+/**
+ * Whether `value` occurs in `source` as a whole word. A bare substring check false-positives on
+ * identifiers: Spanish 'Continua' is inside tiptap 3.33's `isParagraphContinuation`.
+ */
+function containsWord(source: string, value: string): boolean {
+  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?<![\\p{L}\\p{N}_$])${escaped}(?![\\p{L}\\p{N}_$])`, 'u').test(source);
+}
+
 describe('migrated catalog packages', () => {
   test('the gate discovers at least the Phase 1 packages', () => {
     expect(catalogPackages).toEqual(
@@ -333,11 +342,12 @@ describe.each(migratedElements)('$dir delivery bundles', ({ dir, catalogPackages
     'split %s Spanish out of the browser graph and leave it out of the IIFE',
     async (packageDir) => {
       for (const value of await catalogValues(packageDir, 'es')) {
-        expect(staticSource, `${value} in ${graph.map((f) => relative(dist, f))}`).not.toContain(
-          value
-        );
+        expect(
+          containsWord(staticSource, value),
+          `${value} in ${graph.map((f) => relative(dist, f))}`
+        ).toBe(false);
         expect(lazySource, value).toContain(value);
-        if (!iifeAlso?.includes(value)) expect(iife, value).not.toContain(value);
+        if (!iifeAlso?.includes(value)) expect(containsWord(iife, value), value).toBe(false);
       }
     }
   );
