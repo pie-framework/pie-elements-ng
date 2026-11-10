@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   collectDeclarationImportViolations,
+  collectLicenseViolations,
   collectPublishSurfaceViolations,
   collectSharedRuntimeDependencyViolations,
   collectSvelteLeakViolations,
@@ -83,9 +84,14 @@ async function makeWorkspaceFixture(): Promise<string> {
     'utf8'
   );
   await writeFile(join(root, 'tools', 'cli', 'dist', 'index.js'), 'export {};\n', 'utf8');
+  for (const dir of ['.', 'packages/published', 'tools/cli']) {
+    await writeFile(join(root, dir, 'LICENSE'), ROOT_LICENSE, 'utf8');
+  }
 
   return root;
 }
+
+const ROOT_LICENSE = 'MIT License\n\nCopyright (c) 2026 Fixture contributors\n';
 
 describe('package inspection quality-gate helpers', () => {
   it('discovers publishable package and tool workspaces and packs each once', async () => {
@@ -117,7 +123,9 @@ describe('package inspection quality-gate helpers', () => {
       root,
       packRunner: () => {
         packCalls += 1;
-        return JSON.stringify([{ files: [{ path: 'package.json' }, { path: 'dist/index.js' }] }]);
+        return JSON.stringify([
+          { files: [{ path: 'package.json' }, { path: 'LICENSE' }, { path: 'dist/index.js' }] },
+        ]);
       },
       runChildProcess: () => ({ status: 0 }),
       log: () => {},
@@ -754,5 +762,41 @@ describe('package inspection quality-gate helpers', () => {
         dependencies: { react: '^18.2.0' },
       })
     ).toEqual([]);
+  });
+
+  describe('package license file', () => {
+    const licensed = async (files: Record<string, string>) => {
+      const root = await makeWorkspaceFixture();
+      const dir = join(root, 'packages', 'published');
+      for (const [name, text] of Object.entries(files))
+        await writeFile(join(dir, name), text, 'utf8');
+      return {
+        dir,
+        packedFiles: new Set(['package.json', 'dist/index.js', ...Object.keys(files)]),
+      };
+    };
+
+    it('accepts the root LICENSE, also with CRLF line ends or further terms appended', async () => {
+      expect(
+        collectLicenseViolations(await licensed({ LICENSE: ROOT_LICENSE }), ROOT_LICENSE)
+      ).toEqual([]);
+      const crlf = await licensed({ 'LICENSE.md': ROOT_LICENSE.replaceAll('\n', '\r\n') });
+      expect(collectLicenseViolations(crlf, ROOT_LICENSE)).toEqual([]);
+      const appended = await licensed({ LICENSE: `${ROOT_LICENSE}\n---\n\nApache License\n` });
+      expect(collectLicenseViolations(appended, ROOT_LICENSE)).toEqual([]);
+    });
+
+    it('reports a package that packs no license file, or one that drifted from the root LICENSE', async () => {
+      const root = await makeWorkspaceFixture();
+      const unlicensed = { dir: root, packedFiles: new Set(['package.json', 'dist/index.js']) };
+
+      expect(collectLicenseViolations(unlicensed, ROOT_LICENSE)).toEqual([
+        'packs no LICENSE file: copy the root LICENSE into the package directory',
+      ]);
+      const stale = await licensed({ LICENSE: 'MIT License\n\nCopyright (c) 2025 Someone else\n' });
+      expect(collectLicenseViolations(stale, ROOT_LICENSE)).toEqual([
+        'LICENSE does not begin with the root LICENSE text: copy the root LICENSE again',
+      ]);
+    });
   });
 });

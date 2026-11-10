@@ -95,6 +95,8 @@ Package `exports`, `main`, `module`, `types`, `unpkg`, and `jsdelivr` entries mu
 
 Every element package also exports `./package.json`, so a host reads the installed version from the package itself.
 
+Every publishable package carries a `LICENSE` beside its `package.json` that begins with the repository's root `LICENSE` text; npm packs it whatever `files` says. A package under further terms appends them after that text. When the root `LICENSE` changes, copy it into each package again.
+
 Sourcemaps may be published, but they must include source content so consumers can debug without unpacked source files.
 
 ### Self-Contained Svelte
@@ -368,7 +370,7 @@ bun run verify:element-contracts
 ```
 
 The aggregate verifier runs the contract-relevant checks for:
-- npm publish surface and browser ESM policy,
+- npm publish surface, browser ESM policy and package LICENSE files,
 - controller/configure packaging and compatibility shims,
 - runtime-support export coverage,
 - JSON Schema exports on element packages,
