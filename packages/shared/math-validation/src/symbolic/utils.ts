@@ -1,4 +1,5 @@
-import { mathjs, numeric, type ExpressionNode } from '../mathjs.js';
+import { mathjs, numeric } from '../mathjs.js';
+import type { MathNode } from 'mathjs';
 import { simplify as customSimplify } from './simplify.js';
 
 const m: any = mathjs;
@@ -19,15 +20,15 @@ const customRound = (number: number) => Math.round(number * 10000000000000) / 10
 
 // expressions can be compared if we have at least one symbol node and has no function node or array; do not treat math series as equations
 export const expressionsCanBeCompared = (
-  firstEquation: ExpressionNode,
-  secondEquation: ExpressionNode
+  firstEquation: MathNode,
+  secondEquation: MathNode
 ): boolean => {
   let noFunctionOrArray: boolean = true;
   let firstSymbolNode: boolean = false;
   let symbolNode: boolean = false;
   let seriesNode: boolean = false;
 
-  firstEquation.traverse((node: ExpressionNode) => {
+  firstEquation.traverse((node) => {
     if (node.isSymbolNode) {
       firstSymbolNode = true;
       seriesNode = seriesNode || node.name!.includes('[');
@@ -35,7 +36,7 @@ export const expressionsCanBeCompared = (
     noFunctionOrArray = noFunctionOrArray || !!node.isFunctionNode || !!node.isArrayNode;
   });
 
-  secondEquation.traverse((node: ExpressionNode) => {
+  secondEquation.traverse((node) => {
     if (node.isFunctionNode || node.isArrayNode) {
       noFunctionOrArray = false;
     }
@@ -46,10 +47,10 @@ export const expressionsCanBeCompared = (
   return noFunctionOrArray && symbolNode && !seriesNode;
 };
 
-export const hasSymbolicExponent = (node: ExpressionNode): boolean => {
+export const hasSymbolicExponent = (node: MathNode): boolean => {
   let found = false;
 
-  node.traverse((n: ExpressionNode) => {
+  node.traverse((n) => {
     if (
       n.isOperatorNode &&
       n.op === '^' &&
@@ -89,7 +90,7 @@ export const getSamplePoints = (variables: string[], count: number = 12) => {
 };
 
 // evaluate an expression at each sample point; NaN where it can't be evaluated to a real number
-const evaluateAtPoints = (expr: ExpressionNode, points: Record<string, number>[]) => {
+const evaluateAtPoints = (expr: MathNode, points: Record<string, number>[]) => {
   let compiled: any;
 
   try {
@@ -113,8 +114,8 @@ const areClose = (a: number, b: number, tolerance: number) =>
 
 // points where either side can't be evaluated to a real number (e.g. sqrt of a negative number) are skipped
 export const areNumericallyEquivalent = (
-  exprA: ExpressionNode,
-  exprB: ExpressionNode,
+  exprA: MathNode,
+  exprB: MathNode,
   variables: string[],
   tolerance: number = 1e-10
 ): boolean => {
@@ -151,8 +152,8 @@ const getVariableFactors = (variables: string[], maxPower: number) =>
   );
 
 const haveProportionalValues = (
-  firstExpression: ExpressionNode,
-  secondExpression: ExpressionNode,
+  firstExpression: MathNode,
+  secondExpression: MathNode,
   variables: string[],
   {
     allowVariableFactor = false,
@@ -219,7 +220,7 @@ const haveProportionalValues = (
 const MAX_NUMERATOR_POWER = 4;
 const MAX_NUMERATOR_NODES = 60;
 
-const isTooLargeToRationalize = (expr: ExpressionNode) => {
+const isTooLargeToRationalize = (expr: MathNode) => {
   let nodes = 0;
   let tooLarge = false;
 
@@ -236,7 +237,7 @@ const isTooLargeToRationalize = (expr: ExpressionNode) => {
   return tooLarge || nodes > MAX_NUMERATOR_NODES;
 };
 
-const getNumerator = (expr: ExpressionNode): ExpressionNode | undefined => {
+const getNumerator = (expr: MathNode): MathNode | undefined => {
   if (isTooLargeToRationalize(expr)) {
     return undefined;
   }
@@ -248,8 +249,8 @@ const getNumerator = (expr: ExpressionNode): ExpressionNode | undefined => {
       {},
       true
     ) as unknown as {
-      numerator: ExpressionNode;
-      denominator: ExpressionNode | null;
+      numerator: MathNode;
+      denominator: MathNode | null;
     };
 
     return denominator ? numerator : undefined;
@@ -262,8 +263,8 @@ const getNumerator = (expr: ExpressionNode): ExpressionNode | undefined => {
 // with allowVariableFactor, F may also be G multiplied by a power of each variable (e.g. both sides multiplied by x)
 // set positiveOnly for inequalities, where multiplying by a negative number reverses the sign
 export const areEquationsNumericallyEquivalent = (
-  firstExpression: ExpressionNode,
-  secondExpression: ExpressionNode,
+  firstExpression: MathNode,
+  secondExpression: MathNode,
   variables: string[],
   options: { allowVariableFactor?: boolean; positiveOnly?: boolean } = {}
 ): boolean => {
@@ -291,15 +292,15 @@ export const areEquationsNumericallyEquivalent = (
 };
 
 // move the terms of the equations to the left hand side
-export const transformEqualityInExpression = (equality: ExpressionNode) =>
+export const transformEqualityInExpression = (equality: MathNode) =>
   // remove added/subtracted numbers/variables from both sides of the equation
   customSimplify(new m.OperatorNode('-', 'subtract', equality.args));
 
 // check if equation is valid and find out the number of variables and their name
-export const getVariables = (equation: ExpressionNode) => {
+export const getVariables = (equation: MathNode) => {
   let variableNames: string[] = [];
 
-  equation.traverse((node: ExpressionNode) => {
+  equation.traverse((node) => {
     if (node.isSymbolNode && node.name!.length === 1 && !variableNames.includes(node.name!)) {
       variableNames.push(node.name!);
     }
@@ -308,7 +309,7 @@ export const getVariables = (equation: ExpressionNode) => {
   return variableNames.sort();
 };
 
-export const getCoefficients = (equation: ExpressionNode, isInequality: boolean) => {
+export const getCoefficients = (equation: MathNode, isInequality: boolean) => {
   // coefficients will be determined if equation has only one variable
 
   try {
@@ -341,16 +342,55 @@ export const getCoefficients = (equation: ExpressionNode, isInequality: boolean)
 // quadratic formula
 export const solveQuadraticEquation = (coefficients: number[]) => {
   const [c, b, a] = coefficients;
-  const sqrtDiscriminant: any = numeric.sqrt(b * b - 4 * a * c);
-  const roots = [numeric.add(-b, sqrtDiscriminant), numeric.subtract(-b, sqrtDiscriminant)].map(
-    (n: any) => numeric.divide(n, 2 * a) as any
-  );
+  const discriminant = b * b - 4 * a * c;
 
-  return roots.map((root) =>
-    typeof root === 'number'
-      ? { re: customRound(root), im: 0 }
-      : { re: customRound(root.re), im: customRound(root.im) }
-  );
+  let addDiscriminant: any;
+  let subtractDiscriminant: any;
+
+  try {
+    addDiscriminant = m.compile(m.fraction(-b + m.sqrt(discriminant)) / (2 * a));
+  } catch {
+    addDiscriminant = m.compile('(-b+sqrt(discriminant))/(2*a)');
+  }
+
+  try {
+    subtractDiscriminant = m.compile(m.fraction(-b - m.sqrt(discriminant)) / (2 * a));
+  } catch {
+    subtractDiscriminant = m.compile('(-b-sqrt(discriminant))/(2*a)');
+  }
+
+  let firstRoot = addDiscriminant.evaluate({
+    discriminant: discriminant,
+    a: a,
+    b: b,
+  });
+
+  let secondRoot = subtractDiscriminant.evaluate({
+    discriminant: discriminant,
+    a: a,
+    b: b,
+  });
+
+  // roots are real numbers
+  if (!firstRoot.im) {
+    firstRoot = customRound(firstRoot);
+    secondRoot = customRound(secondRoot);
+    return [
+      { re: firstRoot, im: 0 },
+      { re: secondRoot, im: 0 },
+    ];
+  }
+
+  return [
+    {
+      re: customRound(firstRoot.re),
+      im: customRound(firstRoot.im),
+    },
+    {
+      re: customRound(secondRoot.re),
+      im: customRound(secondRoot.im),
+    },
+  ];
 };
 
 // solve x
