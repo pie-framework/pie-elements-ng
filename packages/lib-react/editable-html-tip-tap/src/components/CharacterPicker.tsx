@@ -10,6 +10,7 @@ import { PureToolbar } from '@pie-lib/math-toolbar';
 import CustomPopper from './characters/custom-popper.js';
 import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
 import { returnFocusToText } from '../utils/focus.js';
+import { insertTypedCharacter } from '../utils/toolbar-typing.js';
 
 const CharacterIcon = ({ letter }) => (
   <div
@@ -261,6 +262,11 @@ export function CharacterPicker({ editor, opts, onClose, triggerEl, focusOnOpen 
         e.preventDefault();
         e.stopPropagation();
         moveFocusWithArrow(e.key, target, buttons);
+        return;
+      }
+
+      if (inDialog && insertTypedCharacter(editor, e)) {
+        e.stopPropagation();
         return;
       }
 
