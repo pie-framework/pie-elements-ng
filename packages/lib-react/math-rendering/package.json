@@ -26,13 +26,12 @@
   "sideEffects": false,
   "scripts": {
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
-    "dev": "bun x vite",
-    "test": "bun x vitest run"
+    "dev": "bun x vite"
   },
   "devDependencies": {
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   }

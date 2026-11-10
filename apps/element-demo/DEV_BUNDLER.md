@@ -1,6 +1,7 @@
 # Element Demo IIFE Bundler Modes
 
 The element demo supports both player modes:
+
 - `player=esm` (default)
 - `player=iife`
 
@@ -19,6 +20,7 @@ bun run dev:demo
 ```
 
 Notes:
+
 - IIFE bundling is local-only.
 - The demo loads the bundler from its build, so build it before using IIFE mode, and rebuild it
   and restart the demo after changing it: `bunx turbo run build --filter=@pie-element/element-bundler`.
@@ -49,6 +51,7 @@ PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE=local bun run dev:element-demo
 ```
 
 Defaults:
+
 - local mode endpoint: `/api/bundle`
 - hosted mode bundle host: `https://proxy.pie-api.com/bundles/`
 
@@ -64,15 +67,18 @@ PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE=hosted \
 ## URL params
 
 The player mode is URL-driven (for refresh/deep-link support):
+
 - `player=esm|iife`
 
 Examples:
+
 - `?player=esm`
 - `?player=iife`
 
 ## Local build telemetry
 
 In IIFE local mode, the delivery view shows:
+
 - build duration
 - cache hit/miss
 - bundle hash
@@ -94,6 +100,7 @@ curl -X POST http://localhost:5222/api/bundle \
 ```
 
 Response includes:
+
 - `buildId`
 - `hash`
 - `statusUrl` (`/api/bundle?buildId=...`) for polling
@@ -114,10 +121,12 @@ curl -N "http://localhost:5222/api/bundle/events?buildId=<buildId>"
 ## Dependency version policy
 
 Bundler dependency updates follow a hybrid policy:
+
 - Default to latest stable versions for low-risk tooling.
 - Keep high-risk bundler-core packages aligned with the current production bundler until validated.
 
 Current high-risk/parity-set packages:
+
 - `webpack`
 - `esbuild-loader`
 - loader pipeline behavior (`url-loader` / `file-loader` or webpack asset-module equivalent)
@@ -125,6 +134,7 @@ Current high-risk/parity-set packages:
 Low-risk packages can generally track latest unless a concrete regression is observed (for example `@babel/runtime`).
 
 Source maps policy:
+
 - The local bundler emits source maps (webpack `devtool: 'source-map'`) by default.
 - `DEMO_BUNDLER_SOURCEMAPS=0` turns them off for faster builds and smaller bundles.
 

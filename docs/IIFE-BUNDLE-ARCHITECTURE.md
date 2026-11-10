@@ -6,6 +6,7 @@
 ## Overview
 
 PIE uses a sophisticated **shared library architecture** to minimize bundle duplication. The system has two key components:
+
 1. **pie-shared-lib-builder** (`@pslb/pslb`) - Creates shared library bundles
 2. **pie-api-aws bundler** - Creates element IIFE bundles that reference shared libs
 
@@ -83,6 +84,7 @@ pslb build
 ```
 
 **Key fields:**
+
 - `mappings`: Package name → internal module name
 - `versionInfo`: Tracks what's bundled
 - `hash`: Content hash for cache busting
@@ -114,6 +116,7 @@ pslb build --publishLibs --token=<npm-token>
 ```
 
 This publishes:
+
 - `@pie-lib/math-rendering-module@1.0.16` to NPM
 - Contains: `index.js` + `manifest.json`
 
@@ -357,6 +360,7 @@ mathRendering.renderMath(element);
 ```
 
 **Bundle sizes:**
+
 - Shared lib: ~2.7MB (loaded once, cached)
 - Element: ~200KB (no math-rendering code)
 - Total first load: ~2.9MB
@@ -517,12 +521,14 @@ graph TB
 ### Historical Context
 
 PIE was started in 2017, when ESM (ECMAScript Modules) was not yet widely supported. At that time:
+
 - Native browser ESM support was experimental
 - No CDN ESM distribution existed (esm.sh, jspm, skypack didn't exist)
 - Build tools like Webpack were essential for module bundling
 - IIFE + DLL pattern was state-of-the-art for shared libraries
 
 The IIFE architecture described above was the **correct solution for 2017**. It successfully:
+
 - Avoided library duplication across elements
 - Enabled efficient caching of shared libraries
 - Worked reliably across all browsers
@@ -532,16 +538,19 @@ The IIFE architecture described above was the **correct solution for 2017**. It 
 In 2026, the landscape has changed dramatically:
 
 **Browser Support:**
+
 - All modern browsers support ESM natively (95%+ global coverage)
 - HTTP/2 makes parallel module loading efficient
 - Import maps enable dependency resolution without build tools
 
 **CDN Infrastructure:**
+
 - esm.sh, jspm.dev, skypack.dev provide automatic ESM conversion
 - NPM packages can be loaded directly as ESM
 - Browser caching works at the module level (even better granularity)
 
 **Developer Experience:**
+
 - No build server required (pie-api-aws bundler not needed)
 - Faster iteration (no webpack build step)
 - Simpler deployment (just publish to NPM)
@@ -580,6 +589,7 @@ flowchart LR
 ```
 
 **Benefits:**
+
 - No `pie-api-aws` bundler server to maintain
 - No `pie-shared-lib-builder` tooling required
 - No webpack configuration complexity
@@ -721,6 +731,7 @@ new NormalModuleReplacementPlugin(/@pie-lib\/(math-rendering|pie-toolbox)/, (res
 ```
 
 **Benefits:**
+
 - No custom webpack plugins
 - Standard browser feature
 - Easy to override per element if needed
@@ -768,6 +779,7 @@ npm publish
 **Issue:** Older browsers (IE11, pre-2020 Chrome/Safari) don't support ESM.
 
 **Solution:**
+
 - Modern browsers only (95%+ coverage in 2026)
 - Provide IIFE fallback if needed (can still generate)
 - Most educational platforms require modern browsers anyway
@@ -777,6 +789,7 @@ npm publish
 **Issue:** Import maps not universally supported until ~2023.
 
 **Solution:**
+
 - Polyfill available: `es-module-shims`
 - Native support now at 90%+ coverage
 - Can inline imports if import maps unavailable
@@ -786,6 +799,7 @@ npm publish
 **Issue:** Browsers don't resolve `import 'react'` (bare specifiers).
 
 **Solution:**
+
 - Use full URLs: `import 'https://esm.sh/react@18'`
 - Or use import maps to resolve bare specifiers
 - Build step can rewrite imports if needed
@@ -795,6 +809,7 @@ npm publish
 **Issue:** Browser loads entire module even if only using one export.
 
 **Solution:**
+
 - Author packages with explicit exports
 - Use subpath exports: `@pkg/foo/bar` instead of `@pkg` with deep imports
 - ESM CDNs (esm.sh) can tree-shake on server
@@ -806,12 +821,14 @@ npm publish
 **Concern:** "Won't this be slower than bundled IIFE?"
 
 **Reality:**
+
 - HTTP/2 makes parallel requests cheap
 - Browser caching means most requests are cache hits
 - Granular caching often faster than large bundle re-download
 - CDNs optimize module serving
 
 **Mitigation:**
+
 - Bundle "hot path" code together
 - Lazy load infrequent features
 - Use HTTP/2 server push if needed
@@ -821,6 +838,7 @@ npm publish
 **Issue:** More modules = harder to debug in browser DevTools.
 
 **Solution:**
+
 - Source maps work natively (simpler than IIFE source maps)
 - Browser DevTools improved ESM debugging
 - Module boundaries actually make debugging easier (clearer separation)
@@ -828,12 +846,14 @@ npm publish
 ### Migration Path
 
 pie-elements-ng uses a **hybrid approach** during transition:
+
 1. **Elements are authored as ESM** (source code is ESM-first)
 2. **Published as ESM to NPM** (native modules)
 3. **Can generate IIFE bundles if needed** (for backwards compatibility)
 4. **Math rendering runs MathJax 4.1.3** ([MATH-RENDERING.md](./MATH-RENDERING.md#builds)): npm builds load it onto `window.MathJax` at runtime, element browser builds bundle a module-private copy; upstream bundles MathJax 3
 
 This allows:
+
 - New deployments to use ESM (modern, efficient)
 - Legacy deployments to use IIFE (if required)
 - Gradual migration without breaking changes
@@ -891,6 +911,7 @@ Same element type and release again: cached by the browser
 ```
 
 **Note:** ESM pays for MathJax once per element type and release, a deliberate trade: each element keeps its own options, MathJax version and failures ([MATH-RENDERING.md](./MATH-RENDERING.md#builds)). ESM also provides:
+
 - **Native MathML support**: 100% fidelity, no conversion loss
 - **No bundler server infrastructure** (~$1000s/mo savings)
 - **Faster developer iteration** (minutes → seconds)
@@ -913,11 +934,13 @@ Controllers are bundled **separately** from player bundles and follow a differen
 #### Key Differences from Player Bundles
 
 **Player bundles:**
+
 - Mark shared libraries as **externals** (not bundled)
 - References: `@pie-lib/pie-toolbox`, `@pie-lib/math-rendering`
 - Bundle size: ~200KB (without shared libs)
 
 **Controller bundles:**
+
 - **NO externals** - everything is bundled together
 - Self-contained CommonJS bundle
 - Bundle size: varies (~500KB-1MB with all dependencies)
@@ -1009,6 +1032,7 @@ controller.js (~800KB minified)
 ```
 
 **All external dependencies are bundled:**
+
 - `@pie-framework/math-validation`
 - `lodash`, `lodash-es`
 - `debug`
@@ -1017,17 +1041,20 @@ controller.js (~800KB minified)
 ### Why Controllers Bundle Everything
 
 **Isolation:**
+
 - Controllers run in assessment scoring environments
 - Need to be fully self-contained
 - Can't rely on external shared libraries
 - Must work offline or in restricted environments
 
 **Consistency:**
+
 - Controller logic must produce identical results
 - Version pinning ensures reproducibility
 - No shared library version conflicts
 
 **Security:**
+
 - Scoring happens server-side in many cases
 - Self-contained bundle reduces attack surface
 - All dependencies are audited and bundled together
@@ -1035,6 +1062,7 @@ controller.js (~800KB minified)
 ### pie-elements-ng Compatibility
 
 **Current Approach:**
+
 ```
 packages/elements-react/multiple-choice/
 ├── src/
@@ -1048,6 +1076,7 @@ packages/elements-react/multiple-choice/
 ```
 
 **What Happens in pie-api-aws:**
+
 1. **Download** `@pie-element/multiple-choice` from NPM
 2. **Read** controller package.json at `controller/package.json`
 3. **Install** all dependencies via yarn (including controller deps)
@@ -1055,18 +1084,21 @@ packages/elements-react/multiple-choice/
 5. **Result** Self-contained `controller.js` (~800KB)
 
 **Tree Shaking:**
+
 - Webpack bundles only imported code
 - Unused exports from dependencies are eliminated
 - Minification reduces size further
 - Example: Only used lodash functions are bundled
 
 **External Dependencies:**
+
 - pie-api-aws **automatically installs** controller dependencies
 - Reads from `controller/package.json`
 - Runs `yarn install` in snapshot directory
 - All deps available during bundling
 
 **Local Development:**
+
 - Need controller external deps in root `package.json` for dev server
 - Example: `@pie-framework/math-validation` needed locally
 - In production, pie-api-aws handles this automatically
@@ -1074,6 +1106,7 @@ packages/elements-react/multiple-choice/
 ### Bundle Size Comparison
 
 **IIFE Player Bundle:**
+
 ```
 multiple-choice player.js
 ├── Player component: 150KB
@@ -1083,6 +1116,7 @@ multiple-choice player.js
 ```
 
 **Controller Bundle:**
+
 ```
 multiple-choice controller.js
 ├── Controller logic: 50KB
@@ -1091,6 +1125,7 @@ multiple-choice controller.js
 ```
 
 **Why the Size Difference?**
+
 - Controllers can't use shared libraries (isolated execution)
 - Players reference shared libs (loaded once, cached)
 - Controllers need to be self-contained for scoring environments
@@ -1137,11 +1172,13 @@ sequenceDiagram
 ### 1. Math Rendering Must Be External
 
 In IIFE bundles, `@pie-lib/math-rendering` is **NOT** bundled into each element. It's:
+
 - Built as a separate shared library
 - Loaded once by the browser
 - Referenced by all elements
 
 **This is why the upstream approach works:**
+
 - Elements don't bundle 2.7MB of MathJax each
 - Shared library is loaded once and cached
 - Elements just reference `window['_dll_pie_lib__math_rendering']`
@@ -1177,6 +1214,7 @@ export {
 ```
 
 **Why this works:**
+
 - The wrapper keeps the upstream API for code that imports `@pie-lib/math-rendering`; pie-elements-ng elements import the adapter directly
 - The adapter implements that API on MathJax v4 (full feature parity)
 - Each IIFE bundle carries the adapter's npm build, which hands math to the page's `window['@pie-lib/math-rendering']`, the MathJax 3 renderer the player installs under `iife`
@@ -1262,6 +1300,7 @@ customElements.define('multiple-choice', Element_v2);
 ```
 
 **Key facts about `customElements`:**
+
 1. **Singleton per document** - only one registry per page
 2. **Cannot undefine** - once registered, permanent until page reload
 3. **Cannot redefine** - same tag name cannot be registered twice
@@ -1279,6 +1318,7 @@ Assessment Item:
 ```
 
 **Without versioned tags:**
+
 ```javascript
 // First element loads
 customElements.define('multiple-choice', MultipleChoiceClass_v1); // ✅
@@ -1390,6 +1430,7 @@ window.PIE_REGISTRY = {
 ```
 
 **Why global state is appropriate:**
+
 1. **Aligns with platform** - `customElements` is already global
 2. **Prevents duplicate loading** - check registry before loading
 3. **Enables controller lookup** - map tag name to controller
@@ -1410,18 +1451,21 @@ if (customElements.get('multiple-choice--version-12-0-0')) {
 **This works for checking registration, but:**
 
 ❌ **Where do you store the controller?**
+
 ```javascript
 // Need to associate controller with tag somehow...
 // Still need global state!
 ```
 
 ❌ **How do you track loading status?**
+
 ```javascript
 // customElements doesn't tell you if something is currently loading
 // Still need to track this globally!
 ```
 
 ❌ **How do you find package version from tag?**
+
 ```javascript
 // customElements.get() returns the class, not metadata
 // Still need global metadata store!
@@ -1490,6 +1534,7 @@ customElements.define(tag, class extends ElementClass {});
 ```
 
 This allows:
+
 1. **Multiple versions using same base class** - each gets unique subclass
 2. **Bypasses constructor reference check** - each wrapper is a new class
 3. **Preserves element behavior** - inheritance maintains all functionality
@@ -1526,11 +1571,13 @@ customElements.define('tag-v2', class extends SameClass {}); // ✅
 ```
 
 **Without global registry:**
+
 - Player 1 loads `multiple-choice--version-12-0-0`
 - Player 2 also needs `multiple-choice--version-12-0-0`
 - Both try to `customElements.define()` → ❌ Second one fails
 
 **With global registry:**
+
 - Player 1 loads and registers element, updates registry
 - Player 2 checks registry, sees element already loaded
 - Player 2 skips registration, uses existing definition → ✅
@@ -1538,11 +1585,13 @@ customElements.define('tag-v2', class extends SameClass {}); // ✅
 ### ESM vs IIFE: Same Problem, Different Scale
 
 **IIFE bundles:**
+
 - Use `window.pie` to expose elements
 - Global state is explicit and expected
 - DLL shared libraries also use globals
 
 **ESM modules:**
+
 - Import statements feel "local" and modular
 - But `customElements.define()` is still global
 - The illusion of module isolation breaks at registration
@@ -1576,6 +1625,7 @@ Import maps only control **where modules come from**, not **how they register**.
 ### Future Web Platform?
 
 **Potential future solutions (not yet available):**
+
 1. **Scoped Custom Element Registries** - Allow per-component registries
    - Proposal: https://github.com/WICG/webcomponents/issues/716
    - Status: Early discussion, not implemented

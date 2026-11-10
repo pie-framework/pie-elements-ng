@@ -60,8 +60,9 @@ describe('authored matching options', () => {
     expect(getScore(model('ice cream'), session('ice  cream'))).toBe(0);
   });
 
-  it('trims an encoded trailing space', () => {
-    expect(getScore(model('cat'), session('cat&nbsp;'))).toBe(1);
+  it('keeps an encoded trailing space unless whitespace is collapsed', () => {
+    expect(getScore(model('cat'), session('cat&nbsp;'))).toBe(0);
+    expect(getScore(withOptions('cat', { collapseWhitespace: true }), session('cat&nbsp;'))).toBe(1);
   });
 
   it('applies each option when the author turns it on', () => {

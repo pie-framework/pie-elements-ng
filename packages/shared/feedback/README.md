@@ -50,6 +50,7 @@ const customMessage = getActualFeedbackForCorrectness('correct', {
 Get the feedback message for a specific correctness level (synchronous).
 
 **Parameters:**
+
 - `correctness`: `'correct' | 'incorrect' | 'partial' | 'unanswered' | 'partially-correct'`
 - `feedback`: `Partial<Feedback>` (optional) - Custom feedback configuration
 
@@ -60,6 +61,7 @@ Get the feedback message for a specific correctness level (synchronous).
 Async version of `getActualFeedbackForCorrectness`.
 
 **Parameters:**
+
 - `correctness`: `'correct' | 'incorrect' | 'partial' | 'unanswered' | 'partially-correct'`
 - `feedback`: `Partial<Feedback>` (optional) - Custom feedback configuration
 

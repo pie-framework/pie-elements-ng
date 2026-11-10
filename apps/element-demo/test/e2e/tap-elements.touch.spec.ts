@@ -16,7 +16,7 @@ import {
  * a tap instead, and a tap is not a click: the browser sends pointer and touch
  * events, then compatibility mouse events, then a click, and on a touchscreen
  * `:hover` stays on whatever was tapped last. So these specs check, under the
- * `touch` project only (see playwright.config.ts):
+ * `touch` and `touch-phone` projects (see playwright.config.ts):
  *
  * - a tap selects, and commits exactly one session change - a handler bound to
  *   both `mousedown` and `click` would toggle twice and land back where it was;

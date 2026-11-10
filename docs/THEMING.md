@@ -1,6 +1,7 @@
 # PIE Elements Theming
 
 PIE elements are themed with CSS custom properties. Keep it simple:
+
 - Set `--pie-*` variables on a wrapper element.
 - Let variables cascade to all nested PIE elements.
 - Prefer semantic tokens (`--pie-primary`, `--pie-correct`, etc.) over component-specific overrides.
@@ -57,6 +58,7 @@ DaisyUI wrapper:
 ## High-Value Variables
 
 Use these first:
+
 - Core: `--pie-text`, `--pie-background`, `--pie-border`
 - Brand: `--pie-primary`, `--pie-primary-light`, `--pie-primary-dark`
 - Status: `--pie-correct`, `--pie-incorrect`, `--pie-missing`

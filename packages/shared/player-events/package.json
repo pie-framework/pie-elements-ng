@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
-    "test": "vitest",
+    "test": "bun x vitest run --root ../../.. ./",
     "clean": "rm -rf dist"
   },
   "dependencies": {},
@@ -25,8 +25,8 @@
     "@pie-players/pie-context": "1.0.0-beta.7",
     "@types/bun": "^1.4.4",
     "typescript": "^5.9.3",
-    "vite": "^8.3.5",
-    "vitest": "^5.0.5"
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "publishConfig": {
     "access": "public"

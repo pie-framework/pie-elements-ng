@@ -531,6 +531,11 @@ export const validate = (
     }
   });
 
+  // only a limit above 0 holds; authoring clears the field to "no limit" by deleting the key
+  const markLimits = Object.entries(model.markLimits ?? {}).filter(
+    (entry): entry is [string, number] => (entry[1] ?? 0) > 0,
+  );
+
   Object.entries(answers || {}).forEach(([key, value]) => {
     if (!value.marks.length) {
       correctAnswerErrors[key] = 'At least 1 graph object should be defined.';
@@ -543,6 +548,16 @@ export const validate = (
           correctAnswerErrors[key] = 'At least 1 graph object is not correctly defined.';
         }
       });
+    }
+
+    // an answer a student cannot reproduce within the mark limits
+    const exceeded = markLimits.find(
+      ([tool, limit]) => value.marks.filter((mark) => mark.type === tool).length > limit,
+    );
+
+    if (exceeded && !correctAnswerErrors[key]) {
+      const [tool, limit] = exceeded;
+      correctAnswerErrors[key] = `This answer has more ${tool} marks than the limit of ${limit}.`;
     }
   });
 

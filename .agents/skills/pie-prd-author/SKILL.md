@@ -44,6 +44,7 @@ The bar is set in `docs/prds/README.md` (When to write a PRD, Retroactive PRDs f
 ## Length Discipline
 
 Target: one screen (~60 lines of markdown). Red flags that indicate over-expansion:
+
 - Full TypeScript interface definitions in the PRD body.
 - Generic "Performance", "Security", or "Observability" sections with no element-specific content — omit them entirely.
 - A dated "Decision log" section — inline rationale next to the Non-goal or field it applies to.

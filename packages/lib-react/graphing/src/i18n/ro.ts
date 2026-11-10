@@ -26,6 +26,7 @@ export default {
   undo: 'Anulează',
   redo: 'Refă',
   reset: 'Resetează',
+  markLimitReached: '{tool}: s-a atins limita de {limit}. Nu se mai pot plasa altele.',
   key: 'Legendă',
   keyLegend: {
     missingRequiredLabel: 'Lipsește o etichetă obligatorie',

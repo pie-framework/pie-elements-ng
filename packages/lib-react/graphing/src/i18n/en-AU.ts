@@ -25,6 +25,7 @@ export default {
   undo: 'Undo',
   redo: 'Redo',
   reset: 'Reset',
+  markLimitReached: '{tool}: limit of {limit} reached. No more can be placed.',
   key: 'Key',
   keyLegend: {
     missingRequiredLabel: 'Missing Required Label',

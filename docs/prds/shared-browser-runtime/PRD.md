@@ -35,6 +35,7 @@ No host loads elements through browser ESM in production: the players default to
 `@pie-element/shared-browser-runtime` (`packages/shared/browser-runtime`) is browser ESM only, built like the editor runtime: one module per specifier it provides, modules importing each other by relative path, shared code in common chunks, everything bundled, React included. `pie.browserModules` maps each provided specifier to a view name, and the module for a view is `dist/browser/<view>.js`.
 
 Admission is by package, with one invariant: a package in the runtime is never also bundled in an element's browser output, so no React context, style cache or registry exists twice within one runtime version.
+
 - **React, React DOM, `react-dom/client`, the JSX runtimes.** In, at the exact version `sharedDependencyVersions` names (18.2.0 today). The runtime's React is private to it, so its version moves independently of every host.
 - **The React-bound stack.** In: MUI (`@mui/*`), Emotion, react-transition-group, dnd-kit, `@tiptap/react`, and every `@pie-lib/*` package. Each of them holds a React context or a style cache that a `@pie-lib` component and the element that renders it must read from one copy; a split copy renders with a default theme or a second cache.
 - **The editor engine.** Folded in, because `@tiptap/react` lives in the runtime and must link against the same `@tiptap/core` and ProseMirror modules; a separate package would add a second version axis whose agreement nothing checks at load time. `@pie-element/shared-editor-runtime` stays published unchanged until the editor-runtime variant is removed ([Rollout](#rollout)).
@@ -50,6 +51,7 @@ Each view exports the full surface of its specifier. A CJS package (React, React
 ### Specifier scheme
 
 An element's browser output imports the runtime only through `@pie-element/shared-browser-runtime/<version>/<view>.js`, for example `@pie-element/shared-browser-runtime/1.2.0/mui-material-button.js`. The runtime's `exports` has exactly `"./<version>/*": "./dist/browser/*"` and `./package.json`, rewritten by the version script.
+
 - **Npm path.** The host bundler resolves the specifier through Node resolution from the element's location, which reaches the runtime copy the element's exact `dependencies` pin installed, nested or hoisted. A copy at any other version defines no `./<version>/*` subpath, so a wrong copy (a host override, a resolution bug) fails the host build instead of binding silently.
 - **Esm path.** One import-map entry per runtime version maps the prefix `@pie-element/shared-browser-runtime/<version>/` to `<cdn>/@pie-element/shared-browser-runtime@<version>/dist/browser/`. The key is unique per version, so it never collides with another version's entry under the first-rule-wins resolution of multiple import maps, and no scopes are needed.
 - **Host isolation.** No element browser module or runtime module imports `react` or any other bare specifier outside this namespace, so the host's `react` import-map entry, bundler aliases and `node_modules/react` are unreachable.
@@ -57,6 +59,7 @@ An element's browser output imports the runtime only through `@pie-element/share
 ### Element browser entries
 
 Every element's `./browser/*` entries are rebuilt against the runtime by `tools/vite/element-browser-esm.config.ts` (and its Svelte sibling), writing `dist/browser/<view>/index.js` as today. They keep the `pie-browser-esm` export condition, which resolves the MathJax adapter to its bundled engine. The export names stay; the editor-runtime variant (`dist/browser/editor-runtime`) is folded into the same build and removed.
+
 - `dependencies["@pie-element/shared-browser-runtime"]` at the exact version (`workspace:*` in the repo), so npm installs it with the element.
 - `pie.browserRuntime: { name, version }`, the esm adapter's declaration, replacing `pie.browserEditorRuntime` and `pie.browserSharedDependencies`.
 - Each entry imports the runtime's `identity.js` and throws a named error when the runtime digest differs from the one the element was built against.
@@ -67,6 +70,7 @@ The build fails when an admitted package's module is bundled into an element tha
 ### Versioning and coexistence
 
 The runtime is versioned by content. Its `package.json` carries `pie.digest`, a hash of the built modules with the identity module excluded; CI rebuilds the runtime and fails when the digest is stale. Because the digest lives in the runtime's own manifest, a `@pie-lib` or lockfile change that alters the runtime is a shipping-file change of the runtime, which [`release-synthesize-changesets.mjs`](../../../scripts/release-synthesize-changesets.mjs) already turns into a release. `bun run version` then rewrites every element's `pie.browserRuntime.version`, its runtime dependency and the runtime's `exports` key, as `sync-editor-runtime-version.mjs` does today, so the elements a release publishes all pin the runtime that release publishes.
+
 - **One release, one runtime.** Elements from one release share one runtime copy.
 - **Mixed releases.** npm, pnpm and Yarn nest the second exact version; the esm path maps a second prefix. Each element runs against its own version, at the cost of a second copy of the stack. Nothing is upgraded under an element.
 
@@ -105,6 +109,7 @@ A new admitted package enters this table before it enters the runtime.
 ### Build and publish gates
 
 In `check:publish-surface`, `verify:element-contracts` and ng CI:
+
 - The runtime has no `dependencies`, `peerDependencies` or bare imports; every `pie.browserModules` view exists; `exports` has exactly the current version's pattern and `./package.json`; `pie.digest` matches a fresh build.
 - Element browser entries import nothing bare outside the pinned version's namespace, and every imported name is exported by the pinned view; no admitted package is bundled outside `selfContainedElements`; self-contained elements import only React from the runtime; only self-contained elements register embeds; the declared version is exact and equal in `pie.browserRuntime`, `dependencies` and the workspace runtime.
 - A runtime version already on npm has the workspace build's content.
@@ -117,6 +122,7 @@ In `check:publish-surface`, `verify:element-contracts` and ng CI:
 ### Consumer test matrix
 
 Required green before the first release, against packed tarballs:
+
 - **Npm preloaded path.** npm, pnpm (default and `hoist: false`) and Yarn (node-modules and PnP) × host without React, React 18 and React 19 × Vite (build and dev server) and webpack 5 × item player and section player, registering `./browser/*` modules with `registerPreloadedElements`.
 - **Esm strategy.** Chromium, Firefox (including the es-module-shims path after a rejected import map) and WebKit × host without React, and with its own import map mapping `react` to 18 and to 19 × `moduleResolution` `url` and `import-map`, through `local-esm-cdn` and a jsDelivr-shaped fixture server.
 - **Mixed versions.** Two elements pinned to two runtime versions on one page, on both paths; math-inline and math-templated beside runtime elements.
@@ -145,6 +151,7 @@ ng owns the npm path and the tarball fixtures, including a runtime built at two 
 Six elements (drag-in-the-blank, explicit-constructed-response, extended-text-entry, inline-dropdown, multiple-choice, passage) through the documented npm `./browser/*` path load 3,934,325 B minified, of which 2.28 MB is duplicated: 1.50 MB React-bound UI stack, 0.44 MB editor engine carried twice, 0.32 MB React-free libraries. Through the esm strategy they load 3,799,688 B, 2.65 MB duplicated, with the engine already shared. A prototype that shared only MUI, Emotion, render-ui, translator and i18next took a six-element esm page (multiple-choice, categorize, match, inline-dropdown, extended-text-entry, drag-in-the-blank) from 3.93 MB to 2.04 MB, 1.20 MB to 0.61 MB gzipped, and single-element pages grew 0.3–10%. The full runtime targets the whole duplicated amount, a floor of about 1.65 MB on the npm path and 1.15 MB on esm before the overhead of full-surface views; step 2 measures that overhead and single-element growth.
 
 Costs:
+
 - **Build.** One runtime build; element browser builds keep their count.
 - **Install size.** Every element install, legacy IIFE builders included, also installs the runtime tarball.
 - **Coupling.** The elements of one release share one version of every admitted package, and an `@pie-lib` change reaches browser ESM only through a runtime release.

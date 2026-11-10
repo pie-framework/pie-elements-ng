@@ -9,7 +9,7 @@ import {
   layout,
   choiceUtils as utils,
 } from '@pie-lib/config-ui';
-import { color } from '@pie-lib/render-ui';
+import { color, hasTextAlternative } from '@pie-lib/render-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -21,7 +21,6 @@ import { generateValidationMessage } from './utils.js';
 import type { MultipleChoiceValidationErrors } from '../controller/index.js';
 import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
 import type { Choice, MultipleChoiceConfiguration, MultipleChoiceModel } from '../types.js';
-import { labelIsNameless } from '../label-name.js';
 
 /** The model the author edits; the host sets `errors` from the controller's `validate()`. */
 export type AuthorModel = Partial<MultipleChoiceModel> & {
@@ -343,7 +342,7 @@ const Design = (props: DesignProps) => {
             uploadSoundSupport={uploadSoundSupport}
             mathMlOptions={mathMlOptions}
           />
-          {choice.label?.includes('<img') && labelIsNameless(choice.label) && (
+          {choice.label?.includes('<img') && !hasTextAlternative(choice.label) && (
             <HintText>Add alt text to the image so screen readers can name this choice.</HintText>
           )}
 

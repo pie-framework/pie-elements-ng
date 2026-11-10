@@ -21,7 +21,7 @@
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@pie-element/shared-utils": "workspace:*",
-    "@pie-framework/math-validation": "^1.4.3",
+    "@pie-framework/math-validation": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -106,13 +106,13 @@
   "sideEffects": false,
   "devDependencies": {
     "mathlive": "0.110.0",
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/debug": "^4.1.12",
-    "vitest": "^5.0.5",
+    "vitest": "^5.1.0",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -122,7 +122,7 @@
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
-    "test": "bun x vitest run"
+    "test": "bun x vitest run --root ../../.. ./"
   },
   "pie": {
     "controller": "@pie-element/math-inline/controller",

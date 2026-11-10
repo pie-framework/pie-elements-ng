@@ -1,0 +1,49 @@
+{
+  "name": "@pie-framework/math-validation",
+  "version": "1.4.3",
+  "description": "Decides whether two LaTeX math expressions are equal, literally or symbolically",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "test": "bun x vitest run --root ../../.. ./",
+    "demo": "vite --config vite.demo.config.ts",
+    "build:demo": "tsc -p demo && vite build --config vite.demo.config.ts",
+    "clean": "rm -rf dist demo/dist"
+  },
+  "dependencies": {
+    "debug": "^4.4.3",
+    "mathjs": "^15.2.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/math-validation"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng/tree/develop/packages/shared/math-validation#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
+}

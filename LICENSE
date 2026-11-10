@@ -23,8 +23,10 @@ SOFTWARE.
 ---
 
 Portions of this software are ported from pie-elements
-(https://github.com/pie-framework/pie-elements) and pie-lib
-(https://github.com/pie-framework/pie-lib), distributed under this license:
+(https://github.com/pie-framework/pie-elements), pie-lib
+(https://github.com/pie-framework/pie-lib) and math-validation
+(https://github.com/pie-framework/math-validation), distributed under this
+license:
 
 ISC License
 

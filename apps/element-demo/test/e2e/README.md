@@ -6,6 +6,7 @@ This directory contains end-to-end browser tests for the PIE Element Demo applic
 
 The root `bun run test:e2e` command intentionally matches CI and runs only this public
 element demo app. Broader local suites remain opt-in:
+
 - `bun run test:e2e`: public `apps/element-demo` e2e suite.
 - `bun run test:e2e:all`: every workspace with a `test:e2e` script.
 - `bun run test:iife:*`: optional IIFE bundle and browser suites.
@@ -13,6 +14,7 @@ element demo app. Broader local suites remain opt-in:
 ## ESM Coverage Status
 
 The current suite is stabilized for **ESM mode** and validates delivery/author usability across in-scope PIE React elements.
+
 - Dedicated interaction phases intentionally exclude: `rubric`, `complex-rubric`, `multi-trait-rubric`, `passage`
 - Baseline matrix still validates delivery/author checks for the full registry
 - Strict baseline checks enforce:
@@ -25,16 +27,19 @@ The current suite is stabilized for **ESM mode** and validates delivery/author u
 ## IIFE Optional Coverage
 
 IIFE coverage is intentionally optional and split into two layers:
+
 - `bun run test:iife:bundle` (from repo root): fast bundle-contract checks across all React elements.
 - `bun run test:e2e:iife` (from `apps/element-demo`): browser usefulness checks for IIFE delivery/controller and author paths.
 
 These checks are excluded from default `bun run test:e2e` runs.
 
 Expected runtime:
+
 - `test:iife:bundle`: typically 5-20 minutes depending on cache state.
 - `test:e2e:iife`: typically 15-45 minutes for the full matrix.
 
 Failure triage flow:
+
 1. Re-run a single element first: `IIFE_E2E_ELEMENT=<name> bun run test:e2e:iife`.
 2. If it fails before rendering, run `bun run test:iife:bundle` and inspect bundle-contract errors.
 3. Use Playwright artifacts (`playwright-report`) from local run or CI workflow for screenshots/trace.
@@ -42,18 +47,21 @@ Failure triage flow:
 ## ESM Follow-up Backlog
 
 Recent hardening completed:
+
 - Strengthened session-mutation assertions in phase/baseline tests to require measurable session deltas for interaction-driven cases.
 - Tightened evaluate-path checks to prefer explicit scoring/correct-answer signals and reduced silent interaction retries.
 - Expanded demo-path coverage with dedicated demo-variant checks (`multiple-choice` multi-demo matrix and `number-line` default + `basic-points`).
 - Added broader source/author-to-delivery propagation coverage across multiple element families (`multiple-choice`, `simple-cloze`, `explicit-constructed-response`).
 
 Current status:
+
 - No intentional ESM follow-up backlog items remain from the previous tracking list.
 - Further additions are now incremental coverage improvements rather than parity blockers.
 
 ## Overview
 
 The test suite validates critical functionality of the demo application, including:
+
 - Demo selection and loading
 - State management across mode and role switches
 - Session state persistence
@@ -66,6 +74,7 @@ The test suite validates critical functionality of the demo application, includi
 ### [math-algebra-quadratic.spec.ts](./math-algebra-quadratic.spec.ts)
 
 Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice element with LaTeX math). Tests cover:
+
 1. **Demo Selection** - Selecting a demo from the dropdown and verifying it loads correctly
 2. **Session State** - User selections appearing in the session state panel
 3. **Mode/Role Switching** - Selections persisting across gather/view/evaluate modes and student/instructor roles
@@ -84,6 +93,7 @@ The MathJax each player type runs, on the `math-algebra-quadratic` delivery view
 ### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
 
 Dedicated interaction coverage for high-risk spatial and drag/drop elements:
+
 - `categorize`
 - `drag-in-the-blank`
 - `match-list`
@@ -98,6 +108,7 @@ Dedicated interaction coverage for high-risk spatial and drag/drop elements:
 - `fraction-model`
 
 Each element test asserts:
+
 - Gather-mode interaction path
 - Session mutation signal (when session-supported)
 - Evaluate-mode rendering/scoring/correctness signal
@@ -109,11 +120,13 @@ Drags released outside the element, by mouse and by touch. In `categorize`, a pl
 ### Touch specs (`*.touch.spec.ts`)
 
 Three projects in [playwright.config.ts](../../playwright.config.ts) run them:
+
 - `touch`: Chromium with touch emulation at an iPad Air landscape viewport (1180x820). The `chromium` project ignores these specs, because without touch emulation their gestures do nothing.
 - `touch-phone`: the same specs, except [page-gestures.touch.spec.ts](./page-gestures.touch.spec.ts) (its page-height precondition fails at this viewport before any gesture is sent), in Chromium with a phone viewport (390x844, `isMobile`). `isMobile` makes the browser honour the viewport meta tag, which is what gives double-tap-to-zoom something to do.
 - `touch-webkit`: only [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts), in WebKit with `hasTouch`. Playwright can send WebKit a tap (`page.touchscreen.tap`) but no trusted touch-drag, long-press or double-tap, so those specs skip themselves there (`supportsTrustedTouch`), and touch-drag in WebKit is a non-goal. WebKit comes from `bunx playwright install webkit`; CI's `bunx playwright install --with-deps` already installs it.
 
 Gestures go through [touch-helpers.ts](./touch-helpers.ts), which sends trusted touch input over CDP in Chromium, since `page.touchscreen` can only tap. Real iOS Safari is not covered and still needs a device.
+
 - [graph-elements.touch.spec.ts](./graph-elements.touch.spec.ts): a finger can place a mark and drag a handle in `charting`, `graphing`, `graphing-solution-set` and `number-line`, each checked as a session change.
 - [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts): in `multiple-choice` (radio and checkbox), `select-text`, `ebsr`, `inline-dropdown`, `matrix`, `likert`, `hotspot`, `fraction-model`, `mc-populated-blank` and `simple-cloze` (tap, then type), a tap selects with exactly one session change, a second tap deselects (or keeps a radio selected), and a deselected choice looks as it did before it was touched. For each of them:
   - a long-press opens no context menu (a `contextmenu` event nobody cancelled) and selects no text, and changes the session at most once;
@@ -123,8 +136,9 @@ Gestures go through [touch-helpers.ts](./touch-helpers.ts), which sends trusted 
 - [target-size.touch.spec.ts](./target-size.touch.spec.ts): every tappable control in each element's default delivery view is measured against 24x24 CSS pixels (WCAG 2.2 SC 2.5.8) and the shortfalls are listed. A control that is under 24px but has no other target within a 24px circle of it passes, as the criterion allows; so do inline links and controls clipped to 1x1px for assistive technology. `SHORTFALLS` in the spec records each element that falls short with its ticket or exception; it is empty because no element fell short at the touch viewport. `rubric` and `complex-rubric` are skipped because their delivery views have nothing to tap.
 - [orientation.touch.spec.ts](./orientation.touch.spec.ts): the device is rotated mid-session without a reload (`rotateTo`, which sets the viewport size and screen orientation over CDP). The response must be unchanged, the controls must stay inside the viewport with no new sideways scroll, a second control must still answer, and rotating back must restore the position. `number-line` also checks that a placed point keeps its place along the line.
 - [page-gestures.touch.spec.ts](./page-gestures.touch.spec.ts): whether a learner can still scroll and zoom the page with a finger over `number-line`, `charting`, `graphing`, `graphing-solution-set`, `categorize`, `match-list`, `drag-in-the-blank` and `venn-classification`. It opens the deliver route with `layout=page`, which lays it out as a scrolling host page with content above and below the element. For each surface of an element, such as its graph or a choices pool, a vertical swipe that starts clear of any handle must scroll the page (`scrollY`) without changing the session, and a two-finger pinch over it must zoom the page (`visualViewport.scale`). A finger must still be able to drag a handle, which changes the session without scrolling the page. Two control tests make the same gestures on the page outside the element. A surface whose `touch-action: none` blocks a gesture is `test.fixme`, with the cause listed in the spec's `BLOCKS`. iOS Safari handles `touch-action` and pinch-zoom differently, so it still needs a check on a device.
-- [math-keypad.touch.spec.ts](./math-keypad.touch.spec.ts): in `math-inline` and `math-templated`, a tap on the response opens the keypad, and each tapped key registers once: after every tap the response shows what was tapped so far and still does a quarter of a second later (a late second key would change it), and the session ends up holding exactly that. The keys repeat (1, 1, 2, 3), so a doubled or dropped tap shows. The sequence runs with the finger lifted at once, resting 100 ms and drifting 4 px, and a second test taps an operator key and Delete. In `math-templated` a key tapped a moment after the first is dropped under touch (the keypad moves between the compatibility `mousedown` and `mouseup`), so its multi-key tests are `test.fixme` with the mechanism in the spec, and a first-tap test guards what works. The math toolbar in `extended-text-entry` and `explicit-constructed-response` shares the keypad and is not covered separately. Helpers shared with the hover spec are in [math-keypad-helpers.ts](./math-keypad-helpers.ts).
-- [hover-only-controls.touch.spec.ts](./hover-only-controls.touch.spec.ts): controls that open on hover must be reachable by tap, with no mouse involved (the mode is switched by tapping Scorer, because a parked mouse pointer makes Chromium send `mouseout` after the next tap). The spec's header records the survey of the delivery code for hover-opened content. `math-inline`'s correct-answer toggle: one tap does not open it, the second does (`test.fixme`; on the first tap the response's textarea takes and loses focus, which MUI Tooltip reads as the pointer leaving), and the second-tap path is covered so the toggle itself is guarded. `hotspot`'s evaluate icon tooltip opens on Konva `mouseenter` only (`test.fixme`); a mouse-hover control proves the screenshot check can see the tooltip. Both defects link to a ticket from the spec's report annotation.
+- [math-keypad.touch.spec.ts](./math-keypad.touch.spec.ts): in `math-inline` and `math-templated`, a tap on the response (a MathLive `math-field`) opens the keypad, and each tapped key registers once: after every tap the field shows what was tapped so far and still does a quarter of a second later (a late second key would change it), and the session ends up holding exactly that. The keys repeat (1, 1, 2, 3), so a doubled or dropped tap shows. The sequence runs with the finger lifted at once, resting 100 ms and drifting 4 px, and a second test taps an operator key and Delete. A rotation case turns the device with the keypad open in `math-inline` and checks the response and session keep what was tapped and a further key still registers (scrolling to it first, since a landscape phone is shorter than the keypad). The math toolbar in `extended-text-entry` is covered by [math-toolbar.touch.spec.ts](./math-toolbar.touch.spec.ts). Helpers shared with the hover spec are in [math-keypad-helpers.ts](./math-keypad-helpers.ts).
+- [math-toolbar.touch.spec.ts](./math-toolbar.touch.spec.ts): in `extended-text-entry`, a tap on Insert math opens the editor's math toolbar and each keypad key tapped after the first shows once in the toolbar's field (one more character per tap, still so a quarter of a second later). The first key tapped after the toolbar opens is lost about two runs in three, with a mouse as well, so it is `test.fixme` (PIE-1509) with the mechanism in the spec and the sequence starts from whatever the first tap left. A tap on Done, which should close the toolbar with the editor holding one math node with exactly what was tapped, is `test.fixme` (PIE-1473): once the field has content, Done sits under the fraction and Dot multiplier keys. The demo session does not change while this editor is used, so the spec reads the editor. `explicit-constructed-response` has no math toolbar in delivery.
+- [hover-only-controls.touch.spec.ts](./hover-only-controls.touch.spec.ts): controls that open on hover must be reachable by tap, with no mouse involved (the mode is switched by tapping Scorer, because a parked mouse pointer makes Chromium send `mouseout` after the next tap). The spec's header records the survey of the delivery code for hover-opened content. `math-inline`'s correct-answer toggle: one tap opens it, and tapping the toggle shows the correct answer. `hotspot`'s evaluate icon tooltip opens on Konva `mouseenter` only (`test.fixme`, PIE-1474); a mouse-hover control proves the screenshot check can see the tooltip.
 - [drawing-response.touch.spec.ts](./drawing-response.touch.spec.ts): a finger draws a line, a rectangle and a circle, each as exactly one new drawable in the session that starts and ends where the finger did, and adds a text entry, double-taps it to edit and saves what is typed. Typing is the keyboard's: Chromium emulation does not show the system on-screen keyboard.
 - [dnd-elements.touch.spec.ts](./dnd-elements.touch.spec.ts): in `categorize`, `match-list`, `placement-ordering`, `image-cloze-association`, `drag-in-the-blank` and `venn-classification`, a finger can drag a choice into a target, each checked as exactly one more choice placed in the session. A touch the system cancels part way (`touchCancel`) places nothing, leaves nothing held and leaves the choice where it was, and the choice can still be dragged in afterwards. A second finger landing during a drag starts no second drag: one choice is placed, not two, and it is the first finger's choice, in the target that finger went for, with the second finger's choice left unplaced (read from the element's position, or from the session by tile id for `venn-classification`, whose tiles are not under its regions in the DOM). A drag held at the bottom edge of the viewport scrolls the page (and cancelling it places nothing), in every element but `venn-classification`, whose own pointer code has no scrolling. The routes open with `layout=page`, because in the default layout nothing can scroll, Chromium never claims the gesture as a pan and a handle missing `touch-action: none` would pass; each case fails if the page cannot scroll. `placement-ordering` has no demo with a placement area, so its case edits the model in the source tab and switches to page layout through the router, since a reload drops the edit. The second-finger case for `venn-classification` is `test.fixme`: a second `pointerdown` detaches the first drag's listeners and the new ones ignore `pointerId`, so the second finger's choice is placed and the first finger's is not (PIE-1510). Its other cases run. What keeps the touch from becoming a page pan differs: `categorize`, `match-list`, `drag-in-the-blank` and `venn-classification` rely on `touch-action: none` (forcing it to `auto` fails their cases), while `placement-ordering` and `image-cloze-association` call `preventDefault` on their own non-passive `touchmove`, so a pass there is not a `touch-action` check. Release-outside stays in `dnd-release-outside.spec.ts`.
 
@@ -133,6 +147,7 @@ A test for a confirmed touch defect is marked `test.fixme`, names the mechanism 
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 
 Dedicated interaction coverage for structured response and matching elements:
+
 - `match`
 - `matrix`
 - `likert`
@@ -143,6 +158,7 @@ Dedicated interaction coverage for structured response and matching elements:
 - `math-inline`
 
 Each element test asserts:
+
 - Element-specific interaction path (radio/checkbox/dropdown/token/math entry)
 - Session mutation
 - Evaluate-mode correctness/feedback/scoring signal
@@ -150,6 +166,7 @@ Each element test asserts:
 ### [phase3-text-and-hardening.spec.ts](./phase3-text-and-hardening.spec.ts)
 
 Dedicated text-response coverage and hardening for existing deep specs:
+
 - `extended-text-entry`
 - `explicit-constructed-response`
 - `multiple-choice` hardening (checkbox + view-mode guard)
@@ -158,6 +175,7 @@ Dedicated text-response coverage and hardening for existing deep specs:
 ### [demo-variants.spec.ts](./demo-variants.spec.ts)
 
 Dedicated non-default demo coverage for priority elements:
+
 - `multiple-choice`: `math-algebra-quadratic`, `basic-checkbox`, `radio-simple`
 - `number-line`: default demo + `basic-points`
 
@@ -166,6 +184,7 @@ Each variant path validates route load, delivery visibility, and gather/session 
 ### [phase4-propagation.spec.ts](./phase4-propagation.spec.ts)
 
 Dedicated propagation coverage for model edits:
+
 - Source-tab apply propagates to delivery for:
   - `multiple-choice`
   - `simple-cloze`
@@ -177,6 +196,7 @@ Dedicated propagation coverage for model edits:
 ### [test-helpers.ts](./test-helpers.ts)
 
 Reusable utility functions for tests:
+
 - `waitForMathRendering()` - Wait for MathJax LaTeX rendering to complete
 - `selectDemo()` - Select a demo from the dropdown
 - `switchMode()` - Switch between gather/view/evaluate modes through the SvelteKit router
@@ -267,6 +287,7 @@ bunx playwright install webkit && bunx playwright test --project=touch-webkit
 ## Configuration
 
 Test configuration is in [playwright.config.ts](../../playwright.config.ts):
+
 - **Base URL**: `http://localhost:5222`, or `PLAYWRIGHT_BASE_URL`
 - **Browsers**: Chromium (headless) as three projects: `chromium` at a desktop viewport,
   `touch` (touch emulation, 1180x820) and `touch-phone` (touch emulation, 390x844, `isMobile`),
@@ -283,11 +304,13 @@ Test configuration is in [playwright.config.ts](../../playwright.config.ts):
 ## Test Data
 
 The tests use the `math-algebra-quadratic` demo configuration from:
+
 ```
 packages/elements-react/multiple-choice/docs/demo/config.mjs
 ```
 
 This demo features:
+
 - Single-select radio buttons (choiceMode: 'radio')
 - 4 options with LaTeX math formulas
 - Correct answer: `opt2` (the standard quadratic formula)
@@ -330,6 +353,7 @@ The following `data-testid` attributes are used in components:
 ### Math rendering issues
 
 LaTeX math takes time to render. Always use `waitForMathRendering()` after:
+
 - Page navigation
 - Tab switches
 - Demo selection
@@ -356,12 +380,14 @@ LaTeX math takes time to render. Always use `waitForMathRendering()` after:
 ## CI/CD Integration
 
 The tests are configured to run in CI with:
+
 - 2 retries on failure
 - Screenshot capture on failure
 - Video recording on failure
 - HTML report generation
 
 To integrate in GitHub Actions:
+
 ```yaml
 - name: Install Playwright Browsers
   run: bunx playwright install --with-deps chromium
@@ -380,6 +406,7 @@ To integrate in GitHub Actions:
 ## Writing New Tests
 
 When adding new tests:
+
 1. Create a new `.spec.ts` file in this directory
 2. Import helpers from `test-helpers.ts`
 3. Follow the existing test structure
@@ -388,6 +415,7 @@ When adding new tests:
 6. Ensure tests can run independently
 
 Example:
+
 ```typescript
 import { test, expect } from '@playwright/test';
 import { selectDemo, waitForElementReady } from './test-helpers';

@@ -29,6 +29,7 @@ export default {
   undo: 'تراجع',
   redo: 'إعادة',
   reset: 'إعادة تعيين',
+  markLimitReached: '{tool}: تم بلوغ الحد الأقصى وهو {limit}. لا يمكن إضافة المزيد.',
   key: 'مفتاح الرموز',
   keyLegend: {
     missingRequiredLabel: 'تسمية مطلوبة مفقودة',

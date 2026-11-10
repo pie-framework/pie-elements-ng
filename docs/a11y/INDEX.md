@@ -14,6 +14,7 @@ This directory is the repo-side workspace for PIE accessibility audit and remedi
 ## Sync Model
 
 Confluence pages use managed sections generated from this repo and PM-editable sections maintained in Confluence.
+
 - Repo-to-Confluence sync updates only managed summary blocks.
 - Confluence-to-repo sync pulls only explicit status fields into structured local metadata.
 - The sync tool must not overwrite freeform PM notes or stakeholder discussion.

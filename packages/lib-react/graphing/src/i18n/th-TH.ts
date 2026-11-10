@@ -24,6 +24,7 @@ export default {
   undo: 'เลิกทำ',
   redo: 'ทำซ้ำ',
   reset: 'รีเซ็ต',
+  markLimitReached: '{tool}: ถึงขีดจำกัด {limit} แล้ว ไม่สามารถวางเพิ่มได้',
   key: 'คำอธิบายสัญลักษณ์',
   keyLegend: {
     missingRequiredLabel: 'ไม่มีป้ายกำกับที่จำเป็น',

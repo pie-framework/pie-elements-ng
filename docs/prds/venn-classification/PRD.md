@@ -9,6 +9,7 @@ Classification into overlapping sets is a recurring K-8 pattern across life-scie
 This PRD specifies a new first-class `venn-classification` element with an explicit overlap region, a tile tray, and the same authoring / delivery / scoring surface as other classification-style PIE elements. **v1 in this repo does not ship a print custom element** (authoring + delivery + controller only); static element docs are generated under `apps/element-demo/static/element-docs/venn-classification/` from `docs.contract.json`.
 
 Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside delivery implementation):
+
 - Delivery (gather mode): ![Venn classification delivery wireframe — two overlapping circles labelled "Reptile" and "Egg-layer", tiles placed in each of the four regions (left-only, overlap, right-only, outside) with a tray of unplaced tiles below.](./wireframes/delivery.jpg)
 - Authoring interface: ![Venn classification authoring wireframe — two-panel layout. Left panel: prompt editor with rich-text toolbar, per-circle label inputs, a tile list with per-row region radios, scoring-policy radios, and a collapsed advanced region-labels disclosure. Right panel: live preview of the 2-set Venn diagram with authored tiles placed in their correct regions.](./wireframes/authoring.jpg) _(Wireframe may still show a 2/3 circle toggle; v1 author is 2-set only, with a resizable editor/preview split.)_
 
@@ -37,6 +38,7 @@ Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside d
 ## Proposed surface
 
 **Model** (key fields; full TS lives in code):
+
 - `prompt` — markup (TipTap output).
 - `circles` — ordered array `[{ label: string }, …]`, **`length === 2` in v1** (validated). The data shape stays N-generic so a v2 3-set layout can ship without a data migration. Indexes are 0-based and stable (the authored order drives which circle is circle 0).
 - `regionLabels` — optional `Record<string, string>` keyed by region-key. A region-key is the sorted comma-joined list of circle indexes that define the region: `""` is the outside / "Neither" region, `"0"` is circle 0 only, `"0,1"` is the overlap of circles 0 and 1, `"0,1,2"` is the triple overlap. When a key is missing, delivery auto-composes the label from the circle labels (e.g. `"Reptile only"`, `"Reptile and Egg-layer"`, `"Neither Reptile nor Egg-layer"`). Most authors won't set any entry; overrides are for non-default phrasing like `"Both"` or a translated equivalent.
@@ -44,6 +46,7 @@ Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside d
 - `scoringPolicy` — `'allOrNothing' | 'partialPerTile'`, default `partialPerTile`. Classification-style items (sort-into-buckets, match, Venn) commonly carry partial-credit-per-placement in K-8 formative assessment — QTI `mapResponse` exists for this pattern — because a single mis-sort shouldn't wipe out a mostly-correct multi-tile response. Items used in high-stakes summative contexts can flip to `allOrNothing`. For a small 2-tile Venn the two policies are equivalent; the distinction starts to matter at 4+ tiles. A player's `env.partialScoring === false` forces `allOrNothing` whatever the item sets, the rule `multiple-choice` and `categorize` apply, so a host can impose dichotomous scoring across a whole test.
 
 **Session** (key fields):
+
 - `placements` — `{ [tileId]: number[] | null }`. `null` means the tile is still in the tray. An untouched session carries no `placements`, because a player counts a session with content as a learner response; the learner's first placement writes a key for every tile, so from then on consumers don't need to diff against `model.tiles` to tell "unplaced" from "never asked". `[]` is the outside region, `[0]` is circle 0 only, `[0, 1]` is the overlap of 0 and 1, etc. Arrays are always sorted.
 - `completed` — boolean — true once every tile is placed (no `null` values remain). Host players (e.g. the assessment players Renaissance Star uses) gate learner navigation on this, so it must flip deterministically and atomically on the last placement.
 
@@ -54,17 +57,20 @@ Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside d
 The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-theme CSS variables per [`docs/THEMING.md`](../../THEMING.md) (`--pie-primary-*`, `--pie-secondary-*`, `--pie-correct`, `--pie-incorrect`, etc.). **v1 delivery in this repo still uses fixed palette values in component CSS** (not yet wired to `--pie-*` tokens end-to-end); treating token wiring as a follow-up keeps the first delivery milestone shippable without blocking on theme package integration.
 
 **Key delivery interactions**:
+
 - **Pointer / touch**: drag a tile from the tray (or any region) into a region, or back into the tray. Drop zones highlight on dragover. Tiles snap to a light grid within their region so placements look neat without the learner having to pixel-aim, especially when multiple tiles share a region. A region that runs out of grid cells grows the diagram, which then draws its tiles smaller, down to the 44 px hit target, and past that renders wider, up to its container's width.
 - **Keyboard (two-step)**: `Tab` moves focus through tiles and regions; on a focused tile, `Space` / `Enter` "picks up" the tile (enters placement mode), `Tab` / arrow keys move focus between the tray and each named region, `Space` / `Enter` drops into the focused region, `Esc` cancels the pickup.
 - **Atomic drops**: a tile that leaves region A and lands in region B updates `placements[id]` once. No intermediate "held" session state.
 
 **Controller responsibilities**:
+
 - Standard PIE controller surface (`model`, `outcome`, `createDefaultModel`, `validate`, `createCorrectResponseSession`).
 - `validate` in v1 requires **`circles.length === 2`** and requires each `tile.correctRegion` to be a sorted subset of `[0, circles.length)`; rejects otherwise with a message pointing at the offending tile. Tiles must have a non-empty text label **or** an image URL with non-empty alt text.
 - `outcome` scores based on `scoringPolicy` and returns a fractional score in `[0, 1]` (the PIE outcome convention; a gradebook sees a single number and the UI derives "3 of 4"-style display): `partialPerTile` returns `correctTiles / totalTiles`; `allOrNothing` returns `1` iff every tile matches the authored `correctRegion`, else `0`. Two region arrays are equal iff element-wise equal (they are kept sorted by convention).
 - `createCorrectResponseSession` returns placements matching each tile's `correctRegion`.
 
 **Authoring surface**:
+
 - Prompt and teacher-instructions editors (shared rich-text component), each shown while its `promptEnabled` / `teacherInstructionsEnabled` flag is on.
 - **Two circles** (fixed in v1 UI): label input per circle (no 3-set toggle in the shipped author).
 - Tile list editor: add / edit / remove / reorder tiles; optional image URL + alt; per-tile correct-region picker — a compact grid whose cells match the **four** 2-set regions, each labelled with the auto-composed region name.

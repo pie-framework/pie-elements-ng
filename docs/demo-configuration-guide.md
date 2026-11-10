@@ -34,6 +34,7 @@ export default {
 ## Creating Demo Configs for New Elements
 
 When adding a new element, create a demo config with 3-5 demos:
+
 1. **Location**: `packages/elements-{react,svelte}/<element-name>/docs/demo/config.mjs`
 
 2. **Number of demos**: Aim for 3-5 demos per element that showcase:
@@ -177,6 +178,7 @@ When adding demos with mathematical content, consider including both LaTeX and M
 ## Checklist for New Elements
 
 When adding a new element to the project:
+
 - [ ] Create `packages/elements-{react,svelte}/<element>/docs/demo/config.mjs`
 - [ ] Add 3-5 demos showcasing different features
 - [ ] Include math examples if the element supports math content

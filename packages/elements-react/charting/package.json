@@ -86,9 +86,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/debug": "^4.1.12"
@@ -97,7 +97,7 @@
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
-    "test": "bun x vitest run"
+    "test": "bun x vitest run --root ../../.. ./"
   },
   "pie": {
     "controller": "@pie-element/charting/controller",

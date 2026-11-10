@@ -21,6 +21,7 @@ $effect(() => {
 ```
 
 **Problems:**
+
 - Store updates don't propagate to child components
 - Creates timing issues and race conditions
 - Hard to debug and reason about
@@ -36,6 +37,7 @@ $effect(() => {
 ```
 
 **Problems:**
+
 - Adds unnecessary complexity
 - Creates timing issues (store may not be initialized when component mounts)
 - Makes data flow harder to trace
@@ -55,6 +57,7 @@ $effect(() => {
 ```
 
 **Problems:**
+
 - Infinite loops
 - Unpredictable behavior
 - Browser crashes
@@ -75,6 +78,7 @@ onMount(() => {
 ```
 
 **Benefits:**
+
 - Runs once, predictably
 - No reactivity complexity
 - Easy to understand
@@ -90,6 +94,7 @@ onMount(() => {
 ```
 
 **Benefits:**
+
 - Clear data flow
 - No timing issues
 - Data available immediately when component mounts
@@ -120,6 +125,7 @@ function handler() {
 ```
 
 **Benefits:**
+
 - No infinite loops
 - Predictable behavior
 - Clear intent
@@ -137,6 +143,7 @@ let lastValue: any = null;
 ```
 
 **Benefits:**
+
 - Less reactivity = fewer bugs
 - Clearer separation of concerns
 - Better performance
@@ -144,6 +151,7 @@ let lastValue: any = null;
 ## Web Components Considerations
 
 Web components do their own DOM manipulation and don't integrate well with reactive frameworks:
+
 1. **Prefer page refreshes for mode/role changes** - Instead of complex reactive updates, use full page navigation
 2. **Pass data once at mount** - Don't try to reactively update web component props
 3. **Use events, not reactivity** - Web components communicate via events, not reactive bindings
@@ -152,11 +160,13 @@ Web components do their own DOM manipulation and don't integrate well with react
 ## When to Use Reactivity
 
 Use reactivity sparingly and only for:
+
 - UI state that needs immediate re-rendering (loading spinners, error messages)
 - Form inputs bound to local component state
 - Computed values derived from props
 
 **Don't use reactivity for:**
+
 - Data that flows from parent to child (use props)
 - Initialization logic (use `onMount`)
 - Complex state synchronization (use events or simple callbacks)
@@ -166,6 +176,7 @@ Use reactivity sparingly and only for:
 **The golden rule:** If you're reaching for `$effect()`, `untrack()`, or complex reactive patterns, stop and ask: "Can I make this simpler?"
 
 Most of the time, the answer is yes:
+
 - Use `onMount()` for initialization
 - Pass props directly instead of through stores
 - Use plain variables for internal tracking

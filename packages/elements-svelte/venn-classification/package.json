@@ -99,7 +99,7 @@
     "@tiptap/starter-kit": "3.32.0",
     "svelte": "^5.57.3",
     "typescript": "^5.9.3",
-    "vite": "^8.3.5",
-    "vitest": "^5.0.5"
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   }
 }

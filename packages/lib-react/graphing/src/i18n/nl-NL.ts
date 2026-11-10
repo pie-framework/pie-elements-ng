@@ -25,6 +25,7 @@ export default {
   undo: 'Ongedaan maken',
   redo: 'Opnieuw uitvoeren',
   reset: 'Opnieuw instellen',
+  markLimitReached: '{tool}: limiet van {limit} bereikt. Er kunnen er geen meer worden geplaatst.',
   key: 'Legenda',
   keyLegend: {
     missingRequiredLabel: 'Verplicht label ontbreekt',

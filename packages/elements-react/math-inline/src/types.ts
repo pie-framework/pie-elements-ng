@@ -62,10 +62,9 @@ export interface MathInlineResponse {
   id: number | string;
   /**
    * Indicates what type of validation should be applied on the response; the model's
-   * `validationDefault` applies when it is not set. `value` accepts a single number — integer,
-   * decimal or fraction — equal in value to the answer, and rejects any expression with an operation
+   * `validationDefault` applies when it is not set
    */
-  validation?: 'literal' | 'symbolic' | 'value';
+  validation?: 'literal' | 'symbolic';
   /**
    * Indicates if the order of expression elements in literal validation can be ignore - whilst the expression is still mathematically correct;
    * the model's `ignoreOrderDefault` applies when it is not set
@@ -76,10 +75,21 @@ export interface MathInlineResponse {
    * the model's `allowTrailingZerosDefault` applies when it is not set
    */
   allowTrailingZeros?: boolean;
+  /**
+   * Indicates that literal validation compares a single number by value: `4/6` matches `2/3` and `2.5`
+   * matches `2\frac{1}{2}`, but `3+3` doesn't match `6`; anything else still compares as literal
+   */
+  compareNumbersByValue?: boolean;
   /** The answer for the question */
   answer: string;
   /** Alternative correct answers, keyed by alternate id */
-  alternates?: Record<string, string>;
+  alternates?: Record<string, string | MathInlineStoredAlternate>;
+}
+
+/** An alternate as some stored content holds it, with its LaTeX under `answer`; authoring writes a string */
+export interface MathInlineStoredAlternate {
+  answer?: string;
+  id?: number | string;
 }
 
 /** A settings-panel toggle the author writes into the model */
@@ -122,7 +132,7 @@ export interface MathInlineModelSettings {
    * Indicates the default value for validation, in case that it's not set on a response
    * @default "literal"
    */
-  validationDefault?: 'literal' | 'symbolic' | 'value';
+  validationDefault?: 'literal' | 'symbolic';
   /**
    * Indicates the default value for ignoreOrder, in case that it's not set
    * @default false
@@ -179,6 +189,11 @@ export interface MathInlineModelSettings {
    * response editor reads `configuration.allowTrailingZeros.enabled` instead
    */
   allowTrailingZeros?: MathInlineToggle;
+  /**
+   * Not read by the element: the settings panel's Compare Numbers By Value toggle writes it, and the
+   * response editor reads `configuration.compareNumbersByValue.enabled` instead
+   */
+  compareNumbersByValue?: MathInlineToggle;
 }
 
 /**
@@ -229,6 +244,8 @@ export interface MathInlineConfiguration {
   ignoreOrder?: ConfigurePropWithEnabled;
   /** Allow Trailing Zeros configuration; `enabled` shows the control on each response */
   allowTrailingZeros?: ConfigurePropWithEnabled;
+  /** Compare Numbers By Value configuration; `enabled` shows the control on each response */
+  compareNumbersByValue?: ConfigurePropWithEnabled;
   /** Maximum number of response areas */
   maxResponseAreas?: number;
   /** Maximum image width for input fields */

@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import { englishOnlyCatalogs } from './iife-english-only-catalogs';
+import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
 const entry = resolve(packageDir, 'src/index.iife.ts');
@@ -26,6 +27,7 @@ const globalName = `${packageName
 export default defineConfig({
   root: packageDir,
   plugins: [
+    thirdPartyLicenses(),
     svelte({
       compilerOptions: {
         customElement: true,

@@ -19,6 +19,7 @@ Do **not** invoke for bug fixes, refactors, demo tweaks, or dependency bumps —
 ## Pre-Implementation Checklist
 
 Before writing a line of code:
+
 - [ ] Does a PRD exist at `docs/prds/<slug>/PRD.md`? If not, draft one from `docs/prds/_template.md` first (use the `pie-prd-author` skill). Do not start implementation against an undocumented surface.
 - [ ] Read `PRD.md` fully. Treat the "Proposed surface" as the starting contract. If anything is ambiguous, surface it before coding.
 - [ ] Read `CONTEXT.md` and use its canonical language alongside the relevant PRD and established element examples. Do not introduce new synonyms for model/session concepts without surfacing the contract change.
@@ -90,6 +91,7 @@ Never derive `completed` lazily in `model()` or a `$derived` — the controller 
 ## Svelte 5 Patterns
 
 Use Svelte 5 runes throughout. Key rules:
+
 - State: `let x = $state(initialValue)` — not `let x`.
 - Props: `let { model, session, mode } = $props()` — not `export let`.
 - Derived: `let foo = $derived(expr)` — not `$: foo = expr`.
@@ -177,6 +179,7 @@ Settings come from `configuration`: each entry's `label` names its field and its
 Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 
 **Controller unit tests** (`src/controller/index.test.ts`):
+
 - [ ] `model()` strips correctness data in `gather` mode; exposes it in `evaluate` mode.
 - [ ] `outcome()` returns `score === 1.0` for a fully correct session.
 - [ ] `outcome()` returns `score === 0.0` for a fully incorrect session.
@@ -187,6 +190,7 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 - [ ] `createCorrectResponseSession()` produces a session whose `outcome()` scores `1.0`.
 
 **Delivery component tests** (Testing Library, happy-dom):
+
 - [ ] Renders in `gather` mode without errors.
 - [ ] Renders in `view` mode (read-only, no interaction).
 - [ ] Renders in `evaluate` mode (shows correctness).
@@ -196,12 +200,14 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 - [ ] Passes axe-core with zero violations in each mode.
 
 **Author element tests** (happy-dom, `tests/author-model-contract.test.ts`):
+
 - [ ] `assertAuthorModelUpdate` from `@pie-element/shared-test-utils` passes for an edit, and the returned event's `detail.update` is the whole edited model.
 - [ ] A second edit builds on the first.
 - [ ] Configured labels name the fields and settings, a `settings: false` entry leaves its setting out, and `settingsPanelDisabled: true` hides the panel.
 - [ ] A placeholder author view runs `assertAuthorElementProperties` instead.
 
 **E2E / accessibility** (Playwright):
+
 - [ ] Full keyboard navigation reachable (Tab / Space / Enter / Esc as appropriate).
 - [ ] axe-core clean.
 - [ ] Focus visible (2.4.7, AA) as a 2 px ring at 3:1 contrast (the 2.4.13 AAA bar).

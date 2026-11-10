@@ -11,7 +11,7 @@ import { assertTouchEnabled, touchDrag, touchTap } from './touch-helpers';
  * `touch-action: none` so the browser leaves the gesture to it. Every other drawing-response spec
  * drives the stage with `page.mouse`, which reaches none of those listeners.
  *
- * Under the `touch` project only (see playwright.config.ts), this draws with a finger and asserts
+ * Under the `touch` and `touch-phone` projects (see playwright.config.ts), this draws with a finger and asserts
  * what lands in the session:
  *
  * - a line, and two shapes, each as exactly one new drawable whose ends are where the finger went;
@@ -25,6 +25,9 @@ type Point = { x: number; y: number };
 /** Where the finger goes down and lifts, from the stage's top-left corner, in CSS pixels. */
 const FROM: Point = { x: 80, y: 80 };
 const TO: Point = { x: 300, y: 200 };
+
+/** The text entry's font size in drawing-response/src/delivery/drawing-response/drawable-text.tsx. */
+const TEXT_FONT_SIZE = 16;
 
 type ShapeCase = {
   /** The palette button's accessible name. */
@@ -94,10 +97,15 @@ test.describe('drawing-response under touch', () => {
     await touchTap(page, root.getByRole('button', { name: 'Text Entry', exact: true }));
     await expect.poll(async () => (await texts(page)).length, { timeout: 10_000 }).toBe(1);
 
-    // A double-tap, two taps in quick succession on the same spot, opens the entry for editing. Aim
-    // inside its placeholder label, a little in from the top-left corner the session records.
+    // A double-tap, two taps in quick succession on the same spot, opens the entry for editing. The
+    // entry is a Konva `Text` whose hit area is its whole box: `width` wide (from the session) and
+    // one line of `TEXT_FONT_SIZE` tall (drawable-text.tsx). `x` and `y` are its top-left corner, so
+    // aim at the middle of the first line.
     const [entry] = await texts(page);
-    const at = await stagePoint(stage, { x: entry.x + 25, y: entry.y + 7 });
+    const at = await stagePoint(stage, {
+      x: entry.x + entry.width / 2,
+      y: entry.y + TEXT_FONT_SIZE / 2,
+    });
     await touchTap(page, at);
     await page.waitForTimeout(90);
     await touchTap(page, at);

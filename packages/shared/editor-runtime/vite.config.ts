@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 // One entry per module in pie.browserModules, each built from the package itself, so every
 // view exports exactly what its specifier does. Modules shared between specifiers
@@ -15,6 +16,7 @@ const input = Object.fromEntries(
 );
 
 export default defineConfig({
+  plugins: [thirdPartyLicenses()],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
   },

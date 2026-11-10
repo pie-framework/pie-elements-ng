@@ -45,7 +45,7 @@
     "@pie-lib/config-ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/utilities": "^3.2.2",
-    "d3-shape": "^3.2.0"
+    "d3-shape": "^3.2.1"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -63,15 +63,15 @@
   "scripts": {
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
-    "test": "bun x vitest run"
+    "test": "bun x vitest run --root ../../.. ./"
   },
   "devDependencies": {
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "vitest": "^5.0.5",
+    "vitest": "^5.1.0",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
     "@testing-library/jest-dom": "^7.0.1",

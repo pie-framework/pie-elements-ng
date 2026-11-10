@@ -18,9 +18,11 @@ const DIGIT_NAMES: Record<string, string> = {
   '9': 'nine',
 };
 
-/** The element's response that a learner taps to start answering. */
-export const mathResponse = (root: Locator) =>
-  root.locator('.static-math, .mq-editable-field').first();
+/** The element's response that a learner taps to start answering: a MathLive `math-field`. */
+export const mathResponse = (root: Locator) => root.locator('math-field').first();
+
+/** The same response in evaluate, where the field is replaced by static, rendered math. */
+export const evaluatedResponse = (root: Locator) => root.locator('.static-math').first();
 
 /** The first response's value in a math-inline / math-templated session. */
 export const mathValue = (session: any): string | undefined =>
@@ -34,14 +36,17 @@ export const key = (page: Page, name: string) =>
     .getByRole('button', { name: DIGIT_NAMES[name] ?? name, exact: true })
     .first();
 
-/** What the response shows: its trailing text, since the field also carries screen-reader help text. */
+/**
+ * What a MathLive `math-field` holds, as the keys tapped. Its value is LaTeX, and `math-inline` and
+ * `math-templated` wrap the learner's part in a placeholder (`\$\placeholder[r1]{12}`), so the
+ * wrapper, its `$` and any spacing are taken off.
+ */
 export async function shownText(response: Locator): Promise<string> {
-  const text = await response.evaluate((node) => {
-    const field =
-      node.closest('.mq-editable-field') ?? node.querySelector('.mq-editable-field') ?? node;
-    return field.textContent ?? '';
-  });
-  return text.replace(/​/g, '').match(/[\d+−\-=]*$/)?.[0] ?? '';
+  const value = await response.evaluate((node: any) => String(node.value ?? ''));
+  return value
+    .replace(/\\\$/g, '')
+    .replace(/\\placeholder\[[^\]]*\]\{(.*)\}/, '$1')
+    .replace(/\s/g, '');
 }
 
 /**

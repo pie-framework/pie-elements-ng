@@ -19,6 +19,7 @@ Common issues and solutions for PIE Elements NG.
 **Problem:** `npm install @pie-element/multiple-choice` fails with 404 error.
 
 **Solution:**
+
 1. Check package name spelling
 2. Verify package is published to npm registry
 3. Check npm registry configuration:
@@ -38,6 +39,7 @@ Common issues and solutions for PIE Elements NG.
 **Problem:** Installation warns about peer dependency conflicts.
 
 **Solution:**
+
 ```bash
 # Use --legacy-peer-deps flag
 npm install --legacy-peer-deps
@@ -54,6 +56,7 @@ bun install
 **Problem:** TypeScript can't find type definitions.
 
 **Solution:**
+
 1. Ensure TypeScript is installed:
 
    ```bash
@@ -78,6 +81,7 @@ bun install
 **Problem:** Build fails with "Cannot find module '@pie-element/X'"
 
 **Solution:**
+
 1. Clear node_modules and reinstall:
 
    ```bash
@@ -100,6 +104,7 @@ bun install
 **Problem:** Vite build throws errors about SSR or dependencies.
 
 **Solution:** For SSR, import the element in browser-only code:
+
 ```typescript
 const { default: MultipleChoice } = await import('@pie-element/multiple-choice/delivery');
 ```
@@ -109,6 +114,7 @@ const { default: MultipleChoice } = await import('@pie-element/multiple-choice/d
 **Problem:** Build warns about circular dependencies.
 
 **Solution:**
+
 1. These are often false positives from monorepo structure
 2. If real, refactor shared code to break cycles
 3. Suppress warnings if unavoidable:
@@ -155,6 +161,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** "Uncaught DOMException: Failed to execute 'define' on 'CustomElementRegistry'"
 
 **Solution:**
+
 1. Importing a package does not register its element. Define each tag once, and guard against a second registration:
 
    ```javascript
@@ -179,6 +186,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** `session-changed` events aren't received, or carry no session.
 
 **Solution:**
+
 1. Check event name spelling:
 
    ```javascript
@@ -216,6 +224,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Changing props doesn't update the element.
 
 **Solution:**
+
 1. For objects, create new reference:
 
    ```javascript
@@ -247,6 +256,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Tests fail with document errors.
 
 **Solution:**
+
 1. Use Vitest with happy-dom environment:
 
    ```typescript
@@ -272,6 +282,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** E2E tests timeout waiting for elements.
 
 **Solution:**
+
 1. Increase timeout:
 
    ```typescript
@@ -300,6 +311,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** `@testing-library/svelte` tests don't render component.
 
 **Solution:**
+
 1. Ensure all imports are correct:
 
    ```typescript
@@ -326,6 +338,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** "Warning: Invalid prop X supplied to Component"
 
 **Solution:**
+
 1. Elements are custom elements with no callback props. React 18 passes JSX props to them as attributes, so set `model` and `session` through a ref and listen for `session-changed`, as in [React Components](API_REFERENCE.md#react-components).
 2. Check prop types match:
 
@@ -339,6 +352,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Vue component doesn't react to prop changes.
 
 **Solution:**
+
 1. Use v-bind for objects:
 
    ```vue
@@ -363,6 +377,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** "Unknown element: pie-multiple-choice"
 
 **Solution:**
+
 1. Add to schemas:
 
    ```typescript
@@ -391,6 +406,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Element takes long time to render first time.
 
 **Solution:**
+
 1. Lazy load elements:
 
    ```typescript
@@ -414,6 +430,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Page memory grows over time.
 
 **Solution:**
+
 1. Clean up event listeners:
 
    ```javascript
@@ -441,6 +458,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Element feels slow or laggy.
 
 **Solution:**
+
 1. Debounce session updates:
 
    ```typescript
@@ -467,6 +485,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Element doesn't use custom theme.
 
 **Solution:**
+
 1. Check DaisyUI theme is set:
 
    ```html
@@ -499,6 +518,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Global styles conflict with element styles.
 
 **Solution:**
+
 1. Scope your global styles:
 
    ```css
@@ -529,6 +549,7 @@ Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client com
 **Problem:** Element doesn't switch to dark theme.
 
 **Solution:**
+
 1. Set data-theme dynamically:
 
    ```javascript
@@ -568,6 +589,7 @@ localStorage.setItem('debug', '*');
 ### Reporting Issues
 
 When reporting issues, include:
+
 1. **Environment**:
    - Browser and version
    - Framework and version

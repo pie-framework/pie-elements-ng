@@ -25,6 +25,7 @@ export default {
   undo: 'Ångra',
   redo: 'Gör om',
   reset: 'Återställ',
+  markLimitReached: '{tool}: gränsen på {limit} är nådd. Inga fler kan placeras.',
   key: 'Teckenförklaring',
   keyLegend: {
     missingRequiredLabel: 'Obligatorisk etikett saknas',

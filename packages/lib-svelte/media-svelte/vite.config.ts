@@ -1,9 +1,10 @@
 import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 export default defineConfig({
-  plugins: [svelte({ emitCss: false })],
+  plugins: [svelte({ emitCss: false }), thirdPartyLicenses()],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

@@ -11,7 +11,7 @@ import type {
   MathInlineSession,
 } from '../types.js';
 
-import { ResponseTypes } from './utils.js';
+import { ResponseTypes, acceptedAnswers, alternateLatex } from './utils.js';
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
@@ -24,11 +24,6 @@ type MathInlineCorrectness = {
   correctness: 'correct' | 'incorrect' | 'unanswered';
   score: number | string;
   correct: boolean;
-};
-
-/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
-type LatexEqualOpts = mv.Opts & {
-  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
 };
 
 /** The model with the controller defaults applied. */
@@ -117,48 +112,6 @@ const getResponseCorrectness = (
  */
 const comparableLatex = <T>(latex: T): T => (typeof latex === 'string' ? (normalizeResponse(latex) as T) : latex);
 
-/** A number as an integer fraction, so `0.5`, `1/2` and `\frac{2}{4}` compare equal exactly. */
-type Fraction = { numerator: number; denominator: number };
-
-const UNSIGNED_NUMBER = /^(\d+(?:\.\d*)?|\.\d+)$/;
-const MINUS = /^(?:-|\u2212|\u2013|\\minus|\\textminus)/;
-const LATEX_FRACTION = /^\\[dt]?frac(?:\{([^{}]+)\}\{([^{}]+)\}|(\d)(\d))$/;
-
-const parseSignedNumber = (text: string): Fraction | undefined => {
-  const minus = text.match(MINUS);
-  const unsigned = minus ? text.slice(minus[0].length) : text;
-  if (!UNSIGNED_NUMBER.test(unsigned)) return undefined;
-  const [whole, decimals = ''] = unsigned.split('.');
-  const numerator = Number((whole || '0') + decimals);
-  return { numerator: minus ? -numerator : numerator, denominator: 10 ** decimals.length };
-};
-
-/**
- * The value of LaTeX that is a single number — integer, decimal or fraction, with any minus
- * sign — or undefined when it holds anything else, an operation included.
- */
-const parseSingleNumber = (latex: string): Fraction | undefined => {
-  const text = latex.replace(/\\[,;:! ]|\\space|\s+/g, '');
-  const minus = text.match(MINUS);
-  const unsigned = minus ? text.slice(minus[0].length) : text;
-  const fraction = unsigned.match(LATEX_FRACTION) || unsigned.match(/^([^/]+)\/([^/]+)$/);
-  if (!fraction) {
-    return parseSignedNumber(text);
-  }
-  const top = parseSignedNumber(fraction[1] ?? fraction[3]);
-  const bottom = parseSignedNumber(fraction[2] ?? fraction[4]);
-  if (!top || !bottom || bottom.numerator === 0) return undefined;
-  const sign = minus ? -1 : 1;
-  return { numerator: sign * top.numerator * bottom.denominator, denominator: top.denominator * bottom.numerator };
-};
-
-/** `value` validation: the response is a single number equal in value to the accepted one. */
-const valueEqual = (response: string, accepted: string) => {
-  const a = parseSingleNumber(response);
-  const b = parseSingleNumber(accepted);
-  return !!a && !!b && a.numerator * b.denominator === b.numerator * a.denominator;
-};
-
 function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefined, answerItem: string) {
   let answerCorrect = false;
 
@@ -166,27 +119,21 @@ function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefin
     if (answerCorrect) return;
 
     const mode = correctResponse.validation || defaults.validationDefault;
-    const opts: LatexEqualOpts = { mode: mode === 'value' ? 'literal' : mode };
+    const opts: mv.Opts = { mode };
 
     if (mode === 'literal') {
       opts.literal = {
         allowTrailingZeros: correctResponse.allowTrailingZeros || false,
         ignoreOrder: correctResponse.ignoreOrder || false,
+        compareNumbersByValue: correctResponse.compareNumbersByValue || false,
       };
     }
 
-    const alternates = correctResponse.alternates || {};
-    const acceptedValues = [correctResponse.answer].concat(
-      Object.keys(alternates).map((alternateId) => alternates[alternateId]),
-    );
+    const acceptedValues = acceptedAnswers(correctResponse);
 
     for (let i = 0; i < acceptedValues.length; i++) {
       try {
-        const equal =
-          mode === 'value'
-            ? valueEqual(comparableLatex(answerItem), comparableLatex(acceptedValues[i]))
-            : mv.latexEqual(comparableLatex(answerItem), comparableLatex(acceptedValues[i]), opts);
-        if (equal) {
+        if (mv.latexEqual(comparableLatex(answerItem), comparableLatex(acceptedValues[i]), opts)) {
           answerCorrect = true;
           break;
         }
@@ -273,16 +220,15 @@ export const getLogTrace = (
     if (validation === 'literal') {
       const allowTrailingZeros = response.allowTrailingZeros || false;
       const ignoreOrder = response.ignoreOrder || false;
+      const compareNumbersByValue = response.compareNumbersByValue || false;
 
       traceLog.push(`Allow trailing zeros: ${allowTrailingZeros ? 'enabled' : 'disabled'}.`);
       traceLog.push(`Ignore order: ${ignoreOrder ? 'enabled' : 'disabled'}.`);
+      traceLog.push(`Compare numbers by value: ${compareNumbersByValue ? 'enabled' : 'disabled'}.`);
     }
     
-    const alternates = response.alternates || {};
-    const acceptedValues = [response.answer].concat(
-      Object.keys(alternates).map((alternateId) => alternates[alternateId])
-    );
-    
+    const acceptedValues = acceptedAnswers(response);
+
     if (acceptedValues.length > 1) {
       traceLog.push(`Accepted answers: ${acceptedValues.length} (including alternates).`);
     }
@@ -366,7 +312,7 @@ export const model = (question: MathInlineModel, session: MathInlineSession | un
     const showNote =
       (config?.responses?.length ?? 0) > 1 ||
       (config?.responses || []).some(
-        (response) => response.validation === 'symbolic' || response.validation === 'value' || Object.keys(response.alternates || {}).length > 0,
+        (response) => response.validation === 'symbolic' || response.compareNumbersByValue || Object.keys(response.alternates || {}).length > 0,
       );
 
     if (env.mode === 'evaluate') {
@@ -518,14 +464,14 @@ export const validate = (
 
   (responses || []).forEach((response, index) => {
     const { answer } = response;
-    const reversedAlternates = [...Object.entries(response.alternates || {})].reverse();
+    const reversedAlternates = Object.entries(response.alternates || {})
+      .map(([key, alternate]): [string, string] => [key, alternateLatex(alternate)])
+      .reverse();
     const alternatesErrors: Record<string, string> = {};
     const responseError: { answer?: string } = {};
 
     if (answer === '') {
       responseError.answer = 'Content should not be empty.';
-    } else if (responseType === 'Advanced Multi' && response.validation === 'value') {
-      responseError.answer = 'Value validation needs a Simple response; choose Literal or Symbolic.';
     }
 
     reversedAlternates.forEach(([key, value], index) => {

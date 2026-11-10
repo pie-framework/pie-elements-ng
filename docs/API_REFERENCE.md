@@ -34,6 +34,7 @@ interface PieEnvironment {
 ```
 
 **Modes:**
+
 - **`gather`**: Interactive mode where students can answer questions
 - **`view`**: Read-only mode displaying previous answers
 - **`evaluate`**: Shows correctness, scoring, and feedback
@@ -41,6 +42,7 @@ interface PieEnvironment {
 Authoring uses a separate custom element, the author view ([Authoring Contract](PIE_ELEMENT_CONTRACT.md#authoring-contract)).
 
 **Roles:**
+
 - **`student`**: Standard learner view
 - **`instructor`**: May see additional information like rationales and answer keys
 
@@ -173,6 +175,7 @@ interface OutcomeResult {
 ```
 
 **Score Scale:**
+
 - `0.0`: Completely incorrect
 - `0.5`: Partially correct (if partial credit enabled)
 - `1.0`: Completely correct
@@ -310,6 +313,7 @@ const viewModel = await model(
 The optional fourth argument, `updateSession(id, element, properties)`, persists `properties` into the stored session and resolves when it is saved. A controller that shuffles choices calls it with `{ shuffledValues }` to keep the order it drew, so a host that implements it with another signature loses that order. `id` and `element` come from the session and can be `undefined`, for a session without them or for an element that shuffles each of its parts separately, so a host keys the write by the model it called `model()` for. `PieUpdateSession` in `@pie-element/shared-types` types it.
 
 **Use cases:**
+
 - Hide correct answers in gather mode
 - Show feedback in evaluate mode
 - Apply configuration options
@@ -332,6 +336,7 @@ console.log(result);
 ```
 
 **Returns:**
+
 - `score`: 0.0 to 1.0
 - `empty`: true if no answer provided
 - `feedback`: optional feedback messages
@@ -400,6 +405,7 @@ interface SessionChangedEvent extends CustomEvent<{ complete: boolean; component
 ```
 
 **Example:**
+
 ```javascript
 element.session = session;
 
@@ -421,6 +427,7 @@ interface ModelUpdatedEvent extends CustomEvent<{ update: ElementModel; reset: b
 ```
 
 **Example:**
+
 ```javascript
 authorElement.addEventListener('model.updated', (event) => {
   const { update, reset } = event.detail;

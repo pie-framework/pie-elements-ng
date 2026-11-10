@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Math Equality Checker</title>
+    <link href="./demo.css" rel="stylesheet" />
+    <script type="module" src="./main.ts"></script>
+  </head>
+
+  <body>
+    <main>
+      <h1>Math equality checker</h1>
+      <p class="lede">
+        Compares two LaTeX expressions with <code>@pie-framework/math-validation</code>. The URL keeps
+        the last check, so it can be shared.
+      </p>
+
+      <form id="equality-form">
+        <label for="mode">Validation mode</label>
+        <select id="mode" name="mode">
+          <option value="symbolic">Symbolic</option>
+          <option value="literal">Literal</option>
+        </select>
+
+        <fieldset id="literal-options" hidden>
+          <legend>Literal options</legend>
+          <label><input type="checkbox" name="allowTrailingZeros" /> Allow trailing zeros</label>
+          <label><input type="checkbox" name="ignoreOrder" /> Ignore order</label>
+          <label><input type="checkbox" name="compareNumbersByValue" /> Compare numbers by value</label>
+        </fieldset>
+
+        <div class="expressions">
+          <div>
+            <label for="a">Expression I</label>
+            <input id="a" name="a" required autocomplete="off" spellcheck="false" />
+          </div>
+          <div>
+            <label for="b">Expression II</label>
+            <input id="b" name="b" required autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+
+        <button type="submit">Compare</button>
+      </form>
+
+      <output id="result" for="a b mode" aria-live="polite"></output>
+    </main>
+  </body>
+</html>

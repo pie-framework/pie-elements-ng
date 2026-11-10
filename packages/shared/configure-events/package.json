@@ -17,15 +17,14 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
-    "test": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/bun": "^1.4.4",
     "typescript": "^5.9.3",
-    "vite": "^8.3.5",
-    "vitest": "^5.0.5"
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "publishConfig": {
     "access": "public"

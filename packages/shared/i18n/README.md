@@ -129,6 +129,7 @@ A key missing from `en-US.ts` is a compile error. A key assembled at runtime fro
 cannot enumerate goes through `dynamicMessageKey(key)`.
 
 Conventions:
+
 - `{placeholder}` slots interpolate, with the same names in every locale. i18next's `{{name}}`
   renders literally and fails the gate.
 - A plural group is an object of CLDR categories with `other` required. `Intl.PluralRules` selects,

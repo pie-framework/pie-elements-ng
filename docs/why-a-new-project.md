@@ -7,6 +7,7 @@ The project exists because the older PIE development model required developers t
 ## What the Project Covers
 
 PIE Elements NG covers the code and workflows needed to build, test, preview, and release PIE question types:
+
 - **Element packages**: student delivery views, authoring views, controllers, and print views for individual assessment interactions.
 - **Shared PIE libraries**: reusable rendering, authoring, math, feedback, styling, and utility packages used across elements.
 - **Core contracts**: the common model, session, environment, controller, and event shapes that let players and elements communicate consistently.
@@ -31,6 +32,7 @@ PIE Elements NG covers the code and workflows needed to build, test, preview, an
 ## Package Families
 
 You do not need to memorize the repository layout to understand the project. Conceptually, it has these package families:
+
 - **React-backed elements**: existing production-oriented element implementations brought forward into the modern packaging and tooling model.
 - **Svelte-native elements**: new NG element implementations that use Svelte 5 and web components directly.
 - **PIE libraries**: shared UI, authoring, math, graphing, feedback, and utility packages that used to be thought of as a separate layer.
@@ -74,6 +76,7 @@ Print support follows the same principle: each element owns its print-specific t
 ## Product and Accessibility Work
 
 PIE Elements NG is not only an engineering packaging project. It also gives product, accessibility, QA, and engineering a shared place to coordinate element behavior:
+
 - **Product requirements** describe proposed or accepted behavior changes before implementation when a change affects an element contract or authoring surface.
 - **Accessibility planning** tracks WCAG 2.2 AA expectations, automated versus manual validation boundaries, and element-level remediation notes.
 - **Jira** owns sprint state, assignments, and delivery tracking.
