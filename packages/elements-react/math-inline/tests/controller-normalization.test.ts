@@ -29,6 +29,37 @@ describe('response normalization', () => {
   });
 });
 
+describe('a decimal comma', () => {
+  const score = async (answer: string, response: string, env: object, validation: 'literal' | 'symbolic' = 'symbolic', model = {}) =>
+    (await outcome({ ...question(answer, validation), ...model }, { id: '1', response } as any, { ...EVALUATE, ...env } as any))
+      .score;
+
+  it('reads a comma between digits as the decimal point where the locale region writes one', async () => {
+    for (const validation of ['symbolic', 'literal'] as const) {
+      expect(await score('2.5', '2,5', { locale: 'es-ES' }, validation), validation).toBe(1);
+      expect(await score('2.5', '2{,}5', { locale: 'de-DE' }, validation), validation).toBe(1);
+      expect(await score('2.5', '2.5', { locale: 'es-ES' }, validation), validation).toBe(1);
+    }
+  });
+
+  it("takes the model's language before the environment's locale", async () => {
+    expect(await score('2.5', '2,5', { locale: 'en-US' }, 'symbolic', { language: 'fr-FR' })).toBe(1);
+    expect(await score('2.5', '2,5', { locale: 'fr-FR' }, 'symbolic', { language: 'en-US' })).toBe(0);
+  });
+
+  it('reads a semicolon as the list separator there', async () => {
+    expect(await score('(1;5)', '(1;5)', { locale: 'es-ES' })).toBe(1);
+    expect(await score('(1;5)', '(1,5)', { locale: 'es-ES' })).toBe(0);
+  });
+
+  it('keeps the comma a list separator without a region or in a point-decimal region', async () => {
+    for (const locale of ['es', 'es-US', 'en-US', undefined]) {
+      expect(await score('2.5', '2,5', { locale }), locale).toBe(0);
+      expect(await score('(1,5)', '(1,5)', { locale }), locale).toBe(1);
+    }
+  });
+});
+
 describe('every Unicode digit system', () => {
   it('scores whole and decimal numbers against their ASCII answer, in symbolic and literal validation', async () => {
     const score = async (answer: string, response: string, validation: 'literal' | 'symbolic') =>

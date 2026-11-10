@@ -178,6 +178,59 @@ describe('normalizeResponse', () => {
   });
 });
 
+describe('normalizeResponse with latexNumbers', () => {
+  const latex = (value: string, language?: string) =>
+    normalizeResponse(value, { language, latexNumbers: true });
+
+  it('reads a comma between digits as the decimal point where the region writes a decimal comma', () => {
+    for (const language of ['es-ES', 'de-DE', 'fr-FR', 'pt-BR', 'ar-MA']) {
+      expect(latex('2,5', language), language).toBe('2.5');
+      expect(latex('2{,}5', language), language).toBe('2.5');
+      expect(latex('-0,75x', language), language).toBe('-0.75x');
+    }
+  });
+
+  it('reads a semicolon as the list separator there, and keeps the TeX space', () => {
+    expect(latex('(1;2,5)', 'es-ES')).toBe('(1,2.5)');
+    expect(latex('x\\;y', 'de-DE')).toBe('x\\;y');
+  });
+
+  it('keeps a point as a decimal point, and a comma that is not between digits', () => {
+    expect(latex('2.5', 'es-ES')).toBe('2.5');
+    expect(latex('1,x', 'es-ES')).toBe('1,x');
+    expect(latex('1\\,000', 'es-ES')).toBe('1\\,000');
+  });
+
+  it('keeps commas and semicolons as written without a region or in a point-decimal region', () => {
+    for (const language of [
+      undefined,
+      'es',
+      'de',
+      'fr',
+      'es-US',
+      'es-419',
+      'es-MX',
+      'en-US',
+      'ar',
+      'not a tag!',
+    ]) {
+      for (const value of ['2,5', '(1,5)', '1{,}000', 'a;b']) {
+        expect(latex(value, language), `${language} ${value}`).toBe(value);
+      }
+    }
+  });
+
+  it('folds ٫ and ٬ to the point and comma in every language', () => {
+    expect(latex('١٬٢٣٤٫٥', 'ar-MA')).toBe('1,234.5');
+    expect(latex('١٬٢٣٤٫٥', 'de-DE')).toBe('1,234.5');
+    expect(latex('٣٫٥', 'ar')).toBe('3.5');
+  });
+
+  it('reads a decimal comma between digits of another system', () => {
+    expect(latex('٣,٥', 'ar-MA')).toBe('3.5');
+  });
+});
+
 describe('foldCase', () => {
   it('folds dotted and dotless i in Turkish and Azerbaijani', () => {
     for (const language of ['tr', 'az']) {

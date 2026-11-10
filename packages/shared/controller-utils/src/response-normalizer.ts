@@ -31,6 +31,15 @@ export interface NormalizeOptions {
   ignoreSlashSpacing?: boolean;
   /** Remove the combining diacritics U+0300–U+036F, so `é` compares equal to `e`. */
   ignoreAccents?: boolean;
+  /**
+   * Write numbers in the form math-validation computes on. `٫` becomes `.` and `٬` becomes `,`
+   * whatever the language. Where the language's region writes a decimal comma (`es-ES`, `de-DE`),
+   * a `,` or `{,}` between digits becomes `.`, and `;` becomes the `,` between list items; a `.`
+   * stays a decimal point. A tag without a region keeps the point, because US Spanish content
+   * declares `es`, which CLDR gives a decimal comma. The option reads text written in the
+   * language's convention, so a second pass over its output would read a list comma as a decimal.
+   */
+  latexNumbers?: boolean;
 }
 
 // U+061C ALM, LRM, RLM, the embeddings and overrides U+202A–U+202E, the
@@ -45,6 +54,9 @@ const DECIMAL_DIGIT = /\p{Nd}/u;
 const NON_ASCII_DIGITS = /(?![0-9])\p{Nd}/gu;
 const ARABIC_DECIMAL_SEPARATOR = /\u066B/g;
 const ARABIC_THOUSANDS_SEPARATOR = /\u066C/g;
+const DECIMAL_COMMA = /(?<=[0-9])(?:,|\{,\})(?=[0-9])/g;
+// `\;` is a TeX space, not a list separator.
+const LIST_SEMICOLON = /(?<!\\);/g;
 
 const ALEF_FORMS = /[\u0622\u0623\u0625\u0671]/g;
 // Fathatan to sukun, the extended marks up to U+065F, and superscript alef.
@@ -106,6 +118,26 @@ const marksFor = (language: string | undefined): NumberMarks => {
   return marks;
 };
 
+const decimalCommas = new Map<string, boolean>();
+
+/**
+ * Whether the tag names a region and that region writes a decimal comma. `es` has
+ * no region, so it keeps the point that US Spanish content is written with.
+ */
+const writesDecimalComma = (language: string | undefined): boolean => {
+  if (!language) return false;
+  const cached = decimalCommas.get(language);
+  if (cached !== undefined) return cached;
+  let decimalComma = false;
+  try {
+    decimalComma = Boolean(new Intl.Locale(language).region) && marksFor(language).decimal === ',';
+  } catch {
+    // An invalid tag keeps the point.
+  }
+  decimalCommas.set(language, decimalComma);
+  return decimalComma;
+};
+
 /**
  * The language a comparison runs in: the element's `model.language`, then the
  * item's `env.locale`. The translator's underscore form (`tr_TR`) becomes a
@@ -147,11 +179,11 @@ export const foldCase = (value: string, language?: string): string => {
  * when the options ask for it; bidi controls and tatweel removed; Arabic
  * presentation forms folded to base letters; NFC; every decimal digit folded
  * to 0–9; `٫` and `٬` replaced by the content language's decimal and group
- * marks. Arabic letter variants, accents, whitespace runs and the spacing
+ * marks, or with `latexNumbers` by the marks math-validation computes on. Arabic letter variants, accents, whitespace runs and the spacing
  * around `/` fold only when the options ask for it.
  */
 export const normalizeResponse = (value: string, options: NormalizeOptions = {}): string => {
-  const marks = marksFor(options.language);
+  const marks = options.latexNumbers ? POINT_DECIMAL : marksFor(options.language);
   // Case folds first, on the text as typed: lower-casing can leave combining
   // marks out of canonical order, and a separator folded to `.` changes where
   // a Greek sigma counts as final, so folding later could part two strings
@@ -162,7 +194,12 @@ export const normalizeResponse = (value: string, options: NormalizeOptions = {})
     .replace(BIDI_CONTROLS_AND_TATWEEL, '')
     .replace(PRESENTATION_FORMS, (forms) => forms.normalize('NFKC'))
     .normalize('NFC');
-  result = foldDigits(result)
+  result = foldDigits(result);
+  // Before the Arabic marks fold, so that a `٬` group mark does not become a comma read as a decimal.
+  if (options.latexNumbers && writesDecimalComma(options.language)) {
+    result = result.replace(DECIMAL_COMMA, '.').replace(LIST_SEMICOLON, ',');
+  }
+  result = result
     .replace(ARABIC_DECIMAL_SEPARATOR, marks.decimal)
     .replace(ARABIC_THOUSANDS_SEPARATOR, marks.group);
   if (options.foldLetterVariants) {
