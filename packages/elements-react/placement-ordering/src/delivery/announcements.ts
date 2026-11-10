@@ -5,17 +5,34 @@ import type enUS from '../i18n/en-US.js';
 // The wording is the 'Screen Reader Announcement Final Spec: Ordering with Placement Areas'
 // (PIE-835); the row numbers in the comments below are that spec's.
 
+// The tokens of MathML that carry its text; an annotation holds a source form of the same math.
+const MATH_TOKENS = 'mi, mn, mo, mtext, ms';
+
 const stripTags = (html: string) =>
-  html.replace(/<img\b[^>]*\balt=(["'])(.*?)\1[^>]*>/gi, ' $2 ').replace(/<[^>]*>/g, ' ');
+  html
+    .replace(/<img\b[^>]*\balt=(["'])(.*?)\1[^>]*>/gi, ' $2 ')
+    // math with an alternative text is read as it, without a reading of its tokens
+    .replace(/<math\b[^>]*\balttext=(["'])(.+?)\1[^>]*>.*?<\/math>/gis, ' $2 ')
+    // an annotation holds a source form of the math, which is not read
+    .replace(/<annotation(-xml)?\b[^>]*>.*?<\/annotation\1>/gis, ' ')
+    .replace(/<[^>]*>/g, ' ');
+
+// The text of the tokens of some math, apart so that `<mn>1</mn><mn>2</mn>` does not read as twelve.
+const mathText = (math: Element) =>
+  [...math.querySelectorAll(MATH_TOKENS)]
+    .filter((token) => !token.closest('annotation, annotation-xml'))
+    .map((token) => token.textContent)
+    .join(' ');
 
 // What a screen reader is told of content that has no text of its own: an image by its alternative text,
-// and math by its `alttext`, when it has one. Math without one keeps its own text (`<mn>3</mn>` reads "3").
+// and math by its `alttext`, or by its tokens when it has none or an empty one. An image with an empty
+// `alt` is decorative and reads as nothing.
 const readAlternatives = (body: HTMLElement) => {
   body.querySelectorAll('img, math').forEach((node) => {
     const alternative =
       node.tagName === 'IMG'
         ? (node.getAttribute('alt') ?? '')
-        : (node.getAttribute('alttext') ?? node.textContent ?? '');
+        : node.getAttribute('alttext') || mathText(node) || node.textContent || '';
 
     node.replaceWith(` ${alternative} `);
   });
