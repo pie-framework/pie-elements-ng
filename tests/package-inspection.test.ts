@@ -139,6 +139,7 @@ describe('package inspection quality-gate helpers', () => {
       'Controller package contract',
       'Runtime support export contract',
       'Sourcemap source contract',
+      'Third-party license notices',
     ]);
   });
 

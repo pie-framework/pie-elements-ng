@@ -2,6 +2,7 @@ import { existsSync, rmSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig, type EnvironmentOptions, type Plugin } from 'vite';
+import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
 const distDir = resolve(packageDir, 'dist');
@@ -91,7 +92,7 @@ const laneEnvironment = (lane: Lane): EnvironmentOptions => ({
 // browser, IIFE and declaration steps then write into.
 export default defineConfig({
   root: packageDir,
-  plugins: [rootImportsLaneOutputs(), ...sveltePlugins],
+  plugins: [rootImportsLaneOutputs(), ...sveltePlugins, thirdPartyLicenses()],
   build: {
     emptyOutDir: false,
     target: 'es2020',

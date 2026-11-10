@@ -6,6 +6,7 @@ import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 
 import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 import { browserPackageIdentity, readPackageIdentity } from './browser-package-identity.ts';
+import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
 const identity = readPackageIdentity(packageDir);
@@ -48,6 +49,7 @@ export default defineConfig({
     react(),
     browserCssLoaderPlugin(),
     browserPackageIdentity(identity, Object.values(entries)),
+    thirdPartyLicenses(),
   ],
   resolve: {
     // A shared package exports its build for element browser bundles under this condition.
