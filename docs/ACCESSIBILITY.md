@@ -5,6 +5,7 @@ PIE Elements NG is built with WCAG 2.2 Level AA compliance as a core requirement
 ## Our Commitment
 
 All PIE elements are designed to be:
+
 - ✅ **Keyboard Navigable**: Full functionality without a mouse
 - ✅ **Screen Reader Compatible**: Proper ARIA labels and semantic HTML
 - ✅ **Visually Accessible**: Sufficient color contrast and touch targets
@@ -31,6 +32,7 @@ PIE elements meet all WCAG 2.2 Level AA success criteria:
 ### Global Shortcuts
 
 All PIE elements support these keyboard interactions:
+
 - **Tab**: Move focus forward
 - **Shift+Tab**: Move focus backward
 - **Enter/Space**: Activate buttons and controls
@@ -293,6 +295,7 @@ button:focus-visible {
 ### Error Messages
 
 Error messages should be:
+
 1. **Specific**: Tell exactly what's wrong
 2. **Actionable**: Explain how to fix
 3. **Visible**: Clearly displayed near the error
@@ -311,6 +314,7 @@ Error messages should be:
 ### Consistent Patterns
 
 Use consistent UI patterns across all elements:
+
 - Submit buttons always labeled "Submit"
 - Correct answers shown with ✓ in evaluate mode
 - Incorrect answers shown with ✗ in evaluate mode
@@ -377,11 +381,13 @@ bun run test:a11y:inventory
 #### Color Blind Testing
 
 Use browser extensions to simulate color blindness:
+
 - **Chrome**: Colorblind - Dalton
 - **Firefox**: Let's Get Color Blind
 - **Safari**: Web Developer extension
 
 Verify:
+
 - Information isn't conveyed by color alone
 - Correct/incorrect use icons + color
 - Links are underlined or have non-color indicator
@@ -389,6 +395,7 @@ Verify:
 ### Accessibility Checklist
 
 Before releasing an element, verify:
+
 - [ ] All functionality works with keyboard only
 - [ ] Focus indicators are clearly visible
 - [ ] Tab order is logical
@@ -411,11 +418,13 @@ Before releasing an element, verify:
 ### Issue 1: Missing Form Labels
 
 **Problem:**
+
 ```html
 <input type="text" placeholder="Your answer">
 ```
 
 **Solution:**
+
 ```html
 <label for="answer">Your answer</label>
 <input type="text" id="answer" placeholder="e.g., 42">
@@ -424,6 +433,7 @@ Before releasing an element, verify:
 ### Issue 2: Insufficient Contrast
 
 **Problem:**
+
 ```css
 .text {
   color: #888888; /* Gray text */
@@ -433,6 +443,7 @@ Before releasing an element, verify:
 ```
 
 **Solution:**
+
 ```css
 .text {
   color: #595959; /* Darker gray */
@@ -444,6 +455,7 @@ Before releasing an element, verify:
 ### Issue 3: Keyboard Trap
 
 **Problem:**
+
 ```javascript
 // Modal that traps focus accidentally
 document.addEventListener('keydown', (e) => {
@@ -454,6 +466,7 @@ document.addEventListener('keydown', (e) => {
 ```
 
 **Solution:**
+
 ```javascript
 // Proper focus trapping with escape hatch
 document.addEventListener('keydown', (e) => {
@@ -470,6 +483,7 @@ document.addEventListener('keydown', (e) => {
 ### Issue 4: Invisible Focus Indicator
 
 **Problem:**
+
 ```css
 :focus {
   outline: none; /* ❌ */
@@ -477,6 +491,7 @@ document.addEventListener('keydown', (e) => {
 ```
 
 **Solution:**
+
 ```css
 :focus-visible {
   outline: 2px solid var(--color-primary); /* ✅ */

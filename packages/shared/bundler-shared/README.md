@@ -162,6 +162,7 @@ console.log(result.controllers);
 ```
 
 When `includeControllers` is enabled, the bundler emits:
+
 - `controllers/<dep>_at_<version>/controller.js`
 - `controllers/<dep>_at_<version>/stats.json`
 
@@ -243,6 +244,7 @@ bun run test:coverage
 ### Running Tests
 
 The bundler includes comprehensive integration tests that verify:
+
 - ✅ Bundle creation for single and multiple elements
 - ✅ Caching behavior (instant retrieval of cached bundles)
 - ✅ Deterministic hash generation

@@ -107,6 +107,7 @@ curl -s "URL" | tail -c 10000 | grep -B20 "window.pie"
 ✅ **COMPATIBLE**
 
 Our bundler implementation:
+
 1. Uses webpack 5 with correct output configuration
 2. Generates entry files with matching export structure
 3. Produces IIFE bundles that assign to `window.pie`

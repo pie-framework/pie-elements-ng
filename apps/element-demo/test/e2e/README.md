@@ -6,6 +6,7 @@ This directory contains end-to-end browser tests for the PIE Element Demo applic
 
 The root `bun run test:e2e` command intentionally matches CI and runs only this public
 element demo app. Broader local suites remain opt-in:
+
 - `bun run test:e2e`: public `apps/element-demo` e2e suite.
 - `bun run test:e2e:all`: every workspace with a `test:e2e` script.
 - `bun run test:iife:*`: optional IIFE bundle and browser suites.
@@ -13,6 +14,7 @@ element demo app. Broader local suites remain opt-in:
 ## ESM Coverage Status
 
 The current suite is stabilized for **ESM mode** and validates delivery/author usability across in-scope PIE React elements.
+
 - Dedicated interaction phases intentionally exclude: `rubric`, `complex-rubric`, `multi-trait-rubric`, `passage`
 - Baseline matrix still validates delivery/author checks for the full registry
 - Strict baseline checks enforce:
@@ -25,16 +27,19 @@ The current suite is stabilized for **ESM mode** and validates delivery/author u
 ## IIFE Optional Coverage
 
 IIFE coverage is intentionally optional and split into two layers:
+
 - `bun run test:iife:bundle` (from repo root): fast bundle-contract checks across all React elements.
 - `bun run test:e2e:iife` (from `apps/element-demo`): browser usefulness checks for IIFE delivery/controller and author paths.
 
 These checks are excluded from default `bun run test:e2e` runs.
 
 Expected runtime:
+
 - `test:iife:bundle`: typically 5-20 minutes depending on cache state.
 - `test:e2e:iife`: typically 15-45 minutes for the full matrix.
 
 Failure triage flow:
+
 1. Re-run a single element first: `IIFE_E2E_ELEMENT=<name> bun run test:e2e:iife`.
 2. If it fails before rendering, run `bun run test:iife:bundle` and inspect bundle-contract errors.
 3. Use Playwright artifacts (`playwright-report`) from local run or CI workflow for screenshots/trace.
@@ -42,18 +47,21 @@ Failure triage flow:
 ## ESM Follow-up Backlog
 
 Recent hardening completed:
+
 - Strengthened session-mutation assertions in phase/baseline tests to require measurable session deltas for interaction-driven cases.
 - Tightened evaluate-path checks to prefer explicit scoring/correct-answer signals and reduced silent interaction retries.
 - Expanded demo-path coverage with dedicated demo-variant checks (`multiple-choice` multi-demo matrix and `number-line` default + `basic-points`).
 - Added broader source/author-to-delivery propagation coverage across multiple element families (`multiple-choice`, `simple-cloze`, `explicit-constructed-response`).
 
 Current status:
+
 - No intentional ESM follow-up backlog items remain from the previous tracking list.
 - Further additions are now incremental coverage improvements rather than parity blockers.
 
 ## Overview
 
 The test suite validates critical functionality of the demo application, including:
+
 - Demo selection and loading
 - State management across mode and role switches
 - Session state persistence
@@ -66,6 +74,7 @@ The test suite validates critical functionality of the demo application, includi
 ### [math-algebra-quadratic.spec.ts](./math-algebra-quadratic.spec.ts)
 
 Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice element with LaTeX math). Tests cover:
+
 1. **Demo Selection** - Selecting a demo from the dropdown and verifying it loads correctly
 2. **Session State** - User selections appearing in the session state panel
 3. **Mode/Role Switching** - Selections persisting across gather/view/evaluate modes and student/instructor roles
@@ -84,6 +93,7 @@ The MathJax each player type runs, on the `math-algebra-quadratic` delivery view
 ### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
 
 Dedicated interaction coverage for high-risk spatial and drag/drop elements:
+
 - `categorize`
 - `drag-in-the-blank`
 - `match-list`
@@ -98,6 +108,7 @@ Dedicated interaction coverage for high-risk spatial and drag/drop elements:
 - `fraction-model`
 
 Each element test asserts:
+
 - Gather-mode interaction path
 - Session mutation signal (when session-supported)
 - Evaluate-mode rendering/scoring/correctness signal
@@ -109,11 +120,13 @@ Drags released outside the element, by mouse and by touch. In `categorize`, a pl
 ### Touch specs (`*.touch.spec.ts`)
 
 Three projects in [playwright.config.ts](../../playwright.config.ts) run them:
+
 - `touch`: Chromium with touch emulation at an iPad Air landscape viewport (1180x820). The `chromium` project ignores these specs, because without touch emulation their gestures do nothing.
 - `touch-phone`: the same specs, except [page-gestures.touch.spec.ts](./page-gestures.touch.spec.ts) (its page-height precondition fails at this viewport before any gesture is sent), in Chromium with a phone viewport (390x844, `isMobile`). `isMobile` makes the browser honour the viewport meta tag, which is what gives double-tap-to-zoom something to do.
 - `touch-webkit`: only [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts), in WebKit with `hasTouch`. Playwright can send WebKit a tap (`page.touchscreen.tap`) but no trusted touch-drag, long-press or double-tap, so those specs skip themselves there (`supportsTrustedTouch`), and touch-drag in WebKit is a non-goal. WebKit comes from `bunx playwright install webkit`; CI's `bunx playwright install --with-deps` already installs it.
 
 Gestures go through [touch-helpers.ts](./touch-helpers.ts), which sends trusted touch input over CDP in Chromium, since `page.touchscreen` can only tap. Real iOS Safari is not covered and still needs a device.
+
 - [graph-elements.touch.spec.ts](./graph-elements.touch.spec.ts): a finger can place a mark and drag a handle in `charting`, `graphing`, `graphing-solution-set` and `number-line`, each checked as a session change.
 - [tap-elements.touch.spec.ts](./tap-elements.touch.spec.ts): in `multiple-choice` (radio and checkbox), `select-text`, `ebsr`, `inline-dropdown`, `matrix`, `likert`, `hotspot`, `fraction-model`, `mc-populated-blank` and `simple-cloze` (tap, then type), a tap selects with exactly one session change, a second tap deselects (or keeps a radio selected), and a deselected choice looks as it did before it was touched. For each of them:
   - a long-press opens no context menu (a `contextmenu` event nobody cancelled) and selects no text, and changes the session at most once;
@@ -133,6 +146,7 @@ A test for a confirmed touch defect is marked `test.fixme`, names the mechanism 
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 
 Dedicated interaction coverage for structured response and matching elements:
+
 - `match`
 - `matrix`
 - `likert`
@@ -143,6 +157,7 @@ Dedicated interaction coverage for structured response and matching elements:
 - `math-inline`
 
 Each element test asserts:
+
 - Element-specific interaction path (radio/checkbox/dropdown/token/math entry)
 - Session mutation
 - Evaluate-mode correctness/feedback/scoring signal
@@ -150,6 +165,7 @@ Each element test asserts:
 ### [phase3-text-and-hardening.spec.ts](./phase3-text-and-hardening.spec.ts)
 
 Dedicated text-response coverage and hardening for existing deep specs:
+
 - `extended-text-entry`
 - `explicit-constructed-response`
 - `multiple-choice` hardening (checkbox + view-mode guard)
@@ -158,6 +174,7 @@ Dedicated text-response coverage and hardening for existing deep specs:
 ### [demo-variants.spec.ts](./demo-variants.spec.ts)
 
 Dedicated non-default demo coverage for priority elements:
+
 - `multiple-choice`: `math-algebra-quadratic`, `basic-checkbox`, `radio-simple`
 - `number-line`: default demo + `basic-points`
 
@@ -166,6 +183,7 @@ Each variant path validates route load, delivery visibility, and gather/session 
 ### [phase4-propagation.spec.ts](./phase4-propagation.spec.ts)
 
 Dedicated propagation coverage for model edits:
+
 - Source-tab apply propagates to delivery for:
   - `multiple-choice`
   - `simple-cloze`
@@ -177,6 +195,7 @@ Dedicated propagation coverage for model edits:
 ### [test-helpers.ts](./test-helpers.ts)
 
 Reusable utility functions for tests:
+
 - `waitForMathRendering()` - Wait for MathJax LaTeX rendering to complete
 - `selectDemo()` - Select a demo from the dropdown
 - `switchMode()` - Switch between gather/view/evaluate modes through the SvelteKit router
@@ -267,6 +286,7 @@ bunx playwright install webkit && bunx playwright test --project=touch-webkit
 ## Configuration
 
 Test configuration is in [playwright.config.ts](../../playwright.config.ts):
+
 - **Base URL**: `http://localhost:5222`, or `PLAYWRIGHT_BASE_URL`
 - **Browsers**: Chromium (headless) as three projects: `chromium` at a desktop viewport,
   `touch` (touch emulation, 1180x820) and `touch-phone` (touch emulation, 390x844, `isMobile`),
@@ -283,11 +303,13 @@ Test configuration is in [playwright.config.ts](../../playwright.config.ts):
 ## Test Data
 
 The tests use the `math-algebra-quadratic` demo configuration from:
+
 ```
 packages/elements-react/multiple-choice/docs/demo/config.mjs
 ```
 
 This demo features:
+
 - Single-select radio buttons (choiceMode: 'radio')
 - 4 options with LaTeX math formulas
 - Correct answer: `opt2` (the standard quadratic formula)
@@ -330,6 +352,7 @@ The following `data-testid` attributes are used in components:
 ### Math rendering issues
 
 LaTeX math takes time to render. Always use `waitForMathRendering()` after:
+
 - Page navigation
 - Tab switches
 - Demo selection
@@ -356,12 +379,14 @@ LaTeX math takes time to render. Always use `waitForMathRendering()` after:
 ## CI/CD Integration
 
 The tests are configured to run in CI with:
+
 - 2 retries on failure
 - Screenshot capture on failure
 - Video recording on failure
 - HTML report generation
 
 To integrate in GitHub Actions:
+
 ```yaml
 - name: Install Playwright Browsers
   run: bunx playwright install --with-deps chromium
@@ -380,6 +405,7 @@ To integrate in GitHub Actions:
 ## Writing New Tests
 
 When adding new tests:
+
 1. Create a new `.spec.ts` file in this directory
 2. Import helpers from `test-helpers.ts`
 3. Follow the existing test structure
@@ -388,6 +414,7 @@ When adding new tests:
 6. Ensure tests can run independently
 
 Example:
+
 ```typescript
 import { test, expect } from '@playwright/test';
 import { selectDemo, waitForElementReady } from './test-helpers';

@@ -57,6 +57,7 @@ bun run test:coverage
 ## Integration Test Details
 
 The integration tests create temporary directories for testing:
+
 - **Output**: `/tmp/pie-bundler-test-output/`
 - **Cache**: `/tmp/pie-bundler-test-cache/`
 
@@ -65,21 +66,25 @@ These directories are cleaned up automatically after tests complete.
 ### ⚠️ Current Limitation - Upstream Broken Dependencies
 
 **The integration tests currently cannot run successfully** because the older PIE element versions on NPM have broken dependencies:
+
 1. Versions like `@pie-element/multiple-choice@2.0.0` depend on: `mathquill@git+https://github.com/pie-framework/mathquill-webpack.git`
 2. This GitHub repository no longer exists (returns 404)
 3. Bun install fails when trying to resolve this missing git dependency
 
 **Current workaround in pie-elements-ng:**
+
 - Use local workspace package testing to bypass broken historical NPM dependencies
 - Once updated element packages are published to NPM, the integration tests will work
 
 **Status:**
+
 - ✅ **Unit tests** run in `bun run test`
 - ⚠️ **Integration tests** (`bundler.test.ts`) are skipped with `describe.skip()`
 - ⏳ **Waiting for:** Modernized elements to be published to NPM with fixed dependencies
 
 **Alternative Testing:**
 Until NPM packages are fixed, use the **CLI test command** with local workspace packages:
+
 ```bash
 # Test with local workspace packages (bypasses NPM entirely)
 bun cli dev:test-bundler
@@ -126,6 +131,7 @@ See [TESTING_WITH_WORKSPACE.md](./TESTING_WITH_WORKSPACE.md) for complete docume
 ## CI/CD Integration
 
 For CI environments, consider:
+
 1. **Caching NPM packages** between test runs
 2. **Parallel test execution** (tests are independent)
 3. **Timeout configuration** (increase for first runs)
@@ -143,6 +149,7 @@ Example GitHub Actions:
 ## Debugging Failed Tests
 
 If integration tests fail:
+
 1. Check network connectivity (NPM registry access)
 2. Verify Bun is installed and working
 3. Check disk space (bundles can be large)
@@ -157,6 +164,7 @@ If integration tests fail:
 ## Writing New Tests
 
 When adding new tests:
+
 1. Use descriptive test names
 2. Set appropriate timeouts (120s for builds, 60s for errors)
 3. Clean up resources in `afterAll`

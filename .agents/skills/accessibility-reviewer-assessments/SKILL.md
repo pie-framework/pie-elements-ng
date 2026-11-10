@@ -13,6 +13,7 @@ This skill helps review educational assessment component libraries for accessibi
 ## When to Use This Skill
 
 Invoke this skill when:
+
 - Implementing new interaction types or question formats as reusable components
 - Reviewing web components or HTML custom elements
 - Conducting accessibility audits of UI component libraries
@@ -63,6 +64,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Web components**: Custom elements expose proper text alternatives through attributes or slots
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Missing alt text on question image -->
 <img src="diagram.png" />
@@ -94,6 +96,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Web components**: Shadow DOM doesn't break semantic structure; use slots appropriately
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Relies on visual position -->
 <p>Select the answer in the top-right box</p>
@@ -128,6 +131,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Styles work correctly whether in light DOM or shadow DOM
 
 **Example Issues to Catch:**
+
 ```css
 /* ❌ Insufficient contrast: 2.8:1 */
 .choice-option {
@@ -164,6 +168,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Focus management works correctly with shadow DOM boundaries
 
 **Educational interaction keyboard patterns:**
+
 - [ ] Tab/Shift+Tab: Navigate between interactive elements
 - [ ] Arrow keys: Navigate within choice lists, drag-and-drop zones
 - [ ] Space/Enter: Select choices, activate buttons
@@ -172,6 +177,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] Home/End: Jump to first/last item in lists
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Click handler without keyboard support -->
 <div on:click={selectChoice}>Choice A</div>
@@ -200,6 +206,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Timer components expose configuration for accessibility accommodations
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Hard time limit without extension -->
 <Timer duration={60} onExpire={submitAssessment} />
@@ -232,6 +239,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Focus styles work in both shadow and light DOM
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Missing skip link -->
 <nav><!-- Navigation --></nav>
@@ -267,6 +275,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Touch targets account for component padding/margins in all integration modes
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Touch target too small: 20×20px -->
 <button style="width: 20px; height: 20px;">×</button>
@@ -300,6 +309,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Math notation and foreign language content properly marked
 
 **Example Issues to Catch:**
+
 ```html
 <!-- ❌ Missing language attribute -->
 <html>
@@ -323,6 +333,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **3.2.6** (Level A, New in 2.2): Help mechanisms are consistent across components
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Focus triggers navigation -->
 <button on:focus={goToNextQuestion}>Next</button>
@@ -350,6 +361,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Validation messages properly announced via ARIA live regions
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Vague error message -->
 <div role="alert">Invalid input</div>
@@ -383,6 +395,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Shadow DOM**: ARIA relationships work across shadow boundaries when needed
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Custom component without ARIA -->
 <div class="checkbox" on:click={toggle}>
@@ -530,6 +543,7 @@ class ChoiceInteraction extends HTMLElement {
 ## Review Process
 
 When conducting an accessibility review:
+
 1. **Keyboard Navigation Test**
    - Tab through entire interface without mouse
    - Verify all interactions work with keyboard
@@ -573,6 +587,7 @@ Provide feedback in this structure:
 ### 🚨 Critical Issues (WCAG Violations)
 
 For each violation:
+
 - **WCAG Criterion**: e.g., 1.4.3 Contrast (Level AA)
 - **Severity**: Blocker / High / Medium
 - **Location**: File and line number or component name

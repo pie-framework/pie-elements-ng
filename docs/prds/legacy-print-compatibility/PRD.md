@@ -28,6 +28,7 @@ The client-side loader running in production today is `@pie-framework/pie-print`
 ## Proposed surface
 
 Cross-cutting build-pipeline change:
+
 - **Contracts touched**: `tools/vite/**` (new build lane) and each print-enabled package's publish surface (new `module/print.js` file shipped in the npm tarball).
 - **New build lane**: a new shared Vite config (sibling to [`element-browser.config.ts`](../../../tools/vite/element-browser.config.ts)) reusing the same `entryIfExists('print/index', …)` detection, but with an **empty externals list** — React included — so the emitted bundle has zero bare specifiers. Output goes to the package's `module/` directory (not `dist/browser`), matching the literal path `@pie-framework/pie-print`'s resolver requests.
 - **Externals policy**: either a parallel policy file to [`browser-esm-policy.json`](../../../tools/vite/browser-esm-policy.json) (e.g. `legacy-print-esm-policy.json`, empty `allowedBareImports`) or a policy flag on the existing one — either way, expressed generically so it applies by pattern to every package, not per-element.

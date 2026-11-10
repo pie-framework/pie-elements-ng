@@ -204,6 +204,7 @@ var req = __pieBrowserCjsRequire;
 ```
 
 The dispatcher is intentionally small and allow-listed:
+
 - `react`, `react-dom`, and `react-dom/client` are mapped to real ESM imports.
   They remain browser shared singletons owned by the player import map.
 - `classnames` is mapped to a tiny inline implementation that handles strings,
@@ -233,6 +234,7 @@ The shim is a compatibility boundary for browser packaging, not a new dependency
 policy. If a generated browser chunk calls the helper with any unsupported
 package-shaped target, the plugin fails the build instead of silently shipping a
 runtime error. Add a new target only when all of the following are true:
+
 - Upgrading, replacing, or removing the dependency is not currently viable.
 - The dependency is browser-reachable and required for an element we need to
   ship.
@@ -343,6 +345,7 @@ for browser ESM consumers.
 ## Runtime Consumption
 
 `packages/element-player` supports three strategies:
+
 - `esm` dynamically imports package subpaths such as
   `@pie-element/<name>`, `@pie-element/<name>/author`,
   `@pie-element/<name>/print`, and `@pie-element/<name>/controller`.
@@ -367,6 +370,7 @@ they ask the PIE build service for script bundles and then read constructors fro
 `window.pie.default`.
 
 The important bundle shapes are:
+
 - `pie-player` requests `player.js` for hosted item delivery. It requires
   `Element` only.
 - `pie-player` requests `client-player.js` for client-side item preview and
@@ -384,6 +388,7 @@ The production `pie-api-aws` bundler at `../../kds/pie-api-aws/packages/bundler`
 is older than `packages/shared/bundler-shared` and has a stricter compatibility
 requirement. It reads `pkg.pie.controller` and `pkg.pie.configure` from the
 installed element package, then generates:
+
 - `player.js` from `pkg.pie.element`,
 - `client-player.js` from `pkg.pie.element` plus `pkg.pie.controller`,
 - `editor.js` from `pkg.pie.element`, `pkg.pie.controller`, and
@@ -404,6 +409,7 @@ bun run verify:element-contracts
 ```
 
 That command orchestrates the contract-relevant checks:
+
 - `scripts/check-publish-surface.mjs` verifies dist-only exports, rejects
   forbidden export conditions such as `development` and `svelte`, rejects a
   `svelte` dependency or a runtime `svelte` import in any publishable package,

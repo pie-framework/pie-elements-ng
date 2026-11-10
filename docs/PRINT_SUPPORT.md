@@ -9,17 +9,20 @@ This document explains the print architecture and how the two different print pl
 **Short answer:** Not always! Print components are self-contained and work with regular players.
 
 **Print components are just delivery components with transformations:**
+
 - They call `preparePrintModel()` internally
 - They render using the same delivery component
 - You can render them with any player by passing appropriate props
 
 **Use print players when:**
+
 - ✅ You want explicit print-focused APIs (`role` instead of complex env)
 - ✅ You need multi-element items (passage + questions)
 - ✅ You have markup strings from a CMS
 - ✅ You want to match production patterns (pieoneer, content systems)
 
 **Don't need print players if:**
+
 - ✅ You can use the interactive player with print-appropriate props
 - ✅ You're rendering single elements
 - ✅ You have direct access to components (not markup strings)
@@ -42,6 +45,7 @@ This document explains the print architecture and how the two different print pl
 ```
 
 **Use Cases:**
+
 - Element development and testing
 - Element documentation
 - Single element demos
@@ -60,12 +64,14 @@ This document explains the print architecture and how the two different print pl
 ```
 
 Where `itemConfig` includes:
+
 - `item.markup` - HTML with multiple elements
 - `item.elements` - Package version map
 - `item.models` - Array of element models
 - `options.role` - student/instructor
 
 **Use Cases:**
+
 - Production applications (pieoneer, content delivery)
 - Multi-element assessments (passage + questions)
 - Markup-driven rendering
@@ -124,6 +130,7 @@ export default class MultipleChoicePrint extends HTMLElement {
 ```
 
 **Key Points:**
+
 - Each print component exports a custom element class
 - `preparePrintModel()` handles print-specific transformations
 - Renders using the existing delivery component
@@ -195,6 +202,7 @@ map** that resolves `react` / `react-dom` to one pinned singleton
 ✅ Can pass print-appropriate props directly
 
 Example:
+
 ```html
 <pie-element-player
   view="delivery"
@@ -212,6 +220,7 @@ Example:
 ✅ Print-focused demos
 
 Example:
+
 ```html
 <pie-element-player
   view="print"
@@ -230,6 +239,7 @@ Example:
 ✅ **Dynamic CDN loading**
 
 Example:
+
 ```html
 <pie-print config={itemConfig}></pie-print>
 ```
@@ -262,6 +272,7 @@ The element-demo app uses the element-level player:
 ```
 
 This provides:
+
 - Consistent API with interactive demos
 - Easy role switching (student/instructor)
 - Automatic math rendering
@@ -355,6 +366,7 @@ loads) and, for packages that already have print support, `module/print.js`
 `@pie-framework/pie-print` client loader does a bare `import(url)` with **no
 import map**. Testing it means reproducing exactly that — not the item-level
 or element-level player.
+
 1. **Build the artifact for one package:**
 
    ```bash
@@ -430,6 +442,7 @@ or element-level player.
 **Print elements are self-contained** - they handle their own transformations and rendering.
 
 **Print players are orchestrators:**
+
 - **Element-level:** For development - loads single elements with import maps
 - **Item-level:** For production - coordinates multiple elements from markup
 

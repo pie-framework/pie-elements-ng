@@ -5,6 +5,7 @@
 This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The React-based elements were ported from the legacy [pie-elements](https://github.com/PieLabs/pie-elements) repository and are now owned here, with modern ESM packaging, Vite builds, and improved developer experience.
 
 **Current Status**:
+
 - 27 React elements ported from the legacy `pie-elements` and 3 Svelte 5 elements built in this repository
 - Element and lib packages publish to npm through Changesets and GitHub Actions: `next` prereleases from `develop`, stable releases from `master`
 
@@ -15,6 +16,7 @@ This is a modern implementation of the PIE (Platform Independent Elements) speci
 This is a **completely new project**, not a refactor of the original pie-elements. The legacy pie-elements project remains available for backwards compatibility, while this project provides a modern foundation for future development.
 
 **Key reasons for a new project:**
+
 - **Backwards compatibility**: Legacy consumers can continue using pie-elements without disruption
 - **ESM enablement**: The PIE team's work on library updates (React, MUI) and migration from Slate to Tiptap now allows full ESM adoption
 - **Modern tooling**: Clean slate enables use of Vite, Bun, and contemporary build tools
@@ -23,6 +25,7 @@ This is a **completely new project**, not a refactor of the original pie-element
 ### Legacy vs Modern: Key Architectural Differences
 
 This project differs fundamentally from the legacy pie-elements in eight key ways:
+
 1. **Framework Flexibility**: Legacy was React-only; this project is framework-agnostic via web components
 2. **Module System**: CommonJS → ESM-first with browser-managed dependencies
 3. **Build Tooling**: Bespoke tools (webpack, pie-shared-lib-builder) → Standard tools (Vite, Bun, Turbo)
@@ -39,6 +42,7 @@ This project differs fundamentally from the legacy pie-elements in eight key way
 **Legacy approach**: React-only implementation. Every element, controller, and UI component was tightly coupled to React.
 
 **Modern approach**: Framework-agnostic via web components and the PIE controller interface.
+
 - **Controllers** are pure TypeScript business logic (completely framework-independent)
 - **UI implementations** can use any framework (React, Svelte, Vue, Angular) as long as they produce web components
 - **Element Player** loads elements via custom element registry, regardless of underlying framework
@@ -51,6 +55,7 @@ This architectural flexibility will allow choosing the right framework for each 
 **Legacy approach**: CommonJS modules with webpack and pie-shared-lib-builder creating IIFE bundles that include ALL dependencies.
 
 **Modern approach**: ESM-only with modern build tools.
+
 - Every package has `"type": "module"` in package.json
 - Vite for fast builds with Hot Module Replacement (HMR)
 - Bun as package manager (3-5x faster than npm)
@@ -58,6 +63,7 @@ This architectural flexibility will allow choosing the right framework for each 
 - **External dependencies**: Not bundled, loaded by browser on-demand
 
 **Benefits of ESM**:
+
 - Better browser caching (shared dependencies across elements)
 - Smaller initial bundle sizes (tree-shaking)
 - Faster development (native ESM in browsers, instant HMR)
@@ -68,6 +74,7 @@ This was enabled by the PIE team's work updating the legacy libraries (React 18,
 ### 3. Player Architecture (Enabled by ESM)
 
 **Legacy approach**: Separate players and packages for different views:
+
 - One player for delivery (student/teacher interaction)
 - Separate authoring interface
 - Separate package (`@pie-framework/pie-print`) for print views
@@ -77,12 +84,14 @@ This was enabled by the PIE team's work updating the legacy libraries (React 18,
 ![Unified Player: One Player, All Views, Any Framework](img/unified-player-architecture-1-1769801208629.jpg)
 
 **Element-Level Player** (this repository):
+
 - `<pie-element-player>` - Unified delivery, authoring, and print views
 - **Package**: `@pie-element/element-player`
 - **Use for**: Element development, testing, documentation, and optional composable embedding
 - **Positioning**: Not the default production orchestration path; production usage typically relies on the standard players in the `pie-elements` and `pie-players` projects
 
 **Item-Level Players** (pie-players repository):
+
 - Interactive players (`@pie-players/pie-item-player`, `@pie-players/pie-section-player`, `@pie-players/pie-assessment-player`) - Multi-element assessments
 - `<pie-print>` - Print views for production
 - **Package**: `@pie-players/pie-print-player`
@@ -95,6 +104,7 @@ Future `video-stimulus` work in this repository should treat the media component
 Cross-element shared contracts such as host event projections, section score rollups, media/evidence metadata, accessibility handoff patterns, and standards-adapter hooks belong in `pie-players` shared architecture rather than individual element APIs; see `docs/architecture/shared-contracts-p0.md` in that repository.
 
 **Element structure**: Each element has symmetric peer folders:
+
 - `delivery/` - Student/teacher interaction
 - `author/` - Configuration interface
 - `controller/` - Business logic
@@ -109,6 +119,7 @@ Cross-element shared contracts such as host event projections, section score rol
 ### 4. Symmetric Directory Organization
 
 **Legacy approach**: Asymmetric structure
+
 - Root of package = student view
 - `config/` directory for authoring
 - Print was a separate package
@@ -124,6 +135,7 @@ src/
 ```
 
 **Benefits**:
+
 - Clear separation of concerns
 - Each view is a peer (no implicit hierarchy)
 - Easy to add new views (`listview/`, `mini/`, etc.) as additional peers
@@ -186,6 +198,7 @@ await esmLoader.load(config, document, {
 ##### Legacy limitation
 
 In the old system, supporting these variations required either:
+
 - ❌ Duplicating entire elements (e.g., `multiple-choice-mobile`, `multiple-choice-a11y`)
 - ❌ Complex conditional rendering in a single monolithic component
 - ❌ Custom build configurations per variant
@@ -197,11 +210,13 @@ Each variant is simply a peer folder with its own implementation, loaded on-dema
 ### 5. Modern Standard Tooling
 
 **Legacy approach**: Bespoke tooling
+
 - Custom `pie-cli` for element management
 - `pie-shared-lib-builder` for webpack configuration
 - Custom build scripts and conventions
 
 **Modern approach**: Standard, widely-adopted tools
+
 - **Vite**: Industry-standard build tool with excellent ESM support
 - **Bun**: Modern package manager and runtime
 - **Turbo**: Proven monorepo orchestration
@@ -210,6 +225,7 @@ Each variant is simply a peer folder with its own implementation, loaded on-dema
 - **Project CLI** (`tools/cli`): Built with oclif, has natural access to workspace code, used for demos, docs generation and verification (not build tooling)
 
 **Developer experience benefits**:
+
 - Extensive documentation and community support for standard tools
 - IDE integration works out of the box
 - Fewer bespoke concepts to learn (build tooling is standard Vite)
@@ -223,6 +239,7 @@ Each variant is simply a peer folder with its own implementation, loaded on-dema
 **Modern approach**: Single unified demo app (`apps/element-demo`) built with SvelteKit.
 
 **Key differences**:
+
 - **Legacy**: Tool-generated demo per element, separate HTML files, required pie CLI commands
 - **Modern**: One app demos ALL elements, SvelteKit routing, auto-discovery of elements
 - **Framework-agnostic**: The modern demo loads elements built with ANY framework (React, Svelte, future Vue/Angular)
@@ -234,11 +251,13 @@ The demo system works by dynamically loading elements via the unified player, re
 ### 7. Monorepo with pie-lib Integration
 
 **Legacy approach**:
+
 - `pie-lib` was a separate repository
 - Required coordinating releases across repos
 - Version drift between pie-elements and pie-lib
 
 **Modern approach**:
+
 - `@pie-lib/*` packages pulled into monorepo under `packages/lib-react/`
 - Single source of truth for all PIE code
 - Workspace references (`"workspace:*"`) ensure consistency
@@ -256,6 +275,7 @@ development and build-time mechanism, not a promise that every npm package share
 one version number.
 
 **Why independent versions here?**
+
 1. **Compatibility with existing consumers** - Legacy PIE consumers already
    depend on independently versioned element packages.
 2. **Selective publishing** - A fix to one element should not publish dozens of
@@ -273,6 +293,7 @@ human-readable coordination across packages without forcing lockstep npm
 versions.
 
 **Publishing strategy:**
+
 - **Element packages** (`@pie-element/*`) are versioned and published by CI when
   selected for release.
 - **Library packages** (`@pie-lib/*`) are also versioned/publishable when their
@@ -291,6 +312,7 @@ independent.
 **Legacy approach**: CircleCI for continuous integration and deployment.
 
 **Modern approach**: GitHub Actions for all CI/CD workflows.
+
 - **Integration**: Native GitHub integration (no external service)
 - **Transparency**: Workflows visible in repository
 - **Ecosystem**: Can use marketplace actions
@@ -299,6 +321,7 @@ independent.
 ## Package Origins
 
 The React element and library packages were ported from the legacy `pie-elements` and `pie-lib` repositories. This repository owns them; nothing syncs from the legacy repositories, and fixes are made here.
+
 - `packages/elements-react/`: 27 React element implementations (controllers and the delivery, authoring and print views)
 - `packages/lib-react/`: shared UI libraries (config-ui, render-ui, etc.). Some are full replacements for legacy pie-lib packages.
 
@@ -327,6 +350,7 @@ The architecture consists of three main layers:
 ![Package Structure](img/package-structure-1-1769797957965.jpg)
 
 **Key organizational decisions**:
+
 - **@pie-lib integration**: The `@pie-lib/*` packages (formerly a separate repository) are now in `packages/lib-react/` for better version management and coordination
 - **Versioning**: Changesets-managed independent versioning and publishing for `@pie-element/*` and `@pie-lib/*` packages
 - **Workspaces**: Bun workspaces with `"workspace:*"` references ensure consistency across the monorepo
@@ -340,11 +364,13 @@ Each element follows a consistent, symmetric structure where student UI, authori
 **Symmetric peer organization** (contrast with legacy):
 
 **Legacy structure** (asymmetric):
+
 - Root of package = student view
 - `config/` directory for authoring
 - Print was a separate package
 
 **Modern structure** (symmetric):
+
 - `src/delivery/` - student/teacher interaction
 - `src/author/` - configuration interface
 - `src/controller/` - business logic
@@ -361,6 +387,7 @@ Future views like `mini/`, `listview/`, or others can be added as additional pee
 **Responsibility**: Framework-agnostic business logic
 
 **Key Functions**:
+
 - `model()` - Transform question model for rendering
 - `outcome()` - Calculate score and feedback
 
@@ -396,6 +423,7 @@ export async function outcome(
 **Responsibility**: Render question and handle user interaction
 
 **Modes Handled**:
+
 - `gather` - Interactive, user can answer
 - `view` - Read-only, show question without interaction
 - `evaluate` - Show score, feedback, correct answers
@@ -427,6 +455,7 @@ The component reads the mode from the view model the controller returns, which c
 **Responsibility**: Author/configure question settings
 
 **Features**:
+
 - Rich text editor for prompts
 - Choice management (add/remove/edit)
 - Configuration options (scoring, feedback, etc.)
@@ -493,6 +522,7 @@ export interface PieEnvironment {
 ```
 
 **Modes**:
+
 - `gather` - Student answering question
 - `view` - Read-only display (no interaction)
 - `evaluate` - Show score, feedback, correct answers
@@ -500,6 +530,7 @@ export interface PieEnvironment {
 Authoring and print are separate views, each its own custom element: the author view under `<tag>-config` and the print view from the element's print export.
 
 **Roles**:
+
 - `student` - Learner interacting with assessment
 - `instructor` - Teacher/author viewing or configuring
 
@@ -540,6 +571,7 @@ interface Session {
 ```
 
 **Flow**:
+
 1. User interacts with element
 2. The element writes the change into the session object the player set
 3. The element dispatches `session-changed`, and the player reads that session object ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract))
@@ -618,6 +650,7 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why Svelte 5?
 
 **Benefits**:
+
 - Native Web Components support
 - Smaller bundle size (~3KB overhead vs 40KB+ for React)
 - True reactivity without virtual DOM
@@ -625,6 +658,7 @@ Svelte 5 runes provide fine-grained reactivity:
 - Excellent TypeScript support
 
 **Trade-offs**:
+
 - Smaller ecosystem than React
 - Less community resources
 - Learning curve for React developers
@@ -632,6 +666,7 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why TypeScript?
 
 **Benefits**:
+
 - Type safety catches errors early
 - Better IDE support (autocomplete, refactoring)
 - Self-documenting code
@@ -641,18 +676,21 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why Bun?
 
 **Benefits**:
+
 - Fast package installation (3-5x faster than npm)
 - Built-in test runner
 - Native TypeScript support
 - All-in-one tool (package manager + bundler + runner)
 
 **Trade-offs**:
+
 - Newer, less proven than npm/yarn
 - Some compatibility issues (using Vitest instead of Bun test for now)
 
 ### Why Vite?
 
 **Benefits**:
+
 - Extremely fast HMR (Hot Module Replacement)
 - Native ESM support
 - Excellent Svelte integration
@@ -661,6 +699,7 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why Turbo?
 
 **Benefits**:
+
 - Fast monorepo builds (caching, parallelization)
 - Task orchestration
 - Smart dependency graph execution
@@ -695,6 +734,7 @@ See `CLAUDE.md` for the full testing strategy.
 The demo uses the unified Element Player to dynamically load elements via custom element registration, making it framework-agnostic.
 
 **Features:**
+
 - Interactive element testing (gather, view, evaluate modes)
 - Live model/session editing
 - Controller testing
@@ -719,6 +759,7 @@ apps/element-demo/
 ```
 
 **Generated Files:**
+
 1. **`registry.ts`** - Element metadata, committed
    - Generated by `bun tools/generate-demo-metadata.mjs` from `packages/elements-react` and `packages/elements-svelte`
    - Regeneration keeps each entry's hand-set `title` and `hasSession`
@@ -757,12 +798,14 @@ http://localhost:5222/hotspot
 **Contrast with legacy**:
 
 **Legacy (webpack + IIFE)**:
+
 - Bundled ALL dependencies into single IIFE file
 - Large bundle sizes (~1-2MB per element)
 - No tree-shaking across elements
 - Required custom bundle service (pie-shared-lib-builder)
 
 **Modern (ESM + Vite)**:
+
 - External dependencies loaded by browser
 - Small element bundles (~15-40KB per element)
 - Browser caches shared dependencies
@@ -829,6 +872,7 @@ export declare const MultipleChoice: Component<Props>;
 ### WCAG 2.2 Level AA Compliance
 
 All elements must meet WCAG 2.2 Level AA standards:
+
 - **Perceivable**: Text alternatives, color contrast, adaptable layouts
 - **Operable**: Keyboard navigation, sufficient time, seizure prevention
 - **Understandable**: Readable text, predictable behavior, input assistance
@@ -837,6 +881,7 @@ All elements must meet WCAG 2.2 Level AA standards:
 ### Testing
 
 Every element must pass:
+
 1. **Automated scans** with axe-core
 2. **Keyboard navigation** testing
 3. **Screen reader** testing (manual)
@@ -893,12 +938,14 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 ### NPM Publishing
 
 **Current Strategy**: Publishing is CI-driven via GitHub Actions and Changesets:
+
 1. PR merged to `develop`. CI records its changeset as `.changeset/pr-<n>.md`, unless the PR wrote its own (`bun run changeset`)
 2. On `develop`, the same Release run publishes the changed packages as `<version>-next.<datetime>` snapshots and commits no versions ([Release Flow](PUBLISHING.md#release-flow))
 3. `develop` merged to `master`: the GitHub Action creates a "Version Packages" PR, and merging it publishes to npm `latest`
 4. CI opens a `master` -> `develop` back-merge PR with the release commit
 
 **Dist-tag routing**:
+
 - `master` -> release channel `stable` -> npm tag `latest`
 - `develop` -> release channel `next` -> npm tag `next`
 - optional beta workflows -> release channel `beta` -> npm tag `beta`
@@ -924,11 +971,13 @@ See [section 8 above](#8-independent-package-versioning-and-release-labels) for 
 **Semantic Versioning (SemVer)**:
 
 Each changed package follows semantic versioning independently:
+
 - **Major**: Breaking changes in that package
 - **Minor**: Backward-compatible new features in that package
 - **Patch**: Bug fixes in that package
 
 **How versioning works:**
+
 1. Developer makes changes to any package(s)
 2. Run `bun run changeset` to describe the change
 3. Changesets determines the appropriate version bump for selected packages
@@ -968,6 +1017,7 @@ jsDelivr `+esm` are not a supported entry point ([PUBLISHING.md](PUBLISHING.md))
 See `CLAUDE.md` for the step-by-step guide and element conventions.
 
 Key requirements:
+
 1. Implement PIE controller interface
 2. Create student component
 3. Create authoring component
@@ -991,6 +1041,7 @@ Consumers can override variables to match their brand.
 ### Plugin System (Future)
 
 Planned extension points:
+
 - Custom validators
 - Custom feedback generators
 - Custom rendering plugins
@@ -1017,6 +1068,7 @@ A player built as a Svelte custom element forwards the change with a DOM event f
 ### Use $bindable Sparingly
 
 Use `$bindable` only for true bidirectional flow:
+
 - ✅ UI controls: `mode`, `playerRole`, `splitRatio`
 - ✅ Settings: `partialScoring`, `addCorrectResponse`
 - ❌ Session state (the element writes into the player's object)

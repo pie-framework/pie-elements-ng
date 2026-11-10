@@ -38,6 +38,7 @@ Do not implement code.
 ## Review Expectations
 
 Before moving a PRD from `Proposal` to `Accepted`:
+
 - Product agrees the goals and non-goals are right.
 - Engineering agrees the proposed model/session surface is implementable.
 - Accessibility concerns are covered or explicitly tracked as open questions.
