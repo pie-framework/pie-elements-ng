@@ -32,6 +32,7 @@ pie-players settled the same question for its own chrome: the interface locale i
 ### Engine
 
 `@pie-element/shared-i18n` (`packages/shared/i18n`) ports pie-players' `players-shared/src/i18n`:
+
 - RFC 4647 lookup, then primary-subtag widening: `es_MX` reads `es-MX`, then `es`. Both stay within the request's script, the CLDR likely script for a bare tag: `zh-TW` reads `zh-TW`, `zh-Hant`, and never the Simplified `zh`.
 - Per-key lookup: host messages along the request's truncation chain (`es-MX`, then `es`), the shipped catalog the request resolves to, host `en-US`, shipped `en-US`, the key itself. The catalog locale resolves against shipped catalogs alone, because it decides what loads: a host override for `es-MX` layers over a shipped `es`, which still loads and gates readiness. Host messages match their tag whatever its case or separator.
 - `{name}` interpolation; CLDR plural groups selected by `Intl.PluralRules`, `other` required, each category resolving within the requested locale's sources (host messages, then its catalog) before the fallback's: the first carrying the selected category, then the first carrying `other`, else the key, so a locale's own `other` wins over English `one`; `localeDirection` from `Intl.Locale.textInfo`. A finite numeric value renders through `Intl.NumberFormat` for the resolved locale, so digits and grouping follow CLDR locale defaults (`ar-SA` renders Arabic-Indic digits; current CLDR resolves bare `ar` to Western digits).
@@ -50,6 +51,7 @@ Precedence, permanent: the locale the player publishes, else the item's declared
 **Invariant:** an element treats an unanswered `interfaceLocaleContext` request as "no locale chosen" and falls back to the declared language, never to `en-US` directly. pie-players holds the other half: a player answers only once a host chooses a locale (`locale` set, or a supplied provider resolving another locale than `en-US`), so the fallback is reached under every host that chooses none. A host that wants English chrome over Spanish content sets `locale="en-US"`. Each migrated element's interface-locale test renders a Spanish-declaring item with no player and asserts Spanish chrome.
 
 The channel is a composition context in `@pie-players/pie-context` at `Symbol.for('pie.interfaceLocale')`, published by the item and section players from their `locale` attribute. Elements already consume `sessionCommitContext` the same way for the idle-save delay (`packages/shared/player-events/src/idle-save-delay.ts`). The custom element subscribes in `connectedCallback`, re-renders on republish, and passes the locale into the `language` prop its libraries already take. Two alternatives lose:
+
 - An `env` field: pie-players reserves `Env.locale` for content language, an input to filtering authored data.
 - A custom-element attribute: the player would have to enumerate its elements, and a library nested inside one cannot see it.
 
@@ -75,6 +77,7 @@ A string lives in the package that renders it. A phrase several elements pass in
 IIFE ships English only, and a host that needs another locale registers its messages with `registerMessages` before mounting. `tools/vite/iife-english-only-catalogs.ts` drops the loaders from every workspace catalog an IIFE build inlines, and fails the build on a loader it cannot strip. Every IIFE configuration runs it, so an unmigrated element's IIFE renders its migrated libraries in English.
 
 No current content needs another locale there. No live installation serves elements from this repository through IIFE, and the installation whose models declare Spanish delivers them as single-select items in gather mode, where the multiple-choice it runs today renders no translated string to a learner. This repository's multiple-choice would translate one string on such an item, its region name, for assistive technology alone. Inlining every shipped locale is the alternative; it loads locale data on every English IIFE page, which the [goals](#goals) rule out, and no content today would use it.
+
 - **Runtime injection** (chosen) works in every build shape and doubles as the host's custom-strings seam.
 - **Per-locale IIFE artifacts** multiply the publish matrix by the locale count.
 - **JSON over fetch** adds a serving contract IIFE hosts do not have.
@@ -104,6 +107,7 @@ The engine has no framework dependency. React gets no context or hook: libraries
 ### Default notes
 
 categorize and placement-ordering rewrote `model.note` in `UNSAFE_componentWillReceiveProps` when it equalled the previous language's translated default, and their controllers, ECR's, math-inline's and math-templated's wrote the translated default into the model when the note was absent. Both behaviours are gone:
+
 - The controller leaves `note` as authored.
 - Delivery renders `model.note`, or the alternates default in the chrome language when the note is absent.
 - A stored note equal to the shipped default in `en-US`, the chrome language or the declared language counts as absent. `authoredOrDefault` in `@pie-element/shared-i18n` compares them ignoring markup, whitespace including `&nbsp;`, and a leading label such as `Note:`, which the historical English form omits.

@@ -11,14 +11,17 @@ The element player is a **standalone web component bundle** (`pie-element-player
 ## Recommendation
 
 Use the player as a **Node package dependency** in modern applications.
+
 - Recommended: install/import via package manager and bundle with your app.
 - Secondary/fallback: dynamic script/import-map loading for environments that cannot bundle.
 
 Positioning note:
+
 - In normal production integrations, use the standard production player stacks from the `pie-elements` and `pie-players` projects.
 - Treat `@pie-element/element-player` as a flexible element-level host for development, testing, and composable/advanced embedding scenarios.
 
 Why this is preferred:
+
 - Better build-time optimization and dependency deduplication
 - More reliable versioning through lockfiles
 - Better TypeScript/IDE support and compile-time validation
@@ -77,18 +80,21 @@ For elements with import maps:
 ### Unified Player
 
 **Delivery view (`<pie-element-player view="delivery">`):**
+
 - Loads elements via dynamic ESM imports: `import('@pie-element/hotspot')`
 - Handles session state and user interactions
 - Emits `session-changed` events
 - Works with both React and Svelte elements
 
 **Print view (`<pie-element-player view="print">`):**
+
 - Loads print exports: `import('@pie-element/hotspot/print')`
 - Stateless (no session management)
 - Optimized for print layouts
 - Role-based rendering (student/instructor)
 
 **All views:**
+
 - Use import maps for module resolution
 - Self-contained (no external setup needed)
 - Support for both React and Svelte elements
@@ -132,6 +138,7 @@ bun cli dev:demo
 ```
 
 **Prerequisites:**
+
 - Element must be built: `bun run turbo build --filter @pie-element/hotspot`
 - Element player must be built: `bun run turbo build --filter @pie-element/element-player`
 

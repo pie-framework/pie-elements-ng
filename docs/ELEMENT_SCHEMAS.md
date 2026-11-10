@@ -129,6 +129,7 @@ Element-specific fields are public once published and follow semver. Adding an o
 | `scripts/check-publish-surface.mjs`     | An element package without its schema exports                                                                                               | `bun run verify:element-contracts`, before every release publish |
 
 The schema test validates the values each element ships:
+
 - the controller defaults and `createDefaultModel()`;
 - the author defaults;
 - the demo models and sessions in `docs/demo/config.mjs` and `docs/demo/session.mjs`;
@@ -148,6 +149,7 @@ bun run test tools/schemas -t multiple-choice
 ### Resolving
 
 Each schema ships in its npm package and resolves from jsDelivr at its `$id`:
+
 - npm: `@pie-element/multiple-choice/schemas/model.schema.json`
 - jsDelivr: `https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice@<version>/dist/schemas/model.schema.json`
 

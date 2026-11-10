@@ -45,6 +45,7 @@ bun run tests/test-with-workspace.ts
 ```
 
 This script:
+
 1. Creates a temporary workspace
 2. Symlinks local packages into it
 3. Overrides the bundler's installer to use these local packages
@@ -54,6 +55,7 @@ This script:
 ## Why This Works
 
 The local packages in this workspace:
+
 - ✅ Avoid old broken git dependency paths
 - ✅ Have all dependencies properly defined
 - ✅ Are built and ready to bundle
@@ -61,6 +63,7 @@ The local packages in this workspace:
 ## Future: Once Published to NPM
 
 Once the modernized elements are published to NPM:
+
 - The integration tests will work without any special setup
 - Just run: `bun test bundler.test.ts`
 - No workspace tricks needed

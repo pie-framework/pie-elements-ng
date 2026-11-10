@@ -20,11 +20,13 @@ Reviews `controller/index.ts` implementations for correctness, scoring accuracy,
 ### `model(question, session, env) → ViewModel`
 
 **Must**:
+
 - Return a fully-typed ViewModel (no `any`, no `unknown` widening).
 - Set `disabled: true` when `env.mode !== 'gather'` or `env.disabled === true`.
 - Strip correctness data (correct answers, correct regions, solution keys) when `env.mode !== 'evaluate'`.
 
 **Must not**:
+
 - Mutate `question` or `session`.
 - Return raw model fields unfiltered — always project into a ViewModel type.
 - Return `any`. If the shape isn't known statically, fix the types.
@@ -32,40 +34,48 @@ Reviews `controller/index.ts` implementations for correctness, scoring accuracy,
 ### `outcome(question, session, env) → { score: number, empty: boolean }`
 
 **Must**:
+
 - Return `score` in `[0, 1]` (inclusive). Never `> 1`, never `< 0`, never `NaN`.
 - Return `empty: true` if and only if the session contains no student response (all placements `null`, no selection, empty text, etc.).
 - Be deterministic: identical inputs must produce identical outputs. No `Math.random()`, no `Date.now()`, no global state reads.
 
 **Must not**:
+
 - Return a score as a string (e.g. `"0.75"`). The type is `number`.
 - Treat `session.completed === false` as equivalent to empty — a partial response is not empty.
 
 ### `createDefaultModel() → Model`
 
 **Must**:
+
 - Return a model that passes `validate()` with zero errors — i.e. `Object.keys(validate(createDefaultModel())).length === 0`.
 - Be usable as a blank starting point in the authoring UI without any required author edits before save.
 
 **Must not**:
+
 - Return a model missing required fields that `validate()` would flag.
 
 ### `validate(model) → Record<string, string>`
 
 **Must**:
+
 - Return `{}` (empty object) for any valid model.
 - Return field-keyed error messages (e.g. `{ "circles": "At least 2 circles are required" }`) for each invalid condition.
 
 **Must not**:
+
 - Throw. All error conditions must be returned as messages.
 - Mutate the model.
 
 ### `createCorrectResponseSession(question) → Session`
 
 **Must**:
+
 - Return a session such that `outcome(question, session, { mode: 'evaluate' }).score === 1.0`.
 - Populate every required session field (`completed`, `placements` or equivalent) correctly.
 
 **Must not**:
+
 - Return a session that would fail `outcome()` type checks.
 
 ## Scoring Correctness Checklist
@@ -78,6 +88,7 @@ Reviews `controller/index.ts` implementations for correctness, scoring accuracy,
 - [ ] Is scoring pure? No shared mutable state, no side effects.
 
 **Boundary cases to test**:
+
 - 0 tiles correct out of N → score `0`.
 - All N tiles correct → score `1`.
 - Exactly N−1 tiles correct (`partialPerTile`) → score `(N-1)/N`.
@@ -154,6 +165,7 @@ Fix:
 ```
 
 Severity guide:
+
 - **CRITICAL**: Incorrect score, data leak, throws instead of returning errors, type `any`.
 - **WARNING**: Wrong `empty` logic, non-determinism risk, `validate()` accepts an invalid model.
 - **SUGGESTION**: Style, naming, or minor defensive improvement with no correctness impact.

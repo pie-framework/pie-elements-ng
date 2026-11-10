@@ -7,6 +7,7 @@ Rollout for the [interface i18n PRD](../PRD.md). An element migrates together wi
 **Phase 1** (done): `@pie-element/shared-i18n`, the catalog gate in `bun run lint`, the artifact assertion, and `@pie-lib/render-ui`, `@pie-lib/correct-answer-toggle` and `@pie-element/multiple-choice`. Multiple-choice is about 79% of production items, and the two libraries sit on nearly every element's render path. Chrome follows `model.language`, as under the translator, except in the IIFE, which ships English.
 
 **Phase 2** (done): the interface-locale channel and the shared labels.
+
 - pie-players (pie-players #808, #974): `interfaceLocaleContext` in `@pie-players/pie-context`, answered by the item and section players once a host chooses a locale.
 - Here: `subscribeInterfaceLocale` in `@pie-element/shared-i18n` and the precedence in multiple-choice; `Collapsible` gained `teacherInstructions` and `rationale` variants that own the four toggle labels (#629).
 
@@ -23,6 +24,7 @@ Rollout for the [interface i18n PRD](../PRD.md). An element migrates together wi
 | #635 | complex-rubric; one alternates-note helper in `@pie-element/shared-i18n`; interface and content language split in `mask-markup` and `editable-html-tip-tap` |
 
 Findings that corrected the plan:
+
 - complex-rubric embeds rubric and multi-trait-rubric and forwards the item's `language` into their models unless they declare their own; it has no catalog of its own.
 - charting's limit message is `reachedLimit`, a plural group like image-cloze-association's.
 - graphing-solution-set's hardcoded strings live in the element; its line style `'Solid'` is a data value and stays untranslated.
@@ -48,6 +50,7 @@ The TSX hardcoded-string scanner joins step 3 as an advisory per-package check o
 ## Remaining English
 
 Learner-facing strings still outside any catalog:
+
 - the math keypad in each `math-input` library, about 87 strings, and `math-toolbar`;
 - `@pie-lib/drag`'s dnd-kit screen-reader announcements;
 - the default feedback, `Correct`, `Incorrect`, `Nearly` and `You have not entered a response`, in `@pie-element/shared-feedback` and the ebsr, explicit-constructed-response, multiple-choice, math-inline and number-line defaults: controllers produce it and have no interface locale, so localizing it is a design decision of its own.

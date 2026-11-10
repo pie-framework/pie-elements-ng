@@ -3,6 +3,7 @@
 Svelte 5 PIE element where the learner picks a **multiple-choice** option and that choice **fills a blank** in a sentence/template.
 
 This element is the PIE counterpart for Star CQT "populated blank" interactions. The CQT family had several published `custom_type` flavors, but they are all variants of the same base interaction:
+
 - one selected choice
 - one correctness key
 - selected choice rendered into a blank target
@@ -11,6 +12,7 @@ This element is the PIE counterpart for Star CQT "populated blank" interactions.
 ## What the original CQT flavors mean
 
 The historical CQT names mostly describe layout/stimulus differences, not different scoring logic:
+
 - `sel_vic`: sentence-style vocabulary in context, with audio/transcript support
 - `sr-vic`: sentence-style vocabulary in context, typically no audio button
 - `sel_r1-g_plusggg`: lead token before blank (`before_cloze_1`) plus choice set
@@ -38,6 +40,7 @@ Use this as a practical starting point when mapping CQT payloads into `mc-popula
 | `sel_r1-s3_plusggg` | stimulus-heavy/image-first variant     | `populate_blank`            | `text` or `image`      | include stimulus in `prompt`/`sentenceHtml`; keep single blank in `template` |
 
 Notes:
+
 - `choiceMode` should be `image` only when distractors are image choices; otherwise use `text`.
 - Current model contract is single-blank for `populate_blank`; dual-cloze source shapes are normalized to one `{{blank}}`.
 - `correctChoiceId` should always map from the CQT's `valid_response.name` to canonical `distractor_n`.
@@ -151,6 +154,7 @@ The figures are wireframes: colour marks a region, a dashed region renders only 
 ## Theming hooks (`pie-*` classes)
 
 Delivery now exposes stable `pie-*` classes so hosts can theme this element with the same class-oriented approach used by other PIE elements.
+
 - Root/container: `pie-element`, `pie-element-mc-populated-blank`, `pie-delivery-root`
 - Header, holding teacher instructions, the prompt and the show-correct-answer toggle ahead of the stem: `pie-header`
 - Prompt/audio/template: `pie-prompt`, `pie-audio-container`, `pie-audio-player`, `pie-template-line`, `pie-sentence-line`
@@ -163,6 +167,7 @@ Delivery now exposes stable `pie-*` classes so hosts can theme this element with
 ## Bundled CQT variant CSS
 
 This element bundles variant-specific CSS in delivery, so it loads no stylesheet at runtime:
+
 - Variant CSS files: `src/delivery/cqt-css/*.css`
 - Variant mapping: `src/delivery/variant-css-map.ts`
 - Applied by `model.customType` (for example `sel_r1-_plusggg`)
