@@ -10,6 +10,8 @@
  * a response that compared equal or unequal before still does.
  */
 
+import { canonicalLanguageTag } from '@pie-players/pie-language-tags';
+
 export interface NormalizeOptions {
   /**
    * BCP 47 tag of the content language. Selects the decimal and group marks
@@ -139,24 +141,18 @@ const writesDecimalComma = (language: string | undefined): boolean => {
 };
 
 /**
- * The BCP 47 tag for a language code. An underscore code (`es_ES`, `tr_TR`) yields its
- * language alone: its producers, the authoring dropdown and the Learnosity transform,
- * write `es_ES` for Spanish of any region, and content tagged `es_ES` mostly uses US
- * number conventions. A region, and with it a number convention, comes only from a
- * hyphenated tag.
+ * The canonical BCP 47 tag for a language code, or `undefined` when it names no
+ * language. An underscore code (`es_ES`, `tr_TR`) yields its language alone: its
+ * producers, the authoring dropdown and the Learnosity transform, write `es_ES` for
+ * Spanish of any region, and content tagged `es_ES` mostly uses US number conventions.
+ * A region, and with it a number convention, comes only from a hyphenated tag.
  */
-const languageTag = (code: string): string => {
-  const tag = code.includes('_') ? code.slice(0, code.indexOf('_')) : code;
-  try {
-    return Intl.getCanonicalLocales(tag)[0] ?? tag;
-  } catch {
-    return tag;
-  }
-};
+const languageTag = (code: string): string | undefined =>
+  canonicalLanguageTag(code.includes('_') ? code.slice(0, code.indexOf('_')) : code);
 
 /**
  * The language a comparison runs in: the element's `model.language`, then the
- * item's `env.locale`.
+ * item's `env.locale`. A value that names no language passes to the next.
  */
 export const contentLanguage = (model?: object | null, env?: object | null): string | undefined => {
   // Typed as `object` so that any element's model and environment type is
@@ -166,7 +162,8 @@ export const contentLanguage = (model?: object | null, env?: object | null): str
     (env as { locale?: unknown } | null)?.locale,
   ];
   for (const tag of tags) {
-    if (typeof tag === 'string' && tag.trim()) return languageTag(tag.trim());
+    const language = typeof tag === 'string' ? languageTag(tag) : undefined;
+    if (language) return language;
   }
   return undefined;
 };

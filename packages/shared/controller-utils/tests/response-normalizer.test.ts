@@ -256,9 +256,10 @@ describe('contentLanguage', () => {
     ).toBe('2,5');
   });
 
-  it('canonicalises a hyphenated tag and keeps one it cannot read', () => {
+  it('canonicalises a hyphenated tag and passes over one that names no language', () => {
     expect(contentLanguage({ language: 'EN-us' })).toBe('en-US');
-    expect(contentLanguage({ language: 'not a tag!' })).toBe('not a tag!');
+    expect(contentLanguage({ language: 'not a tag!' }, { locale: 'de-DE' })).toBe('de-DE');
+    expect(contentLanguage({ language: 'Spanish' })).toBeUndefined();
   });
 });
 
