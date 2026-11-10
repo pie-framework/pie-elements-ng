@@ -23,6 +23,29 @@ const fixtures = [
   ['1.10', ['tzn', 1.1, 1]],
   ['1,001.10', ['tzn', 1001.1, 1]],
   ['1.11000', ['tzn', 1.11, 3]],
+  ['1{,}000', 1000],
+  ['1{,}000{,}000.5', 1000000.5],
+  ['1\\,000', 1000],
+  ['1,0000', ['list', 1, 0]],
+  ['000', 0],
+  ['2\\,3', ['*', 2, 3]],
+
+  // \dfrac and \tfrac are fractions
+  ['\\dfrac{1}{2}', ['/', 1, 2]],
+  ['\\tfrac{1}{2}', ['/', 1, 2]],
+  ['2\\dfrac{1}{2}', ['+', 2, ['/', 1, 2]]],
+
+  // a spacing command before a numeric fraction keeps a mixed number
+  ['2\\ \\frac{1}{2}', ['+', 2, ['/', 1, 2]]],
+  ['10\\ \\ \\frac{8}{10}', ['+', 10, ['/', 8, 10]]],
+  ['2\\,\\frac{1}{2}', ['+', 2, ['/', 1, 2]]],
+  ['2\\ \\frac{m}{s}', ['*', 2, ['/', 'm', 's']]],
+
+  // Arabic: the list comma, letters as variables and inside \text
+  ['(1،2)', ['list', 1, 2]],
+  ['س+2ص', ['+', 'س', ['*', 2, 'ص']]],
+  ['5\\text{سم}', ['*', 5, 'text{سم}']],
+  ['5\\text{café}', ['*', 5, 'text{café}']],
 
   // dollar sign
   ['1000$', ['*', 1000, '$']],
@@ -195,5 +218,20 @@ describe('keepMixedNumbers', () => {
 
   it('reads a mixed number as a sum by default', () => {
     expect(lta.convert('2\\frac{1}{2}')).toEqual(['+', 2, ['/', 1, 2]]);
+  });
+});
+
+describe('exactNumbers', () => {
+  it.each([
+    ['0.10000000000000001', ['decimal', '0.10000000000000001']],
+    ['12,345,678,901,234,567', ['decimal', '12345678901234567']],
+    ['.50', ['decimal', '0.50']],
+    ['007', ['decimal', '7']],
+    ['2E3', ['decimal', '2E3']],
+    ['2\\frac{1}{2}', ['mixed', ['decimal', '2'], ['/', ['decimal', '1'], ['decimal', '2']]]],
+  ])('%s => %j', (input, expected) => {
+    expect(new LatexToAst({ keepMixedNumbers: true, exactNumbers: true }).convert(input)).toEqual(
+      expected
+    );
   });
 });

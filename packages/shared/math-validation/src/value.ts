@@ -2,47 +2,57 @@ import { LatexToAst } from './conversion/latex-to-ast.js';
 import type { Latex } from './options.js';
 
 /** A rational in lowest terms with a positive denominator, so equal values have equal parts. */
-type Rational = { n: number; d: number };
+type Rational = { n: bigint; d: bigint };
 
-const lta = new LatexToAst({ keepMixedNumbers: true });
+const lta = new LatexToAst({ keepMixedNumbers: true, exactNumbers: true });
 
-const gcd = (a: number, b: number): number => (b === 0 ? Math.abs(a) : gcd(b, a % b));
+// Wider exponents compare as literal, so `1E999999` can't stall a comparison.
+const MAX_EXPONENT = 1000;
 
-const rational = (n: number, d: number): Rational | undefined => {
-  if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) {
+const gcd = (a: bigint, b: bigint): bigint => {
+  let [x, y] = [a < 0n ? -a : a, b < 0n ? -b : b];
+  while (y) {
+    [x, y] = [y, x % y];
+  }
+  return x;
+};
+
+const rational = (n: bigint, d: bigint): Rational | undefined => {
+  if (d === 0n) {
     return undefined;
   }
-  const g = gcd(n, d) || 1;
-  const sign = d < 0 ? -1 : 1;
+  const g = gcd(n, d);
+  const sign = d < 0n ? -1n : 1n;
   return { n: (sign * n) / g, d: (sign * d) / g };
 };
 
 const negate = (r?: Rational): Rational | undefined => r && { n: -r.n, d: r.d };
 
 const divide = (a?: Rational, b?: Rational): Rational | undefined =>
-  a && b && b.n !== 0 ? rational(a.n * b.d, a.d * b.n) : undefined;
+  a && b && b.n !== 0n ? rational(a.n * b.d, a.d * b.n) : undefined;
 
 const isNode = (node: unknown, operator: string, arity: number): node is any[] =>
   Array.isArray(node) && node[0] === operator && node.length === arity + 1;
 
-/** An unsigned number, read from its shortest decimal form so `0.1` is exactly 1/10. */
+/** An unsigned number, read from its digits as written, so `0.1` is exactly 1/10 and no digit is lost. */
 const decimal = (node: unknown): Rational | undefined => {
-  const x = isNode(node, 'tzn', 2) ? node[1] : node;
-  if (typeof x !== 'number' || !Number.isFinite(x) || x < 0) {
-    return undefined;
-  }
-  const m = /^(\d+)(?:\.(\d+))?(?:e([+-]\d+))?$/.exec(String(x));
+  const m = isNode(node, 'decimal', 1) && /^(\d+)(?:\.(\d*))?(?:E([+-]?\d+))?$/.exec(node[1]);
   if (!m) {
     return undefined;
   }
   const [, whole, decimals = '', exponent = '0'] = m;
-  const digits = Number(whole + decimals);
   const shift = Number(exponent) - decimals.length;
-  return shift >= 0 ? rational(digits * 10 ** shift, 1) : rational(digits, 10 ** -shift);
+  if (Math.abs(shift) > MAX_EXPONENT) {
+    return undefined;
+  }
+  const digits = BigInt(whole + decimals);
+  return shift >= 0
+    ? rational(digits * 10n ** BigInt(shift), 1n)
+    : rational(digits, 10n ** BigInt(-shift));
 };
 
 const integer = (node: unknown): Rational | undefined =>
-  typeof node === 'number' && Number.isInteger(node) ? decimal(node) : undefined;
+  isNode(node, 'decimal', 1) && /^\d+$/.test(node[1]) ? decimal(node) : undefined;
 
 /** A fraction's numerator or denominator: a decimal with at most one minus sign. */
 const part = (node: unknown): Rational | undefined =>

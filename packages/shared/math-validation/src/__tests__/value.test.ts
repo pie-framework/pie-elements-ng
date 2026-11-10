@@ -12,7 +12,11 @@ describe('compareNumbers', () => {
     '6.0',
     '.5',
     '1,000',
+    '1{,}000',
+    '1\\,000',
+    '12345678901234567890',
     '2/3',
+    '\\dfrac{2}{3}',
     '\\frac{2}{3}',
     '-\\frac{2}{3}',
     '\\frac{-2}{3}',
@@ -39,13 +43,33 @@ describe('compareNumbers', () => {
     '\\frac{\\frac{1}{2}}{3}',
     '2+\\frac{1}{2}',
     '2\\frac{-1}{2}',
-    '1{,}000',
     '1,5',
+    '1E999999',
     'r=\\sqrt{\\frac{V}{7\\pi}}',
     'x+1',
   ])('leaves %s to the mode', (latex) => {
     expect(compareNumbers(latex, latex)).toBeUndefined();
     expect(compareNumbers(latex, '6')).toBe(false);
+  });
+});
+
+describe('compareNumbers precision', () => {
+  it.each([
+    ['0.1', '0.10000000000000001'],
+    ['12345678901234567', '12345678901234568'],
+    ['9007199254740993', '9007199254740992'],
+    ['\\frac{1}{3}', '0.3333333333333333'],
+    ['2\\frac{1}{3}', '2.3333333333333335'],
+  ])('tells %s from %s', (a, b) => {
+    expect(compareNumbers(a, b)).toBe(false);
+  });
+
+  it.each([
+    ['\\frac{1}{3}', '\\frac{3333333333333333}{9999999999999999}'],
+    ['12345678901234567', '12,345,678,901,234,567.000'],
+    ['1E30', '1000000000000000000000000000000'],
+  ])('equates %s and %s', (a, b) => {
+    expect(compareNumbers(a, b)).toBe(true);
   });
 });
 
