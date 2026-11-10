@@ -29,9 +29,8 @@ import { buildAlternateResponses, buildCategories } from './builder.js';
 import Header from './header.js';
 import { getMaxCategoryChoices, multiplePlacements } from '../utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../../i18n/index.js';
 
-const { translator } = Translator;
 const { dropdown, Panel, toggle, radio, numberField } = settings;
 const { Provider: IdProvider } = uid;
 
@@ -609,10 +608,9 @@ export class Design extends React.Component {
     };
 
     const isOpened = this.isAlertModalOpened();
-    const alertMaxChoicesMsg = translator.t('translation:categorize:maxChoicesPerCategoryRestriction', {
-      lng: model.language,
-      maxChoicesPerCategory,
-    });
+    const alertMaxChoicesMsg = catalogs
+      .forLocale(model.language, () => this.forceUpdate())
+      .t('maxChoicesPerCategoryRestriction', { maxChoicesPerCategory });
 
     return (
       <DragProvider onDragStart={this.onDragStart} onDragEnd={this.onDragEnd}>

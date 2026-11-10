@@ -31,7 +31,7 @@ Findings that corrected the plan:
 - The `Collapsible` labels moved for React elements. The Svelte elements keep their toggle labels in their own catalogs.
 - video-stimulus keeps `uiText` as a model override and no longer defaults `language` to `en`.
 
-**Phase 4** (open, maintainer-run): deprecate `@pie-lib/translator` 5.x. No delivery code here imports it; categorize's authoring view is its last dependent. The `model.language` fallback stays ([Interface locale](../PRD.md#interface-locale)). pie-lib publishes 4.x under the same name and the legacy elements pin it, so the deprecation names the 5.x range.
+**Phase 4** (open, maintainer-run): deprecate `@pie-lib/translator` 5.x on npm. Its last dependent, categorize's authoring alert, reads categorize's catalog, and the package left this repository on 2026-11-10. The `model.language` fallback stays ([Interface locale](../PRD.md#interface-locale)). pie-lib publishes 4.x under the same name and the legacy elements pin it, so the deprecation names the 5.x range.
 
 ## Per-package checklist
 
@@ -59,7 +59,7 @@ Learner-facing strings still outside any catalog:
 
 ## Translator coexistence
 
-`@pie-lib/translator` is untouched, and its catalogs keep every namespace for the legacy pie-elements that pin 4.x. Categorize's authoring view is its only remaining dependent here, so no delivery bundle carries i18next.
+This repository no longer builds `@pie-lib/translator`. Its published 5.x versions stay on npm, and pie-lib's 4.x keeps every namespace for the legacy pie-elements that pin it. No bundle from this repository carries i18next.
 
 ## Bytes
 
@@ -67,12 +67,12 @@ Per element bundle, IIFE or browser ESM, minified:
 
 | Piece                                                                           | Bytes   | Gzipped |
 | ------------------------------------------------------------------------------- | ------- | ------- |
-| `@pie-lib/translator` today: i18next with every `en` and `es` namespace         | 64,304  | 20,106  |
+| `@pie-lib/translator`, retired: i18next with every `en` and `es` namespace      | 64,304  | 20,106  |
 | of which i18next                                                                | 43,577  | 13,928  |
 | `@pie-element/shared-i18n`                                                      | 6,210   | 2,410   |
 | a package's `es` chunk, browser ESM only, multiple-choice and its two libraries | 210–751 |         |
 
-An English-only page with _n_ elements loads _n_ × 64 KB of translator today, and _n_ × 6 KB of engine plus each package's English once every element on it has migrated. The shared browser runtime would cut the engine to one copy per page.
+An English-only page with _n_ elements loaded _n_ × 64 KB of translator, and loads _n_ × 6 KB of engine plus each package's English now that every element has migrated. The shared browser runtime would cut the engine to one copy per page.
 
 Measured on multiple-choice against `develop`:
 

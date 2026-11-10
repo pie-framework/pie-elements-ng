@@ -8,4 +8,7 @@ export default {
   /** Shown with the correct answer when alternate correct answers are defined; an authored note replaces it. */
   commonCorrectAnswerWithAlternates:
     'Note: The answer shown above is the most common correct answer for this item. One or more additional correct answers are also defined, and will also be recognized as correct.',
+  /** The authoring alert shown when a lower per-category limit is less than the answer choices a category already holds. */
+  maxChoicesPerCategoryRestriction:
+    'To change this value to {maxChoicesPerCategory}, each category must have {maxChoicesPerCategory} or fewer answer choices.',
 };

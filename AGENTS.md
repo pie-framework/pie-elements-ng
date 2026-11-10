@@ -86,7 +86,7 @@ pie-elements-ng/
 │   ├── lib-react/                # @pie-lib/* React libraries ported from pie-lib, owned here
 │   ├── lib-svelte/               # Svelte libraries: config-ui, delivery-events, editable-html-tiptap, media
 │   ├── shared/                   # @pie-element/shared-* (types, controller-utils, math-rendering-mathjax,
-│   │                             #   editor-runtime, theming, ...), element-bundler, @pie-lib/translator
+│   │                             #   editor-runtime, theming, ...), element-bundler
 │   ├── element-player/           # @pie-element/element-player
 │   ├── element-theme/            # @pie-element/element-theme
 │   └── element-theme-daisyui/    # @pie-element/element-theme-daisyui
