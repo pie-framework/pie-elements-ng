@@ -25,7 +25,7 @@ pie-players settled the same question for its own chrome: the interface locale i
 - **Browser-locale detection.** It would switch a Dutch-configured laptop's assessment chrome to Dutch unasked.
 - **Translating authored content.** Renaissance authors one item per locale. In-item alternates are pie-players' catalog cards.
 - **Lazy loading inside IIFE.** A single file has no base URL for a chunk; IIFE ships English and reaches any other locale through message registration ([IIFE](#iife)).
-- **Authoring UI.** `-config` bundles keep `@pie-lib/translator` at their one call site and their English labels; an authoring locale is a separate decision.
+- **Authoring UI.** `-config` bundles keep their English labels; an authoring locale is a separate decision. The one authoring string the translator held, categorize's per-category limit alert, is a key in categorize's catalog read in `model.language`, as the translator read it.
 
 ## Proposed surface
 
@@ -147,7 +147,7 @@ With no publisher, the toggle follows `es_ES` and reads "Mostrar respuesta corre
 
 ## Open questions
 
-- [ ] Whether `@pie-lib/translator` honours the published locale during the transition, so a host's `en-US` pin also covers unmigrated elements. Its calls carry no host element, so it would need a page-wide value, which a composition context deliberately is not.
+- [x] Whether `@pie-lib/translator` honours the published locale during the transition, so a host's `en-US` pin also covers unmigrated elements. Moot: no package here calls it (2026-11-10).
 - [ ] Whether elements read content language from `Env.locale`, pie-players' planned slice 2, which decides whether an undeclared item ever gets a content `lang` from its element.
 
 ## Status log
@@ -155,3 +155,4 @@ With no publisher, the toggle follows `es_ES` and reads "Mostrar respuesta corre
 - Proposal → Accepted. Phase 1 shipped in #475.
 - The declared-language fallback is permanent, and pie-players answers `interfaceLocaleContext` only once a host chooses a locale (2026-11-09).
 - Phases 2 and 3 done: every delivery element follows the interface locale (#629–#635, 2026-11-09). Phase 4, deprecating `@pie-lib/translator` 5.x, is maintainer-run.
+- Categorize's authoring alert reads its catalog, and `@pie-lib/translator` left this repository (2026-11-10). Its npm deprecation is still maintainer-run.

@@ -27,13 +27,13 @@ No earlier keyboard behaviour exists to restore, so this PRD defines one. The ch
 - **No jumps beyond Home and End.** A word-mode text can hold more than a hundred tokens, and it still gets no next-paragraph or next-selected-token key; the position description ("57 of 140") tells the student where they are.
 - **No announcement when the limit is reached.** The group name's "select up to 2" is the cue. Announcing "2 of 2 selected" waits for the status region planned for evaluate feedback ([PIE-1151](https://illuminate.atlassian.net/browse/PIE-1151)).
 - **No keyboard marking of tokens in `select-text-config`.** The authoring tokenizer reads a text selection on click; making it keyboard-operable is a separate authoring-surface change.
-- **No new Model or authoring fields.** The group name and position text come from `@pie-lib/translator` under `selectText`, with Spanish.
+- **No new Model or authoring fields.** The group name and position text come from `@pie-lib/text-select`'s catalog, with Spanish.
 
 ## Proposed surface
 
 **Model / Session**: unchanged. A keyboard toggle writes `session.selectedTokens` as a click does and dispatches the same `session-changed` event.
 
-**Modes**: keyboard operation in `gather` only. In `view` and `evaluate`, and in print, tokens are not operable and the text has no tab stop; selected tokens still expose their pressed state, marked unavailable, and stay reachable in screen-reader browse mode. In `evaluate` each correct, incorrect and missed token carries its marking as its description, from the Legend's translator keys (`correctAnswerSelected`, `incorrectSelection`, `correctAnswerNotSelected`) in the item language.
+**Modes**: keyboard operation in `gather` only. In `view` and `evaluate`, and in print, tokens are not operable and the text has no tab stop; selected tokens still expose their pressed state, marked unavailable, and stay reachable in screen-reader browse mode. In `evaluate` each correct, incorrect and missed token carries its marking as its description, from the Legend's catalog keys (`correctAnswerSelected`, `incorrectSelection`, `correctAnswerNotSelected`) in the item language.
 
 **Key delivery interactions** (`gather`):
 

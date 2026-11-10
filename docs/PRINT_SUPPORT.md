@@ -170,7 +170,7 @@ The browser build externalizes **only** React, per
 ```
 
 Everything else the print module needs — `@pie-lib/*` (render-ui,
-correct-answer-toggle, icons, translator), math rendering (including MathJax),
+correct-answer-toggle, icons), math rendering (including MathJax),
 lodash, MUI, Emotion, and any private child elements (e.g. EBSR's internal
 multiple-choice) — is **inlined** into the bundle's own chunks.
 
