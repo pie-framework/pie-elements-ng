@@ -348,3 +348,151 @@ export async function touchDragBetween(
 ): Promise<void> {
   await touchDrag(page, await centerOf(from), await centerOf(to), options);
 }
+
+const lerp = (from: Point, to: Point, progress: number): Point => ({
+  x: from.x + (to.x - from.x) * progress,
+  y: from.y + (to.y - from.y) * progress,
+});
+
+/**
+ * A finger that is still down. `moveTo` travels to a point in `steps` moves, `release` lifts it,
+ * and `cancel` ends the touch the way the system does when it takes the gesture over (an edge swipe,
+ * a notification, a palm) - `touchCancel`, with no `touchEnd`.
+ *
+ * Used where a spec has to do something while the finger is down: hold near an edge, or cancel.
+ */
+export type HeldTouch = {
+  moveTo(to: Point, options?: { steps?: number; delayMs?: number }): Promise<void>;
+  /** Puts a second finger down at `at` (touch id 2), then moves both with the first held. */
+  addFinger(at: Point): Promise<void>;
+  /** Moves the second finger only; the first stays where it is. */
+  moveFinger(to: Point, options?: { steps?: number; delayMs?: number }): Promise<void>;
+  /** Lifts the second finger; the first stays down. */
+  liftFinger(): Promise<void>;
+  release(): Promise<void>;
+  cancel(): Promise<void>;
+};
+
+/** Puts one finger down at `from` and returns the held touch. */
+export async function touchHold(page: Page, from: Point): Promise<HeldTouch> {
+  const session = await cdp(page);
+  let first = { ...from };
+  let second: Point | null = null;
+
+  const points = () => [
+    { x: first.x, y: first.y, id: 1 },
+    ...(second ? [{ x: second.x, y: second.y, id: 2 }] : []),
+  ];
+  const send = async (
+    type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel',
+    touchPoints = points()
+  ): Promise<void> => {
+    await session.send('Input.dispatchTouchEvent', { type, touchPoints });
+  };
+
+  await send('touchStart');
+
+  return {
+    async moveTo(to, { steps = 10, delayMs = 16 } = {}) {
+      const start = { ...first };
+      for (let step = 1; step <= steps; step++) {
+        first = lerp(start, to, step / steps);
+        await send('touchMove');
+        if (delayMs > 0) {
+          await page.waitForTimeout(delayMs);
+        }
+      }
+    },
+    async addFinger(at) {
+      second = { ...at };
+      await send('touchStart');
+    },
+    async moveFinger(to, { steps = 10, delayMs = 16 } = {}) {
+      if (!second) {
+        throw new Error('moveFinger: no second finger is down');
+      }
+      const start = { ...second };
+      for (let step = 1; step <= steps; step++) {
+        second = lerp(start, to, step / steps);
+        await send('touchMove');
+        if (delayMs > 0) {
+          await page.waitForTimeout(delayMs);
+        }
+      }
+    },
+    async liftFinger() {
+      // CDP reports a released point as one missing from the next event.
+      second = null;
+      await send('touchMove');
+    },
+    release: () => send('touchEnd', []),
+    cancel: () => send('touchCancel', []),
+  };
+}
+
+/**
+ * Drag one finger from `from` towards `to`, then have the system cancel the touch `cancelAfter` of
+ * the way along (default half way) instead of lifting it.
+ */
+export async function touchDragCancelled(
+  page: Page,
+  from: Point,
+  to: Point,
+  { steps = 10, delayMs = 16, cancelAfter = 0.5 }: TouchDragOptions & { cancelAfter?: number } = {}
+): Promise<void> {
+  const touch = await touchHold(page, from);
+  await touch.moveTo(lerp(from, to, cancelAfter), { steps, delayMs });
+  await page.waitForTimeout(100);
+  await touch.cancel();
+}
+
+/**
+ * Drag one finger from `from` to `to` while a second finger lands at `other` part way through,
+ * moves, and lifts before the first does. Returns once the first finger has lifted.
+ */
+export async function touchDragWithSecondFinger(
+  page: Page,
+  from: Point,
+  to: Point,
+  other: { from: Point; to: Point },
+  { steps = 10, delayMs = 16, settleMs = 150 }: TouchDragOptions = {}
+): Promise<void> {
+  const touch = await touchHold(page, from);
+  await touch.moveTo(lerp(from, to, 0.4), { steps, delayMs });
+  await touch.addFinger(other.from);
+  await touch.moveFinger(other.to, { steps, delayMs });
+  await touch.liftFinger();
+  await touch.moveTo(to, { steps, delayMs });
+  await page.waitForTimeout(settleMs);
+  await touch.release();
+}
+
+/**
+ * Scrolls the page so the joint box of `targets` is centred vertically in the viewport. A finger
+ * can only land on what is on screen, so a spec that opens a route with `layout=page`, where the
+ * element sits below other content, calls this before it touches anything.
+ */
+export async function centreInViewport(...targets: Locator[]): Promise<void> {
+  let top = Number.POSITIVE_INFINITY;
+  let bottom = Number.NEGATIVE_INFINITY;
+  for (const target of targets) {
+    await target.waitFor({ state: 'visible', timeout: 15_000 });
+    const box = await target.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        top: rect.top + window.scrollY,
+        bottom: rect.bottom + window.scrollY,
+      };
+    });
+    top = Math.min(top, box.top);
+    bottom = Math.max(bottom, box.bottom);
+  }
+  await targets[0].page().evaluate(
+    ({ top, bottom }) =>
+      window.scrollTo({
+        top: (top + bottom) / 2 - window.innerHeight / 2,
+        behavior: 'instant',
+      }),
+    { top, bottom }
+  );
+}
