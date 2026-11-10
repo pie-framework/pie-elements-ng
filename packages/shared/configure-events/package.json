@@ -17,7 +17,6 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
-    "test": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {},

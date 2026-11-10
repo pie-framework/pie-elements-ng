@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc && mkdir -p dist/shims && cp src/shims/*.js dist/shims/",
-    "test": "vitest run",
+    "test": "bun x vitest run --root ../../.. ./",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },

@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",
     "dev": "tsc --watch",
-    "test": "vitest run",
+    "test": "bun x vitest run --root ../../.. ./",
     "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
