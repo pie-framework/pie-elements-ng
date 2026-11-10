@@ -11,7 +11,7 @@ import type {
   MathInlineSession,
 } from '../types.js';
 
-import { ResponseTypes } from './utils.js';
+import { ResponseTypes, acceptedAnswers, alternateLatex } from './utils.js';
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
@@ -170,10 +170,7 @@ function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefin
       };
     }
 
-    const alternates = correctResponse.alternates || {};
-    const acceptedValues = [correctResponse.answer].concat(
-      Object.keys(alternates).map((alternateId) => alternates[alternateId]),
-    );
+    const acceptedValues = acceptedAnswers(correctResponse);
 
     for (let i = 0; i < acceptedValues.length; i++) {
       try {
@@ -273,11 +270,8 @@ export const getLogTrace = (
       traceLog.push(`Ignore order: ${ignoreOrder ? 'enabled' : 'disabled'}.`);
     }
     
-    const alternates = response.alternates || {};
-    const acceptedValues = [response.answer].concat(
-      Object.keys(alternates).map((alternateId) => alternates[alternateId])
-    );
-    
+    const acceptedValues = acceptedAnswers(response);
+
     if (acceptedValues.length > 1) {
       traceLog.push(`Accepted answers: ${acceptedValues.length} (including alternates).`);
     }
@@ -513,7 +507,9 @@ export const validate = (
 
   (responses || []).forEach((response, index) => {
     const { answer } = response;
-    const reversedAlternates = [...Object.entries(response.alternates || {})].reverse();
+    const reversedAlternates = Object.entries(response.alternates || {})
+      .map(([key, alternate]): [string, string] => [key, alternateLatex(alternate)])
+      .reverse();
     const alternatesErrors: Record<string, string> = {};
     const responseError: { answer?: string } = {};
 

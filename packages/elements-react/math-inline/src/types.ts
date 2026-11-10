@@ -79,7 +79,13 @@ export interface MathInlineResponse {
   /** The answer for the question */
   answer: string;
   /** Alternative correct answers, keyed by alternate id */
-  alternates?: Record<string, string>;
+  alternates?: Record<string, string | MathInlineStoredAlternate>;
+}
+
+/** An alternate as some stored content holds it, with its LaTeX under `answer`; authoring writes a string */
+export interface MathInlineStoredAlternate {
+  answer?: string;
+  id?: number | string;
 }
 
 /** A settings-panel toggle the author writes into the model */
