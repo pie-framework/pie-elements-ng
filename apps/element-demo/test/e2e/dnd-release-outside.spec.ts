@@ -215,6 +215,33 @@ test.describe('categorize: releasing a choice outside the element', () => {
     await pressInTurn(page, ['Space', 'Space']);
     expect(await placements(page)).toEqual({ 1: ['0'] });
   });
+
+  test('keyboard: the tab path runs through the choices until one is selected, then through the targets', async ({
+    page,
+  }) => {
+    const root = await open(page);
+    // Placed by click rather than by drag: a click just after a drag is ignored.
+    await choiceIn(category(root, 'Equations')).click();
+    await category(root, 'True').click();
+    await expect.poll(() => placements(page)).toEqual({ 0: ['0'] });
+    const tabStops = root.locator('[tabindex="0"]');
+    const targets = root.getByRole('group');
+    const choices = root.locator(DRAGGABLE);
+
+    // Nothing selected: every choice, placed or in the pool, and no category or pool.
+    await expect(tabStops).toHaveCount(await choices.count());
+    await expect(targets.and(tabStops)).toHaveCount(0);
+
+    // Tab from the placed choice skips the empty False category and lands on a pool choice.
+    await choiceIn(category(root, 'True')).focus();
+    await page.keyboard.press('Tab');
+    await expect(choiceIn(category(root, 'Equations'))).toBeFocused();
+
+    // A choice selected by click: the categories and the pool, and no choice.
+    await choiceIn(category(root, 'Equations')).click();
+    await expect(tabStops).toHaveCount(await targets.count());
+    await expect(choices.and(tabStops)).toHaveCount(0);
+  });
 });
 
 test.describe('placement-ordering: releasing a tile outside the element', () => {
