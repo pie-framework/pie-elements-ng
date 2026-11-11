@@ -42,6 +42,26 @@ export default {
       target: '-12345678901234567',
       ne: ['-12345678901234568', '12345678901234567'],
     },
+    // powers are computed exactly, so they need BigInt arithmetic that works at the bundle target
+    {
+      target: '10^{20}',
+      eq: ['100000000000000000000', '10^{10}\\cdot10^{10}'],
+      ne: ['10^{20}+1', '100000000000000000001'],
+    },
+    {
+      target: '2^{64}',
+      eq: ['18446744073709551616', '4^{32}'],
+      ne: ['18446744073709551617', '2^{64}-1'],
+    },
+    {
+      target: '10^{-20}',
+      eq: ['\\frac{1}{10^{20}}', '0.00000000000000000001'],
+      ne: ['0', '10^{-21}'],
+    },
+    {
+      target: '10^{5000}',
+      ne: ['10^{5000}+1'],
+    },
     {
       label: 'a power too large to compute exactly is still scored: $target',
       target: '10^{10^{9}}',

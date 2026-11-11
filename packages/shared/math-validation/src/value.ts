@@ -133,7 +133,9 @@ const raise = (x: bigint, k: bigint): bigint => {
   return result;
 };
 
-const digitCount = (r: Rational): number => r.n.toString().length + r.d.toString().length;
+/** Digits of the longer of numerator and denominator: a power `k` has at most `k` times as many. */
+const digitCount = (r: Rational): number =>
+  Math.max((r.n < 0n ? -r.n : r.n).toString().length, r.d.toString().length);
 
 /** An integer power; undefined for any other exponent, `0` to a negative power, or a result too large. */
 const power = (base?: Rational, exponent?: Rational): Rational | undefined => {
@@ -193,11 +195,15 @@ const arithmeticValue = (latex: Latex): Rational | undefined => {
   if (typeof latex !== 'string' || !latex.trim()) {
     return undefined;
   }
+  let tree: unknown;
   try {
-    return exactValue(arithmetic.convert(latex));
+    tree = arithmetic.convert(latex);
   } catch (e) {
     return undefined;
   }
+  // Outside the try: a failure in the arithmetic itself, such as `**` lowered to `Math.pow` on a
+  // BigInt (PIE-1513), must surface, not fall back to the tolerant mode unnoticed.
+  return exactValue(tree);
 };
 
 /**
