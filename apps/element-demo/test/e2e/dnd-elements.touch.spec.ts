@@ -105,6 +105,7 @@ function forDefect(item: DndCase, key: TestKey) {
 }
 
 const DRAGGABLE = '[aria-roledescription="draggable"][aria-disabled="false"]';
+const ICA_AREA = ':is([role="button"], [role="group"])[aria-label]:not([aria-roledescription])';
 
 const CASES: DndCase[] = [
   {
@@ -169,8 +170,9 @@ const CASES: DndCase[] = [
   {
     element: 'image-cloze-association',
     choices: (root) => root.locator(DRAGGABLE),
-    target: (root) => root.locator('[role="button"]:not([aria-roledescription])').first(),
-    otherTarget: (root) => root.locator('[role="button"]:not([aria-roledescription])').nth(1),
+    // A named response area: a group while nothing is selected, a button once one is and it is empty.
+    target: (root) => root.locator(ICA_AREA).first(),
+    otherTarget: (root) => root.locator(ICA_AREA).nth(1),
     autoscroll: true,
     placed: (session) => ((session?.answers ?? []) as unknown[]).length,
   },
