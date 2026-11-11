@@ -3,7 +3,7 @@ import { AstToMathJs } from './conversion/ast-to-mathjs.js';
 import { isMathEqual as isSymbolicEqual } from './symbolic/index.js';
 import { isMathEqual as isLiteralEqual } from './literal/index.js';
 import { differenceIsTooGreat } from './difference.js';
-import { compareNumbers } from './value.js';
+import { compareArithmetic, compareNumbers } from './value.js';
 
 import type { Latex, Opts } from './options.js';
 
@@ -11,8 +11,6 @@ const lta = new LatexToAst();
 const atm = new AstToMathJs();
 
 export const latexEqual = (a: Latex, b: Latex, opts: Opts): boolean => {
-  const isNumeric = (str: string): boolean => /^\s*-?\d+(\.\d+)?\s*$/.test(str);
-
   if (!a || !b) {
     return false;
   }
@@ -28,12 +26,10 @@ export const latexEqual = (a: Latex, b: Latex, opts: Opts): boolean => {
     }
   }
 
-  if (opts.mode === 'symbolic' && isNumeric(a) && isNumeric(b)) {
-    const numA = parseFloat(a);
-    const numB = parseFloat(b);
-
-    if (numA === numB) {
-      return true;
+  if (opts.mode === 'symbolic') {
+    const exact = compareArithmetic(a, b);
+    if (exact !== undefined) {
+      return exact;
     }
   }
 
