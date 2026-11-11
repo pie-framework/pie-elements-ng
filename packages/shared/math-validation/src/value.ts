@@ -31,6 +31,12 @@ const negate = (r?: Rational): Rational | undefined => r && { n: -r.n, d: r.d };
 const divide = (a?: Rational, b?: Rational): Rational | undefined =>
   a && b && b.n !== 0n ? rational(a.n * b.d, a.d * b.n) : undefined;
 
+/**
+ * 10 to the power `n`, built from its digits. Not `10n ** BigInt(n)`: the bundlers compile at
+ * es2015, which lowers `**` to `Math.pow`, and `Math.pow` throws on a BigInt (PIE-1513).
+ */
+const powerOfTen = (n: number): bigint => BigInt(`1${'0'.repeat(n)}`);
+
 const isNode = (node: unknown, operator: string, arity: number): node is any[] =>
   Array.isArray(node) && node[0] === operator && node.length === arity + 1;
 
@@ -47,8 +53,8 @@ const decimal = (node: unknown): Rational | undefined => {
   }
   const digits = BigInt(whole + decimals);
   return shift >= 0
-    ? rational(digits * 10n ** BigInt(shift), 1n)
-    : rational(digits, 10n ** BigInt(-shift));
+    ? rational(digits * powerOfTen(shift), 1n)
+    : rational(digits, powerOfTen(-shift));
 };
 
 const integer = (node: unknown): Rational | undefined =>
