@@ -521,27 +521,28 @@ export class ImageClozeAssociationComponent extends React.Component {
     const renderPossibleResponses = () => {
       if (showCorrect && showToggle) return null;
 
-      return (
-        <React.Fragment>
-          {maxResponsePerZoneWarning && <WarningInfo message={warningMessage} />}
-          <PossibleResponses
-            canDrag={!disabled}
-            data={possibleResponses}
-            getChoiceLabel={this.getChoiceLabel}
-            onAnswerRemove={this.handleOnAnswerRemove}
-            onDragBegin={this.onDragStart}
-            answerChoiceTransparency={answerChoiceTransparency}
-            customStyle={{
-              minWidth: isVertical ? '130px' : image?.width || 'fit-content',
-            }}
-            isVertical={isVertical}
-            minHeight={isVertical ? image?.height : undefined}
-            selectedResponse={this.state.selectedResponse}
-            onSelectClick={this.onResponseClick}
-            onPlacementClick={this.onPlacementClick}
-          />
-        </React.Fragment>
-      );
+      // A list rather than a fragment, so InteractiveSection can put the warning and the pool in
+      // the order they show.
+      return [
+        maxResponsePerZoneWarning && <WarningInfo key="warning" message={warningMessage} />,
+        <PossibleResponses
+          key="pool"
+          canDrag={!disabled}
+          data={possibleResponses}
+          getChoiceLabel={this.getChoiceLabel}
+          onAnswerRemove={this.handleOnAnswerRemove}
+          onDragBegin={this.onDragStart}
+          answerChoiceTransparency={answerChoiceTransparency}
+          customStyle={{
+            minWidth: isVertical ? '130px' : image?.width || 'fit-content',
+          }}
+          isVertical={isVertical}
+          minHeight={isVertical ? image?.height : undefined}
+          selectedResponse={this.state.selectedResponse}
+          onSelectClick={this.onResponseClick}
+          onPlacementClick={this.onPlacementClick}
+        />,
+      ];
     };
 
     return (

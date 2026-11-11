@@ -1,5 +1,12 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { deliveryContainer, getSessionState, openDeliverRoute } from './test-helpers';
+import {
+  deliveryContainer,
+  getModelFromSource,
+  getSessionState,
+  openDeliverRoute,
+  switchTab,
+  updateModelInSource,
+} from './test-helpers';
 
 /**
  * image-cloze-association's tab path follows the selection: with nothing selected it runs through
@@ -109,4 +116,46 @@ test.describe('image-cloze-association: the tab path', () => {
     await pressInTurn(page, ['Space', 'Tab', 'Space']);
     await expect.poll(() => areasHolding(page)).toEqual([1]);
   });
+
+  for (const [position, poolFirst] of [
+    ['top', true],
+    ['bottom', false],
+    ['left', true],
+    ['right', false],
+  ] as const) {
+    test(`possibilityListPosition ${position} puts the pool there on screen and in the tab path`, async ({
+      page,
+    }) => {
+      await page.goto('/image-cloze-association/source');
+      await page.locator('[data-testid="source-editor"]').waitFor({ timeout: 60_000 });
+      const model = await getModelFromSource(page);
+      await updateModelInSource(page, {
+        ...model,
+        ui_style: { ...model.ui_style, possibility_list_position: position },
+      });
+      await switchTab(page, 'deliver');
+      const root = deliveryContainer(page);
+      await expect(root.locator(CHOICE).first()).toBeVisible();
+      const pool = root.locator('[role="group"]:not([aria-label])');
+      const poolBox = await pool.boundingBox();
+      const imageBox = await root.getByRole('img', { name: /response areas/ }).boundingBox();
+      if (!poolBox || !imageBox) throw new Error('No bounding box');
+
+      const shown = {
+        top: poolBox.y + poolBox.height <= imageBox.y,
+        bottom: imageBox.y + imageBox.height <= poolBox.y,
+        left: poolBox.x + poolBox.width <= imageBox.x,
+        right: imageBox.x + imageBox.width <= poolBox.x,
+      };
+      expect(shown[position]).toBe(true);
+
+      await root.locator(CHOICE).first().click();
+      const stops = await root
+        .locator('[tabindex="0"]')
+        .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label') ?? 'pool'));
+      expect(stops).toEqual(
+        poolFirst ? ['pool', STEEPER, LESS_STEEP] : [STEEPER, LESS_STEEP, 'pool']
+      );
+    });
+  }
 });
