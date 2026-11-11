@@ -9,6 +9,7 @@ import {
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
+import { loadMathLive } from '@pie-lib/math-input-mathlive';
 import {
   ModelSetEvent,
   SessionChangedEvent,
@@ -30,6 +31,15 @@ const log = debug('pie-ui:math-inline');
 
 export { Main as Component };
 
+/** The focused element, looking through open shadow roots. */
+const deepActiveElement = () => {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  return active;
+};
+
 export default class MathInline extends HTMLElement {
   constructor() {
     super();
@@ -49,6 +59,77 @@ export default class MathInline extends HTMLElement {
       { delayMs: 1000 },
     );
     this.sessionChangedEventCaller = () => this._sessionNotifier.notify();
+    // The rendered Main once React commits it, and the focus calls waiting for that.
+    this._main = null;
+    this._mainWaiters = [];
+    this._setMain = (main) => {
+      this._main = main;
+      this._settleMainWaiters(!!main);
+    };
+  }
+
+  _settleMainWaiters(rendered) {
+    const waiters = this._mainWaiters;
+    this._mainWaiters = [];
+    waiters.forEach((resolve) => resolve(rendered));
+  }
+
+  /**
+   * Focus the answer field as Tab does: the caret lands in the first answer block and no keypad
+   * opens. While the field mounts this returns a promise, which resolves false and leaves focus
+   * alone when focus moves in the meantime. False when the item shows no field to type into.
+   *
+   * @param {FocusOptions} [options] passed to the field's `focus()`
+   * @returns {boolean | Promise<boolean>}
+   */
+  focusFirstInput(options) {
+    if (this._answerField()) {
+      return this._focusAnswerField(options);
+    }
+
+    if (!this.isConnected || !this._model || !this._session) {
+      return false;
+    }
+
+    const activeAtCall = deepActiveElement();
+
+    return this._whenFieldsMounted().then(
+      (rendered) =>
+        rendered && this.isConnected && deepActiveElement() === activeAtCall && this._focusAnswerField(options),
+    );
+  }
+
+  _answerField() {
+    return this.querySelector('math-field');
+  }
+
+  _focusAnswerField(options) {
+    const field = this._answerField();
+    if (!field) {
+      return false;
+    }
+
+    // Native focus, as Tab gives it: the field delegates it to its keyboard sink at once. MathLive's
+    // own focus() drops the options and moves focus 60ms later.
+    HTMLElement.prototype.focus.call(field, options);
+    // The sink is fixed in place, so focusing it scrolls nothing; scroll as MathLive's focus() does.
+    if (!options?.preventScroll) {
+      field.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+    return field.getRootNode().activeElement === field;
+  }
+
+  /** Whether Main rendered; resolved once every field it renders has had the chance to mount. */
+  async _whenFieldsMounted() {
+    const rendered = !!this._main || (await new Promise((resolve) => this._mainWaiters.push(resolve)));
+    if (!rendered) {
+      return false;
+    }
+
+    // A field mounts once MathLive loads, and a task later every mount waiting on the load has run.
+    await loadMathLive();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return true;
   }
 
   setLangAttribute() {
@@ -146,6 +227,7 @@ export default class MathInline extends HTMLElement {
       language,
       configuration: this._configuration,
       onSessionChange: this.sessionChanged.bind(this),
+      ref: this._setMain,
     });
 
     if (!this._root) {
@@ -163,5 +245,9 @@ export default class MathInline extends HTMLElement {
       this._root.unmount();
       this._root = null;
     }
+
+    // A model set while a locale loads has no root yet, so nothing unmounts to release these.
+    this._main = null;
+    this._settleMainWaiters(false);
   }
 }

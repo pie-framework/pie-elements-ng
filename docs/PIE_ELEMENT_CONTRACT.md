@@ -73,6 +73,17 @@ The element writes each learner change into the session object the player set, k
 
 Svelte elements get this from `defineDeliveryElement` in `@pie-lib/delivery-events-svelte`; React elements mutate the session they were given.
 
+### Focus Hook
+
+A delivery element may define `focusFirstInput(options?: FocusOptions): boolean | Promise<boolean>`. The item player's `focus()` asks the elements its item renders, in document order, and stops at the first that returns true.
+
+- It focuses the element's first input where Tab would land, and honours `options` as `HTMLElement.focus()` does: the input scrolls into view unless `preventScroll` is set.
+- It returns true once the input has focus, and false when the element shows no input, such as a display-only evaluate view.
+- An element whose input mounts asynchronously returns a promise that settles after the mount. It resolves false, and leaves focus alone, when focus moved while it waited or the element left the page.
+- Focusing opens no keypad, popup or other change of context (WCAG 3.2.1).
+
+The item player focuses the first tabbable descendant of an element without the hook, or one whose hook throws, so only an element whose input mounts after the item loads, or whose first tab stop is not its input, needs one.
+
 ### Authoring Contract
 
 A player registers an element's author view under `<tag>-config` and sets two properties on it, `model` and then `configuration`. The element declares both; an undeclared property lands on the instance, where the element never reads it.
