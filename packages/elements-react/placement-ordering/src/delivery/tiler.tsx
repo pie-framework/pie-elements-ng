@@ -63,6 +63,9 @@ const buildTiles = (props) => {
   const firstTarget = props.tiles.findIndex((t) => t.type === 'target');
   const lastChoice = props.tiles.reduce((last, t, i) => (t.type === 'choice' ? i : last), -1);
   const lastTarget = props.tiles.length - 1;
+  // The sort position of a choice tile is the count of choice tiles before it, whatever sits between them
+  let choiceCount = 0;
+  const choicePositions = props.tiles.map((t) => (t.type === 'choice' ? choiceCount++ : choiceCount));
 
   const T = (tile, index) => {
     tile.instanceId = props.instanceId;
@@ -93,9 +96,8 @@ const buildTiles = (props) => {
     } else if (tile.type === 'choice') {
       // Without response areas the tiles are the choice in each sort position, between drop gaps
       if (props.onMove) {
-        // The sort position is the count of choice tiles before this one, whatever sits between them
-        const position = props.tiles.slice(0, index).filter((t) => t.type === 'choice').length;
-        const count = props.tiles.filter((t) => t.type === 'choice').length;
+        const position = choicePositions[index];
+        const count = choiceCount;
         const vertical = props.orientation === 'vertical';
 
         tile.moveControls = {

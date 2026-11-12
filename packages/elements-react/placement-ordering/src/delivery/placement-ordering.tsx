@@ -209,7 +209,7 @@ export class PlacementOrdering extends React.Component {
   constructor(props) {
     super(props);
 
-    // Page-unique: focusTile looks the destination up in the whole document.
+    // Page-unique: focusTile looks the destination up by it.
     this.instanceId = createUniqueId('placement-ordering');
 
     const { value, needsReset } = this.validateSession(props);
@@ -387,17 +387,9 @@ export class PlacementOrdering extends React.Component {
     const other = delta < 0 ? 'later' : 'earlier';
     const tile = `[data-tile-id="${this.instanceId}:choice-${id}"]`;
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // Looked up from the element's own container, as the element may render in a shadow root
-        const root = this.containerRef.current;
-        const node =
-          root?.querySelector<HTMLElement>(`${tile} [data-move="${side}"]`) ||
-          root?.querySelector<HTMLElement>(`${tile} [data-move="${other}"]`);
-
-        node?.focus();
-      });
-    });
+    this.focusWhenCommitted(
+      (root) => root.querySelector(`${tile} [data-move="${side}"]`) || root.querySelector(`${tile} [data-move="${other}"]`),
+    );
   };
 
   onRemoveChoice: any = (target, ordering) => {
@@ -653,9 +645,20 @@ export class PlacementOrdering extends React.Component {
     return null;
   };
 
-  // The destination tile only appears in the DOM (re-tagged with its new slotId) after
-  // this component's re-render commits, so wait a couple of animation frames — long
-  // enough for React's DOM commit and the browser's next paint — before querying for it.
+  // What a move changes only appears in the DOM after this component's re-render commits, so wait a
+  // couple of animation frames, long enough for React's DOM commit and the browser's next paint, before
+  // `find` looks it up. It looks from the element's own container, as the element may render in a shadow root.
+  focusWhenCommitted: any = (find) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const root = this.containerRef.current;
+
+        (root && find(root))?.focus();
+      });
+    });
+  };
+
+  // The destination tile is re-tagged with its new slotId by the re-render.
   focusTile: any = (slotId) => {
     if (!slotId) {
       return;
@@ -663,13 +666,7 @@ export class PlacementOrdering extends React.Component {
 
     const selector = `[data-tile-id="${this.instanceId}:${slotId}"]`;
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const node = document.querySelector(selector);
-
-        node?.focus();
-      });
-    });
+    this.focusWhenCommitted((root) => root.querySelector(selector));
   };
 
   isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;

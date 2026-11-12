@@ -467,6 +467,22 @@ export const Tile = (props) => {
 
   const contentStyle = moveControls ? { flex: 1, minWidth: 0, minHeight: 0, alignSelf: 'stretch' } : undefined;
 
+  const content = (
+    <TileContent
+      label={label}
+      id={id}
+      empty={empty}
+      index={index}
+      guideIndex={guideIndex}
+      isOver={showsHoverEffect}
+      isGhost={isDragging}
+      isSelected={isSelected}
+      disabled={disabled}
+      outcome={outcome}
+      type={type}
+    />
+  );
+
   return (
     <div
       ref={setRefs}
@@ -490,21 +506,7 @@ export const Tile = (props) => {
           onMove={moveControls.onMove}
         />
       )}
-      <div style={contentStyle}>
-        <TileContent
-          label={label}
-          id={id}
-          empty={empty}
-          index={index}
-          guideIndex={guideIndex}
-          isOver={showsHoverEffect}
-          isGhost={isDragging}
-          isSelected={isSelected}
-          disabled={disabled}
-          outcome={outcome}
-          type={type}
-        />
-      </div>
+      {moveControls ? <div style={contentStyle}>{content}</div> : content}
       {moveControls && (
         <MoveButton
           earlier={!moveControls.vertical}
