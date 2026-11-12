@@ -44,6 +44,27 @@ const AUDIO_WRONG_INDEX = 1; // distractor_2
 
 type TestPage = Parameters<typeof test>[0]['page'];
 
+/** A mono 8-bit PCM WAV of `seconds` seconds of silence, as bytes. */
+function silentWav(seconds: number): Buffer {
+  const sampleRate = 8000;
+  const data = Buffer.alloc(sampleRate * seconds);
+  const header = Buffer.alloc(44);
+  header.write('RIFF', 0, 'ascii');
+  header.writeUInt32LE(36 + data.length, 4);
+  header.write('WAVE', 8, 'ascii');
+  header.write('fmt ', 12, 'ascii');
+  header.writeUInt32LE(16, 16); // PCM chunk size
+  header.writeUInt16LE(1, 20); // PCM format
+  header.writeUInt16LE(1, 22); // mono
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(sampleRate, 28); // byte rate
+  header.writeUInt16LE(1, 32); // block align
+  header.writeUInt16LE(8, 34); // bits per sample
+  header.write('data', 36, 'ascii');
+  header.writeUInt32LE(data.length, 40);
+  return Buffer.concat([header, data]);
+}
+
 async function openNoAudioRoute(page: TestPage) {
   await openDeliverRoute(page, 'mc-populated-blank', NO_AUDIO_DEMO);
   await waitForMathRendering(page);
@@ -249,8 +270,15 @@ test('clicking show-correct-answer toggle again hides the reveal', async ({ page
 test('audio-gated variant: isComplete is false when choice selected but audio not played', async ({
   page,
 }) => {
-  // Abort audio so it never plays
-  await page.route('**/*.mp3', (route) => route.abort());
+  // Serve a long silent track, so the prompt audio loads (the page `load`
+  // event still fires) without ever reaching an `ended` event inside the test.
+  // Aborting the request instead makes the `<audio>` fire `error`, which counts
+  // the prompt audio as failed to load - completion stops waiting on it by
+  // design (`PromptAudioTracker.recordFailure`) - and `isComplete` would
+  // legitimately report true.
+  await page.route('**/*.mp3', (route) =>
+    route.fulfill({ contentType: 'audio/wav', body: Buffer.from(silentWav(30)) })
+  );
 
   await openAudioRoute(page);
   await selectChoice(page, AUDIO_WRONG_INDEX);

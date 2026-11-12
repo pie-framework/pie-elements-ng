@@ -37,7 +37,8 @@ test.describe('editable-html math toolbar', () => {
 
     const toolbar = page.locator('[data-toolbar-for]');
     await expect(toolbar).toBeVisible();
-    await expect(toolbar.locator('textarea')).toBeFocused();
+    // The math input is MathLive's `<math-field>`; it used to be a `textarea`.
+    await expect(toolbar.locator('math-field')).toBeFocused();
 
     // let the deferred autofocus run before asserting nothing threw
     await page.waitForTimeout(200);
@@ -70,15 +71,24 @@ test.describe('editable-html math toolbar', () => {
     page,
   }) => {
     await insertMathButton(page).click();
-    await expect(page.locator('[data-toolbar-for]')).toBeVisible();
+    const toolbar = page.locator('[data-toolbar-for]');
+    await expect(toolbar).toBeVisible();
+    // The autofocus is deferred (PIE-1115); wait for it before typing.
+    await expect(toolbar.locator('math-field')).toBeFocused();
+    // Give the node content before closing the toolbar: an empty math node
+    // renders zero-width, with nothing to click back into.
+    await page.keyboard.type('x^2');
+    // Let the node view take the typed formula before the toolbar goes away.
+    await expect(page.locator('[class*="math-node-"]').first()).toBeVisible();
 
     await page.getByText('Settings', { exact: true }).click();
     await expect(page.locator('[data-toolbar-for]')).toHaveCount(0);
 
     await page.locator('[class*="math-node-"]').first().click();
 
-    const toolbar = page.locator('[data-toolbar-for]');
-    await expect(toolbar).toBeVisible();
-    await expect(toolbar.locator('textarea')).toBeFocused();
+    const reopened = page.locator('[data-toolbar-for]');
+    await expect(reopened).toBeVisible();
+    // The math input is MathLive's `<math-field>`; it used to be a `textarea`.
+    await expect(reopened.locator('math-field')).toBeFocused();
   });
 });

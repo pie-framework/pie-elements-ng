@@ -562,18 +562,22 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
       const dragged = await dragAnyCandidateToTarget(page, root, {
+        // The choices are dnd-kit draggables (a DIV with
+        // aria-roledescription="draggable"; no `draggable` attribute, and the
+        // styled-components class names are hashes), and the category drop
+        // zones carry data-category-id.
         sourceSelectors: [
+          '[aria-roledescription="draggable"]',
           '[draggable="true"]',
           '[data-draggable="true"]',
           '[class*="choice"]',
           '[class*="token"]',
-          'button',
         ],
         targetSelectors: [
+          '[data-category-id]',
           '[id*="drop"]',
           '[class*="drop"]',
           '[class*="target"]',
-          '[class*="container"]',
         ],
       });
       if (!dragged) {
@@ -803,21 +807,17 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
       const dragged = await dragAnyCandidateToTarget(page, root, {
+        // dnd-kit draggables again: the pool choices carry a data-tile-id with
+        // a `:choice-` segment, and the response-area droppables a
+        // `:target-prompt-<id>` one. The styled-components class names are
+        // hashes, so class-substring selectors match nothing.
         sourceSelectors: [
+          '[data-tile-id*=":choice-"]',
+          '[aria-roledescription="draggable"]',
           '[draggable="true"]',
           '[data-draggable="true"]',
-          '[class*="choice"]',
-          '[class*="token"]',
-          '[class*="option"]',
-          'button',
         ],
-        targetSelectors: [
-          '[id*="drop"]',
-          '[class*="drop"]',
-          '[class*="target"]',
-          '[class*="blank"]',
-          '[class*="container"]',
-        ],
+        targetSelectors: ['[data-tile-id*=":target-prompt"]', '[id*="drop"]', '[class*="drop"]'],
       });
       if (!dragged) {
         const fallback = root.locator('button, [role="button"]').first();

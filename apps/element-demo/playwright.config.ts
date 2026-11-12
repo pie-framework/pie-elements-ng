@@ -80,6 +80,55 @@ const chromiumLaunch = (() => {
   return executablePath ? { launchOptions: { executablePath } } : {};
 })();
 
+// Cross-browser projects behind PIE_E2E_CROSS_BROWSER=1: the Chromium-family
+// brand browsers installed on this machine via their Playwright channel, plus
+// the managed Firefox and WebKit builds (the engines under Firefox and Safari;
+// Playwright cannot drive the stock apps). They exist to catch browser-specific
+// breakage - theme/CSS, packaging and engine differences - not to gate CI, so
+// they run the same specs as the `chromium` project and leave the touch specs
+// to the dedicated touch projects.
+const crossBrowser = process.env.PIE_E2E_CROSS_BROWSER === '1';
+
+// Playwright dropped the `opera` channel; Opera is a Chromium fork, so drive the
+// installed app binary directly when it is present.
+const operaExecutable = '/Applications/Opera.app/Contents/MacOS/Opera';
+const hasOpera = existsSync(operaExecutable);
+
+const crossBrowserSpecFilter = {
+  // `*.touch.spec.ts` belongs to the touch projects; without touch emulation
+  // those gestures are no-ops and the specs would fail here.
+  testIgnore: ['**/*.touch.spec.ts'],
+};
+
+/**
+ * A project that narrows the top-level `testIgnore` (as `chromium` does for the
+ * touch specs) replaces it entirely, which would resurrect the IIFE usefulness
+ * matrix - a 6-minute suite meant to run only through `RUN_IIFE_E2E=1`. Merge
+ * the IIFE gate back in for such projects.
+ */
+function mergeIifeGate(testIgnore?: string[]): string[] | undefined {
+  if (runIifeE2e) return testIgnore;
+  return [...(testIgnore ?? []), '**/iife-usefulness.spec.ts'];
+}
+
+function crossBrowserProject(
+  name: string,
+  device: keyof typeof devices,
+  launch: { channel?: string; executablePath?: string }
+) {
+  return {
+    name,
+    testIgnore: mergeIifeGate(crossBrowserSpecFilter.testIgnore),
+    use: {
+      ...devices[device],
+      viewport: { width: 1920, height: 1080 },
+      // Brand browsers must use the installed app itself; an explicit
+      // executablePath (the headless shell) would override the channel.
+      ...launch,
+    },
+  };
+}
+
 export default defineConfig({
   testDir: './test/e2e',
   testMatch: ['**/*.spec.ts'],
@@ -106,7 +155,9 @@ export default defineConfig({
       name: 'chromium',
       // `*.touch.spec.ts` belongs to the touch project below; without touch
       // emulation those gestures are no-ops and the specs would fail here.
-      testIgnore: ['**/*.touch.spec.ts'],
+      // `testIgnore` here replaces the top-level one, so the IIFE gate is
+      // merged back in (see mergeIifeGate).
+      testIgnore: mergeIifeGate(['**/*.touch.spec.ts']),
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
@@ -167,6 +218,21 @@ export default defineConfig({
         hasTouch: true,
       },
     },
+    ...(crossBrowser
+      ? [
+          crossBrowserProject('chrome', 'Desktop Chrome', { channel: 'chrome' }),
+          crossBrowserProject('edge', 'Desktop Chrome', { channel: 'msedge' }),
+          ...(hasOpera
+            ? [
+                crossBrowserProject('opera', 'Desktop Chrome', {
+                  executablePath: operaExecutable,
+                }),
+              ]
+            : []),
+          crossBrowserProject('firefox', 'Desktop Firefox', {}),
+          crossBrowserProject('webkit', 'Desktop Safari', {}),
+        ]
+      : []),
   ],
   webServer: useExternalServer
     ? undefined

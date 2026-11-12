@@ -83,16 +83,20 @@ async function focusPoolChoice(page: Page, key: 'Tab' | 'Shift+Tab'): Promise<st
  */
 async function placeWithSpaceTabSpace(page: Page) {
   await page.keyboard.press('Space');
-  await expect(liveRegion(page)).toContainText('over droppable area choices-pool');
+  // The element's i18n catalog words the announcements (choicesListA11y,
+  // overEmptyA11y): over the empty pool it says "Over Choices list. Currently
+  // empty."
+  await expect(liveRegion(page)).toContainText('Over Choices list');
   await page.keyboard.press('Tab');
-  await expect(liveRegion(page)).not.toContainText('choices-pool');
+  await expect(liveRegion(page)).not.toContainText('Choices list');
   await page.keyboard.press('Space');
 }
 
 async function expectPlacedInFirstArea(page: Page, choice: string, answerId: number) {
   await expect.poll(async () => (await getSessionState(page))?.value).toEqual({ 0: answerId });
   await expect(responseAreas(page).first()).toHaveText(choice);
-  await expect(liveRegion(page)).toContainText('dropped over droppable area');
+  // droppedA11y: "Dropped {choice} in {target}."
+  await expect(liveRegion(page)).toContainText(`Dropped ${choice} in`);
   await expect(mountedElement(page).locator('[data-tile-id$=":target-prompt-0"]')).toBeFocused();
 }
 

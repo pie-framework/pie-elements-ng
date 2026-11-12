@@ -93,12 +93,17 @@ test('each copy of the browser build loads from its own npm root', async ({ page
   const { unserved, errors, served } = await openPage(page, BODY, 'browser');
 
   await renderWithAdapter(page, 'v4', copyUrl(1));
-  await page.evaluate(() => document.fonts.ready);
-
-  const assets = assetPaths(served);
-  expect(assets.length).toBeGreaterThan(0);
-  expect(assets.filter((path) => !path.startsWith('/copy-1/npm/@mathjax/'))).toEqual([]);
-  expect(errors).toEqual([]);
+  // WebKit starts a font fetch only when a glyph using it is about to paint,
+  // which headless rendering defers, so the font requests may not have arrived
+  // by the time `fonts.ready` resolves. Poll for them.
+  await expect(async () => {
+    await page.evaluate(() => document.fonts.ready);
+    expect(assetPaths(served).length).toBeGreaterThan(0);
+    expect(assetPaths(served).filter((path) => !path.startsWith('/copy-1/npm/@mathjax/'))).toEqual(
+      []
+    );
+    expect(errors).toEqual([]);
+  }).toPass();
   expect(unserved).toEqual([]);
 });
 
