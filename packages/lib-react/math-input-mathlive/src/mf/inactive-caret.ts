@@ -38,16 +38,20 @@ const deepActiveElement = () => {
 /**
  * A character typed on the physical keyboard: a letter, digit or symbol. Space (it presses the
  * focused button), Enter, Tab and the arrows are not characters, and Ctrl, Cmd and Alt shortcuts
- * are left alone. AltGr, reported as Ctrl+Alt, types characters on many keyboards.
+ * are left alone. AltGr, reported as Ctrl+Alt, types characters on many keyboards, and on macOS
+ * Option reports plain Alt but types a non-ASCII character (Option+p is π).
+ * `\` is not forwarded: it switches the field to LaTeX mode, and the keys that end that mode
+ * (Space, Enter, Tab) belong to the keypad, so the field would stay stuck there.
  */
 const isTypedCharacter = (event) => {
-  if (event.defaultPrevented || event.isComposing || event.key?.length !== 1 || event.key === ' ') {
+  if (event.defaultPrevented || event.isComposing || event.key?.length !== 1 || event.key === ' ' || event.key === '\\') {
     return false;
   }
 
   const altGraph = event.getModifierState?.('AltGraph');
+  const optionCharacter = event.altKey && !event.ctrlKey && event.key.charCodeAt(0) > 127;
 
-  return !event.metaKey && (altGraph || !(event.ctrlKey || event.altKey));
+  return !event.metaKey && (altGraph || optionCharacter || !(event.ctrlKey || event.altKey));
 };
 
 /** Backspace or Delete on its own, which deletes in the field. With a modifier, it is a shortcut. */

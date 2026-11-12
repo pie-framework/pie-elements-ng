@@ -232,6 +232,18 @@ describe('typing while a keypad button has focus', () => {
     expect(typed(field)).toEqual(['¿']);
   });
 
+  it('sends a macOS Option character, which reports plain Alt', async () => {
+    const { field, plus, stop } = setup();
+    cleanup = stop;
+
+    field.focus();
+    plus.focus();
+
+    expect(press('π', { altKey: true, altGraph: false })).toBe(false);
+    expect(press('≠', { altKey: true, altGraph: false })).toBe(false);
+    expect(typed(field)).toEqual(['π', '≠']);
+  });
+
   it('deletes with Backspace and Delete, keeping focus on the button', async () => {
     const { field, plus, stop } = setup();
     cleanup = stop;
@@ -255,6 +267,7 @@ describe('typing while a keypad button has focus', () => {
 
     for (const [key, init] of [
       [' ', {}],
+      ['\\', {}],
       ['Enter', {}],
       ['Enter', { shiftKey: true }],
       ['Tab', {}],
