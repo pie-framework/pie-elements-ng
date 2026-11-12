@@ -79,7 +79,8 @@ A delivery element may define `focusFirstInput(options?: FocusOptions): boolean 
 
 - It focuses the element's first input where Tab would land, and honours `options` as `HTMLElement.focus()` does: the input scrolls into view unless `preventScroll` is set.
 - It returns true once the input has focus, and false when the element shows no input, such as a display-only evaluate view.
-- An element whose input mounts asynchronously returns a promise that settles after the mount. It resolves false, and leaves focus alone, when focus moved while it waited or the element left the page.
+- An element whose input mounts asynchronously returns a promise that settles after the mount. The promise always settles: it resolves false, and leaves focus alone, when focus moved while it waited, the element left the page or its view failed to render.
+- A call made while an earlier one waits returns the earlier call's promise. The first to settle moves focus, so a later call would see focus gone and resolve false.
 - Focusing opens no keypad, popup or other change of context (WCAG 3.2.1).
 
 The item player focuses the first tabbable descendant of an element without the hook, or one whose hook throws, so only an element whose input mounts after the item loads, or whose first tab stop is not its input, needs one.

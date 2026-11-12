@@ -54,6 +54,8 @@ const field = (el: Element) => el.querySelector('math-field');
 afterEach(() => {
   (document.activeElement as HTMLElement | null)?.blur?.();
   document.body.innerHTML = '';
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('math-inline focusFirstInput', () => {
@@ -105,6 +107,36 @@ describe('math-inline focusFirstInput', () => {
 
     expect(await result).toBe(false);
     expect(document.activeElement).toBe(elsewhere);
+  });
+
+  it('hands a call made while one waits the same promise', async () => {
+    const el = mount(viewModel('Advanced Multi'));
+
+    const first = el.focusFirstInput();
+    const second = el.focusFirstInput();
+
+    expect(second).toBe(first);
+    expect(await Promise.all([first, second])).toEqual([true, true]);
+    expect(document.activeElement).toBe(field(el));
+  });
+
+  it('resolves false when the view fails to render, reports the error, and renders on the next model', async () => {
+    const reportError = vi.fn();
+    vi.stubGlobal('reportError', reportError);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = new Error('render failed');
+    const el = mount({
+      get config() {
+        throw error;
+      },
+    });
+
+    expect(await el.focusFirstInput()).toBe(false);
+    expect(reportError).toHaveBeenCalledWith(error);
+
+    el.model = viewModel('Advanced Multi');
+    expect(await el.focusFirstInput()).toBe(true);
+    expect(document.activeElement).toBe(field(el));
   });
 
   it('resolves false for an element removed while it mounted, or given no model', async () => {

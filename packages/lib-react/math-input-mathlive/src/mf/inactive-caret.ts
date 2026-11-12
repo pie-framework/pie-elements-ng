@@ -23,7 +23,7 @@ const KEYPAD_SELECTOR = `[${KEYPAD_ATTRIBUTE}]`;
 const inKeypad = (node) => !!node?.closest?.(KEYPAD_SELECTOR);
 
 /** The focused element, looking through shadow roots. */
-const deepActiveElement = () => {
+export const deepActiveElement = () => {
   let active = document.activeElement;
 
   while (active?.shadowRoot?.activeElement) {
