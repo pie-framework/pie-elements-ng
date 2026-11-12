@@ -107,16 +107,21 @@ const ImageDropTarget = ({
     // Empty background clicked with nothing selected: nothing to place.
   };
 
-  // Only a native Tab stop when there's nothing else in this container to carry
-  // tabbability — once it holds an answer, that answer's own tile (rendered by
-  // PossibleResponse, via dnd-kit's `useDraggable`) is already independently tabbable,
-  // and adding a second stop for the same visual container would add an extra stop to
-  // the existing Tab order (match-list's equivalent)
-  const isNativeTabStop = answers.length === 0 && canDrag;
-  // A group when it is no tab stop, named in every state: a keyboard placement turns the focused
-  // button into a group, and focus stays on it.
+  // A response area only takes a click or a key while a choice is selected, so only then is it a
+  // tab stop, whether it holds answers or not. With nothing selected the tab path runs through the
+  // choices instead (see possible-response.tsx), in the pool or in an area.
+  const isNativeTabStop = hasSelection && canDrag;
+  // A button only while it is a tab stop and holds no answer: a button's children are
+  // presentational to assistive technology, so an area holding answers is a group. Named in
+  // every state: a keyboard placement turns the focused button into a group, and focus stays on it.
+  const role = isNativeTabStop && answers.length === 0 ? 'button' : 'group';
 
   const handleContainerKeyDown = (e) => {
+    // Only a key pressed on the area itself. A keyboard drag keeps focus on the dragged answer, so
+    // the Space or Enter that drops it fires there and bubbles up through the area it came from,
+    // which would otherwise take it as "place the selection here" and cancel the drop.
+    if (e.target !== e.currentTarget) return;
+
     if (e.code === 'Space' || e.code === 'Enter') {
       e.preventDefault();
       handleContainerClick();
@@ -131,7 +136,7 @@ const ImageDropTarget = ({
       }}
       className={containerClasses}
       style={updatedContainerStyle}
-      role={isNativeTabStop ? 'button' : 'group'}
+      role={role}
       aria-label={label}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleContainerClick}

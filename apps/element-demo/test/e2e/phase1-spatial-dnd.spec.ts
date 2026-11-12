@@ -43,15 +43,16 @@ const CHOICE_DROP_ELEMENTS = new Set([
  * Drag the first choice onto the first drop zone holding no choice yet, so not the pool it comes
  * from, which can come first (categorize with its choices above). A choice is an enabled dnd-kit
  * draggable; a drop zone is a click-to-place `role="button"` without the draggable roledescription,
- * a focusable `role="group"` where the zone holds draggables (categorize), or a `role="group"` named
- * by its label where the zone is not a tab stop (match-list's response areas).
+ * a focusable `role="group"` where the zone holds draggables (categorize), a `role="group"` named
+ * by its label where the zone is not a tab stop (match-list's response areas), or a `role="group"`
+ * named by `aria-label` (image-cloze-association's response areas while nothing is selected).
  */
 async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
   const CHOICE = '[aria-roledescription="draggable"][aria-disabled="false"]';
   const choice = root.locator(CHOICE).first();
   const dropZone = root
     .locator(
-      '[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"], [role="group"][aria-labelledby]'
+      '[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"], [role="group"][aria-labelledby], [role="group"][aria-label]'
     )
     .filter({ hasNot: page.locator(CHOICE) })
     .first();

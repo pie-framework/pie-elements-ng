@@ -54,25 +54,15 @@ class InteractiveSection extends React.Component {
   }
 
   getPositionDirection(choicePosition) {
-    let flexDirection;
+    return choicePosition === 'left' || choicePosition === 'right' ? 'row' : 'column';
+  }
 
-    switch (choicePosition) {
-      case 'left':
-        flexDirection = 'row-reverse';
-        break;
-      case 'right':
-        flexDirection = 'row';
-        break;
-      case 'top':
-        flexDirection = 'column-reverse';
-        break;
-      default:
-        // bottom
-        flexDirection = 'column';
-        break;
-    }
-
-    return flexDirection;
+  // The possible responses come first in the DOM when they show first, above or left of the image,
+  // rather than being moved there by a reversed flex direction: the tab path and the reading order
+  // follow the DOM, so they then follow what is on screen. The whole row is reversed, as the
+  // reversed direction did, so the evaluation icon and the warning keep their places too.
+  showsResponsesFirst(choicePosition) {
+    return choicePosition === 'left' || choicePosition === 'top';
   }
 
   render() {
@@ -85,12 +75,15 @@ class InteractiveSection extends React.Component {
       margin: '0 auto',
       marginTop: -14,
     };
+    const items = React.Children.toArray([
+      <EvaluationIcon key="evaluation" containerStyle={evaluationStyle} filled isCorrect={responseCorrect} />,
+      children,
+    ]);
 
     return (
       <ScrollContainer>
         <StyledContainer className={classname} style={style}>
-          <EvaluationIcon containerStyle={evaluationStyle} filled isCorrect={responseCorrect} />
-          {children}
+          {this.showsResponsesFirst(possibilityListPosition) ? items.reverse() : items}
         </StyledContainer>
       </ScrollContainer>
     );
