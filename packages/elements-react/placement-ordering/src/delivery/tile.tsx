@@ -156,22 +156,33 @@ const tileBoxStyle = {
   textAlign: 'center',
 };
 
+const MOVE_BUTTON_SIZE = 24;
+
 /**
  * The tile under the pointer during a drag. It is drawn by the drag overlay, in a layer of its own,
  * so it is neither clipped by the element's scroll region nor counted in the region's overflow.
  * `tile` is the dragged tile's drag data (see `tileData` below).
  */
 export const DragPreview = ({ tile }) => (
-  <div className="placement-ordering-drag-preview" style={{ ...tileBoxStyle, width: '100%', height: '100%' }}>
+  <div
+    className="placement-ordering-drag-preview"
+    style={{
+      ...tileBoxStyle,
+      width: '100%',
+      height: '100%',
+      // The tile gives its move strips' room to them, so the label wraps here as it does there
+      ...(tile.moveAxis === 'x' && { paddingLeft: MOVE_BUTTON_SIZE, paddingRight: MOVE_BUTTON_SIZE }),
+      ...(tile.moveAxis === 'y' && { paddingTop: MOVE_BUTTON_SIZE, paddingBottom: MOVE_BUTTON_SIZE }),
+    }}
+  >
     <TileContent type={tile.type} label={tile.value} isDragging />
   </div>
 );
 
 DragPreview.propTypes = {
-  tile: PropTypes.shape({ type: PropTypes.string, value: PropTypes.string }).isRequired,
+  tile: PropTypes.shape({ type: PropTypes.string, value: PropTypes.string, moveAxis: PropTypes.oneOf(['x', 'y']) })
+    .isRequired,
 };
-
-const MOVE_BUTTON_SIZE = 24;
 const MOVE_BUTTON_RADIUS = 8;
 
 // A strip along the edge of the tile that moves it one position toward the start (up, left) or the end
@@ -199,8 +210,6 @@ const StyledMoveButton: any = styled('button')(({ theme, vertical, earlier }) =>
     padding: 0,
     margin: 0,
     ...(vertical ? { width: MOVE_BUTTON_SIZE } : { height: MOVE_BUTTON_SIZE }),
-    // Side by side the tiles put the right strip above the tile and the left one below it
-    order: !vertical && !earlier ? -1 : 0,
     cursor: 'pointer',
     color: color.text(),
     backgroundColor: color.backgroundDark(),
@@ -209,9 +218,10 @@ const StyledMoveButton: any = styled('button')(({ theme, vertical, earlier }) =>
     borderRadius: rounded,
     '&:hover': { backgroundColor: color.secondary() },
     '&:focus-visible': {
-      outline: 'none',
+      // An inset outline, so focus does not change the size of the strip or of the tile beside it
+      outline: `2px solid ${theme.palette.primary.main}`,
+      outlineOffset: -2,
       backgroundColor: color.primaryLight(),
-      border: `2px solid ${theme.palette.primary.main}`,
     },
   };
 });
@@ -226,7 +236,6 @@ const MoveButton = ({ earlier, vertical, label, onMove }) => {
         aria-hidden="true"
         style={{
           flexShrink: 0,
-          order: !vertical && !earlier ? -1 : 0,
           ...(vertical ? { width: MOVE_BUTTON_SIZE } : { height: MOVE_BUTTON_SIZE }),
         }}
       />
@@ -283,7 +292,15 @@ export const Tile = (props) => {
 
   // Built once and reused for dnd-kit's own drag/drop data and for the click handlers
   // below, so a click carries exactly the same shape a real drag would.
-  const tileData = { id, type, instanceId, value: label, index };
+  const tileData = {
+    id,
+    type,
+    instanceId,
+    value: label,
+    index,
+    // Which way the move strips take room from the label, for the drag preview
+    moveAxis: moveControls ? (moveControls.vertical ? 'x' : 'y') : undefined,
+  };
 
   const {
     attributes,
@@ -387,6 +404,8 @@ export const Tile = (props) => {
     const currentRef = ref.current;
 
     const handleTouchStart = (e) => {
+      // A move button needs its synthesized click, which preventDefault would suppress.
+      if (e.target instanceof Element && e.target.closest('[data-move]')) return;
       e.preventDefault(); // Prevent the default touch event behavior
     };
 
@@ -460,13 +479,14 @@ export const Tile = (props) => {
       onMouseLeave={() => setIsHovered(false)}
       data-tile-id={dataTileId}
       {...(draggable && !disabled ? dragProps : {})}
-      {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
+      // A tile with move buttons is not itself a control, so a label would sit on a div with no role
+      {...(ariaLabel && !moveControls ? { 'aria-label': ariaLabel } : {})}
     >
       {moveControls && (
         <MoveButton
-          earlier
+          earlier={moveControls.vertical}
           vertical={moveControls.vertical}
-          label={moveControls.earlierLabel}
+          label={moveControls.vertical ? moveControls.earlierLabel : moveControls.laterLabel}
           onMove={moveControls.onMove}
         />
       )}
@@ -487,8 +507,9 @@ export const Tile = (props) => {
       </div>
       {moveControls && (
         <MoveButton
+          earlier={!moveControls.vertical}
           vertical={moveControls.vertical}
-          label={moveControls.laterLabel}
+          label={moveControls.vertical ? moveControls.laterLabel : moveControls.earlierLabel}
           onMove={moveControls.onMove}
         />
       )}

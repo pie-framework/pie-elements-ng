@@ -43,4 +43,9 @@ export default {
   },
   useTabToAnotherObject: 'Gebruik Tab om naar een ander object te gaan.',
   noLongerSelected: 'Object {text} is niet meer geselecteerd.',
+  moveUp: '{text} omhoog verplaatsen',
+  moveDown: '{text} omlaag verplaatsen',
+  moveLeft: '{text} naar links verplaatsen',
+  moveRight: '{text} naar rechts verplaatsen',
+  movedToPosition: '{text} verplaatst naar positie {position} van {total}.',
 } satisfies MessageCatalog;

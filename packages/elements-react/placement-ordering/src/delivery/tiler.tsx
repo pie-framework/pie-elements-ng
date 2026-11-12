@@ -93,8 +93,9 @@ const buildTiles = (props) => {
     } else if (tile.type === 'choice') {
       // Without response areas the tiles are the choice in each sort position, between drop gaps
       if (props.onMove) {
-        const position = (index - 1) / 2;
-        const count = (props.tiles.length - 1) / 2;
+        // The sort position is the count of choice tiles before this one, whatever sits between them
+        const position = props.tiles.slice(0, index).filter((t) => t.type === 'choice').length;
+        const count = props.tiles.filter((t) => t.type === 'choice').length;
         const vertical = props.orientation === 'vertical';
 
         tile.moveControls = {

@@ -63,10 +63,10 @@ describe('PlacementOrdering without response areas: move buttons', () => {
     ]);
   });
 
-  it('names the buttons left and right in a horizontal item, in the same tab order', () => {
+  it('names the buttons left and right in a horizontal item, in the tab order of how they are drawn: right above left', () => {
     const { container } = render(<Item model={modelOf({ orientation: 'horizontal' })} />);
 
-    expect(names(container).slice(0, 3)).toEqual(['Move C right', 'Move B left', 'Move B right']);
+    expect(names(container).slice(0, 3)).toEqual(['Move C right', 'Move B right', 'Move B left']);
   });
 
   it('puts the buttons, not the objects, in the tab order', () => {
@@ -84,6 +84,16 @@ describe('PlacementOrdering without response areas: move buttons', () => {
     fireEvent.click(tile(container, 'a')!.querySelector('[data-move="earlier"]')!);
 
     expect(onChange).toHaveBeenLastCalledWith(['c', 'b', 'a', 'e', 'd']);
+  });
+
+  it('leaves a touch on a button alone, so the browser still sends it a click', () => {
+    const { container } = render(<Item onChange={vi.fn()} />);
+
+    const onButton = fireEvent.touchStart(tile(container, 'a')!.querySelector('[data-move="earlier"]')!);
+    const onTile = fireEvent.touchStart(tile(container, 'a')!);
+
+    expect(onButton).toBe(true); // not default-prevented
+    expect(onTile).toBe(false); // the tile still blocks touch scrolling and long-press
   });
 
   it('keeps focus on the object that moved, so a button can be pressed again', async () => {
@@ -136,5 +146,21 @@ describe('PlacementOrdering without response areas: move buttons', () => {
     const { container } = render(<Item model={modelOf({ includeTargets: true })} />);
 
     expect(buttons(container)).toHaveLength(0);
+  });
+});
+
+describe('DragPreview of a tile with move buttons', () => {
+  it('leaves the strips their room, so the label wraps as it does in the tile', async () => {
+    const { DragPreview } = await import('../tile');
+    const { container, rerender } = render(<DragPreview tile={{ type: 'choice', value: 'A', moveAxis: 'x' }} />);
+    const box = () => container.firstElementChild as HTMLElement;
+
+    expect([box().style.paddingLeft, box().style.paddingRight]).toEqual(['24px', '24px']);
+
+    rerender(<DragPreview tile={{ type: 'choice', value: 'A', moveAxis: 'y' }} />);
+    expect([box().style.paddingTop, box().style.paddingBottom]).toEqual(['24px', '24px']);
+
+    rerender(<DragPreview tile={{ type: 'choice', value: 'A' }} />);
+    expect(box().style.paddingLeft).toBe('');
   });
 });

@@ -389,9 +389,11 @@ export class PlacementOrdering extends React.Component {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        // Looked up from the element's own container, as the element may render in a shadow root
+        const root = this.containerRef.current;
         const node =
-          document.querySelector(`${tile} [data-move="${side}"]`) ||
-          document.querySelector(`${tile} [data-move="${other}"]`);
+          root?.querySelector<HTMLElement>(`${tile} [data-move="${side}"]`) ||
+          root?.querySelector<HTMLElement>(`${tile} [data-move="${other}"]`);
 
         node?.focus();
       });

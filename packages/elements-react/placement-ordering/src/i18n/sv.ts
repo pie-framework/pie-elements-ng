@@ -43,4 +43,9 @@ export default {
   },
   useTabToAnotherObject: 'Använd Tabb för att gå till ett annat objekt.',
   noLongerSelected: 'Objektet {text} är inte längre markerat.',
+  moveUp: 'Flytta {text} uppåt',
+  moveDown: 'Flytta {text} nedåt',
+  moveLeft: 'Flytta {text} åt vänster',
+  moveRight: 'Flytta {text} åt höger',
+  movedToPosition: '{text} flyttades till plats {position} av {total}.',
 } satisfies MessageCatalog;
