@@ -11,6 +11,7 @@ import {
   endOfUnsorted,
   focusLabel,
   getCounts,
+  moveButtonLabel,
   readingInstructions,
   sortedHeading,
   sortedObjectPrefix,
@@ -30,6 +31,8 @@ const types = {
   selectedChoice: PropTypes.object,
   onChoiceClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
+  // moves the object with the given id one position, by -1 or 1; given when the item has no response areas
+  onMove: PropTypes.func,
 };
 
 const defaults = {
@@ -87,8 +90,24 @@ const buildTiles = (props) => {
           {index === lastTarget && <ScreenReaderText>{endOfSorted(props.i18n, props.disabled)}</ScreenReaderText>}
         </React.Fragment>
       );
+    } else if (tile.type === 'choice') {
+      // Without response areas the tiles are the choice in each sort position, between drop gaps
+      if (props.onMove) {
+        const position = (index - 1) / 2;
+        const count = (props.tiles.length - 1) / 2;
+        const vertical = props.orientation === 'vertical';
+
+        tile.moveControls = {
+          vertical,
+          earlierLabel: position > 0 ? moveButtonLabel(props.i18n, tile.label, vertical, true) : undefined,
+          laterLabel: position < count - 1 ? moveButtonLabel(props.i18n, tile.label, vertical, false) : undefined,
+          onMove: (delta) => props.onMove(tile.id, delta),
+        };
+      }
+
+      return <Tile {...tile} key={index} />;
     } else {
-      return tile.type === 'choice' ? <Tile {...tile} key={index} /> : <Tile {...tile} label="" key={index} />;
+      return <Tile {...tile} label="" key={index} />;
     }
   };
 
@@ -165,7 +184,7 @@ export class HorizontalTiler extends React.Component {
             dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }}
           />
         )}
-        {tiles.map(buildTiles(this.props))}
+        {tiles.map(buildTiles({ ...this.props, orientation: 'horizontal' }))}
       </StyledHTilerContainer>
     );
   }
@@ -197,7 +216,7 @@ export class VerticalTiler extends React.Component {
         {includeTargets && (
           <StyledVTargetLabel aria-hidden="true" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }} />
         )}
-        {tiles.map(buildTiles(this.props))}
+        {tiles.map(buildTiles({ ...this.props, orientation: 'vertical' }))}
       </StyledVTilerContainer>
     );
   }

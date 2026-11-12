@@ -5,6 +5,10 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { useDndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
 
 import { PlaceHolder } from '@pie-lib/drag';
 import { color } from '@pie-lib/render-ui';
@@ -167,6 +171,89 @@ DragPreview.propTypes = {
   tile: PropTypes.shape({ type: PropTypes.string, value: PropTypes.string }).isRequired,
 };
 
+const MOVE_BUTTON_SIZE = 24;
+const MOVE_BUTTON_RADIUS = 8;
+
+// A strip along the edge of the tile that moves it one position toward the start (up, left) or the end
+// (down, right) of the order. It is as long as the tile is wide or high, and rounded on its outer corners.
+const StyledMoveButton: any = styled('button')(({ theme, vertical, earlier }) => {
+  // The corners away from the tile: the left side of an up strip, the right side of a down strip, and in a
+  // horizontal item the bottom of a left strip and the top of a right strip.
+  const radius = `${MOVE_BUTTON_RADIUS}px`;
+  const rounded = vertical
+    ? earlier
+      ? `${radius} 0 0 ${radius}`
+      : `0 ${radius} ${radius} 0`
+    : earlier
+      ? `0 0 ${radius} ${radius}`
+      : `${radius} ${radius} 0 0`;
+  const tileSide = vertical ? (earlier ? 'borderRight' : 'borderLeft') : earlier ? 'borderTop' : 'borderBottom';
+
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    alignSelf: 'stretch',
+    boxSizing: 'border-box',
+    padding: 0,
+    margin: 0,
+    ...(vertical ? { width: MOVE_BUTTON_SIZE } : { height: MOVE_BUTTON_SIZE }),
+    // Side by side the tiles put the right strip above the tile and the left one below it
+    order: !vertical && !earlier ? -1 : 0,
+    cursor: 'pointer',
+    color: color.text(),
+    backgroundColor: color.backgroundDark(),
+    border: `1px solid ${color.borderLight()}`,
+    [tileSide]: 'none',
+    borderRadius: rounded,
+    '&:hover': { backgroundColor: color.secondary() },
+    '&:focus-visible': {
+      outline: 'none',
+      backgroundColor: color.primaryLight(),
+      border: `2px solid ${theme.palette.primary.main}`,
+    },
+  };
+});
+
+// A tile at an end has no strip that way, but keeps its place so the tiles stay aligned.
+const MoveButton = ({ earlier, vertical, label, onMove }) => {
+  const Icon = vertical ? (earlier ? KeyboardArrowUp : KeyboardArrowDown) : earlier ? ChevronLeft : ChevronRight;
+
+  if (!label) {
+    return (
+      <span
+        aria-hidden="true"
+        style={{
+          flexShrink: 0,
+          order: !vertical && !earlier ? -1 : 0,
+          ...(vertical ? { width: MOVE_BUTTON_SIZE } : { height: MOVE_BUTTON_SIZE }),
+        }}
+      />
+    );
+  }
+
+  return (
+    <StyledMoveButton
+      type="button"
+      vertical={vertical}
+      earlier={earlier}
+      aria-label={label}
+      data-move={earlier ? 'earlier' : 'later'}
+      onClick={() => onMove(earlier ? -1 : 1)}
+    >
+      <Icon style={{ fontSize: 16 }} />
+    </StyledMoveButton>
+  );
+};
+
+MoveButton.propTypes = {
+  earlier: PropTypes.bool,
+  vertical: PropTypes.bool,
+  label: PropTypes.string,
+  onMove: PropTypes.func.isRequired,
+};
+
 export const Tile = (props) => {
   const {
     label,
@@ -184,6 +271,7 @@ export const Tile = (props) => {
     onChoiceClick,
     onPlacementClick,
     ariaLabel,
+    moveControls,
   } = props;
 
   // Use type + tileIndex in the IDs to guarantee uniqueness in all modes.
@@ -336,6 +424,11 @@ export const Tile = (props) => {
   // The tile does not move while it is dragged: the drag overlay draws the dragged copy.
   const style = {
     ...tileBoxStyle,
+    ...(moveControls && {
+      display: 'flex',
+      flexDirection: moveControls.vertical ? 'row' : 'column',
+      alignItems: 'stretch',
+    }),
     pointerEvents: 'auto',
     cursor: disabled
       ? 'not-allowed'
@@ -345,6 +438,15 @@ export const Tile = (props) => {
           ? 'grabbing'
           : 'grab',
   };
+
+  // A tile with move buttons is reached through them, never itself: it takes the pointer drag only, and
+  // not dnd-kit's own tab stop or keyboard pick-up, which a press of Space or Enter on a button would
+  // otherwise bubble up into.
+  const dragProps = moveControls
+    ? { onPointerDown: listeners?.onPointerDown, onTouchStart: listeners?.onTouchStart }
+    : { ...listeners, ...attributes };
+
+  const contentStyle = moveControls ? { flex: 1, minWidth: 0, minHeight: 0, alignSelf: 'stretch' } : undefined;
 
   return (
     <div
@@ -357,22 +459,39 @@ export const Tile = (props) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       data-tile-id={dataTileId}
-      {...(draggable && !disabled ? { ...listeners, ...attributes } : {})}
+      {...(draggable && !disabled ? dragProps : {})}
       {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
     >
-      <TileContent
-        label={label}
-        id={id}
-        empty={empty}
-        index={index}
-        guideIndex={guideIndex}
-        isOver={showsHoverEffect}
-        isGhost={isDragging}
-        isSelected={isSelected}
-        disabled={disabled}
-        outcome={outcome}
-        type={type}
-      />
+      {moveControls && (
+        <MoveButton
+          earlier
+          vertical={moveControls.vertical}
+          label={moveControls.earlierLabel}
+          onMove={moveControls.onMove}
+        />
+      )}
+      <div style={contentStyle}>
+        <TileContent
+          label={label}
+          id={id}
+          empty={empty}
+          index={index}
+          guideIndex={guideIndex}
+          isOver={showsHoverEffect}
+          isGhost={isDragging}
+          isSelected={isSelected}
+          disabled={disabled}
+          outcome={outcome}
+          type={type}
+        />
+      </div>
+      {moveControls && (
+        <MoveButton
+          vertical={moveControls.vertical}
+          label={moveControls.laterLabel}
+          onMove={moveControls.onMove}
+        />
+      )}
     </div>
   );
 };
@@ -394,6 +513,13 @@ Tile.propTypes = {
   onChoiceClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
   ariaLabel: PropTypes.string,
+  // The buttons that move the tile one position, for an item without response areas
+  moveControls: PropTypes.shape({
+    vertical: PropTypes.bool,
+    earlierLabel: PropTypes.string,
+    laterLabel: PropTypes.string,
+    onMove: PropTypes.func.isRequired,
+  }),
 };
 
 export default Tile;

@@ -46,9 +46,16 @@ import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 
 import { HorizontalTiler, ScreenReaderText, VerticalTiler } from './tiler.js';
-import { cancelledMessage, focusLabel, getCounts, movedMessage, selectedMessage } from './announcements.js';
+import {
+  cancelledMessage,
+  focusLabel,
+  getCounts,
+  movedInPlaceMessage,
+  movedMessage,
+  selectedMessage,
+} from './announcements.js';
 import { DragPreview } from './tile.js';
-import { buildState, reducer } from './ordering.js';
+import { buildState, push, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import { placementAreaCollision } from './placement-area-collision.js';
@@ -352,6 +359,43 @@ export class PlacementOrdering extends React.Component {
     });
 
     onSessionChange(sessionUpdate);
+  };
+
+  // The button of an object that moves it one position, in an item without response areas: `delta` is
+  // -1 toward the start (up, left) and 1 toward the end (down, right).
+  onMove: any = (id, delta) => {
+    const { onSessionChange, session } = this.props;
+    const ordering = this.createOrdering();
+    const from = ordering.response.indexOf(id);
+    const to = from + delta;
+
+    if (from < 0 || to < 0 || to >= ordering.response.length) {
+      return;
+    }
+
+    const choice = ordering.choices.find((c) => c.id === id);
+
+    this.announce(movedInPlaceMessage(this.getI18n(), choice?.label, to + 1, ordering.response.length));
+    onSessionChange({ ...session, value: push(ordering.response, from, to) });
+    this.focusMoveButton(id, delta);
+  };
+
+  // Focus stays on the object that moved, not on the position it left: the same button again, so it can
+  // be pressed repeatedly, or the one it has left when the object reached an end and lost the other.
+  focusMoveButton: any = (id, delta) => {
+    const side = delta < 0 ? 'earlier' : 'later';
+    const other = delta < 0 ? 'later' : 'earlier';
+    const tile = `[data-tile-id="${this.instanceId}:choice-${id}"]`;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const node =
+          document.querySelector(`${tile} [data-move="${side}"]`) ||
+          document.querySelector(`${tile} [data-move="${other}"]`);
+
+        node?.focus();
+      });
+    });
   };
 
   onRemoveChoice: any = (target, ordering) => {
@@ -691,6 +735,9 @@ export class PlacementOrdering extends React.Component {
 
     const keyboardDragOptions = getKeyboardDragOptions(includeTargets, this.announcements, i18n);
 
+    // Without response areas each object has buttons to move it, unless the answer cannot be changed
+    const moveProps = !includeTargets && !disabled && !showingCorrect ? { onMove: this.onMove } : {};
+
     const clickPlacementProps = includeTargets
       ? {
           selectedChoice: this.state.selectedChoice,
@@ -708,7 +755,7 @@ export class PlacementOrdering extends React.Component {
         {...keyboardDragOptions}
       >
         <PlacementOrderingContainer ref={this.containerRef}>
-          {includeTargets && (
+          {(includeTargets || moveProps.onMove) && (
             <ScreenReaderText role="status" aria-live="polite" aria-atomic="true">
               {this.state.announcement}
             </ScreenReaderText>
@@ -746,6 +793,7 @@ export class PlacementOrdering extends React.Component {
                   includeTargets={includeTargets}
                   choiceLabelEnabled={model.config && model.config.choiceLabelEnabled}
                   {...clickPlacementProps}
+                  {...moveProps}
                 />
               </InteractiveRegionContent>
             </InteractiveRegion>
