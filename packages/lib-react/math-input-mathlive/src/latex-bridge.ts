@@ -521,6 +521,24 @@ export const fillFields = (latex, values) =>
   });
 
 /**
+ * Stored latex with each answer block replaced by its answer, `values[id]`, and
+ * no `\MathQuillMathField` wrapper left around it: `x=\MathQuillMathField[r1]{}`
+ * with `{ r1: '2' }` gives `x=2`. This is what MathQuill's `latex()` returned for
+ * a static field, since a MathQuillMathField serialised as its content only,
+ * and it is the form math-inline scores in Advanced Multi.
+ *
+ * @param {string} latex
+ * @param {Record<string, string>} values
+ * @returns {string}
+ */
+export const inlineFields = (latex, values) =>
+  replaceFields(latex, MQ_FIELD, (id, content) => {
+    const key = id || DEFAULT_FIELD_ID;
+
+    return values[key] !== undefined ? values[key] : content;
+  });
+
+/**
  * Latex for a text alternative: the same expression without the display-only
  * markup that MathLive's MathML and speech conversions drop with its content.
  *
@@ -756,6 +774,172 @@ export const toCanonicalCommands = (latex) =>
     : latex;
 
 /**
+ * Commands whose arguments MathLive may write without braces, and how many
+ * brace arguments each takes. `\sqrt` also takes an optional `[index]`.
+ *
+ * When it serialises content that was typed or edited, MathLive drops the
+ * braces around a single-digit argument: the fraction key gives `\frac12`, the
+ * root key `\sqrt2`. That is valid LaTeX, but MathQuill always stored
+ * `\frac{1}{2}`, and the math-validation parser that scores math-inline answers
+ * only accepts braced arguments, so an unbraced answer scores 0.
+ *
+ * The other argument-taking commands MathLive writes (`\overline`, `\binom`,
+ * `\text`, ...) keep their braces; they are listed so that no future change in
+ * MathLive's output can store an unbraced form either.
+ */
+const BRACED_ARGUMENT_COUNT = {
+  '\\frac': 2,
+  '\\dfrac': 2,
+  '\\tfrac': 2,
+  '\\cfrac': 2,
+  '\\binom': 2,
+  '\\dbinom': 2,
+  '\\tbinom': 2,
+  '\\sqrt': 1,
+  '\\overline': 1,
+  '\\underline': 1,
+  '\\overrightarrow': 1,
+  '\\overleftrightarrow': 1,
+  '\\overparen': 1,
+  '\\vec': 1,
+  '\\hat': 1,
+  '\\bar': 1,
+};
+
+const COMMAND_TOKEN_REGEX = /^\\(?:[a-zA-Z]+|.)/;
+
+/**
+ * Index of the `]` that closes the optional argument opened at `open`, or -1.
+ * A `]` inside a brace group does not count.
+ *
+ * @param {string} latex
+ * @param {number} open index of a `[`
+ * @returns {number}
+ */
+const optionalEnd = (latex, open) => {
+  let depth = 0;
+
+  for (let i = open + 1; i < latex.length; i++) {
+    const ch = latex[i];
+
+    if (ch === '\\') {
+      i += 1;
+    } else if (ch === '{') {
+      depth += 1;
+    } else if (ch === '}') {
+      depth -= 1;
+    } else if (ch === ']' && depth === 0) {
+      return i;
+    }
+  }
+
+  return -1;
+};
+
+/**
+ * The argument that starts at `start`: a brace group (its content, without the
+ * braces), or a single digit or letter, the only arguments MathLive writes
+ * unbraced.
+ *
+ * Anything else is not taken as an argument, so latex that only MathQuill wrote
+ * stays as stored: `\sqrt(16)` and `\sqrt[4](16)` are still in content, the
+ * scorer reads them as roots, and reading the `(` as the argument would break
+ * them.
+ *
+ * @param {string} latex
+ * @param {number} start
+ * @returns {{content: string, end: number}|undefined}
+ */
+const readArgument = (latex, start) => {
+  const ch = latex[start];
+
+  if (ch === '{') {
+    const close = groupEnd(latex, start);
+
+    return close === -1 ? undefined : { content: latex.slice(start + 1, close), end: close + 1 };
+  }
+
+  return ch !== undefined && /^[0-9a-zA-Z]$/.test(ch) ? { content: ch, end: start + 1 } : undefined;
+};
+
+/**
+ * Put braces around every argument of the commands in `BRACED_ARGUMENT_COUNT`:
+ * `\frac12` -> `\frac{1}{2}`, `2\frac34` -> `2\frac{3}{4}`, `\sqrt2` ->
+ * `\sqrt{2}`, at any depth. Latex whose arguments are already braced comes back
+ * unchanged, whitespace included.
+ *
+ * @param {string} latex
+ * @returns {string}
+ */
+export const braceArguments = (latex) => {
+  if (typeof latex !== 'string' || latex.indexOf('\\') === -1) {
+    return latex;
+  }
+
+  let out = '';
+  let i = 0;
+
+  while (i < latex.length) {
+    if (latex[i] !== '\\') {
+      out += latex[i];
+      i += 1;
+      continue;
+    }
+
+    // A lone trailing backslash has no command name.
+    const token = latex.slice(i).match(COMMAND_TOKEN_REGEX);
+    const name = token ? token[0] : '\\';
+
+    out += name;
+    i += name.length;
+
+    const count = BRACED_ARGUMENT_COUNT[name];
+
+    if (!count) {
+      continue;
+    }
+
+    const skipSpaces = () => {
+      const from = i;
+
+      while (latex[i] === ' ') {
+        i += 1;
+      }
+
+      out += latex.slice(from, i);
+    };
+
+    if (name === '\\sqrt') {
+      skipSpaces();
+
+      if (latex[i] === '[') {
+        const close = optionalEnd(latex, i);
+
+        if (close !== -1) {
+          out += `[${braceArguments(latex.slice(i + 1, close))}]`;
+          i = close + 1;
+        }
+      }
+    }
+
+    for (let n = 0; n < count; n++) {
+      skipSpaces();
+
+      const argument = readArgument(latex, i);
+
+      if (!argument) {
+        break;
+      }
+
+      out += `{${braceArguments(argument.content)}}`;
+      i = argument.end;
+    }
+  }
+
+  return out;
+};
+
+/**
  * Convert latex out of MathLive back into the stored form, so items authored
  * with the MathLive editor remain readable by @pie-lib/math-rendering and by
  * the existing MathQuill implementation.
@@ -791,6 +975,10 @@ export const fromMathLive = (latex) => {
   // so re-adding them here would produce `\longdiv{{}}`).
   out = out.replace(BARE_PLACEHOLDER_REGEX, (_m, content) => content);
   out = out.replace(BARE_PLACEHOLDER_NO_ARG_REGEX, '');
+
+  // `\frac12` -> `\frac{1}{2}`: the braced form MathQuill stored and the scorer
+  // parses (see BRACED_ARGUMENT_COUNT).
+  out = braceArguments(out);
 
   // Store the command MathQuill stored, not the alias - also heals latex that was
   // saved with `\\divide` before the keypad resolved it.

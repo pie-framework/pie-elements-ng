@@ -103,14 +103,16 @@ describe('Static: answer blocks / prompts', () => {
       expect(make().innerFields).toEqual([]);
     });
 
-    it('returns the whole field latex in stored form', () => {
+    // As MathQuill's latex() did: an answer block serialises as its answer only.
+    // math-inline scores this as the Advanced Multi completeAnswer.
+    it('returns the whole expression with the answers in place, without field wrappers', () => {
       const s = make();
 
       expect(s.latex()).toEqual('');
 
       s.mathField = stubField({ r1: '2' });
 
-      expect(s.latex()).toEqual('x=\\MathQuillMathField[r1]{2}');
+      expect(s.latex()).toEqual('x=2');
     });
 
     it('keeps the latex around the answers exactly as stored', () => {
@@ -118,7 +120,15 @@ describe('Static: answer blocks / prompts', () => {
 
       s.mathField = stubField({ r1: '\\frac{1}{2}' });
 
-      expect(s.latex()).toEqual('$\\MathQuillMathField[r1]{\\frac{1}{2}}');
+      expect(s.latex()).toEqual('$\\frac{1}{2}');
+    });
+
+    it('braces the answers MathLive wrote without braces', () => {
+      const s = make();
+
+      s.mathField = stubField({ r1: '\\frac12' });
+
+      expect(s.latex()).toEqual('x=\\frac{1}{2}');
     });
   });
 
