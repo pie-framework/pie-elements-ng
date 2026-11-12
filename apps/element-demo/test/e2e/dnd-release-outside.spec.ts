@@ -215,6 +215,82 @@ test.describe('categorize: releasing a choice outside the element', () => {
     await pressInTurn(page, ['Space', 'Space']);
     expect(await placements(page)).toEqual({ 1: ['0'] });
   });
+
+  test('keyboard: the tab path runs through the choices until one is selected, then through the targets', async ({
+    page,
+  }) => {
+    const root = await open(page);
+    // Placed by click rather than by drag: a click just after a drag is ignored.
+    await choiceIn(category(root, 'Equations')).click();
+    await category(root, 'True').click();
+    await expect.poll(() => placements(page)).toEqual({ 0: ['0'] });
+    const tabStops = root.locator('[tabindex="0"]');
+    const targets = root.getByRole('group');
+    const choices = root.locator(DRAGGABLE);
+    const poolChoices = category(root, 'Equations').locator(DRAGGABLE);
+
+    // Nothing selected: every choice, placed or in the pool, and no category or pool.
+    await expect(tabStops).toHaveCount(await choices.count());
+    await expect(targets.and(tabStops)).toHaveCount(0);
+
+    // The pool shows above the categories, so Tab goes from its last choice to the placed one.
+    await poolChoices.last().focus();
+    await page.keyboard.press('Tab');
+    await expect(choiceIn(category(root, 'True'))).toBeFocused();
+
+    // A choice selected by click: the categories and the pool, and no choice. Tab goes on to the
+    // first category below the pool.
+    await poolChoices.first().click();
+    await expect(tabStops).toHaveCount(await targets.count());
+    await expect(choices.and(tabStops)).toHaveCount(0);
+    await page.keyboard.press('Tab');
+    await expect(category(root, 'True')).toBeFocused();
+  });
+
+  for (const [position, poolFirst] of [
+    ['above', true],
+    ['below', false],
+    ['left', true],
+    ['right', false],
+  ] as const) {
+    test(`keyboard: choicesPosition ${position} puts the pool there on screen and in the tab path`, async ({
+      page,
+    }) => {
+      await page.goto('/categorize/source');
+      await page.locator('[data-testid="source-editor"]').waitFor({ timeout: 60_000 });
+      await updateModelInSource(page, {
+        ...(await getModelFromSource(page)),
+        choicesPosition: position,
+      });
+      await switchTab(page, 'deliver');
+      const root = deliveryContainer(page);
+      await expect(choiceIn(category(root, 'Equations'))).toBeVisible();
+      const pool = await boxOf(category(root, 'Equations'));
+      const first = await boxOf(category(root, 'True'));
+
+      const shown = {
+        above: pool.y + pool.height <= first.y,
+        below: first.y + first.height <= pool.y,
+        left: pool.x + pool.width <= first.x,
+        right: first.x + first.width <= pool.x,
+      };
+      expect(shown[position]).toBe(true);
+
+      await choiceIn(category(root, 'Equations')).click();
+      const names = await root
+        .locator('[tabindex="0"]')
+        .evaluateAll((stops) =>
+          stops.map((stop) =>
+            (stop.getRootNode() as Document)
+              .getElementById(stop.getAttribute('aria-labelledby') ?? '')
+              ?.textContent?.trim()
+          )
+        );
+      expect(names).toEqual(
+        poolFirst ? ['Equations', 'True', 'False'] : ['True', 'False', 'Equations']
+      );
+    });
+  }
 });
 
 test.describe('placement-ordering: releasing a tile outside the element', () => {
