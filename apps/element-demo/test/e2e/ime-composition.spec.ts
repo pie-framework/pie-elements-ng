@@ -45,6 +45,11 @@ async function sessionText(page: Page): Promise<string> {
 }
 
 test.describe('IME composition: drawing-response text entry', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'The IME is driven through CDP, which only Chromium has'
+  );
+
   test.beforeEach(async ({ page }) => {
     await openDeliverRoute(page, 'drawing-response');
   });

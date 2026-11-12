@@ -40,8 +40,7 @@ async function waitForVennReady(page: Page) {
  * Drop a tile into a named region. The `data-region-key` aria anchor is a
  * visually-hidden 1×1 px div positioned at the geometric center of the
  * drop zone (in viewBox coords) — which is exactly what `hitTest` expects
- * to match on pointerup. We also emit real PointerEvents because the
- * delivery component listens for `pointerdown/move/up` (not `mousedown/...`).
+ * to match on pointerup.
  */
 async function dropTileIntoRegion(page: Page, tileId: string, regionKey: string) {
   const tile = page.locator(`.venn-root [data-tile-id="${tileId}"]`).first();
@@ -56,40 +55,22 @@ async function dropTileIntoRegion(page: Page, tileId: string, regionKey: string)
   const tx = targetBox.x + targetBox.width / 2;
   const ty = targetBox.y + targetBox.height / 2;
 
-  // Use evaluate to dispatch real PointerEvents (Playwright's page.mouse
-  // does not always synthesize PointerEvents with setPointerCapture-friendly
-  // semantics across headless builds).
-  await page.evaluate(
-    ({ tileId, sx, sy, tx, ty }) => {
-      const tile = document.querySelector(
-        `.venn-root [data-tile-id="${tileId}"]`
-      ) as HTMLElement | null;
-      if (!tile) throw new Error(`tile not found: ${tileId}`);
-      const mkEvent = (type: string, x: number, y: number) =>
-        new PointerEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          composed: true,
-          pointerId: 1,
-          pointerType: 'mouse',
-          isPrimary: true,
-          button: 0,
-          buttons: type === 'pointerup' ? 0 : 1,
-          clientX: x,
-          clientY: y,
-        });
-      tile.dispatchEvent(mkEvent('pointerdown', sx, sy));
-      // Drive a handful of intermediate moves so any throttled handlers fire.
-      const steps = 8;
-      for (let i = 1; i <= steps; i++) {
-        const ix = sx + ((tx - sx) * i) / steps;
-        const iy = sy + ((ty - sy) * i) / steps;
-        window.dispatchEvent(mkEvent('pointermove', ix, iy));
-      }
-      window.dispatchEvent(mkEvent('pointerup', tx, ty));
-    },
-    { tileId, sx, sy, tx, ty }
-  );
+  await dragPointer(page, sx, sy, tx, ty);
+  await page.mouse.up();
+}
+
+/**
+ * Presses at the start point and moves to the target in steps, leaving the button down. Trusted
+ * input: Firefox refuses `setPointerCapture` for a synthetic `pointerdown`, which ends the drag
+ * before it starts.
+ */
+async function dragPointer(page: Page, sx: number, sy: number, tx: number, ty: number) {
+  await page.mouse.move(sx, sy);
+  await page.mouse.down();
+  const steps = 8;
+  for (let i = 1; i <= steps; i++) {
+    await page.mouse.move(sx + ((tx - sx) * i) / steps, sy + ((ty - sy) * i) / steps);
+  }
 }
 
 test.describe('Venn Classification (Svelte 5) - smoke', () => {
@@ -174,7 +155,7 @@ test.describe('Venn Classification (Svelte 5) - smoke', () => {
     await switchMode(page, 'gather');
     await waitForVennReady(page);
 
-    // Park the pointer mid-drag: dispatch pointerdown + a few moves into the
+    // Park the pointer mid-drag: press and move into the
     // "Reptile and Egg-layer" overlap region, but NO pointerup yet. Assert
     // the DOM shows (a) the drag ghost preview and (b) the shape-masked
     // overlap highlight — the two UX changes that align with categorize.
@@ -188,35 +169,7 @@ test.describe('Venn Classification (Svelte 5) - smoke', () => {
     const tx = targetBox.x + targetBox.width / 2;
     const ty = targetBox.y + targetBox.height / 2;
 
-    await page.evaluate(
-      ({ tileId, sx, sy, tx, ty }) => {
-        const tile = document.querySelector(
-          `.venn-root [data-tile-id="${tileId}"]`
-        ) as HTMLElement | null;
-        if (!tile) throw new Error(`tile not found: ${tileId}`);
-        const mk = (type: string, x: number, y: number) =>
-          new PointerEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-            pointerId: 1,
-            pointerType: 'mouse',
-            isPrimary: true,
-            button: 0,
-            buttons: 1,
-            clientX: x,
-            clientY: y,
-          });
-        tile.dispatchEvent(mk('pointerdown', sx, sy));
-        const steps = 6;
-        for (let i = 1; i <= steps; i++) {
-          const ix = sx + ((tx - sx) * i) / steps;
-          const iy = sy + ((ty - sy) * i) / steps;
-          window.dispatchEvent(mk('pointermove', ix, iy));
-        }
-      },
-      { tileId: 'frog', sx, sy, tx, ty }
-    );
+    await dragPointer(page, sx, sy, tx, ty);
 
     // (a) The drag ghost follows the cursor. It is a position: fixed sibling
     // of the tray / diagram and must render at the last pointer location.
@@ -233,25 +186,7 @@ test.describe('Venn Classification (Svelte 5) - smoke', () => {
     await expect(overlapHighlight).toHaveCount(1);
 
     // Release the pointer so the drag commits (cleanup).
-    await page.evaluate(
-      ({ tx, ty }) => {
-        const mk = (type: string, x: number, y: number) =>
-          new PointerEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-            pointerId: 1,
-            pointerType: 'mouse',
-            isPrimary: true,
-            button: 0,
-            buttons: 0,
-            clientX: x,
-            clientY: y,
-          });
-        window.dispatchEvent(mk('pointerup', tx, ty));
-      },
-      { tx, ty }
-    );
+    await page.mouse.up();
     await expect(page.locator('.venn-root .drag-ghost')).toHaveCount(0);
   });
 

@@ -41,6 +41,11 @@ async function open(page: Page, player: 'esm' | 'iife') {
   return host;
 }
 
+test.skip(
+  ({ browserName }) => browserName !== 'chromium',
+  "The names come from Chromium's accessibility tree over CDP"
+);
+
 for (const player of ['esm', 'iife'] as const) {
   test(`keeps math out of choice names under the ${player} player`, async ({ page }) => {
     test.setTimeout(240_000);

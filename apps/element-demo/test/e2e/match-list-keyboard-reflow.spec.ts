@@ -58,9 +58,19 @@ async function openMatchList(page: Page, viewport: { width: number; height: numb
 
 /**
  * Presses `key` until a choice in the pool has focus and returns its text. Navigation leaves focus
- * at the top of the document, so Shift+Tab wraps around and enters the page from its end.
+ * at the top of the document, so Tab enters the page from its start and Shift+Tab from its end.
  */
 async function focusPoolChoice(page: Page, key: 'Tab' | 'Shift+Tab'): Promise<string> {
+  if (key === 'Shift+Tab') {
+    // Enter from a focusable sentinel at the page end: WebKit does not wrap Shift+Tab from the
+    // top of the document back into the page.
+    await page.evaluate(() => {
+      const sentinel = document.createElement('button');
+      sentinel.dataset.testid = 'page-end-sentinel';
+      document.body.append(sentinel);
+      sentinel.focus();
+    });
+  }
   for (let presses = 0; presses < 40; presses += 1) {
     await page.keyboard.press(key);
     const text = await page.evaluate((selector) => {
