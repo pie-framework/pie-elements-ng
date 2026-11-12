@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
 import { resolveSourceAliases } from './source-aliases.js';
+import { BUNDLE_TARGET } from './target.js';
 
 const BUNDLE_LIB_PACKAGES = ['@pie-lib/pie-toolbox', '@pie-lib/math-rendering'];
 const SHIM_DIR = resolveShimDir();
@@ -188,7 +189,7 @@ const moduleRules: webpack.RuleSetRule[] = [
         use: [
           {
             loader: 'esbuild-loader',
-            options: { loader: 'tsx', target: 'es2015', legalComments: 'none' },
+            options: { loader: 'tsx', target: BUNDLE_TARGET, legalComments: 'none' },
           },
         ],
       },
@@ -196,7 +197,7 @@ const moduleRules: webpack.RuleSetRule[] = [
         use: [
           {
             loader: 'esbuild-loader',
-            options: { loader: 'ts', target: 'es2015', legalComments: 'none' },
+            options: { loader: 'ts', target: BUNDLE_TARGET, legalComments: 'none' },
           },
         ],
       },
@@ -224,7 +225,7 @@ const moduleRules: webpack.RuleSetRule[] = [
         loader: 'esbuild-loader',
         options: {
           loader: 'jsx',
-          target: 'es2015',
+          target: BUNDLE_TARGET,
           legalComments: 'none',
         },
       },
@@ -277,7 +278,7 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     optimization: {
       // Dev/demo bundling prioritizes correctness and debuggability over size.
       // Some large mixed ESM/CJS dependency graphs can break under aggressive minification.
-      minimizer: [new EsbuildPlugin({ target: 'es2015' })],
+      minimizer: [new EsbuildPlugin({ target: BUNDLE_TARGET })],
       minimize: false,
     },
 
@@ -334,7 +335,7 @@ export function createControllerWebpackConfig(
     entry: opts.entry,
     mode: 'production',
     optimization: {
-      minimizer: [new EsbuildPlugin({ target: 'es2015' })],
+      minimizer: [new EsbuildPlugin({ target: BUNDLE_TARGET })],
       minimize: false,
     },
     devtool: opts.sourceMaps ? 'source-map' : false,

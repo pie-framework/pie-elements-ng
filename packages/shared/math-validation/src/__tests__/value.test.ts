@@ -1,5 +1,5 @@
 import { latexEqual } from '../index.js';
-import { compareNumbers } from '../value.js';
+import { compareArithmetic, compareNumbers } from '../value.js';
 
 describe('compareNumbers', () => {
   it.each([
@@ -70,6 +70,39 @@ describe('compareNumbers precision', () => {
     ['1E30', '1000000000000000000000000000000'],
   ])('equates %s and %s', (a, b) => {
     expect(compareNumbers(a, b)).toBe(true);
+  });
+});
+
+describe('compareArithmetic', () => {
+  it.each([
+    ['12345678901234567', '12345678901234568', false],
+    ['123456789.00001', '123456789', false],
+    ['123456789-0.00001', '123456788.99999', true],
+    ['(2+3)\\cdot4', '20', true],
+    ['2\\times10^{6}', '2000000', true],
+    ['1+10^{-17}', '1.00000000000000001', true],
+    ['2^{-2}', '\\frac{1}{4}', true],
+    ['\\frac{1}{3}', '0.3333333333333333', false],
+  ])('compares %s and %s exactly', (a, b, equal) => {
+    expect(compareArithmetic(a, b)).toBe(equal);
+  });
+
+  it.each([
+    ['\\sqrt{4}', '2'],
+    ['2^{0.5}', '1'],
+    ['0^{-1}', '1'],
+    ['\\frac{1}{0}', '1'],
+    ['10^{10^{9}}', '1'],
+    ['30°', '1'],
+    ['\\pi', '3'],
+    ['\\infty', '1'],
+    ['50\\%', '0.5'],
+    ['3x', '3'],
+    ['x=1', '1'],
+    ['1E999999', '1'],
+  ])('leaves %s and %s to the mode', (a, b) => {
+    expect(compareArithmetic(a, b)).toBeUndefined();
+    expect(compareArithmetic(b, a)).toBeUndefined();
   });
 });
 
