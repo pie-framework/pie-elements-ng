@@ -450,20 +450,35 @@ export const visibleBounds = (el: Element | null): Bounds => {
 };
 
 /**
- * The math toolbar's viewport top edge. It opens below the anchor when it fits in the visible
- * bounds, otherwise on whichever side of the anchor has more room, staying `margin` inside them.
+ * The math toolbar's viewport position. It opens beside the anchor (inline-end side first, then
+ * the other), top-aligned with it and kept inside the visible bounds, so it doesn't cover the
+ * anchor. When neither side has room, it opens below or above, whichever has more room, still
+ * kept inside the visible bounds: staying visible matters more than not covering the anchor.
  */
-export const mathToolbarTop = (
-  anchor: { top: number; bottom: number },
-  toolbarHeight: number,
-  bounds: { top: number; bottom: number },
+export const mathToolbarPosition = (
+  anchor: Bounds,
+  toolbar: { width: number; height: number },
+  rtl: boolean,
+  bounds: Bounds,
   margin: number,
-): number => {
+): { top: number; left: number } => {
+  const clampTop = (top: number) => Math.max(bounds.top + margin, Math.min(top, bounds.bottom - toolbar.height - margin));
+  const fitsRight = bounds.right - anchor.right - margin >= toolbar.width;
+  const fitsLeft = anchor.left - bounds.left - margin >= toolbar.width;
+
+  if (fitsRight && (!rtl || !fitsLeft)) {
+    return { top: clampTop(anchor.top), left: anchor.right };
+  }
+
+  if (fitsLeft) {
+    return { top: clampTop(anchor.top), left: anchor.left - toolbar.width };
+  }
+
   const spaceBelow = bounds.bottom - anchor.bottom - margin;
   const spaceAbove = anchor.top - bounds.top - margin;
-  const top = toolbarHeight <= spaceBelow || spaceBelow >= spaceAbove ? anchor.bottom : anchor.top - toolbarHeight;
+  const top = toolbar.height <= spaceBelow || spaceBelow >= spaceAbove ? anchor.bottom : anchor.top - toolbar.height;
 
-  return Math.max(bounds.top + margin, Math.min(top, bounds.bottom - toolbarHeight - margin));
+  return { top: clampTop(top), left: mathToolbarLeft(anchor, toolbar.width, rtl, bounds, margin) };
 };
 
 export const MathNodeView = (props) => {
@@ -565,16 +580,17 @@ export const MathNodeView = (props) => {
       const rtl = isRightToLeft(nodeRef.current ?? editor.view.dom);
       const anchorTop = nodeRect?.height ? nodeRect.top : start.top;
       const anchorBottom = nodeRect?.height ? nodeRect.bottom : (start.bottom ?? start.top);
-
-      const toolbarHeight = toolbarRef.current.offsetHeight;
-      const toolbarWidth = toolbarRef.current.offsetWidth;
+      const { left: anchorLeft, right: anchorRight } = nodeRect?.width ? nodeRect : start;
 
       const portalEl = editor._tiptapContainerEl || document.body;
 
-      const margin = 8;
-      const bounds = visibleBounds(portalEl);
-      const top = mathToolbarTop({ top: anchorTop, bottom: anchorBottom }, toolbarHeight, bounds, margin);
-      const left = mathToolbarLeft(nodeRect?.width ? nodeRect : start, toolbarWidth, rtl, bounds, margin);
+      const { top, left } = mathToolbarPosition(
+        { top: anchorTop, bottom: anchorBottom, left: anchorLeft, right: anchorRight },
+        { width: toolbarRef.current.offsetWidth, height: toolbarRef.current.offsetHeight },
+        rtl,
+        visibleBounds(portalEl),
+        8,
+      );
 
       const containerRect = portalEl.getBoundingClientRect();
 

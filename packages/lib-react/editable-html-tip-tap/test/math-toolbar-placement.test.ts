@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@pie-lib/math-toolbar', () => ({ MathPreview: () => null, MathToolbar: () => null }));
 
-import { mathToolbarLeft, mathToolbarTop, visibleBounds } from '../src/extensions/math';
+import { mathToolbarLeft, mathToolbarPosition, visibleBounds } from '../src/extensions/math';
 
 const node = { left: 300, right: 360 };
 const viewport = { left: 0, right: 1000 };
@@ -27,19 +27,36 @@ describe('math toolbar placement', () => {
     expect(mathToolbarLeft({ left: 120, right: 180 }, 200, true, { left: 100, right: 600 }, 8)).toBe(108);
   });
 
-  const bounds = { top: 80, bottom: 600 };
+});
 
-  it('opens below the node when it fits in the visible container', () => {
-    expect(mathToolbarTop({ top: 200, bottom: 220 }, 280, bounds, 8)).toBe(220);
+describe('mathToolbarPosition', () => {
+  const bounds = { top: 80, bottom: 600, left: 0, right: 1000 };
+  const toolbar = { width: 300, height: 280 };
+  const at = (left: number, top: number) => ({ top, bottom: top + 20, left, right: left + 60 });
+
+  it('opens to the right of the node in LTR text, top-aligned with it', () => {
+    expect(mathToolbarPosition(at(300, 200), toolbar, false, bounds, 8)).toEqual({ top: 200, left: 360 });
   });
 
-  it('opens above the node when there is more room there', () => {
-    expect(mathToolbarTop({ top: 450, bottom: 470 }, 280, bounds, 8)).toBe(170);
+  it('opens to the left of the node in RTL text', () => {
+    expect(mathToolbarPosition(at(600, 200), toolbar, true, bounds, 8)).toEqual({ top: 200, left: 300 });
   });
 
-  it('stays inside the visible container rather than the viewport', () => {
-    expect(mathToolbarTop({ top: 300, bottom: 320 }, 280, bounds, 8)).toBe(312);
-    expect(mathToolbarTop({ top: 340, bottom: 360 }, 280, bounds, 8)).toBe(88);
+  it('switches sides when the preferred side has no room', () => {
+    expect(mathToolbarPosition(at(800, 200), toolbar, false, bounds, 8)).toEqual({ top: 200, left: 500 });
+    expect(mathToolbarPosition(at(100, 200), toolbar, true, bounds, 8)).toEqual({ top: 200, left: 160 });
+  });
+
+  it('shifts up beside the node to stay inside the visible container', () => {
+    expect(mathToolbarPosition(at(300, 450), toolbar, false, bounds, 8)).toEqual({ top: 312, left: 360 });
+  });
+
+  it('opens below or above, kept inside the visible container, when neither side has room', () => {
+    const narrow = { ...bounds, right: 400 };
+    expect(mathToolbarPosition(at(80, 100), toolbar, false, narrow, 8)).toEqual({ top: 120, left: 80 });
+    expect(mathToolbarPosition(at(80, 450), toolbar, false, narrow, 8)).toEqual({ top: 170, left: 80 });
+    expect(mathToolbarPosition(at(80, 300), toolbar, false, narrow, 8)).toEqual({ top: 312, left: 80 });
+    expect(mathToolbarPosition(at(80, 340), toolbar, false, narrow, 8)).toEqual({ top: 88, left: 80 });
   });
 });
 
