@@ -23,9 +23,10 @@ const { renderMath } = vi.hoisted(() => ({ renderMath: vi.fn() }));
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath }));
 
+// Hands back the tab stop it is given, the way dnd-kit's own attributes carry it.
 vi.mock('@dnd-kit/core', () => ({
-  useDraggable: vi.fn(() => ({
-    attributes: {},
+  useDraggable: vi.fn(({ attributes }: any) => ({
+    attributes: { tabIndex: attributes?.tabIndex ?? 0 },
     listeners: {},
     setNodeRef: vi.fn(),
     isDragging: false,
@@ -325,5 +326,41 @@ describe('DraggableChoice click-to-select', () => {
     fireEvent.click(container.firstChild as Element);
 
     expect(onSelectClick).not.toHaveBeenCalled();
+  });
+});
+
+describe('DraggableChoice tab stop', () => {
+  const renderChoice = (extras?: any) =>
+    render(
+      <ThemeProvider theme={theme}>
+        <DraggableChoice id="c1" content="Choice Content" {...extras} />
+      </ThemeProvider>,
+    );
+
+  it('is a tab stop in the pool while nothing is selected', () => {
+    const { container } = renderChoice({ selectedItem: null });
+
+    expect((container.firstChild as Element).getAttribute('tabindex')).toBe('0');
+  });
+
+  it('is a tab stop in a category while nothing is selected', () => {
+    const { container } = renderChoice({ selectedItem: null, categoryId: 'cat-1', choiceIndex: 0 });
+
+    expect((container.firstChild as Element).getAttribute('tabindex')).toBe('0');
+  });
+
+  it('leaves the tab path while a choice is selected, so it runs through the categories and the pool', () => {
+    const selection = { id: 'c2', categoryId: undefined, choiceIndex: undefined, type: 'choice' };
+    const { container } = renderChoice({ selectedItem: selection, categoryId: 'cat-1', choiceIndex: 0 });
+
+    expect((container.firstChild as Element).getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('leaves the tab path while it is the selected choice itself', () => {
+    const { container } = renderChoice({
+      selectedItem: { id: 'c1', categoryId: undefined, choiceIndex: undefined, type: 'choice' },
+    });
+
+    expect((container.firstChild as Element).getAttribute('tabindex')).toBe('-1');
   });
 });

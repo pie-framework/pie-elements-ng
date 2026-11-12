@@ -200,27 +200,13 @@ export class Categorize extends React.Component {
       this.props.onShowCorrectToggle();
     });
 
-  getPositionDirection: any = (choicePosition) => {
-    let flexDirection;
+  getPositionDirection: any = (choicePosition) =>
+    choicePosition === 'left' || choicePosition === 'right' ? 'row' : 'column';
 
-    switch (choicePosition) {
-      case 'left':
-        flexDirection = 'row-reverse';
-        break;
-      case 'right':
-        flexDirection = 'row';
-        break;
-      case 'below':
-        flexDirection = 'column';
-        break;
-      default:
-        // above
-        flexDirection = 'column-reverse';
-        break;
-    }
-
-    return flexDirection;
-  };
+  // The pool comes first in the DOM when it shows first, above or left of the categories, rather
+  // than being moved there by a reversed flex direction: the tab path and the reading order follow
+  // the DOM, so they then follow what is on screen.
+  choicesComeFirst: any = (choicePosition) => choicePosition !== 'below' && choicePosition !== 'right';
 
   existAlternateResponse = (correctResponse) =>
     correctResponse?.some((correctRes) => correctRes.alternateResponses?.length > 0);
@@ -271,6 +257,37 @@ export class Categorize extends React.Component {
     const showTeacherInstructions =
       model.teacherInstructions && (hasText(model.teacherInstructions) || hasMedia(model.teacherInstructions));
 
+    const categoriesView = (
+      <div key="categories" style={{ display: 'flex', flex: 1 }}>
+        <Categories
+          model={model}
+          disabled={model.disabled}
+          categories={categories}
+          onDropChoice={this.dropChoice}
+          onRemoveChoice={this.removeChoice}
+          rowLabels={(rowLabels || []).slice(0, nbOfRows)}
+          selectedItem={selectedItem}
+          onSelectClick={onSelectClick}
+          onPlacementClick={onPlacementClick}
+        />
+      </div>
+    );
+    const choicesView = (
+      <Choices
+        key="choices"
+        disabled={model.disabled}
+        model={model}
+        choices={choices}
+        choicePosition={choicePosition}
+        onDropChoice={this.dropChoice}
+        onRemoveChoice={this.removeChoice}
+        correct={correct}
+        selectedItem={selectedItem}
+        onSelectClick={onSelectClick}
+        onPlacementClick={onPlacementClick}
+      />
+    );
+
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
@@ -300,31 +317,7 @@ export class Categorize extends React.Component {
 
         <StyledCategorize>
           <StyledCategorizeContent style={style}>
-            <div style={{ display: 'flex', flex: 1 }}>
-              <Categories
-                model={model}
-                disabled={model.disabled}
-                categories={categories}
-                onDropChoice={this.dropChoice}
-                onRemoveChoice={this.removeChoice}
-                rowLabels={(rowLabels || []).slice(0, nbOfRows)}
-                selectedItem={selectedItem}
-                onSelectClick={onSelectClick}
-                onPlacementClick={onPlacementClick}
-              />
-            </div>
-            <Choices
-              disabled={model.disabled}
-              model={model}
-              choices={choices}
-              choicePosition={choicePosition}
-              onDropChoice={this.dropChoice}
-              onRemoveChoice={this.removeChoice}
-              correct={correct}
-              selectedItem={selectedItem}
-              onSelectClick={onSelectClick}
-              onPlacementClick={onPlacementClick}
-            />
+            {this.choicesComeFirst(choicePosition) ? [choicesView, categoriesView] : [categoriesView, choicesView]}
           </StyledCategorizeContent>
         </StyledCategorize>
         {displayNote && (
