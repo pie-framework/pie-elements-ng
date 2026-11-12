@@ -22,7 +22,7 @@ import {
   fieldIds,
   fieldTemplate,
   fieldValues,
-  fillFields,
+  inlineFields,
   keyToAction,
   KEYSTROKES,
 } from '../latex-bridge.js';
@@ -399,11 +399,17 @@ export default class Static extends React.Component {
     return out;
   }
 
-  /** The whole field's latex, in stored form. MathQuill's `mathField.latex()`. */
+  /**
+   * The whole expression with the current answers in place, as MathQuill's
+   * `mathField.latex()` returned it: an answer block serialises as its answer
+   * alone, with no `\MathQuillMathField` wrapper. math-inline stores this as
+   * `completeAnswer` and scores it in Advanced Multi, so a wrapper left in would
+   * make every answer wrong.
+   */
   latex() {
-    // The stored latex with the current answers: rebuilt from the prop rather than
-    // read back from MathLive, so everything outside the answers is kept as stored.
-    return this.mathField ? fillFields(this.props.latex, this.values()) : '';
+    // Rebuilt from the prop rather than read back from MathLive, so everything
+    // outside the answers is kept as stored.
+    return this.mathField ? inlineFields(this.props.latex, this.values()) : '';
   }
 
   /** Put the selection inside prompt `id`, unless it is there already, so edits land in it. */
