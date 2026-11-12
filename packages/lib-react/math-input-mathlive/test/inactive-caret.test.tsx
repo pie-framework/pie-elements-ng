@@ -244,6 +244,55 @@ describe('typing while a keypad button has focus', () => {
     expect(typed(field)).toEqual(['π', '≠']);
   });
 
+  it('sends a backslash, which starts a LaTeX command', async () => {
+    const { field, plus, stop } = setup();
+    cleanup = stop;
+
+    field.focus();
+    plus.focus();
+
+    for (const key of ['\\', 'p', 'i']) expect(press(key)).toBe(false);
+    expect(typed(field)).toEqual(['\\', 'p', 'i']);
+  });
+
+  it('finishes a LaTeX command with Space, Enter or Escape, keeping focus on the button', async () => {
+    const { field, plus, stop } = setup();
+    cleanup = stop;
+
+    field.focus();
+    plus.focus();
+    Object.assign(field, { mode: 'latex' });
+
+    for (const key of [' ', 'Enter', 'Escape']) expect(press(key)).toBe(false);
+
+    expect(commands(field)).toEqual([
+      ['complete', 'accept-all'],
+      ['complete', 'accept-all'],
+      ['complete', 'complete', { selectItem: 'true' }],
+    ]);
+    expect(document.activeElement).toBe(plus);
+  });
+
+  it('leaves Tab and modified keys to the keypad in LaTeX mode', async () => {
+    const { field, plus, stop } = setup();
+    cleanup = stop;
+
+    field.focus();
+    plus.focus();
+    Object.assign(field, { mode: 'latex' });
+
+    for (const [key, init] of [
+      ['Tab', {}],
+      ['Enter', { shiftKey: true }],
+      ['Escape', { shiftKey: true }],
+      [' ', { ctrlKey: true }],
+    ] as const) {
+      expect(press(key, init)).toBe(true);
+    }
+
+    expect(field.executeCommand).not.toHaveBeenCalled();
+  });
+
   it('deletes with Backspace and Delete, keeping focus on the button', async () => {
     const { field, plus, stop } = setup();
     cleanup = stop;
@@ -267,8 +316,8 @@ describe('typing while a keypad button has focus', () => {
 
     for (const [key, init] of [
       [' ', {}],
-      ['\\', {}],
       ['Enter', {}],
+      ['Escape', {}],
       ['Enter', { shiftKey: true }],
       ['Tab', {}],
       ['ArrowRight', {}],
@@ -283,6 +332,36 @@ describe('typing while a keypad button has focus', () => {
     }
 
     expect(field.executeCommand).not.toHaveBeenCalled();
+  });
+
+  it('takes typing through a marked wrapper that groups a button with the keypad', async () => {
+    document.body.innerHTML = `
+      <div>
+        <span tabindex="0" data-testid="field"></span>
+        <div ${KEYPAD_ATTRIBUTE}="">
+          <button type="button" data-testid="addArea">+ Response Area</button>
+          <div ${KEYPAD_ATTRIBUTE}="">
+            <button type="button" data-testid="seven">7</button>
+          </div>
+        </div>
+        <button type="button" data-testid="elsewhere">other</button>
+      </div>`;
+    const get = (id: string) => document.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
+    const field = Object.assign(get('field'), { readOnly: false, getPrompts: () => [], executeCommand: vi.fn() });
+    cleanup = keepCaretWhileKeypadFocused(field);
+
+    // Focus moves from the field to a key, then on to the button beside the keys.
+    field.focus();
+    get('seven').focus();
+    expect(press('3')).toBe(false);
+    get('addArea').focus();
+    expect(press('x')).toBe(false);
+    expect(field.classList.contains(KEYPAD_CARET_CLASS)).toBe(true);
+
+    get('elsewhere').focus();
+    await settle();
+    expect(press('y')).toBe(true);
+    expect(typed(field)).toEqual(['3', 'x']);
   });
 
   it('takes no typing once focus has moved on from the keypad', async () => {

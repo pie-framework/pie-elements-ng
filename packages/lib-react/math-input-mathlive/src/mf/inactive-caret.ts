@@ -2,7 +2,11 @@
 
 import { KEYSTROKES } from '../latex-bridge.js';
 
-/** Marks the keypad root, so a field knows that focus moved to a keypad button. */
+/**
+ * Marks the keypad root, so a field knows that focus moved to a keypad button. A wrapper marked
+ * too makes the keypad and the controls beside it one keypad, such as the toolbar's
+ * "+ Response Area" button: typing goes on while focus moves among them.
+ */
 export const KEYPAD_ATTRIBUTE = 'data-math-keypad';
 
 /** Set on a `<math-field>` while a keypad button has focus; the shadow CSS then shows its caret. */
@@ -24,6 +28,17 @@ const KEYPAD_SELECTOR = `[${KEYPAD_ATTRIBUTE}]`;
 
 const inKeypad = (node) => !!node?.closest?.(KEYPAD_SELECTOR);
 
+/** The outermost keypad root around a node. */
+const keypadRoot = (node) => {
+  let root = node?.closest?.(KEYPAD_SELECTOR) ?? null;
+
+  for (let outer = root?.parentElement?.closest(KEYPAD_SELECTOR); outer; outer = outer.parentElement?.closest(KEYPAD_SELECTOR)) {
+    root = outer;
+  }
+
+  return root;
+};
+
 /** The focused element, looking through shadow roots. */
 const deepActiveElement = () => {
   let active = document.activeElement;
@@ -40,11 +55,9 @@ const deepActiveElement = () => {
  * focused button), Enter, Tab and the arrows are not characters, and Ctrl, Cmd and Alt shortcuts
  * are left alone. AltGr, reported as Ctrl+Alt, types characters on many keyboards, and on macOS
  * Option reports plain Alt but types a non-ASCII character (Option+p is π).
- * `\` is not forwarded: it switches the field to LaTeX mode, and the keys that end that mode
- * (Space, Enter, Tab) belong to the keypad, so the field would stay stuck there.
  */
 const isTypedCharacter = (event) => {
-  if (event.defaultPrevented || event.isComposing || event.key?.length !== 1 || event.key === ' ' || event.key === '\\') {
+  if (event.defaultPrevented || event.isComposing || event.key?.length !== 1 || event.key === ' ') {
     return false;
   }
 
@@ -53,6 +66,22 @@ const isTypedCharacter = (event) => {
 
   return !event.metaKey && (altGraph || optionCharacter || !(event.ctrlKey || event.altKey));
 };
+
+/**
+ * `\` puts the field in LaTeX mode, where Space, Enter and Escape finish the command typed after
+ * it. While the field is in that mode they do so, as MathLive's own bindings for them in it do,
+ * instead of pressing the focused button; otherwise the field would stay in LaTeX mode.
+ */
+const LATEX_COMPLETIONS = {
+  ' ': ['complete', 'accept-all'],
+  Enter: ['complete', 'accept-all'],
+  Escape: ['complete', 'complete', { selectItem: 'true' }],
+};
+
+const latexCompletion = (event) =>
+  !event.defaultPrevented && !(event.shiftKey || event.ctrlKey || event.metaKey || event.altKey)
+    ? LATEX_COMPLETIONS[event.key]
+    : undefined;
 
 /** Backspace or Delete on its own, which deletes in the field. With a modifier, it is a shortcut. */
 const isDeleteKey = (event) =>
@@ -63,7 +92,8 @@ const isDeleteKey = (event) =>
 /**
  * MathLive hides its caret when a field blurs, though it keeps the insertion point. While a keypad
  * button has focus, keep the caret showing there, and send what is typed on the keyboard to the
- * field, as if typed in it: `/` starts a fraction, `^` an exponent, and Backspace and Delete delete.
+ * field, as if typed in it: `/` starts a fraction, `^` an exponent, `\` a LaTeX command, which Space,
+ * Enter or Escape finishes, and Backspace and Delete delete.
  * Focus stays on the button.
  * Focus going anywhere else removes the caret and stops the typing.
  *
@@ -129,7 +159,13 @@ export function keepCaretWhileKeypadFocused(mathField) {
       return;
     }
 
-    if (isTypedCharacter(event)) {
+    const completion = mathField.mode === 'latex' ? latexCompletion(event) : undefined;
+
+    if (completion) {
+      event.preventDefault();
+      event.stopPropagation();
+      mathField.executeCommand?.(completion);
+    } else if (isTypedCharacter(event)) {
       event.preventDefault();
       event.stopPropagation();
       mathField.executeCommand?.(['typedText', event.key, { simulateKeystroke: true }]);
@@ -146,7 +182,7 @@ export function keepCaretWhileKeypadFocused(mathField) {
       return;
     }
 
-    keypad = event.relatedTarget.closest(KEYPAD_SELECTOR);
+    keypad = keypadRoot(event.relatedTarget);
     setShown(true);
     stopWatchingFocus();
     document.addEventListener('focusin', onFocusIn, true);

@@ -30,12 +30,6 @@ vi.mock('../src/mathlive-instance', () => {
         { key: 'shift+[Tab]', command: 'moveToPreviousGroup' },
         { key: '[Tab]', ifMode: 'latex', command: ['complete', 'accept-suggestion'] },
         { key: 'alt+[Tab]', ifMode: 'math', command: 'addColumnAfter' },
-        // ...and the ones that switch to LaTeX mode.
-        { key: '[Escape]', ifMode: 'math', command: ['switchMode', 'latex'] },
-        { key: '[Escape]', ifMode: 'text', command: ['switchMode', 'latex'] },
-        { key: '[Escape]', ifMode: 'latex', command: ['complete', 'complete', { selectItem: 'true' }] },
-        { key: '\\', ifMode: 'math', command: ['switchMode', 'latex', '', '\\'] },
-        { key: '[IntlBackslash]', ifMode: 'math', command: ['switchMode', 'latex', '', '\\'] },
       ];
 
       return el;
@@ -142,20 +136,7 @@ describe('async mount race', () => {
     expect(input.mathField.keybindings).toEqual([
       { key: '[Tab]', ifMode: 'latex', command: ['complete', 'accept-suggestion'] },
       { key: 'alt+[Tab]', ifMode: 'math', command: 'addColumnAfter' },
-      { key: '[Escape]', ifMode: 'latex', command: ['complete', 'complete', { selectItem: 'true' }] },
     ]);
-  });
-
-  // Typing `\` or pressing Escape would leave the field in LaTeX mode, which the keypad cannot end.
-  it('has no binding that switches to LaTeX mode', async () => {
-    const input = new Input({});
-
-    holderFor(input);
-    await input.componentDidMount();
-
-    const switching = input.mathField.keybindings.filter(({ command }) => command?.[0] === 'switchMode');
-
-    expect(switching).toEqual([]);
   });
 
   // MathLive leaves a superscript after one digit by default (`smartSuperscript`),
@@ -167,6 +148,16 @@ describe('async mount race', () => {
     await input.componentDidMount();
 
     expect(input.mathField.smartSuperscript).toBe(false);
+  });
+
+  // MathLive autocompletes a latex command typed after `\` by default (`popoverPolicy`).
+  it('shows no suggestions for a latex command', async () => {
+    const input = new Input({});
+
+    holderFor(input);
+    await input.componentDidMount();
+
+    expect(input.mathField.popoverPolicy).toBe('off');
   });
 
   it('reports itself through innerRef on mount and clears it on unmount', async () => {

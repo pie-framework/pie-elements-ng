@@ -24,11 +24,6 @@ const TAB_NAVIGATION = new Set(['[Tab]', 'shift+[Tab]']);
 const withoutTabNavigation = (keybindings = []) =>
   keybindings.filter(({ key, ifMode }) => !(TAB_NAVIGATION.has(key) && ifMode !== 'latex'));
 
-// MathLive's `\` (and Escape) switch a field to LaTeX mode, which students have no use for, and
-// the keys that end it (Space, Enter, Tab) can belong to the keypad.
-const withoutLatexMode = (keybindings = []) =>
-  keybindings.filter(({ command }) => !(Array.isArray(command) && command[0] === 'switchMode' && command[1] === 'latex'));
-
 const log = debug('pie-lib:math-input-mathlive:input');
 
 // A whole number, a space, then a fraction with an empty denominator, as MathLive
@@ -114,6 +109,9 @@ export class Input extends React.Component {
     // default) jumps out of an empty superscript after a single digit, which breaks
     // typing x^23 or 10^6 and is inconsistent with non-digit exponents.
     this.mathField.smartSuperscript = false;
+    // A latex command typed after `\` gets no autocomplete: no suggestion popover, and no
+    // completion shown inline in the field.
+    this.mathField.popoverPolicy = 'off';
 
     // The mathfield renders in shadow DOM, so page CSS cannot reach it - the
     // stretchy-accent fix has to be injected there directly.
@@ -140,7 +138,7 @@ export class Input extends React.Component {
     // Tab moves focus on, keeping the insertion point, so a keypad button can insert there.
     // MathLive's own Tab first walks the cursor through the expression's groups to its end. The
     // keybindings can only be read once the field is connected.
-    this.mathField.keybindings = withoutLatexMode(withoutTabNavigation(this.mathField.keybindings));
+    this.mathField.keybindings = withoutTabNavigation(this.mathField.keybindings);
 
     if (this.props.innerRef) {
       this.props.innerRef(this);

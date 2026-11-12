@@ -8,6 +8,7 @@ import HorizontalKeypad from './horizontal-keypad.js';
 import KeyPad from './keypad/index.js';
 
 import * as mf from './mf/index.js';
+import { KEYPAD_ATTRIBUTE } from './mf/inactive-caret.js';
 import {
   registerEmbed,
   applyStaticMath,
@@ -45,6 +46,7 @@ export {
   MathInput,
   HorizontalKeypad,
   KeyPad,
+  KEYPAD_ATTRIBUTE,
   updateSpans,
   // `mf` is the MathLive equivalent of math-input's `mq`. Both names are
   // exported so a consumer can switch packages by changing only the import.

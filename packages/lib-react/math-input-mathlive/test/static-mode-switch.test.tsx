@@ -78,3 +78,13 @@ describe('Static switching between display and answer blocks', () => {
     expect(container.querySelector('math').closest('[aria-hidden]')).toBeNull();
   });
 });
+
+describe('Static answer blocks', () => {
+  // MathLive autocompletes a latex command typed after `\` by default (`popoverPolicy`).
+  it('show no suggestions for a latex command', async () => {
+    const { container } = render(<Static latex={GATHER} />);
+
+    await waitFor(() => expect(mathField(container)).not.toBeNull());
+    expect(mathField(container).popoverPolicy).toBe('off');
+  });
+});
