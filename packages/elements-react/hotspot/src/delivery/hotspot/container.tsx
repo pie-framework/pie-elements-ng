@@ -158,6 +158,7 @@ export class Container extends React.Component {
       hoverOutlineColor,
       selectedHotspotColor,
       imageUrl,
+      imageAltText,
       isEvaluateMode,
       language,
       outlineColor,
@@ -181,7 +182,7 @@ export class Container extends React.Component {
         {imageUrl ? (
           <ImageContainer>
             <Image
-              alt={i18n.plural('image', { count: sortedShapes.length })}
+              alt={imageAltText?.trim() ? imageAltText : i18n.plural('image', { count: sortedShapes.length })}
               height="auto"
               src={imageUrl}
               style={{ width, height, maxWidth: width, maxHeight: height }}
@@ -335,6 +336,7 @@ Container.propTypes = {
   hotspotColor: PropTypes.string.isRequired,
   hoverOutlineColor: PropTypes.string,
   imageUrl: PropTypes.string.isRequired,
+  imageAltText: PropTypes.string,
   isEvaluateMode: PropTypes.bool.isRequired,
   language: PropTypes.string,
   onSelectChoice: PropTypes.func.isRequired,

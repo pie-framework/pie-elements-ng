@@ -123,6 +123,7 @@ class HotspotComponent extends React.Component {
         disabled,
         extraCSSRules,
         imageUrl,
+        imageAltText,
         prompt,
         mode,
         multipleCorrect,
@@ -186,6 +187,7 @@ class HotspotComponent extends React.Component {
             session={session}
             dimensions={dimensions}
             imageUrl={imageUrl}
+            imageAltText={imageAltText}
             language={language}
             hotspotColor={hotspotColor}
             hoverOutlineColor={isGatherMode ? hoverOutlineColor : undefined}

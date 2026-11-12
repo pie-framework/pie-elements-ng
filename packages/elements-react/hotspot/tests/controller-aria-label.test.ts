@@ -22,3 +22,13 @@ describe('hotspot model: shape labels', () => {
     expect(out.shapes.circles[0]['aria-label']).toBe('Circle');
   });
 });
+
+describe('hotspot model: image alt text', () => {
+  it('passes the authored alt text on', async () => {
+    const question = { id: '1', element: 'hotspot', imageAltText: 'A plane seen from above', shapes: {} };
+
+    const out = await model(question as any, { answers: [] } as any, GATHER as any);
+
+    expect(out.imageAltText).toBe('A plane seen from above');
+  });
+});
