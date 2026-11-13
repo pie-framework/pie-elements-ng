@@ -176,3 +176,98 @@ describe('keys stored before sections were recomputed', () => {
     expect(await larger.score(larger.clicked({ x: 0, y: 8 }))).toBe(0);
   });
 });
+
+describe('line style correctness in evaluate', () => {
+  const key = {
+    answers: {
+      correctAnswer: {
+        name: 'Correct Answer',
+        marks: [{ type: 'line', building: false, from: { x: 0, y: 0 }, to: { x: 10, y: 10 }, fill: 'Dashed' }],
+      },
+    },
+  };
+  const evaluate = (answer: unknown[]) =>
+    model(key as never, { answer } as never, { mode: 'evaluate' } as never).then((m) => m.answersCorrected);
+
+  it('marks a correct line as right in style too', async () => {
+    const [mark] = (await evaluate([
+      { type: 'line', building: false, from: { x: 0, y: 0 }, to: { x: 10, y: 10 }, fill: 'Dashed' },
+    ])) as any[];
+    expect(mark).toMatchObject({ correctness: 'correct', lineStyle: 'correct' });
+  });
+
+  it('marks a line in the right place but the wrong style, and does not also report the key line missing', async () => {
+    const marks = (await evaluate([
+      { type: 'line', building: false, from: { x: 1, y: 1 }, to: { x: 5, y: 5 }, fill: 'Solid' },
+    ])) as any[];
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toMatchObject({ correctness: 'incorrect', lineStyle: 'incorrect' });
+  });
+
+  it('judges a misplaced line on its style against the key line in its slot', async () => {
+    const [right, wrong] = (await Promise.all([
+      evaluate([{ type: 'line', building: false, from: { x: 0, y: 5 }, to: { x: 5, y: 0 }, fill: 'Dashed' }]),
+      evaluate([{ type: 'line', building: false, from: { x: 0, y: 5 }, to: { x: 5, y: 0 }, fill: 'Solid' }]),
+    ])) as any[][];
+    expect(right[0]).toMatchObject({ correctness: 'incorrect', lineStyle: 'correct', onKeyLine: false });
+    expect(wrong[0]).toMatchObject({ correctness: 'incorrect', lineStyle: 'incorrect', expectedFill: 'Dashed' });
+  });
+
+  it('reports the key line missing when the line is elsewhere', async () => {
+    const marks = (await evaluate([
+      { type: 'line', building: false, from: { x: 0, y: 5 }, to: { x: 5, y: 0 }, fill: 'Dashed' },
+    ])) as any[];
+    expect(marks[0]).toMatchObject({ correctness: 'incorrect' });
+    expect(marks[1]).toMatchObject({ correctness: 'missing', fill: 'Dashed' });
+  });
+});
+
+describe('shaded region in evaluate', () => {
+  const domain = { min: 0, max: 10 };
+  const range = { min: 0, max: 10 };
+  const line = (from: object, to: object) => ({ type: 'line', building: false, from, to, fill: 'Solid' });
+  const region = (points: object[]) => ({ type: 'polygon', building: false, closed: true, isSolution: true, points });
+  // x = 5 splits the grid: the key shades the left half
+  const left = [
+    { x: 0, y: 10 },
+    { x: 5, y: 10 },
+    { x: 5, y: 0 },
+    { x: 0, y: 0 },
+  ];
+  const right = [
+    { x: 5, y: 10 },
+    { x: 10, y: 10 },
+    { x: 10, y: 0 },
+    { x: 5, y: 0 },
+  ];
+  const key = {
+    domain,
+    range,
+    answers: { correctAnswer: { name: 'Correct Answer', marks: [line({ x: 5, y: 0 }, { x: 5, y: 10 }), region(left)] } },
+  };
+  const evaluate = (answer: unknown[]) =>
+    model(key as never, { answer } as never, { mode: 'evaluate' } as never).then((m) => m.answersCorrected as any[]);
+
+  it('marks the other region incorrect and shows the key region as missing', async () => {
+    const marks = await evaluate([line({ x: 5, y: 0 }, { x: 5, y: 10 }), region(right)]);
+    expect(marks.map((m) => [m.type, m.correctness])).toEqual([
+      ['line', 'correct'],
+      ['polygon', 'incorrect'],
+      ['polygon', 'missing'],
+    ]);
+  });
+
+  it('matches the right region when the key outlines it with other vertices, and the lines are drawn elsewhere', async () => {
+    // the key's region carries an extra vertex on its edge; the student's is the section the lines make
+    const outlined = { ...key.answers.correctAnswer, marks: [key.answers.correctAnswer.marks[0], region([...left.slice(0, 2), { x: 5, y: 5 }, ...left.slice(2)])] };
+    const marks = await model(
+      { ...key, answers: { correctAnswer: outlined } } as never,
+      { answer: [line({ x: 5, y: 2 }, { x: 5, y: 8 }), region(left)] } as never,
+      { mode: 'evaluate' } as never,
+    ).then((m) => m.answersCorrected as any[]);
+    expect(marks.map((m) => [m.type, m.correctness])).toEqual([
+      ['line', 'correct'],
+      ['polygon', 'correct'],
+    ]);
+  });
+});

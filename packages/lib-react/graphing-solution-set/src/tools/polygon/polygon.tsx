@@ -5,7 +5,22 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { gridDraggable, types } from '@pie-lib/plot';
 import * as utils from '../../utils.js';
-import { correct, incorrect } from '../shared/styles.js';
+import { correct, incorrect, missing } from '../shared/styles.js';
+
+// A shaded region in evaluate wears its verdict in its outline, as a line does; the centre icon says the same
+// without colour. A region the key shades and the student did not is outlined as a missing line is, thin and
+// dashed, so where its edges lie on missing lines the two read as one dashed edge.
+const evaluated = (correctness) => ({
+  ...(correctness === 'correct' && correct('stroke')),
+  ...(correctness === 'incorrect' && incorrect('stroke')),
+  ...(correctness === 'missing' && {
+    fill: 'transparent',
+    ...missing('stroke'),
+    strokeWidth: 1,
+    strokeDasharray: '4 3',
+  }),
+  ...(correctness && { '&:hover': {} }),
+});
 
 const StyledPolygon: any = styled('polygon', {
   shouldForwardProp: (prop) => !['isSolution', 'correctness'].includes(prop),
@@ -15,8 +30,7 @@ const StyledPolygon: any = styled('polygon', {
   '&:hover': {
     fill: isSolution ? 'rgb(60, 73, 150, 0.6)' : 'rgb(0, 0, 0, 0.25)',
   },
-  ...(correctness === 'correct' && correct('stroke')),
-  ...(correctness === 'incorrect' && incorrect('stroke')),
+  ...evaluated(correctness),
 }));
 
 const StyledPolyline: any = styled('polyline', {
@@ -27,8 +41,7 @@ const StyledPolyline: any = styled('polyline', {
   '&:hover': {
     fill: isSolution ? 'rgb(60, 73, 150, 0.6)' : 'rgb(0, 0, 0, 0.25)',
   },
-  ...(correctness === 'correct' && correct('stroke')),
-  ...(correctness === 'incorrect' && incorrect('stroke')),
+  ...evaluated(correctness),
 }));
 
 export const getPointString = (points, scale) => {
