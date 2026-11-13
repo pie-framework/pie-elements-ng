@@ -622,13 +622,11 @@ export const MathNodeView = (props) => {
     window.addEventListener('scroll', scheduleUpdate, true);
     window.addEventListener('resize', scheduleUpdate);
 
-    // The toolbar can change size while open (keypad mode, custom keys); reposition so it
-    // doesn't grow over the node when it opened above it.
+    // The toolbar can change size while open (keypad mode, custom keys), and the node grows as
+    // the user types; reposition so neither ends up covering the other.
     const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(scheduleUpdate);
 
-    if (toolbarRef.current) {
-      resizeObserver?.observe(toolbarRef.current);
-    }
+    [toolbarRef.current, nodeRef.current].forEach((el) => el && resizeObserver?.observe(el));
 
     return () => {
       if (frame !== null) {
