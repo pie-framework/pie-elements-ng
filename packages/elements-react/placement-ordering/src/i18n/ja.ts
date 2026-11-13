@@ -38,4 +38,9 @@ export default {
   },
   useTabToAnotherObject: 'Tabキーで別のオブジェクトに移動します。',
   noLongerSelected: 'オブジェクト {text} の選択が解除されました。',
+  moveUp: '{text}を上へ移動',
+  moveDown: '{text}を下へ移動',
+  moveLeft: '{text}を左へ移動',
+  moveRight: '{text}を右へ移動',
+  movedToPosition: '{text}を{total}個中{position}番目に移動しました。',
 } satisfies MessageCatalog;

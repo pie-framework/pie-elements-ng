@@ -63,4 +63,9 @@ export default {
   },
   useTabToAnotherObject: 'Defnyddiwch Tab i symud i wrthrych arall.',
   noLongerSelected: 'Nid yw\'r gwrthrych {text} wedi\'i ddewis mwyach.',
+  moveUp: 'Symud {text} i fyny',
+  moveDown: 'Symud {text} i lawr',
+  moveLeft: 'Symud {text} i\'r chwith',
+  moveRight: 'Symud {text} i\'r dde',
+  movedToPosition: 'Symudwyd {text} i safle {position} o {total}.',
 } satisfies MessageCatalog;

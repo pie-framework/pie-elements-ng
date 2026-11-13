@@ -43,4 +43,9 @@ export default {
   },
   useTabToAnotherObject: 'Use TAB to move to another object.',
   noLongerSelected: 'Object {text} is no longer selected.',
+  moveUp: 'Move {text} up',
+  moveDown: 'Move {text} down',
+  moveLeft: 'Move {text} left',
+  moveRight: 'Move {text} right',
+  movedToPosition: 'Moved {text} to position {position} of {total}.',
 } satisfies MessageCatalog;

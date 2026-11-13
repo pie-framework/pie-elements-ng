@@ -46,9 +46,16 @@ import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 
 import { HorizontalTiler, ScreenReaderText, VerticalTiler } from './tiler.js';
-import { cancelledMessage, focusLabel, getCounts, movedMessage, selectedMessage } from './announcements.js';
+import {
+  cancelledMessage,
+  focusLabel,
+  getCounts,
+  movedInPlaceMessage,
+  movedMessage,
+  selectedMessage,
+} from './announcements.js';
 import { DragPreview } from './tile.js';
-import { buildState, reducer } from './ordering.js';
+import { buildState, push, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import { placementAreaCollision } from './placement-area-collision.js';
@@ -129,6 +136,8 @@ const PlacementOrderingContainer: any = styled('div')({
   flexDirection: 'column',
   alignItems: 'center',
   boxSizing: 'border-box',
+  // While an object is dragged its move buttons are out of the way, but keep their room so nothing shifts
+  '&[data-dragging] [data-move]': { visibility: 'hidden' },
 });
 
 // The interactive region - the choices and answers columns for a vertical item, or the choices and
@@ -202,7 +211,7 @@ export class PlacementOrdering extends React.Component {
   constructor(props) {
     super(props);
 
-    // Page-unique: focusTile looks the destination up in the whole document.
+    // Page-unique: focusTile looks the destination up by it.
     this.instanceId = createUniqueId('placement-ordering');
 
     const { value, needsReset } = this.validateSession(props);
@@ -352,6 +361,37 @@ export class PlacementOrdering extends React.Component {
     });
 
     onSessionChange(sessionUpdate);
+  };
+
+  // The button of an object that moves it one position, in an item without response areas: `delta` is
+  // -1 toward the start (up, left) and 1 toward the end (down, right).
+  onMove: any = (id, delta) => {
+    const { onSessionChange, session } = this.props;
+    const ordering = this.createOrdering();
+    const from = ordering.response.indexOf(id);
+    const to = from + delta;
+
+    if (from < 0 || to < 0 || to >= ordering.response.length) {
+      return;
+    }
+
+    const choice = ordering.choices.find((c) => c.id === id);
+
+    this.announce(movedInPlaceMessage(this.getI18n(), choice?.label, to + 1, ordering.response.length));
+    onSessionChange({ ...session, value: push(ordering.response, from, to) });
+    this.focusMoveButton(id, delta);
+  };
+
+  // Focus stays on the object that moved, not on the position it left: the same button again, so it can
+  // be pressed repeatedly, or the one it has left when the object reached an end and lost the other.
+  focusMoveButton: any = (id, delta) => {
+    const side = delta < 0 ? 'earlier' : 'later';
+    const other = delta < 0 ? 'later' : 'earlier';
+    const tile = `[data-tile-id="${this.instanceId}:choice-${id}"]`;
+
+    this.focusWhenCommitted(
+      (root) => root.querySelector(`${tile} [data-move="${side}"]`) || root.querySelector(`${tile} [data-move="${other}"]`),
+    );
   };
 
   onRemoveChoice: any = (target, ordering) => {
@@ -607,9 +647,20 @@ export class PlacementOrdering extends React.Component {
     return null;
   };
 
-  // The destination tile only appears in the DOM (re-tagged with its new slotId) after
-  // this component's re-render commits, so wait a couple of animation frames — long
-  // enough for React's DOM commit and the browser's next paint — before querying for it.
+  // What a move changes only appears in the DOM after this component's re-render commits, so wait a
+  // couple of animation frames, long enough for React's DOM commit and the browser's next paint, before
+  // `find` looks it up. It looks from the element's own container, as the element may render in a shadow root.
+  focusWhenCommitted: any = (find) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const root = this.containerRef.current;
+
+        (root && find(root))?.focus();
+      });
+    });
+  };
+
+  // The destination tile is re-tagged with its new slotId by the re-render.
   focusTile: any = (slotId) => {
     if (!slotId) {
       return;
@@ -617,13 +668,7 @@ export class PlacementOrdering extends React.Component {
 
     const selector = `[data-tile-id="${this.instanceId}:${slotId}"]`;
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const node = document.querySelector(selector);
-
-        node?.focus();
-      });
-    });
+    this.focusWhenCommitted((root) => root.querySelector(selector));
   };
 
   isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
@@ -691,6 +736,9 @@ export class PlacementOrdering extends React.Component {
 
     const keyboardDragOptions = getKeyboardDragOptions(includeTargets, this.announcements, i18n);
 
+    // Without response areas each object has buttons to move it, unless the answer cannot be changed
+    const moveProps = !includeTargets && !disabled && !showingCorrect ? { onMove: this.onMove } : {};
+
     const clickPlacementProps = includeTargets
       ? {
           selectedChoice: this.state.selectedChoice,
@@ -707,8 +755,8 @@ export class PlacementOrdering extends React.Component {
         collisionDetection={this.dragCollision.collisionDetection}
         {...keyboardDragOptions}
       >
-        <PlacementOrderingContainer ref={this.containerRef}>
-          {includeTargets && (
+        <PlacementOrderingContainer ref={this.containerRef} data-dragging={this.state.draggedTile ? '' : undefined}>
+          {(includeTargets || moveProps.onMove) && (
             <ScreenReaderText role="status" aria-live="polite" aria-atomic="true">
               {this.state.announcement}
             </ScreenReaderText>
@@ -746,6 +794,7 @@ export class PlacementOrdering extends React.Component {
                   includeTargets={includeTargets}
                   choiceLabelEnabled={model.config && model.config.choiceLabelEnabled}
                   {...clickPlacementProps}
+                  {...moveProps}
                 />
               </InteractiveRegionContent>
             </InteractiveRegion>
