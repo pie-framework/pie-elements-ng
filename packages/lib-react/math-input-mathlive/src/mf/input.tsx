@@ -109,6 +109,9 @@ export class Input extends React.Component {
     // default) jumps out of an empty superscript after a single digit, which breaks
     // typing x^23 or 10^6 and is inconsistent with non-digit exponents.
     this.mathField.smartSuperscript = false;
+    // A latex command typed after `\` gets no autocomplete: no suggestion popover, and no
+    // completion shown inline in the field.
+    this.mathField.popoverPolicy = 'off';
 
     // The mathfield renders in shadow DOM, so page CSS cannot reach it - the
     // stretchy-accent fix has to be injected there directly.

@@ -137,6 +137,8 @@ export default class Static extends React.Component {
     this.mathField.mathModeSpace = MATH_MODE_SPACE;
     // Same as the editor: stay in the exponent after a digit (see mf/input.jsx).
     this.mathField.smartSuperscript = false;
+    // Same as the editor: no autocomplete for a latex command typed after `\` (see mf/input.jsx).
+    this.mathField.popoverPolicy = 'off';
     this.mathField.value = toMathLive(this.props.latex);
 
     // The mathfield renders in shadow DOM, so page CSS cannot reach it - the

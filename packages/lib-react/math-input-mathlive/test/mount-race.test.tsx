@@ -150,6 +150,16 @@ describe('async mount race', () => {
     expect(input.mathField.smartSuperscript).toBe(false);
   });
 
+  // MathLive autocompletes a latex command typed after `\` by default (`popoverPolicy`).
+  it('shows no suggestions for a latex command', async () => {
+    const input = new Input({});
+
+    holderFor(input);
+    await input.componentDidMount();
+
+    expect(input.mathField.popoverPolicy).toBe('off');
+  });
+
   it('reports itself through innerRef on mount and clears it on unmount', async () => {
     const innerRef = vi.fn();
     const input = new Input({ innerRef });
