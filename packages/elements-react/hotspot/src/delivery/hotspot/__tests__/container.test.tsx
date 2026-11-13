@@ -198,6 +198,18 @@ describe('Container image', () => {
     expect(screen.getByRole('img', { name: 'Image with 3 hotspots' })).toBeInTheDocument();
   });
 
+  it('trims the alt text', () => {
+    renderContainer({ imageAltText: '  A plane seen from above ' });
+
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'A plane seen from above');
+  });
+
+  it.each([42, { text: 'A plane' }, null])('describes the image by its number of hotspots when the alt text is %j', (imageAltText) => {
+    renderContainer({ imageAltText });
+
+    expect(screen.getByRole('img', { name: 'Image with 3 hotspots' })).toBeInTheDocument();
+  });
+
   it('hides the canvas that redraws the shapes', () => {
     const { container } = renderContainer();
 

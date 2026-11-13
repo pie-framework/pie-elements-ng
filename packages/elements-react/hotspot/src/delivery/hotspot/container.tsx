@@ -176,13 +176,15 @@ export class Container extends React.Component {
 
     const sortedShapes = this.getAllShapesSorted();
     const i18n = catalogs.forLocale(language);
+    // Read as the shape labels are: anything but non-blank text falls back to the hotspot count.
+    const altText = typeof imageAltText === 'string' ? imageAltText.trim() : '';
 
     return (
       <BaseContainer style={{ padding: strokeWidth / 2 }}>
         {imageUrl ? (
           <ImageContainer>
             <Image
-              alt={imageAltText?.trim() ? imageAltText : i18n.plural('image', { count: sortedShapes.length })}
+              alt={altText || i18n.plural('image', { count: sortedShapes.length })}
               height="auto"
               src={imageUrl}
               style={{ width, height, maxWidth: width, maxHeight: height }}
