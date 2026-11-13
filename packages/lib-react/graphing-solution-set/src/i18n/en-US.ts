@@ -22,4 +22,22 @@ export default {
   solutionSet: 'Solution Set',
   solid: 'Solid',
   dashed: 'Dashed',
+  /** A line's solid or dashed style judged apart from its position, read out by the badge beside the line. */
+  lineStyleCorrect: 'Line style correct: {style}',
+  lineStyleIncorrect: 'Line style incorrect: drawn {drawn}, expected {expected}',
+  /** Read out for the icon on a shaded region in evaluate. */
+  regionVerdict: {
+    correct: 'Shaded region correct',
+    incorrect: 'Shaded region incorrect',
+    missing: 'Shaded region in the answer key, not shaded',
+  },
+  /** Title of the evaluate legend. */
+  key: 'Key',
+  keyLegend: {
+    studentCorrect: 'Student Correct',
+    studentIncorrect: 'Student Incorrect',
+    answerKeyCorrect: 'Answer Key Correct',
+    lineStyleCorrect: 'Line Style Correct',
+    lineStyleIncorrect: 'Line Style Incorrect',
+  },
 };

@@ -98,6 +98,14 @@ export const equalLine = (line1: Segment, line2: Segment) => {
 };
 
 /*
+ * Whether two lines lie on the same infinite line, whatever their solid or dashed style
+ * @param {Object} line1 - line 1
+ * @param {Object} line2 - line 2
+ * */
+export const equalLinePosition = (line1: Segment, line2: Segment) =>
+  equalLine({ ...line1, fill: undefined }, { ...line2, fill: undefined });
+
+/*
  * Constant to construct segments from points
  * @param {Array} points - points
  * */

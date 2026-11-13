@@ -18,4 +18,19 @@ export default {
   solutionSet: 'Lösningsmängd',
   solid: 'Heldragen',
   dashed: 'Streckad',
+  lineStyleCorrect: 'Rätt linjetyp: {style}',
+  lineStyleIncorrect: 'Fel linjetyp: ritad {drawn}, förväntad {expected}',
+  regionVerdict: {
+    correct: 'Rätt skuggat område',
+    incorrect: 'Fel skuggat område',
+    missing: 'Skuggat område enligt facit, inte skuggat',
+  },
+  key: 'Teckenförklaring',
+  keyLegend: {
+    studentCorrect: 'Elevens rätta svar',
+    studentIncorrect: 'Elevens felaktiga svar',
+    answerKeyCorrect: 'Rätt enligt facit',
+    lineStyleCorrect: 'Rätt linjetyp',
+    lineStyleIncorrect: 'Fel linjetyp',
+  },
 } satisfies MessageCatalog;

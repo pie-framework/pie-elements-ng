@@ -9,6 +9,9 @@ import { thinnerShapesNeeded } from '../../../utils.js';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 import { correct, disabled as disabledStyle, incorrect, missing } from '../styles.js';
+import CorrectSVG from '../icons/CorrectSVG.js';
+import IncorrectSVG from '../icons/IncorrectSVG.js';
+import MissingSVG from '../icons/MissingSVG.js';
 
 const StyledPointGroup: any = styled('g')(({ disabled, correctness }) => ({
   cursor: 'pointer',
@@ -76,6 +79,8 @@ export class RawBp extends React.Component {
     const { showCoordinates } = this.state;
     const { scale } = graphProps;
     const r = thinnerShapesNeeded(graphProps) ? 5 : 7;
+    // In evaluate each end of a line wears the mark's verdict as an icon, so it never rests on colour alone
+    const SvgComponent = { missing: MissingSVG, correct: CorrectSVG, incorrect: IncorrectSVG }[correctness];
 
     return (
       <>
@@ -104,6 +109,7 @@ export class RawBp extends React.Component {
             cx={scale.x(x)}
             cy={scale.y(y)}
           />
+          {SvgComponent && <SvgComponent scale={scale} x={x} y={y} />}
           {labelNode &&
             coordinatesOnHover &&
             showCoordinates &&

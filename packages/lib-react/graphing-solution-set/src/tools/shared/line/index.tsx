@@ -10,6 +10,7 @@ import ReactDOM from 'react-dom';
 import MarkLabel from '../../../mark-label.js';
 import { color } from '@pie-lib/render-ui';
 import { equalPoints, getMiddleOfTwoPoints, sameAxes } from '../../../utils.js';
+import LineStyleBadge from '../line-style-badge.js';
 
 export const lineTool = (type, Component) => () => ({
   type,
@@ -127,7 +128,11 @@ export const lineToolComponent = (Component) => {
         <Component
           disabled={mark.disabled}
           coordinatesOnHover={coordinatesOnHover}
-          correctness={mark.correctness}
+          // A line on a key line is placed right, so its colour and icons speak of where it lies;
+          // the badge speaks of its style. The controller still scores it incorrect.
+          correctness={mark.onKeyLine ? 'correct' : mark.correctness}
+          lineStyle={mark.lineStyle}
+          expectedFill={mark.expectedFill}
           from={from}
           to={to}
           middle={middle}
@@ -184,6 +189,8 @@ export const lineBase = (Comp, opts) => {
       onDragStop: PropTypes.func,
       onClick: PropTypes.func,
       correctness: PropTypes.string,
+      lineStyle: PropTypes.string,
+      expectedFill: PropTypes.string,
       fill: PropTypes.string,
       gssLineData: PropTypes.object,
       disabled: PropTypes.bool,
@@ -301,6 +308,8 @@ export const lineBase = (Comp, opts) => {
         middle,
         disabled,
         correctness,
+        lineStyle,
+        expectedFill,
         onClick,
         labelNode,
         labelModeEnabled,
@@ -387,6 +396,17 @@ export const lineBase = (Comp, opts) => {
               />
             )}
             {toLabelNode}
+            {lineStyle && to && (
+              <LineStyleBadge
+                graphProps={graphProps}
+                from={from}
+                to={to}
+                lineStyle={lineStyle}
+                fill={fill}
+                expectedFill={expectedFill}
+                language={language}
+              />
+            )}
           </g>
         );
       } else {
@@ -428,6 +448,17 @@ export const lineBase = (Comp, opts) => {
               />
             )}
             {toLabelNode}
+            {lineStyle && to && (
+              <LineStyleBadge
+                graphProps={graphProps}
+                from={from}
+                to={to}
+                lineStyle={lineStyle}
+                fill={fill}
+                expectedFill={expectedFill}
+                language={language}
+              />
+            )}
           </g>
         );
       }
@@ -477,5 +508,8 @@ export const styles = {
   }),
   missing: (theme, key) => ({
     ...missing(key),
+    // As in graphing: a line the student did not draw is thin and dashed, whatever style the key gives it
+    strokeWidth: 1,
+    strokeDasharray: '4 3',
   }),
 };

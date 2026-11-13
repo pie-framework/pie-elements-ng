@@ -2,7 +2,7 @@ import debug from 'debug';
 import { cloneDeep, isEmpty, uniqWith } from '@pie-element/shared-lodash';
 import type { PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
-import { equalMarks, equalPolygon, keyRegionSections, sortedAnswers, removeInvalidAnswers } from './utils.js';
+import { equalLinePosition, equalMarks, equalPolygon, keyRegionSections, sortedAnswers, removeInvalidAnswers } from './utils.js';
 import type {
   Answer,
   Arrows,
@@ -18,7 +18,19 @@ const log = debug('@pie-element:graphing-solution-set:controller');
 type Correctness = 'correct' | 'incorrect' | 'missing';
 
 /** A session mark scored against an answer. */
-type CorrectedMark = Mark & { correctness: Correctness };
+type CorrectedMark = Mark & {
+  correctness: Correctness;
+  /**
+   * Whether a line's solid or dashed style is right, apart from its position. Set on a line the key has in that
+   * place; a line in the right place but the wrong style is `incorrect` for scoring, with `lineStyle: 'incorrect'`; delivery draws it as
+   * correctly placed and shows the style verdict apart.
+   */
+  lineStyle?: 'correct' | 'incorrect';
+  /** Whether the line lies on a key line, so only its style can be wrong; a line elsewhere is judged by its slot. */
+  onKeyLine?: boolean;
+  /** The style the key gives the line, when `lineStyle` is set. */
+  expectedFill?: Mark['fill'];
+};
 
 /** An answer as scoring reads it; the placeholder `initializeGraphMap()` holds no marks. */
 type PossibleAnswer = Partial<Answer>;
@@ -46,11 +58,13 @@ type GraphingSolutionSetViewModel = Omit<
   rationale?: string | null;
   size?: Graph;
   showToggle: boolean;
+  /** Evaluate mode explains each mark's colour and icon in a key */
+  showKeyLegend: boolean;
   teacherInstructions?: string | null;
   /** Not read by the delivery view, which offers the line and polygon tools. */
   toolbarTools?: unknown;
   /** Session marks; in evaluate mode with a correct answer, each carries `correctness` */
-  answersCorrected?: Mark[];
+  answersCorrected?: (Mark & { correctness?: Correctness; lineStyle?: 'correct' | 'incorrect'; expectedFill?: Mark['fill']; onKeyLine?: boolean })[];
   correctResponse?: Mark[];
 };
 
@@ -97,16 +111,36 @@ export const getAnswerCorrected = ({
 }): CorrectedMark[] => {
   const sessionAnswers = sessionAnswersInput || [];
   const correctAnswers = correctAnswersInput || [];
+  // Every line is also judged on its solid or dashed style alone, against the key line it lies on or, failing
+  // that, the key line in its slot. One drawn on a key line in the other style is wrong for its style alone, and
+  // that key line is not reported as missing as well.
+  const wrongStyleKeyLines = new Set<Mark>();
+  let lineSlot = 0;
   const rez = cloneDeep(sessionAnswers).reduce<CorrectedMark[]>((correctedAnswer, sessionMark) => {
     const answerIsCorrect = correctAnswers.find((mark) => compareMarks(sessionMark, mark, regions));
     const correctness: Correctness = answerIsCorrect ? 'correct' : 'incorrect';
     const answer: CorrectedMark = Object.assign(sessionMark, { correctness });
+    if (sessionMark.type === 'line') {
+      const keyLines = correctAnswers.filter((mark) => mark.type === 'line');
+      const slot = lineSlot++;
+      // The key line the student's line stands for: the one it lies on, else the one in the same slot (line A, B)
+      const onKeyLine = answerIsCorrect ?? keyLines.find((mark) => equalLinePosition(sessionMark, mark));
+      const keyLine = onKeyLine ?? keyLines[slot];
+      if (onKeyLine && !answerIsCorrect) {
+        wrongStyleKeyLines.add(onKeyLine);
+      }
+      if (keyLine) {
+        answer.lineStyle = (sessionMark.fill ?? 'Solid') === (keyLine.fill ?? 'Solid') ? 'correct' : 'incorrect';
+        answer.expectedFill = keyLine.fill;
+        answer.onKeyLine = !!onKeyLine;
+      }
+    }
     return [...correctedAnswer, answer];
   }, []);
   // add missing objects from correct answer; compared before cloning, since regions holds the key's own marks
   const missingAnswers = correctAnswers.reduce<CorrectedMark[]>((correctedAnswer, answer) => {
     const answerIndex = sessionAnswers.find((mark) => compareMarks(mark, answer, regions));
-    if (!answerIndex) {
+    if (!answerIndex && !wrongStyleKeyLines.has(answer)) {
       // means that corrected answer is missing from session, so we mark it as missing object
       return [...correctedAnswer, { ...cloneDeep(answer), correctness: 'missing' }];
     }
@@ -268,6 +302,7 @@ export function model(
         answers.correctAnswer &&
         answers.correctAnswer.marks &&
         !isEmpty(answers.correctAnswer.marks),
+      showKeyLegend: env.mode === 'evaluate',
       teacherInstructions: null,
       toolbarTools,
       extraCSSRules,
