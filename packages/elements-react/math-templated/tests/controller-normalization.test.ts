@@ -17,6 +17,26 @@ describe('response normalization', () => {
   });
 });
 
+describe('a decimal comma', () => {
+  const score = async (answer: string, value: string, locale?: string) =>
+    (await outcome(question(answer), session(value), { ...EVALUATE, locale } as any)).score;
+
+  it('reads a comma between digits as the decimal point where the locale region writes one', async () => {
+    expect(await score('2.5', '2,5', 'es-ES')).toBe(1);
+    expect(await score('2.5', '2{,}5', 'de-DE')).toBe(1);
+  });
+
+  it('keeps the comma a list separator without a region or in a point-decimal region', async () => {
+    for (const locale of ['es', 'es-US', undefined]) {
+      expect(await score('2.5', '2,5', locale), locale).toBe(0);
+    }
+  });
+
+  it('does not read a list of two numbers as one number with a thousands comma', async () => {
+    expect(await score('2500', '(2;500)', 'de-DE')).toBe(0);
+  });
+});
+
 describe('every Unicode digit system', () => {
   it('scores whole and decimal numbers against their ASCII answer', async () => {
     const score = async (answer: string, value: string) =>

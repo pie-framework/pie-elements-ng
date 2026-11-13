@@ -9,6 +9,8 @@ import {
   fieldTemplate,
   fieldValues,
   fillFields,
+  inlineFields,
+  braceArguments,
   toAccessibleLatex,
   keyToAction,
   toNativeCommands,
@@ -148,6 +150,67 @@ describe('latex-bridge', () => {
 
     it('fills the answers, keeping everything else as stored', () => {
       expect(fillFields(stored, { r2: '3' })).toEqual('$\\MathQuillMathField[r1]{\\frac{1}{2}}+\\MathQuillMathField[r2]{3}');
+    });
+  
+    // MathQuill's latex() serialised a MathQuillMathField as its content only.
+    it('inlines the answers without the field wrapper', () => {
+      expect(inlineFields(stored, { r2: '3' })).toEqual('$\\frac{1}{2}+3');
+      expect(inlineFields('x=\\MathQuillMathField[r1]{}', { r1: '2' })).toEqual('x=2');
+      expect(inlineFields('x=\\MathQuillMathField[r1]{}', {})).toEqual('x=');
+    });
+  });
+
+  // MathLive 0.110 drops the braces around single-digit arguments of typed
+  // content; MathQuill stored them, and the scorer only parses braced arguments.
+  describe('braceArguments', () => {
+    test.each([
+      ['\\frac12', '\\frac{1}{2}'],
+      ['2\\frac12', '2\\frac{1}{2}'],
+      ['9\\frac34', '9\\frac{3}{4}'],
+      ['\\frac12x', '\\frac{1}{2}x'],
+      ['\\dfrac12', '\\dfrac{1}{2}'],
+      ['\\tfrac12', '\\tfrac{1}{2}'],
+      ['\\sqrt2', '\\sqrt{2}'],
+      ['\\sqrt[3]8', '\\sqrt[3]{8}'],
+      ['x^{\\frac12}', 'x^{\\frac{1}{2}}'],
+      ['\\frac{a}{\\sqrt2}', '\\frac{a}{\\sqrt{2}}'],
+      ['\\sqrt{\\frac14}', '\\sqrt{\\frac{1}{4}}'],
+      ['\\sqrt[\\frac12]x', '\\sqrt[\\frac{1}{2}]{x}'],
+      ['\\frac{x}2', '\\frac{x}{2}'],
+    ])('%s -> %s', (input, expected) => {
+      expect(braceArguments(input)).toEqual(expected);
+    });
+
+    test.each([
+      '\\frac{1}{2}',
+      '\\frac {3}{7}',
+      '\\frac{12}{34}',
+      '\\sqrt[3]{8}',
+      '\\frac{}{}',
+      'x^2+\\log_2{8}',
+      '\\begin{matrix}1&2\\\\3&4\\end{matrix}',
+      '\\left|x\\right|',
+      '\\text{m}',
+      // MathQuill-only roots, still in stored content: the scorer reads them as roots.
+      '\\sqrt(16)',
+      '\\sqrt[4](16)',
+      '\\sqrt\\left(x\\right)',
+      '\\frac\\pi2',
+      '',
+    ])('leaves %s unchanged', (input) => {
+      expect(braceArguments(input)).toEqual(input);
+    });
+
+    it('stops at a missing argument instead of taking what follows', () => {
+      expect(braceArguments('\\frac1}')).toEqual('\\frac{1}}');
+      expect(braceArguments('\\sqrt')).toEqual('\\sqrt');
+      expect(braceArguments('{\\frac}')).toEqual('{\\frac}');
+      expect(braceArguments('x\\')).toEqual('x\\');
+    });
+
+    it('is applied by fromMathLive, inside answer blocks too', () => {
+      expect(fromMathLive('\\frac12')).toEqual('\\frac{1}{2}');
+      expect(fromMathLive('x=\\placeholder[r1]{2\\frac12}')).toEqual('x=\\MathQuillMathField[r1]{2\\frac{1}{2}}');
     });
   });
 

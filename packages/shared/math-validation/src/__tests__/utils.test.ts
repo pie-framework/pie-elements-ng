@@ -1,6 +1,5 @@
 import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
 import { LatexToAst } from '../conversion/latex-to-ast.js';
-import { sort } from '../node-sort.js';
 import { simplify } from '../symbolic/simplify.js';
 
 import {
@@ -64,8 +63,7 @@ describe('transformEqualityInExpression', () => {
 
     const result = transformEqualityInExpression(equationToTransform);
 
-    // the order of the terms is up to mathjs
-    expect(sort(result).equals(sort(expression))).toEqual(true);
+    expect(result.equals(expression)).toEqual(true);
   });
 });
 

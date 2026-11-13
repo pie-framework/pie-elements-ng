@@ -8,7 +8,7 @@ import HorizontalKeypad from './horizontal-keypad.js';
 import KeyPad from './keypad/index.js';
 
 import * as mf from './mf/index.js';
-import { KEYPAD_ATTRIBUTE } from './mf/inactive-caret.js';
+import { KEYPAD_ATTRIBUTE, deepActiveElement } from './mf/inactive-caret.js';
 import {
   registerEmbed,
   applyStaticMath,
@@ -66,4 +66,5 @@ export {
   keyToAction,
   answerBlockLatex,
   NEWLINE_EMBED,
+  deepActiveElement,
 };

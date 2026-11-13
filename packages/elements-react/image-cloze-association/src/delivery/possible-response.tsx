@@ -83,6 +83,11 @@ const PossibleResponse = ({
   );
   const longPressTimer = useRef(null);
 
+  // While a choice is selected the tab path runs through the response areas and the pool, the
+  // places it can go, so no choice is a tab stop; with nothing selected every choice is, in the
+  // pool or in an area, and the areas and the pool are not (see image-drop-target.tsx and
+  // possible-responses.tsx). A keyboard drag moves between targets on Tab itself
+  // (keyboard-coordinates.ts), so this governs the path a click selection leaves.
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: `possible-response-${data.id}`,
     data: {
@@ -91,6 +96,7 @@ const PossibleResponse = ({
       containerIndex: data.containerIndex,
     },
     disabled: !canDrag,
+    attributes: { tabIndex: selectedResponse ? -1 : 0 },
   });
 
   const isSelected =

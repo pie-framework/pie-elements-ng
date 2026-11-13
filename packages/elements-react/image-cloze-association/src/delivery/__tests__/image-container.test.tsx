@@ -42,24 +42,35 @@ const tree = (extras?: any) => (
 const renderImageContainer = (extras?: any) => render(tree(extras));
 
 describe('ImageContainer drop targets', () => {
-  it('name each empty target by its position', () => {
+  it('leave the tab path to the answers while nothing is selected, named by their position', () => {
     renderImageContainer();
 
+    for (const name of ['Response area 1 of 3', 'Response area 2 of 3', 'Response area 3 of 3']) {
+      expect(screen.getByRole('group', { name })).toHaveAttribute('tabindex', '-1');
+    }
+    expect(screen.queryByRole('button', { name: /Response area/ })).not.toBeInTheDocument();
+    const answer = within(screen.getByRole('group', { name: 'Response area 2 of 3' })).getByRole('button', {
+      name: 'Mercury',
+    });
+    expect(answer).toHaveAttribute('aria-roledescription', 'draggable');
+    expect(answer).toHaveAttribute('tabindex', '0');
+  });
+
+  it('are all tab stops while a choice is selected, and the answers in them are not', () => {
+    renderImageContainer({ selectedResponse: { id: 'a2', value: 'Venus' } });
+
+    // An empty target is a button; a filled one a group, as a button would hide the answers it holds.
     expect(screen.getByRole('button', { name: 'Response area 1 of 3' })).toHaveAttribute('tabindex', '0');
     expect(screen.getByRole('button', { name: 'Response area 3 of 3' })).toHaveAttribute('tabindex', '0');
-    // The filled target is a group that leaves its tab stop to the answer it holds.
     const filled = screen.getByRole('group', { name: 'Response area 2 of 3' });
-    expect(filled).toHaveAttribute('tabindex', '-1');
-    expect(within(filled).getByRole('button', { name: 'Mercury' })).toHaveAttribute(
-      'aria-roledescription',
-      'draggable',
-    );
+    expect(filled).toHaveAttribute('tabindex', '0');
+    expect(within(filled).getByRole('button', { name: 'Mercury' })).toHaveAttribute('tabindex', '-1');
   });
 
   it('name the targets in the item language', () => {
     renderImageContainer({ language: 'es_ES' });
 
-    expect(screen.getByRole('button', { name: 'Área de respuesta 1 de 3' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Área de respuesta 1 de 3' })).toBeInTheDocument();
   });
 
   it('place the selection with Enter, Space or a click on an empty target', () => {
@@ -73,6 +84,24 @@ describe('ImageContainer drop targets', () => {
 
     expect(onPlacementClick).toHaveBeenCalledTimes(3);
     expect(onPlacementClick).toHaveBeenCalledWith(2);
+  });
+
+  it('place the selection with Enter on a filled target', () => {
+    const onPlacementClick = vi.fn();
+    renderImageContainer({ selectedResponse: { id: 'a2', value: 'Venus' }, onPlacementClick });
+
+    fireEvent.keyDown(screen.getByRole('group', { name: 'Response area 2 of 3' }), { code: 'Enter' });
+
+    expect(onPlacementClick).toHaveBeenCalledWith(1);
+  });
+
+  it('leave a key pressed on an answer to the answer, so a keyboard drag can drop it', () => {
+    const onPlacementClick = vi.fn();
+    renderImageContainer({ selectedResponse: { id: 'a1', value: 'Mercury', containerIndex: 1 }, onPlacementClick });
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Mercury' }), { code: 'Enter' });
+
+    expect(onPlacementClick).not.toHaveBeenCalled();
   });
 
   it('keep the name on a focused target once a keyboard placement fills it', () => {
@@ -99,17 +128,21 @@ describe('ImageContainer drop targets', () => {
       })),
     });
 
-    expect(screen.getByRole('button', { name: 'Stem' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Stem' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Leaf' })).toBeInTheDocument();
     // a blank label leaves the position name
-    expect(screen.getByRole('button', { name: 'Response area 3 of 3' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Response area 3 of 3' })).toBeInTheDocument();
   });
 
   it('drop the targets out of the tab order when dragging is off', () => {
-    renderImageContainer({ canDrag: false });
+    renderImageContainer({ canDrag: false, selectedResponse: { id: 'a2', value: 'Venus' } });
 
     expect(screen.queryByRole('button', { name: /Response area/ })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('group', { name: /Response area/ })).toHaveLength(3);
+    const targets = screen.getAllByRole('group', { name: /Response area/ });
+    expect(targets).toHaveLength(3);
+    for (const target of targets) {
+      expect(target).toHaveAttribute('tabindex', '-1');
+    }
   });
 });
 

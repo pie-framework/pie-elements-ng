@@ -40,7 +40,7 @@ const keypadRoot = (node) => {
 };
 
 /** The focused element, looking through shadow roots. */
-const deepActiveElement = () => {
+export const deepActiveElement = () => {
   let active = document.activeElement;
 
   while (active?.shadowRoot?.activeElement) {

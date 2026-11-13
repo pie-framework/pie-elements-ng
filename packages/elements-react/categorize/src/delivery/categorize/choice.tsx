@@ -138,10 +138,16 @@ const DraggableChoice = ({
     type: 'choice',
   };
 
+  // While a choice is selected the tab path runs through the categories and the pool, the
+  // places it can go, so no choice is a tab stop; with nothing selected every choice is, in
+  // the pool or in a category, and the targets are not (see droppable-placeholder.tsx). A
+  // keyboard drag moves between targets on Tab itself (keyboard-coordinates.ts), so this
+  // governs the path a click selection leaves.
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: draggableId,
     data: dragData,
     disabled,
+    attributes: { tabIndex: selectedItem ? -1 : 0 },
   });
 
   const isSelected =

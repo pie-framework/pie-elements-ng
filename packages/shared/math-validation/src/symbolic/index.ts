@@ -1,5 +1,6 @@
 import { logger } from '../log.js';
-import { mathjs, numeric, type ExpressionNode } from '../mathjs.js';
+import { mathjs, numeric } from '../mathjs.js';
+import type { MathNode } from 'mathjs';
 import { sort } from '../node-sort.js';
 import { simplify } from './simplify.js';
 import { compareEquations } from './compare-equations.js';
@@ -21,7 +22,7 @@ const RELATIVE_EPSILON = 1e-13;
 // it covers residues such as sin(200pi) and cos(100.5pi) while still rejecting 0 vs 0.0000000000001
 const ABSOLUTE_EPSILON = 1e-14;
 
-const hasSymbol = (node: ExpressionNode, matches: (name: string) => boolean) => {
+const hasSymbol = (node: MathNode, matches: (name: string) => boolean) => {
   let found = false;
 
   // the name of a function such as sqrt is a symbol too, under the path "fn"
@@ -34,7 +35,7 @@ const hasSymbol = (node: ExpressionNode, matches: (name: string) => boolean) => 
 
 // evaluates a constant expression as a plain number, undefined if it has variables;
 // any symbol other than pi and Infinity is a variable, even names mathjs knows as constants such as e, E or phi
-const evaluateNumber = (node: ExpressionNode): number | undefined => {
+const evaluateNumber = (node: MathNode): number | undefined => {
   if (hasSymbol(node, (name) => name !== 'pi' && name !== 'Infinity')) {
     return undefined;
   }
@@ -48,7 +49,7 @@ const evaluateNumber = (node: ExpressionNode): number | undefined => {
 };
 
 // returns k when the constant angle is (within tolerance) a multiple k of pi/2
-const quarterTurns = (angle: ExpressionNode): number | undefined => {
+const quarterTurns = (angle: MathNode): number | undefined => {
   const value = evaluateNumber(angle);
 
   if (value === undefined || !isFinite(value)) {
@@ -63,10 +64,10 @@ const quarterTurns = (angle: ExpressionNode): number | undefined => {
 
 // replace trigonometric functions evaluated at an angle where they are zero or undefined
 // with their exact value, so that tan(90°) becomes Infinity instead of a large finite number
-const snapTrigonometricValues = (node: ExpressionNode) => {
+const snapTrigonometricValues = (node: MathNode) => {
   let changed = false;
 
-  const r: ExpressionNode | any = node.transform((n: any) => {
+  const r: MathNode | any = node.transform((n: any) => {
     if (!n.isFunctionNode || n.args?.length !== 1) {
       return n;
     }
@@ -110,9 +111,9 @@ const snapTrigonometricValues = (node: ExpressionNode) => {
   return { r: changed ? r : node, changed };
 };
 
-const normalize = (a: string | ExpressionNode | any) => {
+const normalize = (a: string | MathNode | any) => {
   const snapped = snapTrigonometricValues(a);
-  let r: string | ExpressionNode | any = snapped.r;
+  let r: string | MathNode | any = snapped.r;
 
   // simplify and rationalize treat Infinity as a variable (1 / Infinity + 3 becomes (1 + 3 * Infinity) / Infinity)
   // and keep the sign of a division by zero, so a constant expression with an Infinity or a division by zero is evaluated before it is normalized;
@@ -237,8 +238,8 @@ const areNearlyEqual = (a: number, b: number) =>
 const isIndeterminate = (node: any) => node?.isSymbolNode && node.name === 'NaN';
 
 export const isMathEqual = (a: any, b: any) => {
-  let as: ExpressionNode;
-  let bs: ExpressionNode;
+  let as: MathNode;
+  let bs: MathNode;
 
   if (a?.isUnit && b?.isUnit) {
     try {

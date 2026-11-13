@@ -15,7 +15,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-element/shared-i18n": "workspace:*",
-    "konva": "8.3.0",
+    "konva": "10.9.1",
     "prop-types": "^15.8.1",
     "react-konva": "^18.2.14",
     "@pie-element/shared-lodash": "workspace:*",

@@ -15,7 +15,7 @@ import { ResponseTypes, acceptedAnswers, alternateLatex } from './utils.js';
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
-import { normalizeResponse } from '@pie-element/shared-controller-utils';
+import { mathContentLanguage, normalizeResponse } from '@pie-element/shared-controller-utils';
 
 const log = debug('@pie-element:math-inline:controller');
 
@@ -75,6 +75,7 @@ export type MathInlineValidationErrors = {
 const getResponseCorrectness = (
   model: MathInlineModel,
   answerItem: string | undefined,
+  language: string | undefined,
   isOutcome?: boolean,
 ): MathInlineCorrectness => {
   // An unnormalized model reaches here from `outcome()`, so `responses` can be absent.
@@ -89,7 +90,11 @@ const getResponseCorrectness = (
     };
   }
 
-  const isAnswerCorrect = getIsAnswerCorrect(isAdvanced ? correctResponses : correctResponses.slice(0, 1), answerItem);
+  const isAnswerCorrect = getIsAnswerCorrect(
+    isAdvanced ? correctResponses : correctResponses.slice(0, 1),
+    answerItem,
+    language,
+  );
 
   const correctnessObject: MathInlineCorrectness = {
     correctness: 'incorrect',
@@ -107,12 +112,17 @@ const getResponseCorrectness = (
 };
 
 /**
- * LaTeX with every decimal digit folded to 0–9 and `٫` to `.`, the form
- * math-validation computes on. Without a language, so the marks stay `.` and `,`.
+ * LaTeX with every decimal digit folded to 0–9 and its numbers written with the
+ * marks math-validation computes on: `٫` and, in a decimal-comma region, `,` become `.`.
  */
-const comparableLatex = <T>(latex: T): T => (typeof latex === 'string' ? (normalizeResponse(latex) as T) : latex);
+const comparableLatex = <T>(latex: T, language: string | undefined): T =>
+  typeof latex === 'string' ? (normalizeResponse(latex, { language, latexNumbers: true }) as T) : latex;
 
-function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefined, answerItem: string) {
+function getIsAnswerCorrect(
+  correctResponseItems: MathInlineResponse[] | undefined,
+  answerItem: string,
+  language: string | undefined,
+) {
   let answerCorrect = false;
 
   (correctResponseItems || []).forEach((correctResponse) => {
@@ -133,7 +143,7 @@ function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefin
 
     for (let i = 0; i < acceptedValues.length; i++) {
       try {
-        if (mv.latexEqual(comparableLatex(answerItem), comparableLatex(acceptedValues[i]), opts)) {
+        if (mv.latexEqual(comparableLatex(answerItem, language), comparableLatex(acceptedValues[i], language), opts)) {
           answerCorrect = true;
           break;
         }
@@ -159,6 +169,7 @@ const getCorrectness = (
       question.responseType === ResponseTypes.advanced
         ? (session && session.completeAnswer) || ''
         : session && session.response,
+      mathContentLanguage(question, env),
       isOutcome,
     );
   }

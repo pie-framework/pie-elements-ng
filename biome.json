@@ -68,10 +68,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "packages/shared/i18n/tests/i18n-conformance-fixtures.json",
-        "docs/a11y/theme-gap-inventory.md"
-      ],
+      "includes": ["docs/a11y/theme-gap-inventory.md"],
       "formatter": {
         "enabled": false
       }

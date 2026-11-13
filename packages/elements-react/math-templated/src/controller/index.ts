@@ -12,7 +12,7 @@ import type {
 } from '../types.js';
 
 import defaults from './defaults.js';
-import { normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
+import { mathContentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 
 const log = debug('@pie-element:math-templated:controller');
 
@@ -67,14 +67,16 @@ const getFeedback = (value: boolean) => (value ? 'correct' : 'incorrect');
 const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
 /**
- * LaTeX with every decimal digit folded to 0–9 and `٫` to `.`, the form
- * math-validation computes on. Without a language, so the marks stay `.` and `,`.
+ * LaTeX with every decimal digit folded to 0–9 and its numbers written with the
+ * marks math-validation computes on: `٫` and, in a decimal-comma region, `,` become `.`.
  */
-const comparableLatex = <T>(latex: T): T => (typeof latex === 'string' ? (normalizeResponse(latex) as T) : latex);
+const comparableLatex = <T>(latex: T, language: string | undefined): T =>
+  typeof latex === 'string' ? (normalizeResponse(latex, { language, latexNumbers: true }) as T) : latex;
 
 const getIsAnswerCorrect = (
   correctResponse: Partial<MathTemplatedResponse>,
   answerItem: MathTemplatedAnswer | undefined,
+  language: string | undefined,
 ) => {
   let answerCorrect = false;
 
@@ -95,8 +97,8 @@ const getIsAnswerCorrect = (
     try {
       for (const value of acceptedValues) {
         answerCorrect = mv.latexEqual(
-          comparableLatex((answerItem as MathTemplatedAnswer).value),
-          comparableLatex(value as string),
+          comparableLatex((answerItem as MathTemplatedAnswer).value, language),
+          comparableLatex(value as string, language),
           opts,
         );
         if (answerCorrect) break;
@@ -113,6 +115,7 @@ const getIsAnswerCorrect = (
 const getResponseCorrectness = (
   question: MathTemplatedModel,
   sessionResponse: Answers | null | undefined,
+  language: string | undefined,
 ): ResponseCorrectness => {
   const correctResponses = question.responses as Record<string, MathTemplatedResponse>;
 
@@ -131,7 +134,7 @@ const getResponseCorrectness = (
       const answerItem = sessionResponse['r' + responseId];
       const correctResponse = correctResponses[responseId] || {};
 
-      const answerCorrect = getIsAnswerCorrect(correctResponse, answerItem);
+      const answerCorrect = getIsAnswerCorrect(correctResponse, answerItem, language);
       if (answerCorrect) {
         correctAnswers++;
       }
@@ -157,7 +160,7 @@ export const getCorrectness = (
   session: MathTemplatedSession | null | undefined,
 ): ResponseCorrectness | undefined => {
   if (env.mode === 'evaluate') {
-    return getResponseCorrectness(question, session && session.answers);
+    return getResponseCorrectness(question, session && session.answers, mathContentLanguage(question, env));
   }
 };
 
@@ -232,7 +235,7 @@ export const getLogTrace = (
     }
 
     if (studentValue) {
-      const isCorrect = getIsAnswerCorrect(correctResponse, answerItem);
+      const isCorrect = getIsAnswerCorrect(correctResponse, answerItem, mathContentLanguage(question, env));
       if (isCorrect) {
         correctCount++;
         traceLog.push(`Response area ${index + 1} is correct.`);
@@ -367,7 +370,7 @@ export const model = (
       Object.keys(responses).forEach((responseId) => {
         const answerItem = answers['r' + responseId];
         const correctResponse = responses[responseId];
-        feedback[responseId] = getIsAnswerCorrect(correctResponse, answerItem);
+        feedback[responseId] = getIsAnswerCorrect(correctResponse, answerItem, mathContentLanguage(normalizedQuestion, env));
       });
     }
 

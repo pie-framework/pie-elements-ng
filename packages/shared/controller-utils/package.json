@@ -21,7 +21,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-element/shared-types": "workspace:*"
+    "@pie-element/shared-types": "workspace:*",
+    "@pie-players/pie-language-tags": "1.0.0-beta.9"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",

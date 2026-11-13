@@ -142,19 +142,29 @@ const sci_notat_exp_regex =
 const lengthUnit = '(mm|cm|km|ft|yd|mi|mmi|li|rd|angstrom|mil';
 const volumeUnit = '|mL|ml|L|m3|in3|ft3|pt|qt|gal|bbl)';
 const measurmentUnit = lengthUnit + volumeUnit + '{1}';
-const numberWithCommasAsThousandsSeparator = '[0-9]{1,3}(\\,[0-9]{3})+(\\.[0-9]+)*';
+// Between groups of three digits: `,`, `{,}` (a comma without punctuation spacing) or the thin space `\,`.
+const groupMark = '(?:,|\\{,\\}|\\\\,)';
+const numberWithCommasAsThousandsSeparator = `[0-9]{1,3}(${groupMark}[0-9]{3})+(?![0-9])(\\.[0-9]+)*`;
+// The letters of the Arabic script, which the lexer compiles with the `u` flag.
+const arabicLetter = '(?=\\p{Script=Arabic})\\p{L}';
 
 // const latex_rules = [["\\\\neq(?![a-zA-Z])", "NE"]];
 export const latex_rules = [
   [measurmentUnit, 'UNIT'],
   ['\\$', 'TEXT'],
   ['\\\\' + '\\$', 'TEXT'],
-  ['\\\\text{[a-zA-Z0-9\\s\\\\,\\\\.]+?}', 'TEXT'],
-  ['[0-9]+\\s*\\\\frac(?![a-zA-Z])', 'MIXED_NUMBER'],
+  ['\\\\text\\{[\\p{L}\\p{M}\\p{N}\\s\\\\,.]+?\\}', 'TEXT'],
+  // A spacing command between the whole number and a numeric fraction, as in `2\ \frac{1}{2}`.
+  [
+    '[0-9]+\\s*(\\\\[ ,]\\s*)+\\\\[dt]?frac(?=\\s*\\{\\s*[0-9]+\\s*\\}\\s*\\{\\s*[0-9]+\\s*\\})',
+    'MIXED_NUMBER',
+  ],
+  ['[0-9]+\\s*\\\\[dt]?frac(?![a-zA-Z])', 'MIXED_NUMBER'],
   [numberWithCommasAsThousandsSeparator + sci_notat_exp_regex, 'NUMBER'],
   ['[0-9]+(\\.[0-9]*)?' + sci_notat_exp_regex, 'NUMBER'],
   ['\\.[0-9]+' + sci_notat_exp_regex, 'NUMBER'],
   [',', ','],
+  ['،', ','],
   ['\\*', '*'],
   ['\\×', '*'],
   ['\\•', '*'],
@@ -223,7 +233,7 @@ export const latex_rules = [
   ['\\\\cdot(?![a-zA-Z])', '*'],
   ['\\\\div(?![a-zA-Z])', '/'],
   ['\\\\times(?![a-zA-Z])', '*'],
-  ['\\\\frac(?![a-zA-Z])', 'FRAC'],
+  ['\\\\[dt]?frac(?![a-zA-Z])', 'FRAC'],
 
   ['°', 'deg'],
   ['°', 'deg'],
@@ -365,7 +375,7 @@ export const latex_rules = [
   ['\\\\var\\s*{\\s*[a-zA-Z0-9]+\\s*}', 'VARMULTICHAR'],
 
   ['\\\\[a-zA-Z]+(?![a-zA-Z])', 'LATEXCOMMAND'],
-  ['[a-zA-Z]', 'VAR'],
+  [`(?:[a-zA-Z]|${arabicLetter})`, 'VAR'],
 ];
 
 // defaults for parsers if not overridden by context
@@ -467,6 +477,8 @@ export type Opts = {
   unknownCommandBehavior: 'error' | 'passthrough';
   /** Keep a mixed number such as `2\\frac{1}{2}` as `["mixed", 2, ["/", 1, 2]]` instead of a sum. */
   keepMixedNumbers: boolean;
+  /** Keep each number as `["decimal", "0.10"]`, its digits as written, so a value can be read beyond double precision. */
+  exactNumbers: boolean;
 };
 
 export const DEFAULT_OPTS: Opts = {
@@ -484,6 +496,7 @@ export const DEFAULT_OPTS: Opts = {
   // 'passthrough' reads an unknown command such as \foo as the variable foo
   unknownCommandBehavior: 'passthrough',
   keepMixedNumbers: false,
+  exactNumbers: false,
 };
 
 export class LatexToAst {
@@ -964,7 +977,9 @@ export class LatexToAst {
       try {
         const t = this.token.token_text.split('\\\\frac');
         const numberString = t[0].trim();
-        const number = parseInt(numberString, 10);
+        const number = this.opts.exactNumbers
+          ? ['decimal', numberString.replace(/\D.*$/s, '')]
+          : parseInt(numberString, 10);
         const f = this.fraction({});
         // this is correct, to convert a mixed number to an improper fraction we have to multiply the demoninator by the whole number and add the result to the numerator
         return this.opts.keepMixedNumbers ? ['mixed', number, f] : ['+', number, f];
@@ -1075,14 +1090,14 @@ export class LatexToAst {
     }
 
     if (this.token.token_type === 'NUMBER') {
-      result = this.token.token_text.replace(/,/g, '');
+      result = this.token.token_text.replace(/\{,\}|\\,|,/g, '');
 
       let removeLeadingZeros = (result: string) =>
         result.indexOf('.') >= 0
           ? result.replace(/^[0]*([0-9])(.*)/, '$1$2')
-          : result.replace(/0*([1-9]*)/, '$1');
+          : result.replace(/^0+(?=[0-9])/, '');
 
-      let parsedNumber = result === '0' ? result : removeLeadingZeros(result);
+      let parsedNumber = removeLeadingZeros(result);
 
       if (parsedNumber.startsWith('.')) {
         parsedNumber = '0' + parsedNumber;
@@ -1092,7 +1107,9 @@ export class LatexToAst {
 
       /** trailing zero number ['tzn', number, countOfZeros] */
 
-      if (parsedNumber !== number.toString()) {
+      if (this.opts.exactNumbers) {
+        result = ['decimal', parsedNumber.trim()];
+      } else if (parsedNumber !== number.toString()) {
         const p = number.toString();
         const sub = parsedNumber
           .substring(p.length)

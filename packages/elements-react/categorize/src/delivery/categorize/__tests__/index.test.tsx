@@ -177,6 +177,27 @@ describe('categorize', () => {
     });
   });
 
+  describe('choicesPosition', () => {
+    // The mocked Choices renders its props as attributes, so the pool is the element carrying `choiceposition`.
+    const layoutFor = (choicesPosition?: string) => {
+      const { container } = renderCategorize({ model: { ...defaultProps.model, choicesPosition } });
+      const pool = container.querySelector('[choiceposition]') as HTMLElement;
+      const content = pool.parentElement as HTMLElement;
+
+      return { poolComesFirst: content.firstElementChild === pool, flexDirection: content.style.flexDirection };
+    };
+
+    it.each([
+      ['above', true, 'column'],
+      ['below', false, 'column'],
+      ['left', true, 'row'],
+      ['right', false, 'row'],
+      [undefined, true, 'column'],
+    ])('puts the pool %s the categories in the DOM, so the tab path follows the layout', (position, first, direction) => {
+      expect(layoutFor(position)).toEqual({ poolComesFirst: first, flexDirection: direction });
+    });
+  });
+
   describe('provider onDragEnd', () => {
     const createProvider = (extras: any = {}) => {
       const instance: any = new (CategorizeProvider as any)({
