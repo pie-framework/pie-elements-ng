@@ -136,6 +136,8 @@ const PlacementOrderingContainer: any = styled('div')({
   flexDirection: 'column',
   alignItems: 'center',
   boxSizing: 'border-box',
+  // While an object is dragged its move buttons are out of the way, but keep their room so nothing shifts
+  '&[data-dragging] [data-move]': { visibility: 'hidden' },
 });
 
 // The interactive region - the choices and answers columns for a vertical item, or the choices and
@@ -753,7 +755,7 @@ export class PlacementOrdering extends React.Component {
         collisionDetection={this.dragCollision.collisionDetection}
         {...keyboardDragOptions}
       >
-        <PlacementOrderingContainer ref={this.containerRef}>
+        <PlacementOrderingContainer ref={this.containerRef} data-dragging={this.state.draggedTile ? '' : undefined}>
           {(includeTargets || moveProps.onMove) && (
             <ScreenReaderText role="status" aria-live="polite" aria-atomic="true">
               {this.state.announcement}
