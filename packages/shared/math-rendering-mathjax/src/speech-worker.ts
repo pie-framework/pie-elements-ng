@@ -63,13 +63,63 @@ function endSpeech(mathDocument: SpeechDocument): void {
   warnOnce();
 }
 
+/**
+ * Releases `blob:` URLs once `worker` signals it started or failed, and after a
+ * grace period should neither happen. WebKit loads the `blob:` script
+ * asynchronously, so revoking before the fetch completes breaks the worker in
+ * Safari: speech, braille and the explorer stay off for every Safari student
+ * (Chromium and Firefox fetch the script synchronously, which is why
+ * Chromium-only testing missed it).
+ */
+function releaseBlobUrlsOn(worker: Worker, urls: string[]): void {
+  const release = () => {
+    for (const url of urls) URL.revokeObjectURL(url);
+  };
+  worker.addEventListener('message', release, { once: true });
+  worker.addEventListener('error', release, { once: true });
+  setTimeout(release, 10_000);
+}
+
+type RevokeObjectURL = (url: string) => void;
+
+/**
+ * Runs `createWorker` with MathJax's `revokeObjectURL` calls held back, then
+ * releases them through `releaseBlobUrlsOn`. MathJax 4's adaptor revokes its
+ * worker's `blob:` URL synchronously after `new Worker` — the timing WebKit
+ * cannot tolerate.
+ */
+async function startWorkerWithDeferredRevoke(
+  createWorker: (listener: unknown, options: unknown) => Promise<Worker>,
+  self: unknown,
+  listener: unknown,
+  options: unknown
+): Promise<Worker> {
+  const deferred: string[] = [];
+  const originalRevoke = URL.revokeObjectURL.bind(URL);
+  (URL as unknown as { revokeObjectURL: RevokeObjectURL }).revokeObjectURL = (url) => {
+    deferred.push(url);
+  };
+  let worker: Worker;
+  try {
+    worker = await createWorker.call(self, listener, options);
+  } catch (error) {
+    // No worker: nothing can signal readiness, so release at once.
+    for (const url of deferred) originalRevoke(url);
+    throw error;
+  } finally {
+    (URL as unknown as { revokeObjectURL: RevokeObjectURL }).revokeObjectURL = originalRevoke;
+  }
+  releaseBlobUrlsOn(worker, deferred);
+  return worker;
+}
+
 /** Ends speech for `mathDocument` when a worker it starts fails before it is ready. */
 export function endSpeechOnWorkerFailure(mathDocument: SpeechDocument | undefined): void {
   const adaptor = mathDocument?.adaptor;
   const createWorker = adaptor?.createWorker;
   if (!mathDocument || !adaptor || !createWorker) return;
   adaptor.createWorker = async (listener, options) => {
-    const worker = await createWorker.call(adaptor, listener, options);
+    const worker = await startWorkerWithDeferredRevoke(createWorker, adaptor, listener, options);
     worker.addEventListener('error', () => endSpeech(mathDocument), { once: true });
     return worker;
   };
@@ -109,11 +159,8 @@ export function speechWorkerScript(assets: MathjaxAssets): string | undefined {
 /** Starts a worker running `script` from a `blob:` URL, as MathJax's adaptor does. */
 export function startWorker(script: string, listener: (event: MessageEvent) => void): Worker {
   const url = URL.createObjectURL(new Blob([script], { type: 'text/javascript' }));
-  try {
-    const worker = new Worker(url);
-    worker.onmessage = listener;
-    return worker;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  const worker = new Worker(url);
+  worker.onmessage = listener;
+  releaseBlobUrlsOn(worker, [url]);
+  return worker;
 }
