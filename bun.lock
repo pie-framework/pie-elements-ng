@@ -2167,7 +2167,7 @@
       "name": "@pie-element/shared-i18n",
       "version": "0.1.2",
       "dependencies": {
-        "@pie-players/pie-context": "1.0.0-beta.7",
+        "@pie-players/pie-context": "1.0.0-beta.10",
         "@pie-players/pie-language-tags": "1.0.0-beta.9",
       },
       "devDependencies": {
@@ -2221,7 +2221,7 @@
       "name": "@pie-element/shared-player-events",
       "version": "0.2.1",
       "devDependencies": {
-        "@pie-players/pie-context": "1.0.0-beta.7",
+        "@pie-players/pie-context": "1.0.0-beta.10",
         "@types/bun": "^1.4.4",
         "typescript": "^5.9.3",
         "vite": "^8.3.6",
@@ -2777,7 +2777,7 @@
 
     "@pie-lib/tools": ["@pie-lib/tools@workspace:packages/lib-react/tools"],
 
-    "@pie-players/pie-context": ["@pie-players/pie-context@1.0.0-beta.7", "", {}, "sha512-J2DRigRCMrzEoc5NO2rbVHZTjmCcw5PBqvosYA5ttvsaRf8yOZpU/aSVWcoMH6q9BcBYq5GHsl8PF2hLIUNPqA=="],
+    "@pie-players/pie-context": ["@pie-players/pie-context@1.0.0-beta.10", "", {}, "sha512-ME+DghYPPQh+oRnGZuFPbAsN3BL+itt8f89SkBfak+cHR1pyjfTVKBw8iN3sIzOwBvP1bEACdLyqvMbHEr7m/A=="],
 
     "@pie-players/pie-language-tags": ["@pie-players/pie-language-tags@1.0.0-beta.9", "", {}, "sha512-PEnS9LeqgZeNb+Qp07s0doUrUxu/80l3aS9WPAJZDnzLnEJhg1D4CRApLqKQvaoMiFtkymSV+qJhzta0t+6sQQ=="],
 
