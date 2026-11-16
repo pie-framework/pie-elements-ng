@@ -75,8 +75,6 @@ async function testWithWorkspace() {
   log('\nStep 3: Create custom installer for workspace', 'blue');
 
   // We'll override the installer to use local symlinks
-  const { installPackages: originalInstall } = await import('../src/installer.js');
-
   // Custom install that uses workspace links
   async function workspaceInstall(deps: any[], workspaceDir: string) {
     log(`  [installer] Using workspace packages`, 'blue');

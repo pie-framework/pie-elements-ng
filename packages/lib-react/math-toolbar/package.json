@@ -38,7 +38,7 @@
     "test": "bun x vitest run --root ../../.. ./"
   },
   "devDependencies": {
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",

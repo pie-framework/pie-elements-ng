@@ -50,7 +50,7 @@ const evaluateNumber = (node: MathNode): number | undefined => {
   try {
     const value = numeric.evaluate(node.toString());
     return typeof value === 'number' ? value : undefined;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
@@ -163,7 +163,7 @@ const normalize = (
       if (!arg.isFunctionNode && !arg.isArrayNode && !containsInverseFlag && !pi) {
         try {
           arg = simplify(arg);
-        } catch (e) {
+        } catch {
           // ok;
         }
       }
@@ -187,7 +187,7 @@ const normalize = (
             } else {
               arg = rationalize(simplified, {}, true).expression;
             }
-          } catch (e) {
+          } catch {
             // ok;
           }
         }
@@ -223,7 +223,7 @@ const normalize = (
     // overcome TypeError
     try {
       r = simplify(r);
-    } catch (e) {}
+    } catch {}
   }
 
   log('[normalize] input: ', a.toString(), 'output: ', r.toString());
@@ -261,7 +261,7 @@ const constantValue = (node: any): number | undefined => {
 
     const value = +result;
     return Number.isFinite(value) ? value : undefined;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };

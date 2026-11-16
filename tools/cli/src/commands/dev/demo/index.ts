@@ -246,7 +246,7 @@ export default class DevDemo extends Command {
     if (this.viteProcess) {
       try {
         this.viteProcess.kill('SIGTERM');
-      } catch (error) {
+      } catch {
         // Ignore errors during cleanup
       }
       this.viteProcess = null;
@@ -280,7 +280,7 @@ export default class DevDemo extends Command {
             }). Stop it or use --port to run on a different port.`
           );
         }
-      } catch (error) {
+      } catch {
         // If the lock is unreadable, remove it and continue.
       }
 

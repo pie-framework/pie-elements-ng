@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { Bundler, mkDependencyHash, type BuildBundleName } from '@pie-element/element-bundler';
 import { loadReactElementMatrix } from '../src/lib/testing/react-element-matrix';
 import { createWorkspaceCacheSaltForDependencies } from '../src/lib/testing/workspace-fingerprint';
-import { findWorkspaceRoot } from '../src/vite-plugin-workspace-resolver';
+import { findWorkspaceRoot } from '../../../tools/vite/workspace-resolver.ts';
 
 interface ContractFailure {
   element: string;

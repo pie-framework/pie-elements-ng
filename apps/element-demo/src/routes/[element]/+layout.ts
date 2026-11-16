@@ -114,7 +114,7 @@ export const load: LayoutLoad = async ({
         console.log(`[+layout.ts] Active demo: ${activeDemoId}`);
       }
     }
-  } catch (e) {
+  } catch {
     console.log(`[+layout.ts] No sample config found for ${elementName}, using empty model`);
   }
 

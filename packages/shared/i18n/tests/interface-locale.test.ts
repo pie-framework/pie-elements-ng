@@ -112,7 +112,7 @@ describe('subscribeInterfaceLocale', () => {
 
     disconnect();
     // A provider arriving after the disconnect must not reach a released callback.
-    const provider = mountProvider(parent);
+    mountProvider(parent);
     const announcement = Object.assign(
       new Event('context-provider', { bubbles: true, composed: true }),
       { context: interfaceLocaleContext, contextTarget: parent }

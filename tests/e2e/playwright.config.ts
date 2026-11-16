@@ -75,7 +75,7 @@ function resolveLocalChromium(): string | undefined {
 const localChromium = resolveLocalChromium();
 
 export default defineConfig({
-  testDir: __dirname,
+  testDir: import.meta.dirname,
   testMatch: ['**/*.spec.ts'],
   timeout: 20_000,
   globalTimeout: 2 * 60_000,

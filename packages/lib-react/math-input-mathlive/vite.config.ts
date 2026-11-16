@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 
 export default defineConfig({
   // ESM-first resolution. A dependency with no exports map (@visx/* v3,
@@ -14,11 +14,11 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        index: resolve(__dirname, 'src/index.tsx'),
+        index: resolve(import.meta.dirname, 'src/index.tsx'),
       },
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => {
         return (
           /^react($|\/)/.test(id) ||

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { resolve } from 'node:path';
 
@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [svelte({ emitCss: false }), thirdPartyLicenses()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       name: 'EditableHtmlTiptapSvelte',
       fileName: () => 'index.js',
       formats: ['es'],
@@ -17,7 +17,7 @@ export default defineConfig({
     target: 'es2020',
     minify: false,
     sourcemap: true,
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => {
         return /^svelte($|\/)/.test(id) || /^@tiptap\//.test(id);
       },
