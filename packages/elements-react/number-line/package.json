@@ -18,7 +18,7 @@
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-element/shared-i18n": "workspace:*",
-    "d3-scale": "^4.0.2",
+    "d3-scale": "^4.0.3",
     "d3-selection": "^3.0.0",
     "mathjs": "^13.2.3",
     "react-jss": "^10.10.0",

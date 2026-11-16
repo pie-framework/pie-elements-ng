@@ -18,7 +18,7 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "assert": "^2.1.0",
-    "d3-scale": "^4.0.2",
+    "d3-scale": "^4.0.3",
     "d3-selection": "^3.0.0",
     "debug": "^4.1.1",
     "invariant": "^2.2.4",
