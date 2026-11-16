@@ -22,7 +22,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-players/pie-context": "1.0.0-beta.7",
+    "@pie-players/pie-context": "1.0.0-beta.10",
     "@pie-players/pie-language-tags": "1.0.0-beta.9"
   },
   "devDependencies": {
