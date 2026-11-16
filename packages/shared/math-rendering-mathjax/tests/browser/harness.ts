@@ -159,6 +159,11 @@ export async function openPage(
 
   await page.route('**/*', (route) => {
     const url = route.request().url();
+    // WebKit alone routes `blob:` fetches through `page.route` (the worker's
+    // script URL is one), so an abort here would strangle speech in that
+    // engine only. Hand them back to the browser; every engine loads them
+    // natively, and a refusal arrives through CSP, not this route.
+    if (url.startsWith('blob:')) return route.fallback();
     if (!LEGACY_ASSETS.some((prefix) => url.startsWith(prefix))) unserved.push(url);
     return route.abort();
   });

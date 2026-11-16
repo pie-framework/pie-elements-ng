@@ -202,9 +202,12 @@ export async function updateModelInSource(page: Page, model: any) {
     (node, text) => {
       const clipboardData = new DataTransfer();
       clipboardData.setData('text/plain', text);
-      node.dispatchEvent(
-        new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true })
-      );
+      const event = new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true });
+      // Firefox ignores `clipboardData` in the constructor and the paste arrives empty.
+      if (!event.clipboardData?.getData('text/plain')) {
+        Object.defineProperty(event, 'clipboardData', { value: clipboardData });
+      }
+      node.dispatchEvent(event);
     },
     JSON.stringify(model, null, 2)
   );
