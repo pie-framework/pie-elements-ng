@@ -918,24 +918,33 @@ const Expression: any = styled('div', {
   shouldForwardProp: (prop) =>
     !['isIncorrect', 'isCorrect', 'showCorrectness', 'correctAnswerShown', 'printCorrect'].includes(prop),
 })(({ theme, isIncorrect, isCorrect, showCorrectness, correctAnswerShown, printCorrect }) => {
-  const borderColor = isIncorrect ? color.incorrect() : isCorrect ? color.correct() : undefined;
+  // The correct answer renders as plain latex with no answer box, so the wrapper frames it.
+  // A student's answer renders inside an answer box, which takes the correctness colour
+  // instead, so the response area has one border rather than two.
+  const frameCorrectAnswer = printCorrect || (showCorrectness && correctAnswerShown);
+  const boxColor =
+    showCorrectness && !frameCorrectAnswer
+      ? isIncorrect
+        ? color.incorrect()
+        : isCorrect
+          ? color.correct()
+          : undefined
+      : undefined;
 
   return {
     maxWidth: 'fit-content',
     padding: theme.spacing(0.25),
-    ...(showCorrectness && {
-      border: borderColor ? `2px solid ${borderColor} !important` : '2px solid',
+    ...(frameCorrectAnswer && {
+      border: `2px solid ${color.correct()} !important`,
     }),
-    ...(!showCorrectness &&
-      borderColor && {
-        borderColor: `${borderColor} !important`,
-      }),
+    ...(boxColor && {
+      '& .ML__box': {
+        border: `2px solid ${boxColor} !important`,
+      },
+    }),
     ...(correctAnswerShown && {
       padding: theme.spacing(1),
       letterSpacing: '0.5px',
-    }),
-    ...(printCorrect && {
-      border: `2px solid ${color.correct()} !important`,
     }),
   };
 });
