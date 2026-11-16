@@ -1,8 +1,9 @@
 import { Command, Flags } from '@oclif/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
-import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { claimDemoServerLock, releaseDemoServerLock } from '../../../utils/demo-server-lock.js';
 
 /**
  * Start unified demo application for all PIE elements.
@@ -269,34 +270,14 @@ export default class DevDemo extends Command {
   }
 
   private acquireLock(port: number): void {
-    if (existsSync(this.lockFilePath)) {
-      try {
-        const raw = readFileSync(this.lockFilePath, 'utf-8');
-        const lock = JSON.parse(raw);
-        if (lock?.pid && this.isProcessRunning(lock.pid)) {
-          this.error(
-            `A demo server is already running (port: ${lock.port ?? 'unknown'}, pid: ${
-              lock.pid
-            }). Stop it or use --port to run on a different port.`
-          );
-        }
-      } catch {
-        // If the lock is unreadable, remove it and continue.
-      }
-
-      try {
-        unlinkSync(this.lockFilePath);
-      } catch {
-        // Ignore cleanup errors.
-      }
+    const holder = claimDemoServerLock(this.lockFilePath, port);
+    if (holder) {
+      this.error(
+        `A demo server is already running (port: ${holder.port ?? 'unknown'}, pid: ${
+          holder.pid
+        }). Stop it or use --port to run on a different port.`
+      );
     }
-
-    const lockInfo = {
-      pid: process.pid,
-      port,
-      startedAt: new Date().toISOString(),
-    };
-    writeFileSync(this.lockFilePath, `${JSON.stringify(lockInfo, null, 2)}\n`);
   }
 
   private getLockFilePath(port: number): string {
@@ -310,28 +291,6 @@ export default class DevDemo extends Command {
   }
 
   private releaseLock(): void {
-    if (!existsSync(this.lockFilePath)) return;
-    try {
-      const raw = readFileSync(this.lockFilePath, 'utf-8');
-      const lock = JSON.parse(raw);
-      if (lock?.pid !== process.pid) return;
-    } catch {
-      // If parsing fails, still attempt to remove stale lock.
-    }
-
-    try {
-      unlinkSync(this.lockFilePath);
-    } catch {
-      // Ignore cleanup errors.
-    }
-  }
-
-  private isProcessRunning(pid: number): boolean {
-    try {
-      process.kill(pid, 0);
-      return true;
-    } catch {
-      return false;
-    }
+    releaseDemoServerLock(this.lockFilePath);
   }
 }
