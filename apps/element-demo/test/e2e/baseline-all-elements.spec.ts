@@ -788,7 +788,12 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       const before = await getSessionState(page);
       // The last part shades the whole bar (2/2), an incorrect answer, so evaluate offers the toggle.
       const root = await getDeliveryContainer(page);
-      await root.locator('.recharts-bar-rectangle rect').last().click();
+      const lastPart = root.locator('.recharts-bar-rectangle rect').last();
+      // Hovering re-renders the bars, replacing their nodes; when that lands between mousedown and
+      // mouseup, Firefox fires no click. Let the hover render settle first.
+      await lastPart.hover();
+      await expect(lastPart).not.toHaveAttribute('fill', '#FFFFFF');
+      await lastPart.click();
       await expect.poll(() => getSessionState(page)).not.toEqual(before);
     },
     assertEvaluateShowsCorrectAnswers: async (page) => {
