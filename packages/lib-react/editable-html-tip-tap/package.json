@@ -36,7 +36,7 @@
     "@tiptap/react": "3.33.0",
     "@tiptap/starter-kit": "3.33.0",
     "debug": "^4.1.1",
-    "immutable": "^5.1.9",
+    "immutable": "^5.2.1",
     "keycode": "^2.2.0",
     "prop-types": "^15.6.2",
     "react-attr-converter": "^0.3.1",
