@@ -308,7 +308,9 @@ function dropTile(tile: VennTile, targetKey: string | null) {
 function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   if (disabled) return;
   e.preventDefault();
-  detachPointerDrag?.();
+  // A drag is already in progress (another finger): it keeps the gesture.
+  if (detachPointerDrag) return;
+  const pointerId = e.pointerId;
   const target = e.currentTarget as HTMLElement;
   target.setPointerCapture?.(e.pointerId);
   heldTileId = tile.id;
@@ -318,10 +320,12 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   announce(i18n.t('pickedUp', { name: tileAccessibleName(tile, language) }));
 
   const onMove = (ev: PointerEvent) => {
+    if (ev.pointerId !== pointerId) return;
     dragPos = { x: ev.clientX, y: ev.clientY };
     hoveredRegionKey = resolveHoverKeyFromPointer(ev.clientX, ev.clientY);
   };
   const onUp = (ev: PointerEvent) => {
+    if (ev.pointerId !== pointerId) return;
     detach();
     const hoverKey = resolveHoverKeyFromPointer(ev.clientX, ev.clientY);
     const snapped = hoveredRegionKey;
@@ -332,7 +336,8 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   };
   // The browser took the gesture over, e.g. to scroll: where the pointer was
   // then is no drop the learner chose.
-  const onCancel = () => {
+  const onCancel = (ev: PointerEvent) => {
+    if (ev.pointerId !== pointerId) return;
     detach();
     clearHeld();
     announce(i18n.t('cancelled'));

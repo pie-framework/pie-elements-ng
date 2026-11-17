@@ -765,11 +765,14 @@ export class Main extends React.Component {
             placement="bottom-start"
             slotProps={{
               tooltip: {
+                // --pie-surface is the theme's raised surface: its text and its --pie-tertiary
+                // links, the Collapsible triggers here, keep 4.5:1 on it in every scheme, which
+                // --pie-primary-light does not guarantee.
                 sx: (theme) => ({
-                  background: `${color.primaryLight()} !important`,
+                  background: `${color.surface()} !important`,
                   color: color.text(),
                   padding: theme.spacing(2),
-                  border: `1px solid ${color.secondary()}`,
+                  border: `1px solid ${color.borderDark()}`,
                   fontSize: '16px',
                   '& :not(.MathJax) > table tr': {
                     '&:nth-child(2n)': {
@@ -779,6 +782,10 @@ export class Main extends React.Component {
                 }),
               },
               popper: {
+                // Rendered inside the element, not portalled to <body>, so the tooltip sits in
+                // the host's theme scope: a self-scoped <pie-theme> sets its --pie-* variables
+                // on itself, and they would not reach a tooltip outside it.
+                container: () => this.root,
                 sx: {
                   opacity: 1,
                 },
@@ -794,16 +801,14 @@ export class Main extends React.Component {
             }}
             title={
               <div>
-                <MainContent>
-                  {showCorrectAnswerToggle && (
-                    <StyledCorrectAnswerToggle
-                      language={language}
-                      show
-                      toggled={showCorrect}
-                      onToggle={this.toggleShowCorrect}
-                    />
-                  )}
-                </MainContent>
+                {showCorrectAnswerToggle && (
+                  <StyledCorrectAnswerToggle
+                    language={language}
+                    show
+                    toggled={showCorrect}
+                    onToggle={this.toggleShowCorrect}
+                  />
+                )}
 
                 {showTeacherInstructions && (
                   <StyledCollapsible
@@ -868,11 +873,15 @@ if (typeof document !== 'undefined') {
       }
       .sr-only {
         position: absolute;
-        left: -10000px;
-        top: auto;
         width: 1px;
         height: 1px;
+        margin: -1px;
+        padding: 0;
+        border: 0;
         overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
     `;
     document.head.appendChild(style);
@@ -960,11 +969,15 @@ const PrintContainer: any = styled('div')(({ theme }) => ({
 
 const SrOnly: any = styled('h2')({
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 });
 
 const StyledCorrectAnswerToggle: any = styled(CorrectAnswerToggle)(({ theme }) => ({

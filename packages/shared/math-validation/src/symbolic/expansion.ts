@@ -1,0 +1,203 @@
+import type { MathNode } from 'mathjs';
+import { numeric } from '../mathjs.js';
+import { getVariables } from './utils.js';
+
+// mathjs rationalize multiplies out powers and products of sums with simplify rules, and its time grows
+// steeply with the number of sums it multiplies and the terms that produces: (x+1)^7 takes 2.4 s,
+// (x+1)^8 19 s, (x+y)^5 3 s, (a+b+c+d)^3 8 s, and (x+1)^4+(x+2)^4+(x+3)^4+(x+4)^4 5 s although
+// each part is small (PIE-1532). Past these limits nothing is multiplied out.
+const MAX_MULTIPLIED_SUMS = 4;
+const MAX_TERMS = 16;
+// terms times variables, since collecting each term costs more with more variables:
+// (a+b)(c+d)(f+g)(h+k) is slower than (x+1)^4, which has as many terms
+const MAX_TERM_COST = 64;
+
+const children = (node: MathNode): MathNode[] => {
+  const result: MathNode[] = [];
+  node.forEach((child) => {
+    result.push(child);
+  });
+  return result;
+};
+
+// the value of an exponent without variables, such as 8, 2*4, 16/2 or 8.0; undefined when it has a variable.
+// An exponent that can't be evaluated counts as infinite, so that it never lets an expansion through.
+const constantExponent = (node: MathNode): number | undefined => {
+  if (getVariables(node).length > 0) {
+    return undefined;
+  }
+
+  try {
+    // ast-to-mathjs writes 8.0 as tzn(8, 1)
+    const value = numeric.evaluate(node.toString(), { tzn: (n: number) => n });
+    return typeof value === 'number' && !Number.isNaN(value) ? value : Number.POSITIVE_INFINITY;
+  } catch {
+    return Number.POSITIVE_INFINITY;
+  }
+};
+
+// a power of a base that counts as `count`, where `empty` is the count of a base without a sum
+const powerOf = (
+  count: number,
+  empty: number,
+  exponent: MathNode | undefined,
+  raise: (count: number, n: number) => number
+) => {
+  const value = exponent ? constantExponent(exponent) : undefined;
+
+  if (value !== undefined) {
+    return raise(count, Math.ceil(Math.abs(value)));
+  }
+
+  // a variable exponent leaves a single term alone, as in 2^x, but it can still simplify to a constant
+  // before rationalize gets it, as 8+0x does, so a sum under one can't be bounded
+  return count === empty ? count : Number.POSITIVE_INFINITY;
+};
+
+// how many sums are multiplied together when the expression is multiplied out: a product or a quotient adds
+// its factors' counts, and a power multiplies its base's count by the exponent, so x^1000 multiplies none.
+// rationalize leaves function arguments alone, so a function counts as a variable.
+export const multipliedSums = (node: MathNode): number => {
+  if (node.isParenthesisNode && node.content) {
+    return multipliedSums(node.content);
+  }
+
+  if (node.isFunctionNode) {
+    return 0;
+  }
+
+  if (node.isOperatorNode && node.args) {
+    const counts = node.args.map(multipliedSums);
+
+    switch (node.fn) {
+      case 'add':
+      case 'subtract':
+        return Math.max(1, ...counts);
+      case 'multiply':
+      case 'divide':
+        return counts.reduce((sum, count) => sum + count, 0);
+      case 'pow':
+        return powerOf(counts[0] ?? 0, 0, node.args[1], (count, n) => count * n);
+      default:
+        return Math.max(0, ...counts);
+    }
+  }
+
+  return Math.max(0, ...children(node).map(multipliedSums));
+};
+
+// how many terms multiplying the expression out produces: a sum adds its parts' terms, a product or a quotient
+// multiplies them, and a power raises them to the exponent
+export const expansionTerms = (node: MathNode): number => {
+  if (node.isParenthesisNode && node.content) {
+    return expansionTerms(node.content);
+  }
+
+  if (node.isFunctionNode) {
+    return 1;
+  }
+
+  if (node.isOperatorNode && node.args) {
+    const terms = node.args.map(expansionTerms);
+
+    switch (node.fn) {
+      case 'add':
+      case 'subtract':
+        return terms.reduce((sum, t) => sum + t, 0);
+      case 'multiply':
+      case 'divide':
+        return terms.reduce((product, t) => product * t, 1);
+      case 'pow':
+        return powerOf(terms[0] ?? 1, 1, node.args[1], (t, n) => t ** n);
+      default:
+        return Math.max(1, ...terms);
+    }
+  }
+
+  return Math.max(1, ...children(node).map(expansionTerms));
+};
+
+// the terms that multiplying out produces in the products and powers of sums; a lone term beside them,
+// such as the 1 or the \sqrt{x} in (x+1)^4+1 or (x+1)^4+\sqrt{x}, is only collected, which is cheap
+export const multipliedTerms = (node: MathNode): number => {
+  if (node.isParenthesisNode && node.content) {
+    return multipliedTerms(node.content);
+  }
+
+  if (node.isFunctionNode) {
+    return 0;
+  }
+
+  if (node.isOperatorNode && node.args) {
+    switch (node.fn) {
+      case 'add':
+      case 'subtract':
+      case 'unaryMinus':
+      case 'unaryPlus':
+        return node.args.reduce((sum, arg) => sum + multipliedTerms(arg), 0);
+      case 'multiply':
+      case 'divide':
+      case 'pow':
+        return multipliedSums(node) >= 2 ? expansionTerms(node) : 0;
+      default:
+        return Math.max(0, ...node.args.map(multipliedTerms));
+    }
+  }
+
+  return Math.max(0, ...children(node).map(multipliedTerms));
+};
+
+// whether rationalize would take too long to multiply the expression out; a single sum multiplies nothing
+export const isTooLargeToExpand = (node: MathNode): boolean => {
+  const sums = multipliedSums(node);
+
+  if (!(sums <= MAX_MULTIPLIED_SUMS)) {
+    return true;
+  }
+
+  if (sums < 2) {
+    return false;
+  }
+
+  const terms = multipliedTerms(node);
+
+  return !(terms <= MAX_TERMS && terms * Math.max(1, getVariables(node).length) <= MAX_TERM_COST);
+};
+
+// a sum under a variable exponent, as in (x+1)^y. It is never multiplied out, since the exponent can
+// simplify to a constant on the way, but it isn't sampled either: where the base is negative the power
+// isn't real, so sample points can't tell (x+1)^y from |x+1|^y.
+export const hasVariableExponentOfSum = (node: MathNode): boolean =>
+  node.filter((n) => {
+    if (!n.isOperatorNode || n.fn !== 'pow' || !n.args) {
+      return false;
+    }
+
+    const [base, exponent] = n.args;
+
+    return (
+      !!base && !!exponent && multipliedSums(base) > 0 && constantExponent(exponent) === undefined
+    );
+  }).length > 0;
+
+// a variable in a denominator, as in 1/x or (x+1)^(-2). Sample points can't see where it is zero, so they
+// would match (x^6-1)/(x-1) with x^5+x^4+x^3+x^2+x+1, which is an open decision (PIE-1465), not a size question.
+export const hasVariableDenominator = (node: MathNode): boolean =>
+  node.filter((n) => {
+    if (!n.isOperatorNode || !n.args) {
+      return false;
+    }
+
+    const [first, second] = n.args;
+
+    if (n.fn === 'divide') {
+      return !!second && getVariables(second).length > 0;
+    }
+
+    if (n.fn === 'pow' && first && second && getVariables(first).length > 0) {
+      const exponent = constantExponent(second);
+      return exponent !== undefined && !(exponent >= 0);
+    }
+
+    return false;
+  }).length > 0;

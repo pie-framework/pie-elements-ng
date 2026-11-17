@@ -112,16 +112,22 @@ const evaluateAtPoints = (expr: MathNode, points: Record<string, number>[]) => {
 const areClose = (a: number, b: number, tolerance: number) =>
   Math.abs(a - b) <= tolerance * Math.max(1, Math.abs(a), Math.abs(b));
 
-// points where either side can't be evaluated to a real number (e.g. sqrt of a negative number) are skipped
+// points where either side can't be evaluated to a real number (e.g. sqrt of a negative number) are skipped;
+// with sameDomain, a point where only one side is a real number counts as a difference instead
 export const areNumericallyEquivalent = (
   exprA: MathNode,
   exprB: MathNode,
   variables: string[],
-  tolerance: number = 1e-10
+  tolerance: number = 1e-10,
+  { sameDomain = false }: { sameDomain?: boolean } = {}
 ): boolean => {
   const points = getSamplePoints(variables);
   const valuesA = evaluateAtPoints(exprA, points);
   const valuesB = evaluateAtPoints(exprB, points);
+
+  if (sameDomain && valuesA.some((a, i) => Number.isFinite(a) !== Number.isFinite(valuesB[i]))) {
+    return false;
+  }
 
   const compared = valuesA.filter((a, i) => Number.isFinite(a) && Number.isFinite(valuesB[i]));
 

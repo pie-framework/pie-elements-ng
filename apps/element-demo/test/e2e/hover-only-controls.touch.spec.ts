@@ -25,8 +25,9 @@ import { assertTouchEnabled, centerOf, touchTap, waitForSettled } from './touch-
  *   did not open it (the field's textarea took and lost focus, which MUI Tooltip read as the
  *   pointer leaving); that stopped with the move to MathLive (PIE-1470).
  * - hotspot: in evaluate, each shape's correct/incorrect icon shows its text ("Correct", "Incorrect"
- *   and so on) in a Konva tooltip that opens on `mouseenter` only
- *   (hotspot/src/delivery/hotspot/image-konva-tooltip.tsx). Covered below.
+ *   and so on) in a Konva tooltip that opens on `mouseenter` and, for touch, on `tap`
+ *   (hotspot/src/delivery/hotspot/image-konva-tooltip.tsx; PIE-1474). A tap elsewhere on the stage
+ *   closes it. Covered below.
  * - math-templated: its `Tooltip` holds the keypad and is opened by tapping the response, which
  *   `math-keypad.touch.spec.ts` covers. It carries no hover-only content.
  * - charting, fraction-model, categorize, match-list, placement-ordering, image-cloze-association,
@@ -40,8 +41,6 @@ import { assertTouchEnabled, centerOf, touchTap, waitForSettled } from './touch-
  */
 
 type Rect = { x: number; y: number; width: number; height: number };
-
-const JIRA = 'https://illuminate.atlassian.net/browse/';
 
 /**
  * Moves to evaluate as the scorer does on a tablet: by tapping the Scorer toggle.
@@ -102,13 +101,6 @@ test.describe('hover-only controls under touch', () => {
   test.describe('hotspot evaluate icon', () => {
     // Konva draws the icon on a canvas, so a screenshot of the area under it is the only way to see
     // the tooltip: it adds a white tag with text below the icon.
-    const MECHANISM =
-      "The evaluate icon's tooltip opens on Konva's `mouseenter` only " +
-      '(hotspot/src/delivery/hotspot/image-konva-tooltip.tsx: `onMouseEnter`/`onMouseLeave`, no ' +
-      'touch handler). A tap sends `touchstart`/`touchend`, which Konva does not turn into ' +
-      '`mouseenter`, so a scorer on a tablet cannot read why a shape is marked wrong.';
-    const TICKET = 'PIE-1474';
-
     /** The rectangle the spec selects and marks: the demo's second one. */
     const RECTANGLE_ID = '4';
 
@@ -169,7 +161,7 @@ test.describe('hover-only controls under touch', () => {
       const clip = { x: icon.x - 80, y: icon.y - 20, width: 160, height: 90 };
       const base = await settledScreenshot(page, clip);
       const changed = async () => !(await page.screenshot({ clip })).equals(base);
-      return { icon, changed };
+      return { icon, changed, stage };
     }
 
     // The control: it shows the screenshot can see the tooltip and that the icon is where this spec
@@ -181,15 +173,23 @@ test.describe('hover-only controls under touch', () => {
       await expect.poll(changed).toBe(true);
     });
 
-    test.fixme('a tap on the icon shows its tooltip', async ({ page }, testInfo) => {
-      testInfo.annotations.push(
-        { type: 'fixme', description: MECHANISM },
-        { type: 'issue', description: `${JIRA}${TICKET}` }
-      );
+    test('a tap on the icon shows its tooltip', async ({ page }) => {
       const { icon, changed } = await openEvaluate(page);
 
       await touchTap(page, icon);
       await expect.poll(changed).toBe(true);
+    });
+
+    test('a tap elsewhere on the stage closes the tooltip', async ({ page }) => {
+      const { icon, changed, stage } = await openEvaluate(page);
+
+      await touchTap(page, icon);
+      await expect.poll(changed).toBe(true);
+
+      // The stage's top-left corner, well clear of the screenshot area around the icon.
+      const box = await stage();
+      await touchTap(page, { x: box.x + 2, y: box.y + 2 });
+      await expect.poll(changed).toBe(false);
     });
   });
 });

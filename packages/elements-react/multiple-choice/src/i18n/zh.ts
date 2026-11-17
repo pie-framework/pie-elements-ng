@@ -14,4 +14,5 @@ export default {
   partAnswerChoicesA11y: '{partLabel}，答案选项',
   pickTheAnswerBelowA11y: '请选择下面的答案',
   choiceNameA11y: '选项 {key}',
+  eliminatedA11y: '（已划除）',
 } satisfies MessageCatalog;
