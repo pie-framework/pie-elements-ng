@@ -21,6 +21,4 @@ export default {
   pickTheAnswerBelowA11y: 'Pick the answer below',
   /** Visually hidden name of a choice with no text and no image description, from its key or position. */
   choiceNameA11y: 'Choice {key}',
-  /** Visually hidden note after a math choice's name while the answer eliminator has struck it out. */
-  eliminatedA11y: '(eliminated)',
 };

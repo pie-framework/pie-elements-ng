@@ -19,5 +19,4 @@ export default {
   partAnswerChoicesA11y: '{partLabel}، خيارات الإجابة',
   pickTheAnswerBelowA11y: 'اختر الإجابة أدناه',
   choiceNameA11y: 'الخيار {key}',
-  eliminatedA11y: '(مشطوب)',
 } satisfies MessageCatalog;
