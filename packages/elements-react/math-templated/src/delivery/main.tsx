@@ -75,22 +75,36 @@ const InputAndKeypadContainer: any = styled('div')({
   },
 });
 
-const Expression: any = styled('div')(({ theme, $incorrect, $correct, $showCorrectness, $correctAnswerShown }) => ({
-  maxWidth: 'fit-content',
-  ...($incorrect && {
-    borderColor: `${color.incorrect()} !important`,
-  }),
-  ...($correct && {
-    borderColor: `${color.correct()} !important`,
-  }),
-  ...($showCorrectness && {
-    border: '2px solid',
-  }),
-  ...($correctAnswerShown && {
-    padding: theme.spacing(1),
-    letterSpacing: '0.5px',
-  }),
-}));
+const Expression: any = styled('div')(({ theme, $incorrect, $correct, $showCorrectness, $correctAnswerShown }) => {
+  // The correct answer renders as plain latex with no answer box, so the wrapper frames it.
+  // A student's answer renders inside an answer box, which takes the correctness colour
+  // instead, so the response area has one border rather than two.
+  const frameCorrectAnswer = $showCorrectness && $correctAnswerShown;
+  const boxColor =
+    $showCorrectness && !frameCorrectAnswer
+      ? $incorrect
+        ? color.incorrect()
+        : $correct
+          ? color.correct()
+          : undefined
+      : undefined;
+
+  return {
+    maxWidth: 'fit-content',
+    ...(frameCorrectAnswer && {
+      border: `2px solid ${color.correct()}`,
+    }),
+    ...(boxColor && {
+      '& .ML__box': {
+        border: `2px solid ${boxColor} !important`,
+      },
+    }),
+    ...($correctAnswerShown && {
+      padding: theme.spacing(1),
+      letterSpacing: '0.5px',
+    }),
+  };
+});
 
 // Tooltip styling is handled via slotProps, no need for styled component
 
