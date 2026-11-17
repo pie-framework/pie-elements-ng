@@ -81,7 +81,7 @@ Where `itemConfig` includes:
 
 ## Print Element Architecture
 
-**Current Coverage**: Print support is available for 12 out of 30 elements. Print components are being added incrementally as elements are developed.
+**Current Coverage**: Print support is available for 12 out of 31 elements. Print components are being added incrementally as elements are developed.
 
 Each element package can include a print export:
 
