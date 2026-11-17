@@ -6,7 +6,7 @@ This is a modern implementation of the PIE (Platform Independent Elements) speci
 
 **Current Status**:
 
-- 27 React elements ported from the legacy `pie-elements` and 3 Svelte 5 elements built in this repository
+- 27 React elements ported from the legacy `pie-elements` and 4 Svelte 5 elements built in this repository
 - Element and lib packages publish to npm through Changesets and GitHub Actions: `next` prereleases from `develop`, stable releases from `master`
 
 ## Core Philosophy
@@ -46,7 +46,7 @@ This project differs fundamentally from the legacy pie-elements in eight key way
 - **Controllers** are pure TypeScript business logic (completely framework-independent)
 - **UI implementations** can use any framework (React, Svelte, Vue, Angular) as long as they produce web components
 - **Element Player** loads elements via custom element registry, regardless of underlying framework
-- **Current State**: 27 elements use React and 3 use Svelte 5
+- **Current State**: 27 elements use React and 4 use Svelte 5
 
 This architectural flexibility will allow choosing the right framework for each use case (e.g., Svelte for smaller bundles, React for ecosystem compatibility).
 
@@ -1109,9 +1109,3 @@ Use `$bindable` only for true bidirectional flow:
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [WCAG 2.2 Guidelines](https://www.w3.org/WAI/WCAG22/quickref/)
 - [Vite Documentation](https://vitejs.dev/)
-
----
-
-**Document Version**: 1.0
-**Last Updated**: 2025-01-07
-**Status**: Living Document

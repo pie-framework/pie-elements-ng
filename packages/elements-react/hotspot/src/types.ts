@@ -85,6 +85,11 @@ export interface HotspotModel extends PieModel {
   promptEnabled?: boolean;
   /** The image over which hotspots will be drawn */
   imageUrl?: string;
+  /**
+   * Plain text that describes the image, used as its `alt` text. An absent or blank value
+   * describes it by its number of hotspots ("Image with 4 hotspots").
+   */
+  imageAltText?: string;
   /** The shapes/hotspots of the question */
   shapes: Shapes;
   /** Indicates if the item supports multiple correct answers */

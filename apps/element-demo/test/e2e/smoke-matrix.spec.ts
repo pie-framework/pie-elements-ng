@@ -1,4 +1,4 @@
-import { test, type Page } from '@playwright/test';
+import { type Frame, test, type Page } from '@playwright/test';
 import { ELEMENT_REGISTRY } from '../../src/lib/elements/registry';
 import {
   deliveryContainer,
@@ -278,16 +278,25 @@ test.describe('Strategy smoke matrix across PIE elements', () => {
         const consoleMessages: string[] = [];
         const pageErrors: string[] = [];
 
+        // Firefox rejects the outgoing document's in-flight dynamic imports when the next `goto`
+        // starts and the loader logs each one, so only the case's own document counts.
+        let committed = false;
+        const onNavigated = (frame: Frame) => {
+          if (frame === page.mainFrame()) committed = true;
+        };
         const onConsole = (msg: any) => {
+          if (!committed) return;
           const text = msg.text();
           if (!isIgnoredConsole(text)) {
             consoleMessages.push(text);
           }
         };
         const onPageError = (err: Error) => {
+          if (!committed) return;
           pageErrors.push(err.message || String(err));
         };
 
+        page.on('framenavigated', onNavigated);
         page.on('console', onConsole);
         page.on('pageerror', onPageError);
 
@@ -352,6 +361,7 @@ test.describe('Strategy smoke matrix across PIE elements', () => {
             details: err?.message || String(err),
           });
         } finally {
+          page.off('framenavigated', onNavigated);
           page.off('console', onConsole);
           page.off('pageerror', onPageError);
         }

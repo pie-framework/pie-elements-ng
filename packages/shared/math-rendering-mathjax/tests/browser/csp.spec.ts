@@ -103,10 +103,11 @@ for (const build of ['npm', 'browser'] as Build[]) {
     expect(await math(page).getAttribute('data-semantic-speech-none')).toBeNull();
     expect(await violations(page)).toEqual(['worker-src blob']);
     expect(warned).toEqual([expect.stringContaining("MathJax's speech worker did not start")]);
-    // The browser reports the refusal itself.
-    expect(errors).toEqual([
-      expect.stringContaining('violates the following Content Security Policy'),
-    ]);
+    // The browser reports the refusal itself. Each engine words it its own way:
+    // Chromium "…violates the following Content Security Policy", WebKit
+    // "…does not appear in the worker-src directive of the Content Security
+    // Policy", Firefox "blocked a worker script (worker-src) …".
+    expect(errors).toEqual([expect.stringMatching(/Content Security Policy|worker-src/i)]);
     expect(unserved).toEqual([]);
   });
 }

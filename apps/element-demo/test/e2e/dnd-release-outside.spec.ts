@@ -55,7 +55,7 @@ async function drag(page: Page, input: Input, from: Point, to: Point) {
     await page.mouse.up();
   } else {
     const cdp = await page.context().newCDPSession(page);
-    const touch = (type: string, point?: Point) =>
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', point?: Point) =>
       cdp.send('Input.dispatchTouchEvent', {
         type,
         touchPoints: point ? [{ x: Math.round(point.x), y: Math.round(point.y) }] : [],
@@ -122,6 +122,10 @@ test.describe('categorize: releasing a choice outside the element', () => {
 
   for (const input of INPUTS) {
     test.describe(input, () => {
+      test.skip(
+        ({ browserName }) => input === 'touch' && browserName !== 'chromium',
+        'Touch drags go through CDP, which only Chromium has'
+      );
       test.use({ hasTouch: input === 'touch' });
 
       test('a placed choice released above the element goes back to the pool', async ({ page }) => {
@@ -218,6 +222,7 @@ test.describe('categorize: releasing a choice outside the element', () => {
 
   test('keyboard: the tab path runs through the choices until one is selected, then through the targets', async ({
     page,
+    browserName,
   }) => {
     const root = await open(page);
     // Placed by click rather than by drag: a click just after a drag is ignored.
@@ -243,6 +248,10 @@ test.describe('categorize: releasing a choice outside the element', () => {
     await poolChoices.first().click();
     await expect(tabStops).toHaveCount(await targets.count());
     await expect(choices.and(tabStops)).toHaveCount(0);
+    test.fixme(
+      browserName === 'firefox',
+      'Firefox starts Tab from the clicked MathJax glyph, which it cannot resolve, so focus restarts at the top of the page; a keyboard selection is unaffected'
+    );
     await page.keyboard.press('Tab');
     await expect(category(root, 'True')).toBeFocused();
   });
@@ -336,6 +345,10 @@ test.describe('placement-ordering: releasing a tile outside the element', () => 
 
   for (const input of INPUTS) {
     test.describe(input, () => {
+      test.skip(
+        ({ browserName }) => input === 'touch' && browserName !== 'chromium',
+        'Touch drags go through CDP, which only Chromium has'
+      );
       test.use({ hasTouch: input === 'touch' });
 
       test('a first-slot tile released above the element goes back to the pool', async ({

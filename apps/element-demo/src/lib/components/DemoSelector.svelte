@@ -95,8 +95,10 @@ function selectDemo(demoId: string) {
       </div>
     {/if}
 
-    <!-- Dropdown menu -->
+    <!-- Dropdown menu. Focusable so a click in it keeps the dropdown's focus-within: Safari does
+         not focus a clicked button, and the menu would hide on mousedown, before the click. -->
     <ul
+      tabindex="-1"
       class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-96 max-h-[80vh] overflow-y-auto mt-2"
       data-testid="demo-selector-dropdown"
     >

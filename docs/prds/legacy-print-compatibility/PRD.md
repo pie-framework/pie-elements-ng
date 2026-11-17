@@ -44,12 +44,8 @@ A client still running today's unmodified `@pie-framework/pie-print` prints an i
 
 No accessibility surface changes — this PRD only changes how an already-shipped print bundle is packaged for distribution (build output shape and publish path). Rendered DOM, ARIA structure, and print-mode behavior are unchanged; existing per-element print accessibility contracts continue to apply as-is.
 
-## Open questions
-
-- [ ] Does any client's CDN/browser cache need explicit invalidation for versions published _before_ this change ships, or is it acceptable that only new element versions gain the `module/print.js` artifact (older, already-published versions never retroactively get one)?
-- [ ] Should a size budget analogous to `maxBrowserJsBytesPerPackage` in `browser-esm-policy.json` apply to the new `module/print.js` lane, given React/ReactDOM add roughly 40-45 KB gzipped per element?
-
 ## Status log
 
 - Raised as proposal from PIE-647 / PIE-839 discussion.
 - Accepted — scoped explicitly to the elements that already have print support today; implementation started in the same session.
+- Both open questions resolved as shipped: no CDN invalidation is needed — jsDelivr serves each version at its own immutable URL, and versions published before this change never gain `module/print.js`; and the lane ships without a size budget — `maxBrowserJsBytesPerPackage` in `browser-esm-policy.json` covers `dist/browser/*` only, and `module/print.js` exists for the legacy loader, not for byte-tuned delivery.

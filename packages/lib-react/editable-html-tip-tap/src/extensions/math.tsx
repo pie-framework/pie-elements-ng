@@ -5,15 +5,14 @@ import ReactDOM from 'react-dom';
 import { Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
-import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { latexToMml, mmlToLatex, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { latexToMml, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 import { inlineSideOfArrow, isRightToLeft } from '@pie-element/shared-utils';
+import { convertMathMlToLatex } from '../utils/mathml-to-latex.js';
 import { setToolbarOpened } from '../utils/toolbar.js';
 import { TOOLBAR_BACKGROUND } from '../constants.js';
 
-// `\left.` and `\right.` come out of the MathML converter for fences the editor cannot use.
-const EMPTY_FENCE = /\\left\.\s*|\\right\.\s*/g;
+export { convertMathMlToLatex };
 
 // The invisible function-application operator MathJax writes after `\log` and `\sin`, which only adds space.
 const EMPTY_MO = /<mo(?: [^>]*)?>&#x2061;<\/mo>/g;
@@ -29,33 +28,6 @@ const escapeAttribute = (value) =>
 
 const isDisplayMath = (wrapper) =>
   typeof wrapper === 'string' ? wrapper === 'double_dollar' : ['$$', '\\['].includes(wrapper?.open);
-
-/**
- * LaTeX for a MathML string, or null when there is none to give. A converter the page installed,
- * such as the legacy renderer's, answers first; `mmlToLatex` gives the input back when there is
- * none, and then this converts, so the ESM page, which installs only `renderMath`, converts too.
- * The converter belongs here, not in the math adapter: only authoring needs it, and every
- * element's delivery bundle carries the adapter. It answers an empty string for MathML it cannot
- * read and throws on some; neither is LaTeX, and neither may become a math node.
- */
-export const convertMathMlToLatex = (mathMl) => {
-  const input = mathMl.replaceAll('&nbsp;', ' ');
-  let converted = mmlToLatex(input);
-
-  if (converted === input) {
-    try {
-      converted = MathMLToLaTeX.convert(input);
-    } catch {
-      return null;
-    }
-  }
-
-  if (!converted || converted === input) {
-    return null;
-  }
-
-  return converted.replace(EMPTY_FENCE, '') || null;
-};
 
 /**
  * MathML for LaTeX, or null when there is none to give: MathJax has not started, or cannot read the
@@ -622,13 +594,11 @@ export const MathNodeView = (props) => {
     window.addEventListener('scroll', scheduleUpdate, true);
     window.addEventListener('resize', scheduleUpdate);
 
-    // The toolbar can change size while open (keypad mode, custom keys); reposition so it
-    // doesn't grow over the node when it opened above it.
+    // The toolbar can change size while open (keypad mode, custom keys), and the node grows as
+    // the user types; reposition so neither ends up covering the other.
     const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(scheduleUpdate);
 
-    if (toolbarRef.current) {
-      resizeObserver?.observe(toolbarRef.current);
-    }
+    [toolbarRef.current, nodeRef.current].forEach((el) => el && resizeObserver?.observe(el));
 
     return () => {
       if (frame !== null) {

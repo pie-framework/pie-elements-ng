@@ -49,8 +49,12 @@ async function resolveModule(
   if (request.cdnUrl) {
     return import(/* @vite-ignore */ modulePath);
   }
-  // Let Vite resolve local workspace specifiers in ESM mode.
-  return import(/* @vite-ignore */ modulePath);
+  // Let Vite resolve local workspace specifiers in ESM mode. No `@vite-ignore`
+  // here: ignoring the specifier leaves the bare `@pie-element/*` string for the
+  // browser, which cannot resolve it without an import map (all elements fail
+  // with "Failed to resolve module specifier"). See 2611a1fe, and the accidental
+  // revert in 2e73a457 this restores.
+  return import(modulePath);
 }
 
 /**

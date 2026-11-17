@@ -562,18 +562,22 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
       const dragged = await dragAnyCandidateToTarget(page, root, {
+        // The choices are dnd-kit draggables (a DIV with
+        // aria-roledescription="draggable"; no `draggable` attribute, and the
+        // styled-components class names are hashes), and the category drop
+        // zones carry data-category-id.
         sourceSelectors: [
+          '[aria-roledescription="draggable"]',
           '[draggable="true"]',
           '[data-draggable="true"]',
           '[class*="choice"]',
           '[class*="token"]',
-          'button',
         ],
         targetSelectors: [
+          '[data-category-id]',
           '[id*="drop"]',
           '[class*="drop"]',
           '[class*="target"]',
-          '[class*="container"]',
         ],
       });
       if (!dragged) {
@@ -784,7 +788,12 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       const before = await getSessionState(page);
       // The last part shades the whole bar (2/2), an incorrect answer, so evaluate offers the toggle.
       const root = await getDeliveryContainer(page);
-      await root.locator('.recharts-bar-rectangle rect').last().click();
+      const lastPart = root.locator('.recharts-bar-rectangle rect').last();
+      // Hovering re-renders the bars, replacing their nodes; when that lands between mousedown and
+      // mouseup, Firefox fires no click. Let the hover render settle first.
+      await lastPart.hover();
+      await expect(lastPart).not.toHaveAttribute('fill', '#FFFFFF');
+      await lastPart.click();
       await expect.poll(() => getSessionState(page)).not.toEqual(before);
     },
     assertEvaluateShowsCorrectAnswers: async (page) => {
@@ -803,21 +812,17 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
       const dragged = await dragAnyCandidateToTarget(page, root, {
+        // dnd-kit draggables again: the pool choices carry a data-tile-id with
+        // a `:choice-` segment, and the response-area droppables a
+        // `:target-prompt-<id>` one. The styled-components class names are
+        // hashes, so class-substring selectors match nothing.
         sourceSelectors: [
+          '[data-tile-id*=":choice-"]',
+          '[aria-roledescription="draggable"]',
           '[draggable="true"]',
           '[data-draggable="true"]',
-          '[class*="choice"]',
-          '[class*="token"]',
-          '[class*="option"]',
-          'button',
         ],
-        targetSelectors: [
-          '[id*="drop"]',
-          '[class*="drop"]',
-          '[class*="target"]',
-          '[class*="blank"]',
-          '[class*="container"]',
-        ],
+        targetSelectors: ['[data-tile-id*=":target-prompt"]', '[id*="drop"]', '[class*="drop"]'],
       });
       if (!dragged) {
         const fallback = root.locator('button, [role="button"]').first();

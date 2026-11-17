@@ -11,7 +11,7 @@ import { isEqual } from '@pie-element/shared-lodash';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 
-import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input-mathlive';
+import { HorizontalKeypad, KEYPAD_ATTRIBUTE, mq, updateSpans } from '@pie-lib/math-input-mathlive';
 import { color } from '@pie-lib/render-ui';
 import { markFractionBaseSuperscripts } from './utils.js';
 
@@ -213,6 +213,12 @@ const StyledHr: any = styled('hr')(({ theme }) => ({
   border: 'none',
   borderBottom: `solid 1px ${theme.palette.primary.main}`,
 }));
+
+// Groups the "+ Response Area" button with the keypad for keyboard typing, and draws no box of its
+// own, so the toolbar lays them out as before.
+const KeypadGroup: any = styled('div')({
+  display: 'contents',
+});
 
 const KeyboardContainer: any = styled(HorizontalKeypad)(({ mode }) => ({
   ...commonMqKeyboardStyles,
@@ -484,28 +490,31 @@ export class EditorAndPad extends React.Component {
             />
           </InputContainerDiv>
         </InputAndTypeContainer>
-        {allowAnswerBlock && (
-          <AddAnswerBlockButton
-            type="primary"
-            style={{ bottom: shouldShowKeypad ? '320px' : '20px' }}
-            onClick={this.onAnswerBlockClick}
-            disabled={addDisabled}
-          >
-            + Response Area
-          </AddAnswerBlockButton>
-        )}
-        <StyledHr />
-        {shouldShowKeypad && (
-          <KeyboardContainer
-            mode={controlledKeypadMode ? this.state.equationEditor : keypadMode}
-            controlledKeypadMode={controlledKeypadMode}
-            layoutForKeyPad={layoutForKeyPad}
-            additionalKeys={additionalKeys}
-            onClick={this.onClick}
-            noDecimal={noDecimal}
-            setKeypadInteraction={setKeypadInteraction}
-          />
-        )}
+        {/* One keypad for the editor's keyboard typing: Tab reaches the button before the keys. */}
+        <KeypadGroup {...{ [KEYPAD_ATTRIBUTE]: '' }}>
+          {allowAnswerBlock && (
+            <AddAnswerBlockButton
+              type="primary"
+              style={{ bottom: shouldShowKeypad ? '320px' : '20px' }}
+              onClick={this.onAnswerBlockClick}
+              disabled={addDisabled}
+            >
+              + Response Area
+            </AddAnswerBlockButton>
+          )}
+          <StyledHr />
+          {shouldShowKeypad && (
+            <KeyboardContainer
+              mode={controlledKeypadMode ? this.state.equationEditor : keypadMode}
+              controlledKeypadMode={controlledKeypadMode}
+              layoutForKeyPad={layoutForKeyPad}
+              additionalKeys={additionalKeys}
+              onClick={this.onClick}
+              noDecimal={noDecimal}
+              setKeypadInteraction={setKeypadInteraction}
+            />
+          )}
+        </KeypadGroup>
       </MathToolbarContainer>
     );
   }

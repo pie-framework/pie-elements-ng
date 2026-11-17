@@ -524,7 +524,3 @@ document.addEventListener('keydown', (e) => {
 ## See Also
 
 - [README.md](../README.md) - Getting started guide
-
----
-
-**Last Updated**: 2025-01-08

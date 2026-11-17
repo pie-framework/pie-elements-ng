@@ -237,7 +237,12 @@ test.describe('Video Stimulus (Svelte 5) media failures', () => {
 test.describe('Video Stimulus (Svelte 5) keyboard and layout', () => {
   test('operates by keyboard without stealing focus or adding global shortcuts', async ({
     page,
+    browserName,
   }) => {
+    test.skip(
+      browserName === 'webkit',
+      "Safari's default Tab order skips buttons, and WebKit's native controls ignore Space on a focused video"
+    );
     await openVideoStimulus(page);
     const nativeVideo = video(page);
     const within = await player(page).evaluate((host) => host.contains(document.activeElement));

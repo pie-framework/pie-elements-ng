@@ -455,8 +455,6 @@ ESM and IIFE together). Preloaded flows are covered in `pie-players`.
   runtime and npm package contract.
 - [`PUBLISHING.md`](PUBLISHING.md) explains release routing and publish-time
   verification.
-- [`IIFE-BUNDLE-ARCHITECTURE.md`](IIFE-BUNDLE-ARCHITECTURE.md) gives deeper
-  background on legacy shared-library IIFE bundling.
 - [`DEMO_SYSTEM.md`](DEMO_SYSTEM.md) explains how the demo app loads package
   artifacts during development.
 - [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) explains how the print bundle is built

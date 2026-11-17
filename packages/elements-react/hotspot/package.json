@@ -15,7 +15,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-element/shared-i18n": "workspace:*",
-    "konva": "8.3.0",
+    "konva": "10.9.1",
     "prop-types": "^15.8.1",
     "react-konva": "^18.2.14",
     "@pie-element/shared-lodash": "workspace:*",
@@ -90,7 +90,7 @@
   "devDependencies": {
     "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.2.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/debug": "^4.1.12",

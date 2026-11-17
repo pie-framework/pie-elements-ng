@@ -54,7 +54,7 @@ Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside d
 
 **Theming**:
 
-The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-theme CSS variables per [`docs/THEMING.md`](../../THEMING.md) (`--pie-primary-*`, `--pie-secondary-*`, `--pie-correct`, `--pie-incorrect`, etc.). **v1 delivery in this repo still uses fixed palette values in component CSS** (not yet wired to `--pie-*` tokens end-to-end); treating token wiring as a follow-up keeps the first delivery milestone shippable without blocking on theme package integration.
+The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-theme CSS variables per [`docs/THEMING.md`](../../THEMING.md) (`--pie-primary-*`, `--pie-secondary-*`, `--pie-correct`, `--pie-incorrect`, etc.). Delivery in this repo reads those tokens end-to-end (`var(--pie-*)` throughout `src/delivery/VennClassification.svelte`), with the authored hex palette kept only as fallback values for pages that set no theme.
 
 **Key delivery interactions**:
 
