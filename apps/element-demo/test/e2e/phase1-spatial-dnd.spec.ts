@@ -209,9 +209,16 @@ async function waitForHostSessionMutation(
 }
 
 async function interactPlacementOrdering(page: Page, root: Locator) {
-  const draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+  // An item without response areas has no draggable role: its objects are dragged from their move buttons
+  let draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+  let moveButtons = false;
+  if ((await draggables.count()) < 2) {
+    draggables = root.locator('button[data-move]');
+    moveButtons = true;
+  }
   if ((await draggables.count()) >= 2) {
-    await dragBetween(page, draggables.nth(0), draggables.nth(1));
+    // With move buttons, drag to the last one so the object crosses the others
+    await dragBetween(page, draggables.first(), moveButtons ? draggables.last() : draggables.nth(1));
     await page.waitForTimeout(300);
     return;
   }

@@ -387,7 +387,7 @@ export class PlacementOrdering extends React.Component {
   focusMoveButton: any = (id, delta) => {
     const side = delta < 0 ? 'earlier' : 'later';
     const other = delta < 0 ? 'later' : 'earlier';
-    const tile = `[data-tile-id="${this.instanceId}:choice-${id}"]`;
+    const tile = `[data-tile-id="${CSS.escape(`${this.instanceId}:choice-${id}`)}"]`;
 
     this.focusWhenCommitted(
       (root) => root.querySelector(`${tile} [data-move="${side}"]`) || root.querySelector(`${tile} [data-move="${other}"]`),
@@ -472,6 +472,11 @@ export class PlacementOrdering extends React.Component {
         this.announce(cancelledMessage(this.getI18n(), draggedItem, getCounts(ordering.tiles)));
       }
     }
+
+    // A drag of an object with move buttons hid them, which blurred the focused one: give focus back to them
+    if (active?.data.current?.moveAxis) {
+      this.focusMoveButton(active.data.current.id, 1);
+    }
   };
 
   onDragStart: any = (event) => {
@@ -492,7 +497,7 @@ export class PlacementOrdering extends React.Component {
     }
   };
 
-  onDragCancel: any = () => {
+  onDragCancel: any = (event) => {
     const { selectedChoice } = this.state;
     this.dragLive = false;
 
@@ -503,6 +508,10 @@ export class PlacementOrdering extends React.Component {
     this.setState({ draggedTile: null });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
+
+    if (event?.active?.data.current?.moveAxis) {
+      this.focusMoveButton(event.active.data.current.id, 1);
+    }
   };
 
   // The translator for the item's language, as of now: announcements are made as the answer changes.

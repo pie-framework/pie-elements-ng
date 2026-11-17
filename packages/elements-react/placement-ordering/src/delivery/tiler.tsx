@@ -108,7 +108,8 @@ const buildTiles = (props) => {
         };
       }
 
-      return <Tile {...tile} key={index} />;
+      // Keyed by choice, so a move keeps each object's buttons with it and the focused one is not renamed
+      return <Tile {...tile} key={props.onMove ? `choice-${tile.id}` : index} />;
     } else {
       return <Tile {...tile} label="" key={index} />;
     }

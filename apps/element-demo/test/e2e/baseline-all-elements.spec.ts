@@ -699,12 +699,19 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
-      const draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+      // An item without response areas has no draggable role: its objects are moved, and dragged, by their buttons
+      let draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+      let moveButtons = false;
+      if ((await draggables.count()) < 2) {
+        draggables = root.locator('button[data-move]');
+        moveButtons = true;
+      }
       if ((await draggables.count()) < 2) {
         throw new Error('placement-ordering gather: insufficient draggable controls');
       }
       const before = await getSessionState(page);
-      await dragBetween(page, draggables.nth(0), draggables.nth(1));
+      // With move buttons, drag to the last one so the object crosses the others
+      await dragBetween(page, draggables.first(), moveButtons ? draggables.last() : draggables.nth(1));
       await page.waitForTimeout(400);
       const after = await getSessionState(page);
       if (JSON.stringify(before ?? {}) === JSON.stringify(after ?? {})) {

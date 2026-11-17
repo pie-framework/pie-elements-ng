@@ -211,6 +211,8 @@ const StyledMoveButton: any = styled('button')(({ theme, vertical, earlier }) =>
     margin: 0,
     ...(vertical ? { width: MOVE_BUTTON_SIZE } : { height: MOVE_BUTTON_SIZE }),
     cursor: 'pointer',
+    // A touch that starts on a strip drags the object, so the browser must not take it for a pan
+    touchAction: 'none',
     color: color.text(),
     backgroundColor: color.backgroundDark(),
     border: `1px solid ${color.borderLight()}`,
