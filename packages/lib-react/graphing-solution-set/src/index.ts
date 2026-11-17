@@ -4,6 +4,7 @@ import Graph from './graph.js';
 import GraphContainer from './container/index.js';
 import GridSetup from './grid-setup.js';
 import * as tools from './tools/index.js';
+import KeyLegend from './key-legend.js';
 import ToolMenu from './tool-menu.js';
 
-export { Graph, GraphContainer, GridSetup, ToolMenu, tools };
+export { Graph, GraphContainer, GridSetup, KeyLegend, ToolMenu, tools };

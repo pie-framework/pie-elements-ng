@@ -19,4 +19,19 @@ export default {
   solutionSet: 'Mulțimea soluțiilor',
   solid: 'Continuă',
   dashed: 'Întreruptă',
+  lineStyleCorrect: 'Stilul dreptei corect: {style}',
+  lineStyleIncorrect: 'Stilul dreptei greșit: trasată {drawn}, așteptată {expected}',
+  regionVerdict: {
+    correct: 'Regiune hașurată corectă',
+    incorrect: 'Regiune hașurată greșită',
+    missing: 'Regiune hașurată din barem, nehașurată',
+  },
+  key: 'Legendă',
+  keyLegend: {
+    studentCorrect: 'Răspuns corect al elevului',
+    studentIncorrect: 'Răspuns greșit al elevului',
+    answerKeyCorrect: 'Corect conform baremului',
+    lineStyleCorrect: 'Stilul dreptei corect',
+    lineStyleIncorrect: 'Stilul dreptei greșit',
+  },
 } satisfies MessageCatalog;

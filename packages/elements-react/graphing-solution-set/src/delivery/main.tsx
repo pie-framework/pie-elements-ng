@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { GraphContainer } from '@pie-lib/graphing-solution-set';
+import { GraphContainer, KeyLegend } from '@pie-lib/graphing-solution-set';
 import { color, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -257,6 +257,7 @@ export class Main extends React.Component {
       range,
       rationale,
       size,
+      showKeyLegend,
       showToggle,
       title,
       titleEnabled,
@@ -331,6 +332,7 @@ export class Main extends React.Component {
             toolbarTools={['line', 'polygon']}
           />
         )}
+        {showKeyLegend && !showingCorrect && <KeyLegend language={language} />}
         {showRationale && (
           <Collapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={rationale} />

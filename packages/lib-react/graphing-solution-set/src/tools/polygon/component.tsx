@@ -10,6 +10,7 @@ import { types } from '@pie-lib/plot';
 import invariant from 'invariant';
 import ReactDOM from 'react-dom';
 import MarkLabel from '../../mark-label.js';
+import RegionVerdict from '../shared/region-verdict.js';
 import { equalPoints, getMiddleOfTwoPoints, getRightestPoints } from '../../utils.js';
 
 const log = debug('pie-lib:graphing-solution-set:polygon');
@@ -210,6 +211,7 @@ export class RawBaseComponent extends React.Component {
       labelNode,
       labelModeEnabled,
       language,
+      correctness,
       isSolution = false,
     } = this.props;
     const polygonLabelIndex = (points && points.length) || 0;
@@ -235,9 +237,11 @@ export class RawBaseComponent extends React.Component {
             points={points}
             closed={closed}
             isSolution={isSolution}
+            correctness={correctness}
             graphProps={graphProps}
             onClick={this.clickPoint.bind(this, middle, polygonLabelIndex)}
           />
+          {correctness && <RegionVerdict points={points} correctness={correctness} graphProps={graphProps} language={language} />}
           {polygonLabelNode}
         </React.Fragment>
       </g>

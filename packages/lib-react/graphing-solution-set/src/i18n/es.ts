@@ -18,4 +18,19 @@ export default {
   solutionSet: 'Conjunto solución',
   solid: 'Continua',
   dashed: 'Discontinua',
+  lineStyleCorrect: 'Estilo de línea correcto: {style}',
+  lineStyleIncorrect: 'Estilo de línea incorrecto: dibujada {drawn}, esperada {expected}',
+  regionVerdict: {
+    correct: 'Región sombreada correcta',
+    incorrect: 'Región sombreada incorrecta',
+    missing: 'Región sombreada en la clave de respuesta, no sombreada',
+  },
+  key: 'Clave',
+  keyLegend: {
+    studentCorrect: 'Respuesta correcta del estudiante',
+    studentIncorrect: 'Respuesta incorrecta del estudiante',
+    answerKeyCorrect: 'Clave de respuesta correcta',
+    lineStyleCorrect: 'Estilo de línea correcto',
+    lineStyleIncorrect: 'Estilo de línea incorrecto',
+  },
 } satisfies MessageCatalog;

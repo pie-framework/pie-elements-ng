@@ -18,4 +18,19 @@ export default {
   solutionSet: 'Solution Set',
   solid: 'Solid',
   dashed: 'Dashed',
+  lineStyleCorrect: 'Line style correct: {style}',
+  lineStyleIncorrect: 'Line style incorrect: drawn {drawn}, expected {expected}',
+  regionVerdict: {
+    correct: 'Shaded region correct',
+    incorrect: 'Shaded region incorrect',
+    missing: 'Shaded region in the answer key, not shaded',
+  },
+  key: 'Key',
+  keyLegend: {
+    studentCorrect: 'Student Correct',
+    studentIncorrect: 'Student Incorrect',
+    answerKeyCorrect: 'Answer Key Correct',
+    lineStyleCorrect: 'Line Style Correct',
+    lineStyleIncorrect: 'Line Style Incorrect',
+  },
 } satisfies MessageCatalog;

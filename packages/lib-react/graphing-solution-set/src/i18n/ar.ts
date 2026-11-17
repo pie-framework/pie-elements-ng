@@ -22,4 +22,19 @@ export default {
   solutionSet: 'مجموعة الحل',
   solid: 'متصل',
   dashed: 'متقطع',
+  lineStyleCorrect: 'نمط المستقيم صحيح: {style}',
+  lineStyleIncorrect: 'نمط المستقيم غير صحيح: المرسوم {drawn}، والمتوقع {expected}',
+  regionVerdict: {
+    correct: 'المنطقة المظللة صحيحة',
+    incorrect: 'المنطقة المظللة غير صحيحة',
+    missing: 'منطقة مظللة في مفتاح الإجابة لم تُظلَّل',
+  },
+  key: 'مفتاح الرموز',
+  keyLegend: {
+    studentCorrect: 'إجابة الطالب الصحيحة',
+    studentIncorrect: 'إجابة الطالب غير الصحيحة',
+    answerKeyCorrect: 'صحيح وفق مفتاح الإجابة',
+    lineStyleCorrect: 'نمط المستقيم صحيح',
+    lineStyleIncorrect: 'نمط المستقيم غير صحيح',
+  },
 } satisfies MessageCatalog;

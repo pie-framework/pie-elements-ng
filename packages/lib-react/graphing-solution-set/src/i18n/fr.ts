@@ -19,4 +19,19 @@ export default {
   solutionSet: 'Ensemble des solutions',
   solid: 'Continue',
   dashed: 'Pointillée',
+  lineStyleCorrect: 'Style de droite correct : {style}',
+  lineStyleIncorrect: 'Style de droite incorrect : tracée {drawn}, attendue {expected}',
+  regionVerdict: {
+    correct: 'Zone ombrée correcte',
+    incorrect: 'Zone ombrée incorrecte',
+    missing: 'Zone ombrée du corrigé, non ombrée',
+  },
+  key: 'Légende',
+  keyLegend: {
+    studentCorrect: "Réponse correcte de l'élève",
+    studentIncorrect: "Réponse incorrecte de l'élève",
+    answerKeyCorrect: 'Correct selon le corrigé',
+    lineStyleCorrect: 'Style de droite correct',
+    lineStyleIncorrect: 'Style de droite incorrect',
+  },
 } satisfies MessageCatalog;

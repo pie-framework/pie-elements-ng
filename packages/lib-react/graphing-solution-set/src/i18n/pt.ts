@@ -19,4 +19,19 @@ export default {
   solutionSet: 'Conjunto solução',
   solid: 'Contínua',
   dashed: 'Tracejada',
+  lineStyleCorrect: 'Estilo da reta correto: {style}',
+  lineStyleIncorrect: 'Estilo da reta incorreto: desenhada {drawn}, esperada {expected}',
+  regionVerdict: {
+    correct: 'Região sombreada correta',
+    incorrect: 'Região sombreada incorreta',
+    missing: 'Região sombreada do gabarito, não sombreada',
+  },
+  key: 'Legenda',
+  keyLegend: {
+    studentCorrect: 'Resposta correta do estudante',
+    studentIncorrect: 'Resposta incorreta do estudante',
+    answerKeyCorrect: 'Correto segundo o gabarito',
+    lineStyleCorrect: 'Estilo da reta correto',
+    lineStyleIncorrect: 'Estilo da reta incorreto',
+  },
 } satisfies MessageCatalog;

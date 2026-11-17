@@ -18,4 +18,19 @@ export default {
   solutionSet: 'Oplossingsverzameling',
   solid: 'Doorgetrokken',
   dashed: 'Gestreept',
+  lineStyleCorrect: 'Lijnstijl juist: {style}',
+  lineStyleIncorrect: 'Lijnstijl onjuist: getekend {drawn}, verwacht {expected}',
+  regionVerdict: {
+    correct: 'Gearceerd gebied juist',
+    incorrect: 'Gearceerd gebied onjuist',
+    missing: 'Gearceerd gebied volgens de antwoordsleutel, niet gearceerd',
+  },
+  key: 'Legenda',
+  keyLegend: {
+    studentCorrect: 'Juist antwoord van de leerling',
+    studentIncorrect: 'Onjuist antwoord van de leerling',
+    answerKeyCorrect: 'Juist volgens de antwoordsleutel',
+    lineStyleCorrect: 'Lijnstijl juist',
+    lineStyleIncorrect: 'Lijnstijl onjuist',
+  },
 } satisfies MessageCatalog;

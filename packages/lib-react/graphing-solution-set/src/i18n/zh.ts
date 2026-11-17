@@ -17,4 +17,19 @@ export default {
   solutionSet: '解集',
   solid: '实线',
   dashed: '虚线',
+  lineStyleCorrect: '线型正确：{style}',
+  lineStyleIncorrect: '线型错误：所画为{drawn}，应为{expected}',
+  regionVerdict: {
+    correct: '阴影区域正确',
+    incorrect: '阴影区域错误',
+    missing: '标准答案中的阴影区域，未涂阴影',
+  },
+  key: '图例',
+  keyLegend: {
+    studentCorrect: '学生正确答案',
+    studentIncorrect: '学生错误答案',
+    answerKeyCorrect: '标准答案',
+    lineStyleCorrect: '线型正确',
+    lineStyleIncorrect: '线型错误',
+  },
 } satisfies MessageCatalog;

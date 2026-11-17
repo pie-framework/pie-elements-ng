@@ -22,4 +22,19 @@ export default {
   solutionSet: 'Set datrysiadau',
   solid: 'Di-dor',
   dashed: 'Toredig',
+  lineStyleCorrect: 'Arddull llinell gywir: {style}',
+  lineStyleIncorrect: 'Arddull llinell anghywir: tynnwyd {drawn}, disgwylid {expected}',
+  regionVerdict: {
+    correct: "Ardal wedi'i lliwio'n gywir",
+    incorrect: "Ardal wedi'i lliwio'n anghywir",
+    missing: "Ardal wedi'i lliwio yn y cynllun marcio, heb ei lliwio",
+  },
+  key: 'Allwedd',
+  keyLegend: {
+    studentCorrect: 'Ateb cywir y myfyriwr',
+    studentIncorrect: 'Ateb anghywir y myfyriwr',
+    answerKeyCorrect: 'Cywir yn ôl y cynllun marcio',
+    lineStyleCorrect: 'Arddull llinell gywir',
+    lineStyleIncorrect: 'Arddull llinell anghywir',
+  },
 } satisfies MessageCatalog;
