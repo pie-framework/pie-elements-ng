@@ -47,19 +47,40 @@ const INSTALLED = {
   'node_modules/@scope/bare/index.js': 'export const bare = () => "bare";\n',
 };
 
-async function buildFixture(entries: Record<string, string>): Promise<string> {
+// Third-party code copied into the fixture's own sources, under copied/, with its notice beside it.
+const COPIED = {
+  'copied/parser.js': 'export const parse = (text) => text.trim();\n',
+  'copied-lib.LICENSE': 'Copyright Copied Lib Authors\n\nApache License text\n',
+};
+
+const copiedLib = (root: string) => [
+  {
+    sources: join(root, 'copied'),
+    name: 'copied-lib',
+    version: '2.0.0',
+    license: 'Apache-2.0',
+    licenseFile: join(root, 'copied-lib.LICENSE'),
+  },
+];
+
+async function buildFixture(
+  entries: Record<string, string>,
+  copied?: (root: string) => ReturnType<typeof copiedLib>
+): Promise<string> {
   const root = await fixture({
     ...INSTALLED,
+    ...COPIED,
     'package.json': '{"type":"module"}',
     'first.js': 'import { licensed } from "licensed";\nexport default licensed();\n',
     'second.js': 'import { bare } from "@scope/bare";\nexport default bare();\n',
     'own.js': 'export default "own";\n',
+    'uses-copied.js': 'import { parse } from "./copied/parser.js";\nexport default parse(" x ");\n',
   });
   await build({
     root,
     configFile: false,
     logLevel: 'silent',
-    plugins: [thirdPartyLicenses()],
+    plugins: [thirdPartyLicenses({ copied: copied?.(root) })],
     build: {
       outDir: 'dist',
       emptyOutDir: true,
@@ -102,6 +123,23 @@ describe('third-party license notices plugin', () => {
       readFile(join(root, 'dist', 'own.THIRD_PARTY_LICENSES.txt'), 'utf8')
     ).rejects.toThrow();
   });
+
+  it('writes the notice of third-party code copied into the sources when the build bundles it', async () => {
+    const root = await buildFixture({ copy: 'uses-copied.js' }, copiedLib);
+    const text = await readFile(join(root, 'dist', 'copy.THIRD_PARTY_LICENSES.txt'), 'utf8');
+
+    expect([...noticedPackageNames(text)]).toEqual(['copied-lib']);
+    expect(text).toContain('copied-lib@2.0.0\nLicense: Apache-2.0');
+    expect(text).toContain('Copyright Copied Lib Authors\n\nApache License text');
+  });
+
+  it('leaves the notice of copied code out of a build that does not bundle it', async () => {
+    const root = await buildFixture({ own: 'own.js' }, copiedLib);
+
+    await expect(
+      readFile(join(root, 'dist', 'own.THIRD_PARTY_LICENSES.txt'), 'utf8')
+    ).rejects.toThrow();
+  });
 });
 
 describe('third-party notices from other builds', () => {
@@ -129,6 +167,21 @@ describe('third-party notices from other builds', () => {
 
     expect([...noticedPackageNames(covered.text ?? '')]).toEqual(['licensed']);
     expect(thirdPartyNotices([vendored]).unattributed).toEqual([vendored]);
+  });
+
+  it('carries the notice of code another workspace build copied into its sources', async () => {
+    const root = await fixture({
+      ...COPIED,
+      'lib/package.json': '{"name":"lib"}',
+      'lib/dist/index.js': 'export {};\n',
+    });
+    // the notices the plugin writes for lib's own build, which bundles its copy of copied-lib
+    const own = thirdPartyNotices([join(root, 'copied/parser.js')], copiedLib(root));
+    await writeFile(join(root, 'lib/dist/THIRD_PARTY_LICENSES.txt'), own.text ?? '');
+
+    const consumer = thirdPartyNotices([join(root, 'lib/dist/index.js')]);
+
+    expect([...noticedPackageNames(consumer.text ?? '')]).toEqual(['copied-lib']);
   });
 });
 

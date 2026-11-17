@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { Plugin } from 'vite';
 
@@ -14,6 +14,43 @@ const HEADING = /^={80}\n(?=[^\n]+@[^\n]+\nLicense: )/m;
 const LICENSE_FILE = /^(?:licen[cs]e|copying|notice)(?:[.-]|$)/i;
 
 type Notice = { key: string; text: string };
+
+/**
+ * Third-party code copied into a package's own sources, which its path can't tell from first-party
+ * code: a build that bundles a file under `sources` carries the notice of `name@version`, with the
+ * copyright notices and license text that `licenseFile` holds.
+ */
+export type CopiedCode = {
+  sources: string;
+  name: string;
+  version: string;
+  license: string;
+  licenseFile: string;
+};
+
+const formatNotice = (key: string, license: string, body: string): Notice => ({
+  key,
+  text: `${RULE}\n${key}\nLicense: ${license}\n${'-'.repeat(80)}\n${body}\n`,
+});
+
+const toPosixDirectory = (dir: string): string => dir.replace(/\\/g, '/').replace(/\/$/, '');
+
+// Vite names a module by its real path, so `sources` matches by its real path as well as as given:
+// a symlinked checkout or macOS's /var -> /private/var would otherwise never match.
+const directoriesOf = (sources: string): string[] => {
+  const given = toPosixDirectory(sources);
+  try {
+    const real = toPosixDirectory(realpathSync(sources));
+    return real === given ? [given] : [given, real];
+  } catch {
+    return [given];
+  }
+};
+
+const isUnder = (file: string, dir: string): boolean => file === dir || file.startsWith(`${dir}/`);
+
+const copiedNotice = ({ name, version, license, licenseFile }: CopiedCode): Notice =>
+  formatNotice(`${name}@${version}`, license, readFileSync(licenseFile, 'utf-8').trim());
 
 /** The root directory of the installed package that `file` belongs to, or null for first-party code. */
 export const installedPackageRoot = (file: string): string | null => {
@@ -52,7 +89,7 @@ const noticeOf = (root: string): Notice => {
     texts.length > 0
       ? texts.join('\n\n')
       : `${manifest.name} ships no license file. Its package.json declares ${license}${author ? ` and names ${author} as author` : ''}.`;
-  return { key, text: `${RULE}\n${key}\nLicense: ${license}\n${'-'.repeat(80)}\n${body}\n` };
+  return formatNotice(key, license, body);
 };
 
 const parseNotices = (text: string): Notice[] =>
@@ -99,21 +136,30 @@ export const noticesCovering = (
 };
 
 /**
- * The notices for code taken from `files`: each installed package's license files, and the notices
- * of any other workspace package's build output that `files` bundles. `text` is null when every
- * file is first-party. `unattributed` lists the files copied out of an installed package (another
- * build's `dist/node_modules/...`) that no notices file covers.
+ * The notices for code taken from `files`: each installed package's license files, the notice of
+ * any third-party code `copied` into the package's own sources, and the notices of any other
+ * workspace package's build output that `files` bundles. `text` is null when every file is
+ * first-party. `unattributed` lists the files copied out of an installed package (another build's
+ * `dist/node_modules/...`) that no notices file covers.
  */
 export const thirdPartyNotices = (
-  files: Iterable<string>
+  files: Iterable<string>,
+  copied: readonly CopiedCode[] = []
 ): { text: string | null; unattributed: string[] } => {
   const notices = new Map<string, string>();
   const roots = new Set<string>();
   const covering = new Set<string>();
+  const copies = new Set<CopiedCode>();
   const unattributed: string[] = [];
   const installed = new Map<string, boolean>();
   const byDir = new Map<string, string | null>();
+  const copiedDirs = copied.map((copy) => ({ copy, dirs: directoriesOf(copy.sources) }));
   for (const file of files) {
+    const copy = copiedDirs.find(({ dirs }) => dirs.some((dir) => isUnder(file, dir)))?.copy;
+    if (copy) {
+      copies.add(copy);
+      continue;
+    }
     const root = installedPackageRoot(file);
     if (root && !installed.has(root)) installed.set(root, existsSync(join(root, 'package.json')));
     if (root && installed.get(root)) {
@@ -126,6 +172,10 @@ export const thirdPartyNotices = (
   }
   for (const root of roots) {
     const notice = noticeOf(root);
+    notices.set(notice.key, notice.text);
+  }
+  for (const copy of copies) {
+    const notice = copiedNotice(copy);
     notices.set(notice.key, notice.text);
   }
   for (const path of covering) {
@@ -148,8 +198,15 @@ const sourceFile = (id: string): string | null => {
   return path.startsWith('/') ? path : null;
 };
 
-/** Emits the notices file of every build that bundles code from installed packages. */
-export const thirdPartyLicenses = (): Plugin => ({
+/**
+ * Emits the notices file of every build that bundles code from installed packages, or third-party
+ * code `copied` into the package's own sources.
+ */
+export const thirdPartyLicenses = ({
+  copied = [],
+}: {
+  copied?: readonly CopiedCode[];
+} = {}): Plugin => ({
   name: 'pie-third-party-licenses',
   generateBundle(_options, bundle) {
     const files = new Set<string>();
@@ -168,7 +225,7 @@ export const thirdPartyLicenses = (): Plugin => ({
         }
       }
     }
-    const { text: source, unattributed } = thirdPartyNotices(files);
+    const { text: source, unattributed } = thirdPartyNotices(files, copied);
     if (unattributed.length > 0) {
       this.error(
         `bundles code copied from installed packages that no ${NOTICES_FILE} covers; rebuild the package that ships it:\n${unattributed.join('\n')}`
