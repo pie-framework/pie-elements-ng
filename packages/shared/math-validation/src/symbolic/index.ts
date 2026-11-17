@@ -5,7 +5,11 @@ import { sort } from '../node-sort.js';
 import { simplify } from './simplify.js';
 import { compareEquations } from './compare-equations.js';
 import { compareCompoundInequations } from './compare-compound-inequations.js';
-import { hasVariableDenominator, isTooLargeToExpand } from './expansion.js';
+import {
+  hasVariableDenominator,
+  hasVariableExponentOfSum,
+  isTooLargeToExpand,
+} from './expansion.js';
 import { areNumericallyEquivalent, getVariables } from './utils.js';
 
 const m: any = mathjs;
@@ -123,6 +127,8 @@ const normalize = (
 ) => {
   const snapped = snapTrigonometricValues(a);
   let r: string | MathNode | any = snapped.r;
+  // whether this side was left unexpanded
+  let unexpanded = !expansion.expand;
 
   // simplify and rationalize treat Infinity as a variable (1 / Infinity + 3 becomes (1 + 3 * Infinity) / Infinity)
   // and keep the sign of a division by zero, so a constant expression with an Infinity or a division by zero is evaluated before it is normalized;
@@ -175,6 +181,7 @@ const normalize = (
             // checked after simplify, which can turn an exponent such as 8+0x into 8
             const simplified = simplify(arg);
             if (isTooLargeToExpand(simplified)) {
+              unexpanded = true;
               expansion.skipped = true;
             } else {
               arg = rationalize(simplified, {}, true).expression;
@@ -194,6 +201,7 @@ const normalize = (
       onlyConstant = false;
       // checked again here: the arguments were simplified above
       if (isTooLargeToExpand(r)) {
+        unexpanded = true;
         expansion.skipped = true;
       } else {
         r = rationalize(r, {}, true).expression;
@@ -205,7 +213,12 @@ const normalize = (
     r.params = r.params.map((param: any) => sort(simplify(param)));
   }
 
-  if (!containsArrayNode && !onlyConstant) {
+  // rationalize multiplies a quotient out before simplify sees it, so simplify never cancels a factor such
+  // as x-1 in (x-1)(x+1)^8/(x-1): an unexpanded quotient must not be cancelled either, since whether
+  // a removable hole matches is an open decision (PIE-1465)
+  const keepsQuotient = unexpanded && isPlainExpression(r) && hasVariableDenominator(r);
+
+  if (!containsArrayNode && !onlyConstant && !keepsQuotient) {
     // overcome TypeError
     try {
       r = simplify(r);
@@ -364,17 +377,17 @@ export const isMathEqual = (a: any, b: any) => {
     }
   }
 
-  // not multiplied out, only their values can show that two expressions are equal
+  // not multiplied out, only their values can show that two expressions are equal, at points where
+  // both sides are defined or neither is
   if (
     expansion.skipped &&
-    isPlainExpression(as) &&
-    isPlainExpression(bs) &&
-    !hasVariableDenominator(as) &&
-    !hasVariableDenominator(bs)
+    [as, bs].every(
+      (node) =>
+        isPlainExpression(node) && !hasVariableDenominator(node) && !hasVariableExponentOfSum(node)
+    )
   ) {
-    return areNumericallyEquivalent(as, bs, [
-      ...new Set([...getVariables(as), ...getVariables(bs)]),
-    ]);
+    const variables = [...new Set([...getVariables(as), ...getVariables(bs)])];
+    return areNumericallyEquivalent(as, bs, variables, undefined, { sameDomain: true });
   }
 
   return equality;

@@ -3,8 +3,10 @@ import { LatexToAst } from '../conversion/latex-to-ast.js';
 import {
   expansionTerms,
   hasVariableDenominator,
+  hasVariableExponentOfSum,
   isTooLargeToExpand,
   multipliedSums,
+  multipliedTerms,
 } from '../symbolic/expansion.js';
 
 const lta = new LatexToAst();
@@ -54,6 +56,22 @@ describe('expansionTerms', () => {
   });
 });
 
+describe('multipliedTerms', () => {
+  it.each([
+    ['x+1', 0],
+    ['x^{1000}+x', 0],
+    ['(x+1)^{4}', 16],
+    ['3(x+1)^{4}', 16],
+    // a lone term beside an expansion is only collected
+    ['(x+1)^{4}+1', 16],
+    ['(x+1)^{4}+\\sqrt{x}', 16],
+    ['(x+1)^{4}+(x+2)^{4}', 32],
+    ['-(x+1)^{4}-(x+2)^{4}', 32],
+  ])('%s multiplies out to %s terms', (latex, terms) => {
+    expect(multipliedTerms(node(latex))).toBe(terms);
+  });
+});
+
 describe('isTooLargeToExpand', () => {
   it.each([
     '(x+1)^{5}',
@@ -85,8 +103,21 @@ describe('isTooLargeToExpand', () => {
     'a+b+c+d+f+g+h+k+m+n+p+q',
     '2^{x+1}',
     'x^{y}',
+    '(x+1)^{4}+1',
+    '(x+1000)^{4}+1',
+    '(x+1)^{4}+\\sqrt{x}',
   ])('%s is not', (latex) => {
     expect(isTooLargeToExpand(node(latex))).toBe(false);
+  });
+});
+
+describe('hasVariableExponentOfSum', () => {
+  it.each(['(x+1)^{y}', '(x+1)^{-y}', '3(x+y)^{n}+1'])('%s has one', (latex) => {
+    expect(hasVariableExponentOfSum(node(latex))).toBe(true);
+  });
+
+  it.each(['2^{x}', 'x^{y}', '(x+1)^{8}', '\\left|x+1\\right|^{y}'])('%s has none', (latex) => {
+    expect(hasVariableExponentOfSum(node(latex))).toBe(false);
   });
 });
 

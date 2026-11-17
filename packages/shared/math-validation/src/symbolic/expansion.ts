@@ -117,6 +117,36 @@ export const expansionTerms = (node: MathNode): number => {
   return Math.max(1, ...children(node).map(expansionTerms));
 };
 
+// the terms that multiplying out produces in the products and powers of sums; a lone term beside them,
+// such as the 1 or the \sqrt{x} in (x+1)^4+1 or (x+1)^4+\sqrt{x}, is only collected, which is cheap
+export const multipliedTerms = (node: MathNode): number => {
+  if (node.isParenthesisNode && node.content) {
+    return multipliedTerms(node.content);
+  }
+
+  if (node.isFunctionNode) {
+    return 0;
+  }
+
+  if (node.isOperatorNode && node.args) {
+    switch (node.fn) {
+      case 'add':
+      case 'subtract':
+      case 'unaryMinus':
+      case 'unaryPlus':
+        return node.args.reduce((sum, arg) => sum + multipliedTerms(arg), 0);
+      case 'multiply':
+      case 'divide':
+      case 'pow':
+        return multipliedSums(node) >= 2 ? expansionTerms(node) : 0;
+      default:
+        return Math.max(0, ...node.args.map(multipliedTerms));
+    }
+  }
+
+  return Math.max(0, ...children(node).map(multipliedTerms));
+};
+
 // whether rationalize would take too long to multiply the expression out; a single sum multiplies nothing
 export const isTooLargeToExpand = (node: MathNode): boolean => {
   const sums = multipliedSums(node);
@@ -129,10 +159,26 @@ export const isTooLargeToExpand = (node: MathNode): boolean => {
     return false;
   }
 
-  const terms = expansionTerms(node);
+  const terms = multipliedTerms(node);
 
   return !(terms <= MAX_TERMS && terms * Math.max(1, getVariables(node).length) <= MAX_TERM_COST);
 };
+
+// a sum under a variable exponent, as in (x+1)^y. It is never multiplied out, since the exponent can
+// simplify to a constant on the way, but it isn't sampled either: where the base is negative the power
+// isn't real, so sample points can't tell (x+1)^y from |x+1|^y.
+export const hasVariableExponentOfSum = (node: MathNode): boolean =>
+  node.filter((n) => {
+    if (!n.isOperatorNode || n.fn !== 'pow' || !n.args) {
+      return false;
+    }
+
+    const [base, exponent] = n.args;
+
+    return (
+      !!base && !!exponent && multipliedSums(base) > 0 && constantExponent(exponent) === undefined
+    );
+  }).length > 0;
 
 // a variable in a denominator, as in 1/x or (x+1)^(-2). Sample points can't see where it is zero, so they
 // would match (x^6-1)/(x-1) with x^5+x^4+x^3+x^2+x+1, which is an open decision (PIE-1465), not a size question.

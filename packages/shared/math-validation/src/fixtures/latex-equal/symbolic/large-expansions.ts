@@ -60,5 +60,42 @@ export default {
       target: '(x+1)(x+2)(x+3)(x+4)+(x+5)(x+6)(x+7)(x+8)',
       eq: ['(x+5)(x+6)(x+7)(x+8)+(x+1)(x+2)(x+3)(x+4)'],
     },
+    {
+      // a sum under a variable exponent isn't multiplied out, but it isn't sampled either: where the
+      // base is negative the power isn't real, so sample points can't tell these apart
+      target: '(x+1)^{y}',
+      eq: ['(1+x)^{y}'],
+      ne: ['\\left|x+1\\right|^{y}', '\\sqrt{(x+1)^{2y}}', '(x+1)^{y}+10^{-12}'],
+    },
+    {
+      target: '(x+1)^{-y}',
+      ne: ['\\left|x+1\\right|^{-y}'],
+    },
+    {
+      // a lone term next to a small expansion is only collected, so these stay exact comparisons
+      target: '(x+1000)^{4}',
+      ne: ['(x+1000)^{4}+1'],
+    },
+    {
+      target: '(x+1)^{4}+\\sqrt{x}',
+      ne: ['(x+1)^{4}+\\sqrt{\\left|x\\right|}'],
+    },
+    {
+      // a removable hole: below the limit rationalize keeps (x-1)/(x-1) apart and these don't match,
+      // which is an open decision (PIE-1465); past it simplify must not cancel the factor instead
+      target: '(x+1)^{8}',
+      eq: ['(1+x)^{8}'],
+      ne: ['\\frac{(x-1)(x+1)^{8}}{x-1}', '\\frac{x(x+1)^{8}}{x}'],
+    },
+    {
+      target: '\\frac{1}{x-1}+(x+1)^{8}',
+      eq: ['(1+x)^{8}+\\frac{1}{x-1}'],
+    },
+    {
+      // sampled, but a point where only one side is defined counts as a difference
+      target: '(x+1)^{5}+\\sqrt{x}',
+      eq: ['\\sqrt{x}+(1+x)^{5}'],
+      ne: ['(x+1)^{5}+\\sqrt{\\left|x\\right|}'],
+    },
   ],
 };
