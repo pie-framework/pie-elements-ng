@@ -14,4 +14,5 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, ตัวเลือกคำตอบ',
   pickTheAnswerBelowA11y: 'เลือกคำตอบด้านล่าง',
   choiceNameA11y: 'ตัวเลือก {key}',
+  eliminatedA11y: '(ขีดฆ่าแล้ว)',
 } satisfies MessageCatalog;

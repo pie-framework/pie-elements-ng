@@ -322,9 +322,11 @@ export default class Ebsr extends HTMLElement {
         height: 1px;
         padding: 0;
         margin: -1px;
+        border: 0;
         overflow: hidden;
-        left: -10000px;
-        top: auto;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
       </style>
       <style data-extra-css-rules></style>

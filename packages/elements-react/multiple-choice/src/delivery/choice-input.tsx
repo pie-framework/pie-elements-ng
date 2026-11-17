@@ -98,11 +98,15 @@ const BelowSelectionComponent: any = styled('span')(({ theme }) => ({
 
 const SrOnly: any = styled('span')({
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 });
 
 export const StyledFormControlLabel: any = styled(FormControlLabel)({
@@ -265,6 +269,9 @@ export class ChoiceInput extends React.Component {
     // The translated note a math choice's name ends with.
     pickTheAnswerBelow: PropTypes.string,
     choiceName: PropTypes.string,
+    // Struck out by the answer eliminator, and the translated note that says so.
+    eliminated: PropTypes.bool,
+    eliminatedNote: PropTypes.string,
   };
 
   static defaultProps = {
@@ -279,6 +286,7 @@ export class ChoiceInput extends React.Component {
     this.choiceId = createUniqueId('choice');
     this.descId = `${this.choiceId}-desc`;
     this.noteId = `${this.choiceId}-note`;
+    this.eliminatedId = `${this.choiceId}-eliminated`;
   }
 
   onToggleChoice(event) {
@@ -336,6 +344,8 @@ export class ChoiceInput extends React.Component {
       index,
       pickTheAnswerBelow,
       choiceName,
+      eliminated,
+      eliminatedNote,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -389,6 +399,16 @@ export class ChoiceInput extends React.Component {
       </SrOnly>
     ) : null;
 
+    // The answer eliminator announces an eliminated choice in its content, which names every
+    // other choice; a name from the note leaves the content out, so it says so itself. Otherwise
+    // the radio reads as unavailable with no reason.
+    const struckNote = namedByNote && eliminated;
+    const eliminatedLabel = struckNote ? (
+      <SrOnly id={this.eliminatedId} className="pie-sr-only">
+        {eliminatedNote}
+      </SrOnly>
+    ) : null;
+
     const choicelabel = (
       <>
         {displayKey && !isSelectionButtonBelow ? (
@@ -411,13 +431,16 @@ export class ChoiceInput extends React.Component {
       id: this.choiceId,
       onChange: this.onToggleChoice,
       onKeyDown: this.handleKeyDown,
-      ariaLabelledBy: namedByNote ? `${this.descId} ${this.noteId}` : undefined,
+      ariaLabelledBy: namedByNote
+        ? [this.descId, this.noteId, struckNote && this.eliminatedId].filter(Boolean).join(' ')
+        : undefined,
     };
 
     const control = isSelectionButtonBelow ? (
       <BelowSelectionComponent>
         {screenReaderLabel}
         {note}
+        {eliminatedLabel}
         <Tag {...tagProps} style={{ padding: 0 }} />
         <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
       </BelowSelectionComponent>
@@ -425,13 +448,14 @@ export class ChoiceInput extends React.Component {
       <>
         {screenReaderLabel}
         {note}
+        {eliminatedLabel}
         <Tag {...tagProps} />
       </>
     );
 
     return (
       <div className={classNames(className, 'corespring-' + classSuffix, 'choice-input')}>
-        <Row>
+        <Row className="choice-input-row">
           {!hideTick && isEvaluateMode && <FeedbackTick correctness={correctness} />}
           <CheckboxHolder className="checkbox-holder" sx={holderSx}>
             <StyledFormControlLabel
@@ -440,6 +464,7 @@ export class ChoiceInput extends React.Component {
               htmlFor={this.choiceId}
               labelPlacement={isSelectionButtonBelow ? 'top' : undefined}
               control={control}
+              slotProps={{ typography: { className: 'choice-input-label' } }}
             />
           </CheckboxHolder>
         </Row>

@@ -15,4 +15,5 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, antwoordkeuzes',
   pickTheAnswerBelowA11y: 'Selecteer het antwoord hieronder',
   choiceNameA11y: 'Keuze {key}',
+  eliminatedA11y: '(weggestreept)',
 } satisfies MessageCatalog;
