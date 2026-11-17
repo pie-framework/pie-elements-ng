@@ -148,8 +148,9 @@ export async function model(
           normalizedQuestion.choices,
           (obj, respArea, key) => {
             const chosenValue = value && value[key];
+            const options = areaMatching(matching, normalizedQuestion, key);
             const val =
-              !isEmpty(chosenValue) && find(respArea, (c) => matchesLabel(c.label, chosenValue, matching));
+              !isEmpty(chosenValue) && find(respArea, (c) => matchesLabel(c.label, chosenValue, options));
 
             obj[key] = getFeedback(val);
 
@@ -229,7 +230,12 @@ export const prepareVal = (html: string | undefined) => {
 
 type MatchingModel = Pick<
   ExplicitConstructedResponseModel,
-  'ignoreCase' | 'collapseWhitespace' | 'ignoreSlashSpacing' | 'ignoreAccents'
+  | 'ignoreCase'
+  | 'collapseWhitespace'
+  | 'ignoreSlashSpacing'
+  | 'ignoreAccents'
+  | 'foldLetterVariantsEnabled'
+  | 'foldLetterVariantsPerChoice'
 >;
 
 /** The normalizer options for the content language and the item's authored matching options, each off by default. */
@@ -239,6 +245,22 @@ const matchingOptions = (model: MatchingModel | undefined, language: string | un
   collapseWhitespace: !!model?.collapseWhitespace,
   ignoreSlashSpacing: !!model?.ignoreSlashSpacing,
   ignoreAccents: !!model?.ignoreAccents,
+});
+
+/**
+ * The options for one response area: the item's, plus the Arabic spelling-variant fold when the
+ * item switch and the area's entry are both `true`, so a stored `null` stays strict.
+ */
+const areaMatching = (
+  options: NormalizeOptions,
+  model: MatchingModel | undefined,
+  areaKey: string | number,
+): NormalizeOptions => ({
+  ...options,
+  foldLetterVariants:
+    model?.foldLetterVariantsEnabled === true &&
+    Array.isArray(model.foldLetterVariantsPerChoice) &&
+    model.foldLetterVariantsPerChoice[Number(areaKey)] === true,
 });
 
 /** Whether a typed value matches an authored label, compared through the shared response normalizer. */
@@ -263,8 +285,9 @@ export const getScore = (
     config.choices,
     (total, respArea, key) => {
       const chosenValue = value && value[key];
+      const options = areaMatching(matching, config, key);
 
-      if (isEmpty(chosenValue) || !find(respArea, (c) => matchesLabel(c.label, chosenValue, matching))) {
+      if (isEmpty(chosenValue) || !find(respArea, (c) => matchesLabel(c.label, chosenValue, options))) {
         return total;
       }
 
@@ -307,8 +330,9 @@ export const getLogTrace = (
     Object.keys(choices || {}).forEach((areaKey) => {
       const studentAnswer = (value && value[areaKey]) || '';
       const correctOptions = (choices as Choices)[areaKey] || [];
+      const options = areaMatching(matching, model, areaKey);
       const isCorrect = !isEmpty(studentAnswer.trim()) && 
-        correctOptions.some((option) => matchesLabel(option.label, studentAnswer, matching));
+        correctOptions.some((option) => matchesLabel(option.label, studentAnswer, options));
       
       if (studentAnswer.trim()) {
         traceLog.push(`Response area ${parseInt(areaKey) + 1}: ${isCorrect ? 'CORRECT' : 'INCORRECT'}.`);
@@ -325,6 +349,13 @@ export const getLogTrace = (
     traceLog.push(`Alternate answers are accepted for some response areas.`);
   }
 
+  const foldingAreas = Object.keys(choices || {})
+    .filter((areaKey) => areaMatching(matching, model, areaKey).foldLetterVariants)
+    .map((areaKey) => parseInt(areaKey) + 1);
+  if (foldingAreas.length) {
+    traceLog.push(`Arabic spelling variants are accepted for response area(s) ${foldingAreas.join(', ')}.`);
+  }
+
   const partialScoringEnabled = partialScoring.enabled(model, env);
   
   if (partialScoringEnabled) {
@@ -336,8 +367,9 @@ export const getLogTrace = (
       Object.keys(choices || {}).forEach((areaKey) => {
         const studentAnswer = (value && value[areaKey]) || '';
         const correctOptions = (choices as Choices)[areaKey] || [];
+        const options = areaMatching(matching, model, areaKey);
         const isCorrect = !isEmpty(studentAnswer.trim()) && 
-          correctOptions.some((option) => matchesLabel(option.label, studentAnswer, matching));
+          correctOptions.some((option) => matchesLabel(option.label, studentAnswer, options));
         if (isCorrect) correctCount++;
       });
       

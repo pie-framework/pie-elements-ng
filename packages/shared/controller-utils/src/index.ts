@@ -15,3 +15,5 @@ export {
   normalizeResponse,
 } from './response-normalizer.js';
 export type { NormalizeOptions } from './response-normalizer.js';
+export { LETTER_VARIANTS_HELP } from './letter-variants-help.js';
+export type { LetterVariantsHelpPart } from './letter-variants-help.js';

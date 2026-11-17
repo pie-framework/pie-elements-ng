@@ -16,6 +16,10 @@ export default {
       label: 'Teacher Instructions',
       settings: true,
     },
+    foldLetterVariants: {
+      label: 'Accept Arabic Spelling Variants',
+      settings: true,
+    },
     settingsPanelDisabled: false,
   },
 } satisfies {
