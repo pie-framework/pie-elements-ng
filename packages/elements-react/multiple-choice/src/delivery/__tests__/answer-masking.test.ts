@@ -50,8 +50,10 @@ describe('multiple-choice answer masking', () => {
     expect(MultipleChoice.pieSupports).toEqual(['answer-masking']);
   });
 
-  it('supplies each rendered choice by value, with its label inside its container', async () => {
-    const element = await mount();
+  it('supplies each rendered choice by value, its row holding its label text', async () => {
+    const element = await mount({ choices: choices.map((choice, i) => ({ ...choice, rationale: `Why ${i}` })) });
+    // The rationale renders in the choice, after its row.
+    expect(element.querySelector('.choice-input').textContent).toContain('Why 0');
 
     const supplied = targets(element);
 
@@ -61,8 +63,13 @@ describe('multiple-choice answer masking', () => {
       ['c', 'Gamma'],
     ]);
     for (const { container, content } of supplied) {
-      expect(container.classList.contains('choice-input')).toBe(true);
+      expect(container.parentElement?.classList.contains('choice-input')).toBe(true);
       expect(container.contains(content)).toBe(true);
+      expect(container.querySelector('input')).not.toBe(null);
+      // The eliminator marks the content, and appends its toggle to the row.
+      expect(content.querySelector('input')).toBe(null);
+      expect(content.textContent).not.toContain('Why');
+      expect(container.textContent).not.toContain('Why');
     }
     expect(element.pieSupportTargets('text-to-speech')).toEqual([]);
   });

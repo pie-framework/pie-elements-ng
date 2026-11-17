@@ -371,17 +371,20 @@ export default class MultipleChoice extends HTMLElement {
 
   /**
    * The rendered choices, for the `answer-masking` support this element
-   * declares. Each id is the choice's value.
+   * declares. Each id is the choice's value. The container is the choice's row,
+   * so the eliminator's toggle ends the row, and the content is the label text,
+   * which keeps the selection control out of what the eliminator marks.
    */
   pieSupportTargets(term) {
     if (term !== 'answer-masking') {
       return [];
     }
 
-    return Array.from(this.querySelectorAll('.choice-input')).flatMap((container) => {
-      const input = container.querySelector('input[type="radio"], input[type="checkbox"]');
-      const content = container.querySelector('label');
-      if (!input?.value || !content) {
+    return Array.from(this.querySelectorAll('.choice-input')).flatMap((choice) => {
+      const input = choice.querySelector('input[type="radio"], input[type="checkbox"]');
+      const container = choice.querySelector('.choice-input-row');
+      const content = container?.querySelector('.choice-input-label');
+      if (!input?.value || !container || !content) {
         return [];
       }
 

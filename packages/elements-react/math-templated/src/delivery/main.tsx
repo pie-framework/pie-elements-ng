@@ -107,11 +107,15 @@ const PrintContainer: any = styled('div')(({ theme }) => ({
 
 const SrOnly: any = styled('h2')({
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 });
 
 const Note: any = styled('div')(({ theme }) => ({

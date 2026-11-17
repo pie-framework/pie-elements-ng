@@ -98,11 +98,15 @@ const BelowSelectionComponent: any = styled('span')(({ theme }) => ({
 
 const SrOnly: any = styled('span')({
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 });
 
 export const StyledFormControlLabel: any = styled(FormControlLabel)({
@@ -431,7 +435,7 @@ export class ChoiceInput extends React.Component {
 
     return (
       <div className={classNames(className, 'corespring-' + classSuffix, 'choice-input')}>
-        <Row>
+        <Row className="choice-input-row">
           {!hideTick && isEvaluateMode && <FeedbackTick correctness={correctness} />}
           <CheckboxHolder className="checkbox-holder" sx={holderSx}>
             <StyledFormControlLabel
@@ -440,6 +444,7 @@ export class ChoiceInput extends React.Component {
               htmlFor={this.choiceId}
               labelPlacement={isSelectionButtonBelow ? 'top' : undefined}
               control={control}
+              slotProps={{ typography: { className: 'choice-input-label' } }}
             />
           </CheckboxHolder>
         </Row>

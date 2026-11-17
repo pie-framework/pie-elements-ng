@@ -85,11 +85,15 @@ const StyledFieldset: any = styled('fieldset')({
 
 const srOnly = {
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 };
 
 const SrOnly: any = styled('h3')(srOnly);
@@ -98,13 +102,9 @@ const SrOnly: any = styled('h3')(srOnly);
 // name built from the prompt leaves its MathML out (PIE-1244). An EBSR part names its group with its
 // part label, so its parts' groups stay apart. `pie-sr-only` keeps read-aloud off it, and the
 // `!important` keeps it hidden from authored CSS that styles `legend`, as prompts were legends.
-const AnswerChoicesLegend = styled('legend')({
-  ...Object.fromEntries(Object.entries(srOnly).map(([key, value]) => [key, `${value} !important`])),
-  padding: '0 !important',
-  border: '0 !important',
-  clip: 'rect(0 0 0 0) !important',
-  whiteSpace: 'nowrap !important',
-});
+const AnswerChoicesLegend = styled('legend')(
+  Object.fromEntries(Object.entries(srOnly).map(([key, value]) => [key, `${value} !important`])),
+);
 
 // --pie-missing holds 4.5:1 on the page in every pie-players scheme; the layout theme's error red
 // falls to 1.59:1 under yellow-on-navy.
