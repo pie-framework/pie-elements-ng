@@ -269,9 +269,6 @@ export class ChoiceInput extends React.Component {
     // The translated note a math choice's name ends with.
     pickTheAnswerBelow: PropTypes.string,
     choiceName: PropTypes.string,
-    // Struck out by the answer eliminator, and the translated note that says so.
-    eliminated: PropTypes.bool,
-    eliminatedNote: PropTypes.string,
   };
 
   static defaultProps = {
@@ -286,7 +283,6 @@ export class ChoiceInput extends React.Component {
     this.choiceId = createUniqueId('choice');
     this.descId = `${this.choiceId}-desc`;
     this.noteId = `${this.choiceId}-note`;
-    this.eliminatedId = `${this.choiceId}-eliminated`;
   }
 
   onToggleChoice(event) {
@@ -344,8 +340,6 @@ export class ChoiceInput extends React.Component {
       index,
       pickTheAnswerBelow,
       choiceName,
-      eliminated,
-      eliminatedNote,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -399,16 +393,6 @@ export class ChoiceInput extends React.Component {
       </SrOnly>
     ) : null;
 
-    // The answer eliminator announces an eliminated choice in its content, which names every
-    // other choice; a name from the note leaves the content out, so it says so itself. Otherwise
-    // the radio reads as unavailable with no reason.
-    const struckNote = namedByNote && eliminated;
-    const eliminatedLabel = struckNote ? (
-      <SrOnly id={this.eliminatedId} className="pie-sr-only">
-        {eliminatedNote}
-      </SrOnly>
-    ) : null;
-
     const choicelabel = (
       <>
         {displayKey && !isSelectionButtonBelow ? (
@@ -431,16 +415,13 @@ export class ChoiceInput extends React.Component {
       id: this.choiceId,
       onChange: this.onToggleChoice,
       onKeyDown: this.handleKeyDown,
-      ariaLabelledBy: namedByNote
-        ? [this.descId, this.noteId, struckNote && this.eliminatedId].filter(Boolean).join(' ')
-        : undefined,
+      ariaLabelledBy: namedByNote ? `${this.descId} ${this.noteId}` : undefined,
     };
 
     const control = isSelectionButtonBelow ? (
       <BelowSelectionComponent>
         {screenReaderLabel}
         {note}
-        {eliminatedLabel}
         <Tag {...tagProps} style={{ padding: 0 }} />
         <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
       </BelowSelectionComponent>
@@ -448,7 +429,6 @@ export class ChoiceInput extends React.Component {
       <>
         {screenReaderLabel}
         {note}
-        {eliminatedLabel}
         <Tag {...tagProps} />
       </>
     );

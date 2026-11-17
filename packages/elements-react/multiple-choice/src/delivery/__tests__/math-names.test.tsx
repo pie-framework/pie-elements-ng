@@ -84,15 +84,16 @@ describe('multiple-choice math in names (PIE-1244)', () => {
     expect(screen.getByRole('radio', { name: 'B 25 and 200' })).toBe(text);
   });
 
-  it('says an eliminated math choice is eliminated, where its content cannot', () => {
+  it('leaves an eliminated choice\'s announcement to the answer eliminator', () => {
+    // The eliminator appends "(eliminated)" to the choice's content, which a math choice's name
+    // leaves out; a second announcement here would be read twice in the content's reading order.
     render(item({ eliminatedChoices: ['a', 'b'] }));
     const [math, text] = screen.getAllByRole('radio');
 
     expect(math).toBeDisabled();
-    expect(labelledByName(math)).toBe('A. Pick the answer below (eliminated)');
-    // Named from its label, which carries the eliminator's own announcement.
-    expect(text.hasAttribute('aria-labelledby')).toBe(false);
-    expect(document.getElementById(`${text.id}-eliminated`)).toBeNull();
+    expect(labelledByName(math)).toBe('A. Pick the answer below');
+    expect(text).toBeDisabled();
+    expect(document.body.textContent).not.toContain('eliminated');
   });
 
   it('names a table choice by its key and a note', () => {
