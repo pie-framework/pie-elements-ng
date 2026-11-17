@@ -196,19 +196,6 @@ const CASES: DndCase[] = [
       return Array.isArray(region) ? region.join(',') : null;
     },
     targetKey: '1',
-    defects: {
-      'second-finger': {
-        mechanism:
-          "A second finger landing during a drag drops the first finger's drag. `onTilePointerDown` " +
-          '(venn-classification/src/delivery/VennClassification.svelte) calls `detachPointerDrag()` ' +
-          "on every pointerdown, which removes the first drag's window listeners, and the listeners " +
-          'it adds for the new drag do not check `pointerId`, so any finger lifting ends it. The ' +
-          "session still gains one placement, which is why a count passes: the second finger's " +
-          "choice is the one placed - observed in region 1, the first finger's target - and the " +
-          "first finger's choice stays in the tray.",
-        ticket: 'PIE-1510',
-      },
-    },
     placed: (session) =>
       Object.values((session?.placements ?? {}) as Record<string, unknown>).filter((region) =>
         Array.isArray(region)
