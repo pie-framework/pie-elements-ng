@@ -20,7 +20,7 @@ class ImageContainer extends Component {
       canDrag,
       draggingElement,
       getChoiceLabel,
-      image: { height, src, width } = {},
+      image: { alt, height, src, width } = {},
       language,
       onAnswerSelect,
       onDragAnswerBegin,
@@ -44,7 +44,7 @@ class ImageContainer extends Component {
             image must never shrink to fit (interactive-section scrolls instead). The inline style beats
             the global '& img' max-width:100%/height:auto rule (root.tsx) that keeps other images fluid */}
         <img
-          alt={i18n.plural('image', { count: (responseContainers || []).length })}
+          alt={alt?.trim() || i18n.plural('image', { count: (responseContainers || []).length })}
           src={src}
           height={height}
           width={width}
