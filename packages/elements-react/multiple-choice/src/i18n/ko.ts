@@ -14,4 +14,5 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, 답안 선택지',
   pickTheAnswerBelowA11y: '아래에서 답을 선택해 주세요',
   choiceNameA11y: '선택지 {key}',
+  eliminatedA11y: '(제외됨)',
 } satisfies MessageCatalog;

@@ -448,6 +448,8 @@ export class MultipleChoice extends React.Component {
                 isEvaluateMode={isEvaluateMode}
                 choiceMode={choiceMode}
                 disabled={disabled || eliminatedChoices.includes(String(choice.value))}
+                eliminated={eliminatedChoices.includes(String(choice.value))}
+                eliminatedNote={i18n.t('eliminatedA11y')}
                 tagName={this.groupName}
                 onChoiceChanged={this.handleChange}
                 hideTick={choice.hideTick}

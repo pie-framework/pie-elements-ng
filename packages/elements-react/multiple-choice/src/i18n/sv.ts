@@ -15,4 +15,5 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, svarsalternativ',
   pickTheAnswerBelowA11y: 'Välj svaret nedan',
   choiceNameA11y: 'Alternativ {key}',
+  eliminatedA11y: '(uteslutet)',
 } satisfies MessageCatalog;

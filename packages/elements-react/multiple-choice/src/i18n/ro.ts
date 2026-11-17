@@ -16,4 +16,5 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, variante de răspuns',
   pickTheAnswerBelowA11y: 'Alege răspunsul de mai jos',
   choiceNameA11y: 'Varianta {key}',
+  eliminatedA11y: '(eliminată)',
 } satisfies MessageCatalog;

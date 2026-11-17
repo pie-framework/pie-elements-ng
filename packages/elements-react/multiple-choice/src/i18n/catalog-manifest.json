@@ -17,7 +17,8 @@
         "answerChoicesA11y": "Answer choices",
         "partAnswerChoicesA11y": "{partLabel}, answer choices",
         "pickTheAnswerBelowA11y": "Pick the answer below",
-        "choiceNameA11y": "Choice {key}"
+        "choiceNameA11y": "Choice {key}",
+        "eliminatedA11y": "(eliminated)"
       },
       "reviewedAt": "2026-10-16",
       "awaitingReview": {
@@ -25,99 +26,100 @@
           "answerChoicesA11y",
           "partAnswerChoicesA11y",
           "pickTheAnswerBelowA11y",
-          "choiceNameA11y"
+          "choiceNameA11y",
+          "eliminatedA11y"
         ],
-        "note": "translated on 2026-10-19 by Claude (Anthropic) for PIE-1244; anchored so the gate passes, not yet reviewed by a person; choiceNameA11y translated on 2026-11-05 by Claude (Anthropic) for PIE-1484, likewise unreviewed"
+        "note": "translated on 2026-10-19 by Claude (Anthropic) for PIE-1244; anchored so the gate passes, not yet reviewed by a person; choiceNameA11y translated on 2026-11-05 by Claude (Anthropic) for PIE-1484, likewise unreviewed; eliminatedA11y taken on 2026-11-17 by Claude (Anthropic) for PIE-1531 from the answer eliminator's own announcement in pie-players' catalog, likewise unreviewed"
       }
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; corrections from a three-reviewer agent review on 2026-10-20 (Claude claude-fable-5-1), applied where at least two reviewers agreed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen); answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen); answerChoicesA11y, partAnswerChoicesA11y and pickTheAnswerBelowA11y added on 2026-10-19 by Claude (Anthropic) for PIE-1244, the rest unchanged, also unreviewed; choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-19",
       "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     },
     "ro": {
       "status": "generated",
-      "sourceHash": "b40dbfbfc6a81b0e8288964111d81b26e67d31f2f3cd2f938bcfdc97f3f35d57",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other); choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09",
+      "sourceHash": "1a1167ee857552e559d431ec6e0852698221c8cb553d7757d7562740b0e31ec2",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other); choiceNameA11y added on 2026-11-05 by Claude (Anthropic) for PIE-1484, unreviewed; showTeacherInstructions and hideTeacherInstructions moved to @pie-lib/render-ui's Collapsible on 2026-11-09; eliminatedA11y added on 2026-11-17 by Claude (Anthropic) for PIE-1531 with the wording of the answer eliminator's own announcement in pie-players' catalog, unreviewed",
       "generatedAt": "2026-10-19",
       "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     }

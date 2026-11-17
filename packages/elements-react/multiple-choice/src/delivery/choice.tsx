@@ -93,6 +93,8 @@ export class Choice extends React.Component {
       tagName,
       pickTheAnswerBelow,
       choiceName,
+      eliminated,
+      eliminatedNote,
     } = this.props;
     
     const { isHovered } = this.state;
@@ -119,6 +121,8 @@ export class Choice extends React.Component {
       tagName,
       pickTheAnswerBelow,
       choiceName,
+      eliminated,
+      eliminatedNote,
     };
 
     const normalizeStrokeWidth = (width) => {
@@ -213,6 +217,8 @@ Choice.propTypes = {
   isSelectionButtonBelow: PropTypes.bool,
   pickTheAnswerBelow: PropTypes.string,
   choiceName: PropTypes.string,
+  eliminated: PropTypes.bool,
+  eliminatedNote: PropTypes.string,
 };
 
 export default Choice;
