@@ -5,6 +5,8 @@ import { sort } from '../node-sort.js';
 import { simplify } from './simplify.js';
 import { compareEquations } from './compare-equations.js';
 import { compareCompoundInequations } from './compare-compound-inequations.js';
+import { hasVariableDenominator, isTooLargeToExpand } from './expansion.js';
+import { areNumericallyEquivalent, getVariables } from './utils.js';
 
 const m: any = mathjs;
 const log = logger('mv:symbolic');
@@ -111,7 +113,8 @@ const snapTrigonometricValues = (node: MathNode) => {
   return { r: changed ? r : node, changed };
 };
 
-const normalize = (a: string | MathNode | any) => {
+// expand is false for an expression too large for rationalize to multiply out (PIE-1532)
+const normalize = (a: string | MathNode | any, expand = true) => {
   const snapped = snapTrigonometricValues(a);
   let r: string | MathNode | any = snapped.r;
 
@@ -159,7 +162,7 @@ const normalize = (a: string | MathNode | any) => {
       return arg;
     });
 
-    if (containsFunctionNode || containsInverseFlag) {
+    if (expand && (containsFunctionNode || containsInverseFlag)) {
       r.args = r.args.map((arg: any) => {
         if (!arg.isFunctionNode && !arg.isArrayNode) {
           try {
@@ -174,7 +177,7 @@ const normalize = (a: string | MathNode | any) => {
     }
   }
 
-  if (r.fn !== 'equal') {
+  if (expand && r.fn !== 'equal') {
     try {
       onlyConstant = false;
       r = rationalize(r, {}, true).expression;
@@ -237,6 +240,15 @@ const areNearlyEqual = (a: number, b: number) =>
 
 const isIndeterminate = (node: any) => node?.isSymbolNode && node.name === 'NaN';
 
+const RELATIONS = ['equal', 'unequal', 'larger', 'largerEq', 'smaller', 'smallerEq'];
+
+// an expression, not an equation, an inequality, a chain of them or a list
+const isPlainExpression = (node: MathNode) =>
+  !('conditionals' in node) &&
+  !node.isRelationalNode &&
+  !node.isArrayNode &&
+  !RELATIONS.includes(node.fn ?? '');
+
 export const isMathEqual = (a: any, b: any) => {
   let as: MathNode;
   let bs: MathNode;
@@ -255,10 +267,16 @@ export const isMathEqual = (a: any, b: any) => {
     return false;
   }
 
-  // apply sort if we are not in a relationalNode
-  as = a.conditionals ? normalize(a) : sort(normalize(a));
+  const expandable = !isTooLargeToExpand(a) && !isTooLargeToExpand(b);
+  // read before normalize, which replaces the arguments of a and b
+  const variables = [...new Set([...getVariables(a), ...getVariables(b)])];
+  const variableDenominator =
+    !expandable && (hasVariableDenominator(a) || hasVariableDenominator(b));
 
-  bs = b.conditionals ? normalize(b) : sort(normalize(b));
+  // apply sort if we are not in a relationalNode
+  as = a.conditionals ? normalize(a, expandable) : sort(normalize(a, expandable));
+
+  bs = b.conditionals ? normalize(b, expandable) : sort(normalize(b, expandable));
 
   log('[isMathEqual]', as.toString(), '==?', bs.toString());
 
@@ -329,6 +347,11 @@ export const isMathEqual = (a: any, b: any) => {
     if (paramsIncludedA && paramsIncludedB) {
       return compareCompoundInequations(as, bs);
     }
+  }
+
+  // not multiplied out, only their values can show that two expressions are equal
+  if (!expandable && !variableDenominator && isPlainExpression(as) && isPlainExpression(bs)) {
+    return areNumericallyEquivalent(as, bs, variables);
   }
 
   return equality;
