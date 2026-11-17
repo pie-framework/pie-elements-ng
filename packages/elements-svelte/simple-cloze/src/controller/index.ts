@@ -20,10 +20,11 @@ export type SimpleClozeOutcome = {
 /**
  * Both sides compare as plain text through the shared response normalizer,
  * case folded in the content language: an answer key authored as HTML matches
- * the text a learner types, in any digit system.
+ * the text a learner types, in any digit system. Arabic spelling variants fold
+ * only when the author turned that on.
  */
-const comparable = (value: unknown, language?: string): string =>
-  normalizeResponse(toPlainText(value), { language, ignoreCase: true });
+const comparable = (value: unknown, language?: string, foldLetterVariants = false): string =>
+  normalizeResponse(toPlainText(value), { language, ignoreCase: true, foldLetterVariants });
 
 // Strips tags except img, iframe and source (media counts as content), as
 // multiple-choice's `getContent` does.
@@ -44,12 +45,14 @@ export const getCorrectness = (
   env?: SimpleClozeEnv | null
 ): SimpleClozeCorrectness => {
   const language = contentLanguage(question, env);
-  const response = comparable(session?.value, language);
+  // Only `true` folds, so a stored `null` stays strict.
+  const fold = question?.foldLetterVariants === true;
+  const response = comparable(session?.value, language, fold);
   if (!response) {
     return 'unanswered';
   }
 
-  const key = comparable(question?.correctAnswer, language);
+  const key = comparable(question?.correctAnswer, language, fold);
   if (key && response === key) {
     return 'correct';
   }
@@ -72,6 +75,9 @@ const getTraceLog = (
   const traceLog = [
     'Response is compared with the answer key as plain text, ignoring case, extra spaces and the digit system.',
   ];
+  if (question?.foldLetterVariants === true) {
+    traceLog.push('Arabic spelling variants are accepted.');
+  }
   if (!comparable(question?.correctAnswer)) {
     traceLog.push('No correct answer is defined, so no response can score.');
   } else {

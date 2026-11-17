@@ -114,6 +114,10 @@ export default {
       settings: true,
       label: 'Ignore Accents',
     },
+    foldLetterVariants: {
+      settings: true,
+      label: 'Accept Arabic Spelling Variants',
+    },
     maxResponseAreas: 10,
     maxImageWidth: {
       teacherInstructions: 300,
