@@ -711,7 +711,11 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       }
       const before = await getSessionState(page);
       // With move buttons, drag to the last one so the object crosses the others
-      await dragBetween(page, draggables.first(), moveButtons ? draggables.last() : draggables.nth(1));
+      await dragBetween(
+        page,
+        draggables.first(),
+        moveButtons ? draggables.last() : draggables.nth(1)
+      );
       await page.waitForTimeout(400);
       const after = await getSessionState(page);
       if (JSON.stringify(before ?? {}) === JSON.stringify(after ?? {})) {

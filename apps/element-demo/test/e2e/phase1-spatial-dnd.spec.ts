@@ -218,7 +218,11 @@ async function interactPlacementOrdering(page: Page, root: Locator) {
   }
   if ((await draggables.count()) >= 2) {
     // With move buttons, drag to the last one so the object crosses the others
-    await dragBetween(page, draggables.first(), moveButtons ? draggables.last() : draggables.nth(1));
+    await dragBetween(
+      page,
+      draggables.first(),
+      moveButtons ? draggables.last() : draggables.nth(1)
+    );
     await page.waitForTimeout(300);
     return;
   }
