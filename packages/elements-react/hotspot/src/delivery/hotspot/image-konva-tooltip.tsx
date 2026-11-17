@@ -44,6 +44,9 @@ class ImageComponent extends React.Component {
 
   componentDidMount() {
     this.loadImage();
+    // A finger has no `mouseleave`, so a tap anywhere but on this icon closes its tooltip.
+    this.stage = this.imageNode.current?.getStage();
+    this.stage?.on('tap', this.handleStageTap);
   }
 
   componentDidUpdate(oldProps) {
@@ -53,6 +56,7 @@ class ImageComponent extends React.Component {
   }
 
   componentWillUnmount() {
+    this.stage?.off('tap', this.handleStageTap);
     this.image.removeEventListener('load', this.handleLoad);
   }
 
@@ -63,6 +67,14 @@ class ImageComponent extends React.Component {
     this.image.src = src;
     this.image.addEventListener('load', this.handleLoad);
   }
+
+  imageNode: any = React.createRef();
+
+  handleStageTap: any = (e) => {
+    if (e.target !== this.imageNode.current) {
+      this.setState({ showTooltip: false });
+    }
+  };
 
   handleLoad: any = () => {
     this.setState({
@@ -82,8 +94,11 @@ class ImageComponent extends React.Component {
           x={x}
           y={y}
           image={image}
+          ref={this.imageNode}
           onMouseEnter={() => this.setState({ showTooltip: true })}
           onMouseLeave={() => this.setState({ showTooltip: false })}
+          // A touchscreen has no hover: Konva sends `tap`, not `mouseenter`, so a tap opens it.
+          onTap={() => this.setState({ showTooltip: true })}
         />
 
         {showTooltip && tooltip && (
