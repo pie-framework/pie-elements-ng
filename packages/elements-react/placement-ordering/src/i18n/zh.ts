@@ -38,4 +38,9 @@ export default {
   },
   useTabToAnotherObject: '使用 Tab 键移动到其他对象。',
   noLongerSelected: '对象 {text} 已取消选择。',
+  moveUp: '将{text}上移',
+  moveDown: '将{text}下移',
+  moveLeft: '将{text}左移',
+  moveRight: '将{text}右移',
+  movedToPosition: '已将{text}移至第{position}位，共{total}位。',
 } satisfies MessageCatalog;

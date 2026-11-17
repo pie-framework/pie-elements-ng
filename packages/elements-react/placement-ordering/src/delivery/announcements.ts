@@ -263,3 +263,13 @@ export const cancelledMessage = (i18n: I18n, selected: { value?: string }, count
     objectsOnSortedList(i18n, counts),
     i18n.t('useTabToAnotherObject'),
   );
+
+// A button moved an object one position, in an item without response areas.
+export const movedInPlaceMessage = (i18n: I18n, text: string, position: number, total: number) =>
+  i18n.t('movedToPosition', { text: toPlainText(text), position, total });
+
+// What a button that moves an object one position toward the start (`earlier`) or the end is named.
+export const moveButtonLabel = (i18n: I18n, text: string, vertical: boolean, earlier: boolean) =>
+  i18n.t(vertical ? (earlier ? 'moveUp' : 'moveDown') : earlier ? 'moveLeft' : 'moveRight', {
+    text: toPlainText(text),
+  });

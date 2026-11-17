@@ -48,4 +48,9 @@ export default {
   },
   useTabToAnotherObject: 'Folosește Tab pentru a trece la alt obiect.',
   noLongerSelected: 'Obiectul {text} nu mai este selectat.',
+  moveUp: 'Mută {text} în sus',
+  moveDown: 'Mută {text} în jos',
+  moveLeft: 'Mută {text} la stânga',
+  moveRight: 'Mută {text} la dreapta',
+  movedToPosition: '{text} a fost mutat pe poziția {position} din {total}.',
 } satisfies MessageCatalog;

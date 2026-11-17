@@ -48,4 +48,9 @@ export default {
   },
   useTabToAnotherObject: 'Use Tab para ir a outro objeto.',
   noLongerSelected: 'O objeto {text} não está mais selecionado.',
+  moveUp: 'Mover {text} para cima',
+  moveDown: 'Mover {text} para baixo',
+  moveLeft: 'Mover {text} para a esquerda',
+  moveRight: 'Mover {text} para a direita',
+  movedToPosition: '{text} movido para a posição {position} de {total}.',
 } satisfies MessageCatalog;

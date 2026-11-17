@@ -245,7 +245,8 @@ describe('PlacementOrdering screen reader announcements', () => {
   it('adds none of this without placement areas', () => {
     const { container } = setup([], { config: { orientation: 'vertical', includeTargets: false } });
 
-    expect(container.querySelector('[aria-live="polite"]')).toBeNull();
+    // its live region only says where a move button put an object
+    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent('');
     expect(container.textContent).not.toContain('objects are on the sorted list');
     expect(provider.props.accessibility).toBeUndefined();
   });

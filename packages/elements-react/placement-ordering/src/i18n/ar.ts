@@ -63,4 +63,9 @@ export default {
   },
   useTabToAnotherObject: 'استخدم Tab للانتقال إلى عنصر آخر.',
   noLongerSelected: 'لم يعد العنصر {text} محددًا.',
+  moveUp: 'نقل {text} لأعلى',
+  moveDown: 'نقل {text} لأسفل',
+  moveLeft: 'نقل {text} لليسار',
+  moveRight: 'نقل {text} لليمين',
+  movedToPosition: 'تم نقل {text} إلى الموضع {position} من {total}.',
 } satisfies MessageCatalog;
