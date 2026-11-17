@@ -209,6 +209,8 @@ Versioned `pie-*--version-*` tag names are authored content contracts. A `Custom
 - When using controller-based elements, rebuild and re-set the element model on mode/session changes.
 - Avoid reactive loops when the controller updates the session: guard against re-setting identical session objects.
 
+Svelte 5 runes patterns for the elements in this repository are collected in [docs/SVELTE_REACTIVITY_PATTERNS.md](docs/SVELTE_REACTIVITY_PATTERNS.md).
+
 ### PIE API AWS Builder Controller Compatibility
 
 - The `pie-api-aws` bundle builder may resolve `@pie-element/<name>/controller` via filesystem aliases during client/editor bundling.

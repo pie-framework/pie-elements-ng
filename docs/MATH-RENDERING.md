@@ -20,7 +20,7 @@ The adapter has two builds with one API.
 - **npm build**, `dist/index.js`, the `default` export condition: loads `tex-mml-chtml.js` and runs on `window.MathJax`. Element npm entries resolve it, and with them the IIFE bundles built from those entries and hosts that bundle the elements themselves.
 - **Browser build**, `dist/browser/index.js`, the `pie-browser-esm` export condition: bundles MathJax, built from the `@mathjax/src` modules, as a module-private instance. Element browser builds (`./browser/*`) resolve it through that condition, which `tools/vite/element-browser.config.ts` and `tools/vite/svelte-element-browser.config.ts` set. It neither reads nor writes `window.MathJax`, so a host's MathJax of any version, and every other element's copy, runs beside it.
 
-Each element bundles the browser build, and with it a MathJax of its own, a deliberate trade: every element type on a page downloads the engine once per element release, and in exchange keeps its own options, MathJax version and failures. The [shared browser runtime](prds/shared-browser-runtime/PRD.md#decisions) leaves the adapter out for that reason.
+Each element bundles the browser build, and with it a MathJax of its own, a deliberate trade: every element type on a page downloads the engine once per element release, and in exchange keeps its own options, MathJax version and failures. The adapter stays out of any shared browser code: its browser build holds a module-private MathJax instance, so sharing the adapter would share the instance, and the first element to render would set its options and its MathJax version for every element on the page.
 
 The browser build's engine is a chunk the adapter requests as its module loads and starts on the first render: about 1.3 MB minified, 320 kB gzipped, with the CHTML font data. The font's dynamic ranges, 40 chunks of about 1 MB in all, 150 kB gzipped, are requested with it, so math that first uses one mid-session waits on no download. Its output is the npm build's, with these differences:
 
@@ -251,7 +251,6 @@ bun run dev
 
 ### Documentation
 
-- IIFE bundle architecture: [IIFE-BUNDLE-ARCHITECTURE.md](./IIFE-BUNDLE-ARCHITECTURE.md)
 - Accessibility review: the `/accessibility-reviewer-assessments` skill
 
 ### External Resources
