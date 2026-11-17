@@ -4,10 +4,12 @@ import { getVariables } from './utils.js';
 
 // mathjs rationalize multiplies out powers and products of sums with simplify rules, and its time grows
 // steeply with the number of sums it multiplies and the terms that produces: (x+1)^7 takes 2.4 s,
-// (x+1)^8 19 s, (x+y)^5 3 s and (a+b+c+d)^3 8 s (PIE-1532). Past these limits nothing is multiplied out.
+// (x+1)^8 19 s, (x+y)^5 3 s, (a+b+c+d)^3 8 s, and (x+1)^4+(x+2)^4+(x+3)^4+(x+4)^4 5 s although
+// each part is small (PIE-1532). Past these limits nothing is multiplied out.
 const MAX_MULTIPLIED_SUMS = 4;
+const MAX_TERMS = 16;
 // terms times variables, since collecting each term costs more with more variables:
-// (a+b+c+d)(f+g+h+k) is slower than (x+1)^4, which has as many terms
+// (a+b)(c+d)(f+g)(h+k) is slower than (x+1)^4, which has as many terms
 const MAX_TERM_COST = 64;
 
 const children = (node: MathNode): MathNode[] => {
@@ -34,14 +36,22 @@ const constantExponent = (node: MathNode): number | undefined => {
   }
 };
 
+// a power of a base that counts as `count`, where `empty` is the count of a base without a sum
 const powerOf = (
   count: number,
+  empty: number,
   exponent: MathNode | undefined,
   raise: (count: number, n: number) => number
 ) => {
   const value = exponent ? constantExponent(exponent) : undefined;
-  // a variable exponent is never multiplied out: rationalize rejects it at once
-  return value === undefined ? count : raise(count, Math.ceil(Math.abs(value)));
+
+  if (value !== undefined) {
+    return raise(count, Math.ceil(Math.abs(value)));
+  }
+
+  // a variable exponent leaves a single term alone, as in 2^x, but it can still simplify to a constant
+  // before rationalize gets it, as 8+0x does, so a sum under one can't be bounded
+  return count === empty ? count : Number.POSITIVE_INFINITY;
 };
 
 // how many sums are multiplied together when the expression is multiplied out: a product or a quotient adds
@@ -67,7 +77,7 @@ export const multipliedSums = (node: MathNode): number => {
       case 'divide':
         return counts.reduce((sum, count) => sum + count, 0);
       case 'pow':
-        return powerOf(counts[0] ?? 0, node.args[1], (count, n) => count * n);
+        return powerOf(counts[0] ?? 0, 0, node.args[1], (count, n) => count * n);
       default:
         return Math.max(0, ...counts);
     }
@@ -98,7 +108,7 @@ export const expansionTerms = (node: MathNode): number => {
       case 'divide':
         return terms.reduce((product, t) => product * t, 1);
       case 'pow':
-        return powerOf(terms[0] ?? 1, node.args[1], (t, n) => t ** n);
+        return powerOf(terms[0] ?? 1, 1, node.args[1], (t, n) => t ** n);
       default:
         return Math.max(1, ...terms);
     }
@@ -111,10 +121,17 @@ export const expansionTerms = (node: MathNode): number => {
 export const isTooLargeToExpand = (node: MathNode): boolean => {
   const sums = multipliedSums(node);
 
-  return !(
-    sums <= MAX_MULTIPLIED_SUMS &&
-    (sums < 2 || expansionTerms(node) * Math.max(1, getVariables(node).length) <= MAX_TERM_COST)
-  );
+  if (!(sums <= MAX_MULTIPLIED_SUMS)) {
+    return true;
+  }
+
+  if (sums < 2) {
+    return false;
+  }
+
+  const terms = expansionTerms(node);
+
+  return !(terms <= MAX_TERMS && terms * Math.max(1, getVariables(node).length) <= MAX_TERM_COST);
 };
 
 // a variable in a denominator, as in 1/x or (x+1)^(-2). Sample points can't see where it is zero, so they

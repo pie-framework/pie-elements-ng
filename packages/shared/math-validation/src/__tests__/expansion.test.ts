@@ -28,8 +28,12 @@ describe('multipliedSums', () => {
     ['(x+1)^{-8}', 8],
     ['\\sin(x)+(x+1)^{8}', 8],
     ['\\sin\\left((x+1)^{8}\\right)', 0],
-    ['(x+1)^{y}', 1],
-  ])('%s multiplies %i sums', (latex, count) => {
+    // a variable exponent can simplify to a constant, so a sum under one can't be bounded
+    ['(x+1)^{y}', Number.POSITIVE_INFINITY],
+    ['(x+1)^{8+0x}', Number.POSITIVE_INFINITY],
+    ['2^{x+1}', 0],
+    ['x^{y}', 0],
+  ])('%s multiplies %s sums', (latex, count) => {
     expect(multipliedSums(node(latex))).toBe(count);
   });
 });
@@ -43,7 +47,9 @@ describe('expansionTerms', () => {
     ['(a+b+c+d)^{3}', 64],
     ['x^{1000}', 1],
     ['\\frac{x+1}{x+2}', 4],
-  ])('%s has %i terms multiplied out', (latex, terms) => {
+    ['(x+1)^{4}+(x+2)^{4}', 32],
+    ['(x+1)^{y}', Number.POSITIVE_INFINITY],
+  ])('%s has %s terms multiplied out', (latex, terms) => {
     expect(expansionTerms(node(latex))).toBe(terms);
   });
 });
@@ -58,6 +64,13 @@ describe('isTooLargeToExpand', () => {
     '(x+1)^{2}(x+2)^{2}(x+3)^{2}',
     '\\sin(x)+(x+1)^{8}',
     '\\frac{1}{(x+1)^{8}}',
+    '(x+1)^{y}',
+    '(x+1)^{8+0x}',
+    // each part is small, but rationalize collects their sum slowly
+    '(x+1)^{4}+(x+2)^{4}',
+    '(x+1)(x+2)(x+3)(x+4)+(x+5)(x+6)(x+7)(x+8)',
+    // as many terms as (x+1)^{4}, but over 8 variables
+    '(a+b)(c+d)(f+g)(h+k)',
   ])('%s is too large', (latex) => {
     expect(isTooLargeToExpand(node(latex))).toBe(true);
   });
@@ -70,7 +83,8 @@ describe('isTooLargeToExpand', () => {
     '(x+1)(x+2)(x+3)(x+4)',
     'x^{1000}',
     'a+b+c+d+f+g+h+k+m+n+p+q',
-    '(x+1)^{y}',
+    '2^{x+1}',
+    'x^{y}',
   ])('%s is not', (latex) => {
     expect(isTooLargeToExpand(node(latex))).toBe(false);
   });
