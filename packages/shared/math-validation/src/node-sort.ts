@@ -77,6 +77,40 @@ const applySort = (node: MathNode) => {
   return node;
 };
 
+// orders terms or factors whose insides are sorted: numbers first, by value, then symbols, by name, then
+// the rest by how they print, which is then the same however each was written. newCompare compares
+// operators by their arguments alone, so 1+x and 1/x would tie and keep the order they were written in.
+const compareSorted = (a: MathNode, b: MathNode): number => {
+  const kind = (node: MathNode) => (node.isConstantNode ? 0 : node.isSymbolNode ? 1 : 2);
+
+  if (kind(a) !== kind(b)) {
+    return kind(a) - kind(b);
+  }
+
+  const difference = kind(a) === 0 ? a.value - b.value : 0;
+
+  if (difference !== 0 && !Number.isNaN(difference)) {
+    return difference;
+  }
+
+  const [first, second] = [a.toString(), b.toString()];
+
+  return first < second ? -1 : first > second ? 1 : 0;
+};
+
+// sorts every sum and product after the terms and factors inside it, so that they are ordered by their
+// sorted forms. applySort orders them first, by how they are written, so \frac{zb}{2}\cdot\frac{c}{d}
+// and \frac{bz}{2}\cdot\frac{c}{d} came out in different orders (PIE-1541).
+const sortInnermostFirst = (node: MathNode): MathNode => {
+  const sorted = node.map((child) => sortInnermostFirst(child));
+
+  if (sorted.fn === 'add' || sorted.fn === 'multiply') {
+    sorted.args = (sorted.args || []).sort(compareSorted);
+  }
+
+  return sorted;
+};
+
 const firstChildOperator = (args: any, operator?: string) => {
   let result = false;
   args.forEach((arg: any) => {
@@ -98,8 +132,12 @@ const isAssociative = (node: MathNode) => node.fn === 'add' || node.fn === 'mult
  * with ignoreOrder, keeps a product of several quotients as it is, since joining them is not a
  * reordering: 2/3 * 4/5 then matches 4/5 * 2/3 but not 4/3 * 2/5 or (2 * 4)/(3 * 5). A single quotient
  * still takes the factors beside it into its numerator, as in 1.4.3.
+ *
+ * innermostFirst, also for literal mode with ignoreOrder, sorts every sum and product after the terms
+ * and factors inside it, so that the order of the fractions, or of the sums beside one, does not depend
+ * on how their insides are written. The default sorts each sum or product before what is inside it.
  */
-export type SortOptions = { keepQuotients?: boolean };
+export type SortOptions = { keepQuotients?: boolean; innermostFirst?: boolean };
 
 export const flattenNode = (node: MathNode, { keepQuotients = false }: SortOptions = {}) => {
   while (node.isParenthesisNode && node.content) {
@@ -295,7 +333,9 @@ export const sort = (node: MathNode, options: SortOptions = {}) => {
 
   const flattened = flattenNode(node, options);
 
-  resultNode = flattened.transform(applySort);
+  resultNode = options.innermostFirst
+    ? sortInnermostFirst(flattened)
+    : flattened.transform(applySort);
 
   return resultNode;
 };
