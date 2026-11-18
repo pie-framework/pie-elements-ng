@@ -171,6 +171,35 @@ it.each([
   expect(flattenNode(atm.convert(input), { keepQuotients: true })).toEqual(atm.convert(expected));
 });
 
+// innermostFirst sorts what is inside a sum or product first, so a product of fractions, or of sums, is
+// ordered by their sorted forms however each is written (PIE-1541)
+describe('sort with keepQuotients and innermostFirst', () => {
+  const sorted = (latex: string) =>
+    s(atm.convert(lta.convert(latex)), { keepQuotients: true, innermostFirst: true });
+
+  it.each([
+    ['\\frac{zb}{2}\\cdot\\frac{c}{d}', '\\frac{bz}{2}\\cdot\\frac{c}{d}'],
+    ['\\frac{zb}{2}\\cdot\\frac{c}{d}', '\\frac{c}{d}\\cdot\\frac{bz}{2}'],
+    ['\\frac{1}{x}\\cdot\\frac{1}{y}\\cdot(x+1)', '(x+1)\\cdot\\frac{1}{y}\\cdot\\frac{1}{x}'],
+    ['(z+b)(w+c)', '(c+w)(b+z)'],
+    ['(z+b)(w+c)\\cdot\\frac{1}{x}', '\\frac{1}{x}\\cdot(c+w)(b+z)'],
+    [
+      '\\sin(x)\\cdot y\\cdot\\frac{1}{z}\\cdot\\frac{1}{w}',
+      '\\frac{1}{w}\\cdot y\\cdot\\frac{1}{z}\\cdot\\sin(x)',
+    ],
+  ])('%s sorts as %s', (a, b) => {
+    expect(sorted(a).equals(sorted(b))).toBe(true);
+  });
+
+  it.each([
+    ['\\frac{zb}{2}\\cdot\\frac{c}{d}', '\\frac{zc}{2}\\cdot\\frac{b}{d}'],
+    ['(x+1)\\cdot y', '\\frac{1}{x}\\cdot y'],
+    ['(z+b)(w+c)', '(z+c)(w+b)'],
+  ])('%s does not sort as %s', (a, b) => {
+    expect(sorted(a).equals(sorted(b))).toBe(false);
+  });
+});
+
 expect.extend({
   toEqualExpression(received, expected: string | string[]) {
     const options = {
