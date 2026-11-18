@@ -153,6 +153,14 @@ describe('ImageContainer image', () => {
     expect(screen.getByRole('img', { name: 'Image with 3 response areas' })).toHaveAttribute('src', 'planets.png');
   });
 
+  it('uses the alt text from the model image when present', () => {
+    renderImageContainer({
+      image: { src: 'planets.png', width: 400, height: 300, alt: 'Number line labeled 8, 9, 10.' },
+    });
+
+    expect(screen.getByRole('img', { name: 'Number line labeled 8, 9, 10.' })).toHaveAttribute('src', 'planets.png');
+  });
+
   it('describes the image in the item language', () => {
     renderImageContainer({ language: 'es_ES', responseContainers: responseContainers.slice(0, 1) });
 
