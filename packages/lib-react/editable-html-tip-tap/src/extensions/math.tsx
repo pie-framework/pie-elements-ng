@@ -504,8 +504,9 @@ export const MathNodeView = (props) => {
   // Only open the toolbar when this node is *explicitly* selected
   // via a NodeSelection — not when it's merely included in a broader
   // TextSelection or AllSelection (e.g. click-drag across math, or Cmd+A).
+  // A read-only editor (view and evaluate modes) still selects the node on click, but never edits it.
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || !editor.isEditable) return;
 
     const { selection } = editor.state;
     const isNodeSelected = selection.node?.type?.name === 'math';
@@ -705,15 +706,14 @@ export const MathNodeView = (props) => {
 
   return (
     <NodeViewWrapper
-      className={`math-node-${timestamp.current}`}
+      className={`math-node math-node-${timestamp.current}`}
       style={{
         display: 'inline-flex',
-        cursor: 'pointer',
         margin: '0 4px',
       }}
       data-selected={selected}
     >
-      <div ref={nodeRef} onClick={() => setShowToolbar(true)} contentEditable={false}>
+      <div ref={nodeRef} onClick={() => editor.isEditable && setShowToolbar(true)} contentEditable={false}>
         <MathPreview latex={latex} />
       </div>
       {showToolbar &&

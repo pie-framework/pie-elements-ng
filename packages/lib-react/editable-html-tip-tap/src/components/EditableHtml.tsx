@@ -672,6 +672,12 @@ const StyledEditorContent: any = styled(EditorContent, {
       margin: '0',
     },
 
+    // Math opens its toolbar on click only while the editor is editable. A selector, as Tiptap's
+    // `setEditable` re-renders no node view, and ProseMirror keeps `contenteditable` current.
+    '&[contenteditable="true"] .math-node': {
+      cursor: 'pointer',
+    },
+
     // Out of flow so the caret stays at the start of the block; in-flow ::before pushes the caret after the hint text.
     // :only-child ensures the placeholder is hidden whenever the editor has other content (images, upload nodes, etc.)
     // and covers the type+backspace edge case where Tiptap only adds is-empty (not is-editor-empty).
