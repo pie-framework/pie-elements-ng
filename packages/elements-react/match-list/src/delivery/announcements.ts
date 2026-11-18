@@ -32,15 +32,17 @@ const sentence = (text: string) => (!text || /[.!?]$/.test(text) ? text : `${tex
  * string is left exactly as the author's text wrote it.
  */
 const withText = (t: Translate, key: Parameters<Translate>[0], values: { text: string } & Record<string, string | number>) => {
-  const read = t(key, values);
+  if (values.text) {
+    return t(key, values);
+  }
 
-  return values.text
-    ? read
-    : read
-        .replace(/\s+([.,。、，])/g, '$1')
-        .replace(/\s{2,}/g, ' ')
-        .replace(/\s*[:：]\s*$/, '')
-        .trim();
+  // Render with a marker in the slot so only the seam around it is tidied, never the author's choice text.
+  const SLOT = '\u0000';
+  const [before, after = ''] = t(key, { ...values, text: SLOT }).split(SLOT);
+  const head = before.replace(/[\s:：]+$/, '');
+  const tail = after.replace(/^\s+/, '');
+
+  return /^[.,。、，]/.test(tail) || !tail ? `${head}${tail}` : `${head} ${tail}`;
 };
 
 export const choiceLabel = (t: Translate, config: Config, answerId: string | number | undefined) => {
@@ -190,6 +192,13 @@ export const describeChoiceTile = (
   answerId: string | number | undefined,
   promptId?: string | number,
 ) => {
+  const title = config.answers.find((a) => String(a.id) === String(answerId))?.title;
+
+  // A choice with an image or math in it would lose that content to a text label; leave it to name itself.
+  if (title && (!stripHtml(title) || /<(img|svg|math|audio|video|object|embed|iframe)\b/i.test(title))) {
+    return undefined;
+  }
+
   const choice = choiceLabel(t, config, answerId);
 
   if (promptId === undefined || promptId === null) {
@@ -212,14 +221,14 @@ export const describeFocusTarget = (
   selected: DragData,
   over: DragData,
 ) => {
-  const choice = choiceLabel(t, config, selected.id);
+  const choice = choiceLabel(t, config, selected?.id);
 
   if (over.type === 'choices-pool') {
-    if (selected.promptId === undefined || selected.promptId === null) {
+    if (selected?.promptId === undefined || selected?.promptId === null) {
       return t('overPoolUnplacedA11y', { choice });
     }
 
-    const { number, text } = objectOf(config, selected.promptId);
+    const { number, text } = objectOf(config, selected?.promptId);
 
     return withText(t, 'overPoolFromDropAreaA11y', { choice, number, text });
   }
@@ -279,7 +288,6 @@ export const describeAvailableChoices = (t: Translate, config: Config, value: Se
 
   return {
     count: t('availableCountA11y', { count: available.length }),
-    choices: available.map((a) => t('answerChoiceA11y', { choice: choiceLabel(t, config, a.id) })),
     end: t('availableEndA11y'),
   };
 };

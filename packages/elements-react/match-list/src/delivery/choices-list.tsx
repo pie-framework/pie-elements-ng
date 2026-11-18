@@ -38,8 +38,9 @@ export class ChoicesList extends React.Component {
       t,
     } = this.props;
     const { config } = model;
+    const value = session?.value || {};
 
-    const filteredAnswers = availableAnswers(config, session.value || {}).map((answer) => (
+    const filteredAnswers = availableAnswers(config, value).map((answer) => (
         <DragAndDropAnswer
           key={answer.id}
           instanceId={instanceId}
@@ -55,12 +56,12 @@ export class ChoicesList extends React.Component {
       ));
 
     // Only a live interaction has choices left to move to.
-    const available = disabled ? null : describeAvailableChoices(t, config, session.value || {});
+    const available = disabled ? null : describeAvailableChoices(t, config, value);
 
     return (
       <ChoicesContainer>
         {available && (
-          <div style={visuallyHidden}>{[available.count, ...available.choices, available.end].join(' ')}</div>
+          <div style={visuallyHidden}>{[available.count, available.end].join(' ')}</div>
         )}
         <DroppablePlaceholder
           id="choices-pool"

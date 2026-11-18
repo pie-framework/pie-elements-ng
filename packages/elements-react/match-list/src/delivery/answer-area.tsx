@@ -189,7 +189,8 @@ export class AnswerArea extends React.Component {
                 onPlacementClick={onPlacementClick}
                 ariaLabel={isEmpty(sessionAnswer) ? undefined : describeChoiceTile(t, model.config, sessionAnswer.id, id)}
               />
-              <span style={visuallyHidden}>{reading.dropArea}</span>
+              {/* A filled drop area is already named by its tile; only the empty state needs saying. */}
+              {isEmpty(sessionAnswer) && <span style={visuallyHidden}>{reading.dropArea}</span>}
             </Row>
           );
         })}
