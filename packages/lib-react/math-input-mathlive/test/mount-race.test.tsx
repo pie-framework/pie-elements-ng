@@ -160,6 +160,20 @@ describe('async mount race', () => {
     expect(input.mathField.popoverPolicy).toBe('off');
   });
 
+  // MathLive reports an edit with an `input` event a tick later, so the toolbar can re-render with
+  // the mounted latex while the first key is already in the field (PIE-1509).
+  it('keeps the first edit when it re-renders with the mounted latex before the edit is reported', async () => {
+    const input = new Input({ latex: '' });
+
+    holderFor(input);
+    await input.componentDidMount();
+
+    input.mathField.value = '1';
+    input.componentDidUpdate({ latex: '' });
+
+    expect(input.mathField.value).toEqual('1');
+  });
+
   it('reports itself through innerRef on mount and clears it on unmount', async () => {
     const innerRef = vi.fn();
     const input = new Input({ innerRef });
