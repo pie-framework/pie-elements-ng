@@ -131,6 +131,8 @@ export class Main extends React.Component {
       resultMessage: '',
     };
     this.lastDragEndAt = 0;
+    this.endingDragForPlacement = false;
+    this.pointerDrag = false;
   }
 
   onRemoveAnswer(id) {
@@ -143,6 +145,8 @@ export class Main extends React.Component {
 
   onDragStart: any = (event) => {
     const { active } = event;
+
+    this.pointerDrag = !(event.activatorEvent instanceof KeyboardEvent);
 
     if (active?.data?.current) {
       let rect = null;
@@ -162,7 +166,8 @@ export class Main extends React.Component {
   };
 
   onDragCancel: any = () => {
-    this.setState({ draggingElement: null });
+    // A placement ended this drag itself, and has already said what it did.
+    this.setState(this.endingDragForPlacement ? { draggingElement: null } : { draggingElement: null, resultMessage: '' });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
   };
@@ -314,7 +319,13 @@ export class Main extends React.Component {
   // call unconditionally, including when no drag is actually live (dnd-kit simply has
   // no listener attached in that case, and the dispatch is a no-op).
   endAnyLiveKeyboardDrag: any = () => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    this.endingDragForPlacement = true;
+
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    } finally {
+      this.endingDragForPlacement = false;
+    }
   };
 
   placeSelectedAnswer: any = (overData) => {
@@ -385,6 +396,7 @@ export class Main extends React.Component {
 
     const { t, config: announcementConfig, value: announcementValue } = this.getAnnouncementContext();
     const dragData = (event) => event?.data?.current;
+    const element = this;
 
     // dnd-kit's own live region carries the drag as it unfolds; what a drop did is announced
     // from `resultMessage`, which knows the session before and after.
@@ -394,6 +406,11 @@ export class Main extends React.Component {
       },
 
       onDragOver({ active, over }) {
+        // The "press ENTER / TAB" wording is for the keyboard; a pointer drag has no use for it.
+        if (element.pointerDrag) {
+          return undefined;
+        }
+
         if (!over) {
           return t('notOverResponseAreaA11y', {
             choice: choiceLabel(t, announcementConfig, dragData(active)?.id),
@@ -415,6 +432,10 @@ export class Main extends React.Component {
       },
 
       onDragCancel({ active }) {
+        if (element.endingDragForPlacement) {
+          return undefined;
+        }
+
         return describeDeselection(t, announcementConfig, dragData(active)?.id);
       },
     };

@@ -60,7 +60,7 @@ export class ChoicesList extends React.Component {
     return (
       <ChoicesContainer>
         {available && (
-          <div style={visuallyHidden}>{[available.count, ...available.choices, available.end].join(' ')}</div>
+          <div style={visuallyHidden}>{[available.count, available.end].join(' ')}</div>
         )}
         <DroppablePlaceholder
           id="choices-pool"
