@@ -1,13 +1,16 @@
 import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
 import { LatexToAst } from '../conversion/latex-to-ast.js';
 import {
+  denominatorFactors,
   expansionTerms,
   hasVariableDenominator,
   hasVariableExponentOfSum,
+  haveSameDenominatorZeros,
   isTooLargeToExpand,
   multipliedSums,
   multipliedTerms,
 } from '../symbolic/expansion.js';
+import { getVariables } from '../symbolic/utils.js';
 
 const lta = new LatexToAst();
 const atm = new AstToMathJs();
@@ -131,5 +134,47 @@ describe('hasVariableDenominator', () => {
 
   it.each(['\\frac{x}{2}', '(x+1)^{8}', 'x^{y}'])('%s has none', (latex) => {
     expect(hasVariableDenominator(node(latex))).toBe(false);
+  });
+});
+
+describe('denominatorFactors', () => {
+  it.each([
+    ['\\frac{1}{x}', ['x']],
+    ['\\frac{(x+1)^{5}}{x(x+2)}', ['x', 'x+2']],
+    ['\\frac{1}{x^{2}}+\\frac{1}{x}', ['x']],
+    ['(x+1)^{5}x^{-1}(x+2)^{-1}', ['x', 'x+2']],
+    ['-\\frac{1}{-x}', ['x']],
+    ['\\frac{x}{2}', []],
+    ['(x+1)^{8}', []],
+  ])('%s has %j', (latex, factors) => {
+    expect(denominatorFactors(node(latex)).map(String)).toEqual(
+      factors.map((factor) => node(factor).toString())
+    );
+  });
+});
+
+describe('haveSameDenominatorZeros', () => {
+  const same = (a: string, b: string) => {
+    const [first, second] = [node(a), node(b)];
+    const variables = [...new Set([...getVariables(first), ...getVariables(second)])];
+    return haveSameDenominatorZeros(first, second, variables);
+  };
+
+  it.each([
+    ['\\frac{(x+1)^{5}}{x}', '(x+1)^{5}x^{-1}'],
+    ['\\frac{(x+1)^{5}}{x(x+2)}', '\\frac{(x+1)^{5}}{x^{2}+2x}'],
+    ['\\frac{1}{x}', '\\frac{1}{2x^{3}}'],
+    ['(x+1)^{8}', '(1+x)^{8}'],
+  ])('%s and %s are undefined at the same places', (a, b) => {
+    expect(same(a, b)).toBe(true);
+  });
+
+  it.each([
+    // a removable hole
+    ['\\frac{x^{6}-1}{x-1}', 'x^{5}+x^{4}+x^{3}+x^{2}+x+1'],
+    ['\\frac{(x+1)^{5}}{x}', '\\frac{(x+1)^{5}}{x+1}'],
+    ['\\frac{1}{x(x+2)}', '\\frac{1}{x(x-2)}'],
+  ])('%s and %s are not', (a, b) => {
+    expect(same(a, b)).toBe(false);
   });
 });

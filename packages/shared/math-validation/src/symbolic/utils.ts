@@ -157,7 +157,7 @@ const getVariableFactors = (variables: string[], maxPower: number) =>
     [{}] as Record<string, number>[]
   );
 
-const haveProportionalValues = (
+export const haveProportionalValues = (
   firstExpression: MathNode,
   secondExpression: MathNode,
   variables: string[],

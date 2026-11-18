@@ -92,6 +92,52 @@ export default {
       eq: ['(1+x)^{8}+\\frac{1}{x-1}'],
     },
     {
+      // past the limit with a variable denominator, the same function written another way still
+      // matches, as in 1.4.3 (PIE-1540): its denominators are zero at the same places
+      target: '\\frac{(x+1)^{5}}{x}',
+      eq: [
+        '(x+1)^{5}x^{-1}',
+        '\\frac{1}{x}(x+1)^{5}',
+        'x^{4}+5x^{3}+10x^{2}+10x+5+\\frac{1}{x}',
+        '\\frac{(x+1)^{4}}{x}+(x+1)^{4}',
+        '\\frac{(x+1)^{2}(x+1)^{3}}{x}',
+        '-\\frac{(x+1)^{5}}{-x}',
+      ],
+      ne: [
+        '\\frac{(x+1)^{5}}{x+1}',
+        '\\frac{(x+1)^{5}}{x^{2}}',
+        '(x+1)^{5}',
+        '-\\frac{(x+1)^{5}}{x}',
+        '\\frac{(x+1)^{5}}{\\left|x\\right|}',
+      ],
+    },
+    {
+      target: '\\frac{(x+1)^{5}}{x(x+2)}',
+      eq: ['\\frac{(x+1)^{5}}{x^{2}+2x}', '(x+1)^{5}x^{-1}(x+2)^{-1}'],
+      ne: ['\\frac{(x+1)^{5}}{x(x-2)}'],
+    },
+    {
+      target: '\\frac{5x(x+1)^{4}-(x+1)^{5}}{x^{2}}',
+      eq: ['\\frac{(x+1)^{4}(4x-1)}{x^{2}}'],
+    },
+    {
+      target: '\\frac{3}{(x+1)^{5}}',
+      eq: ['3(x+1)^{-5}', '\\frac{6}{2(1+x)^{5}}'],
+    },
+    {
+      target: '\\frac{(x-2)^{6}}{x^{3}}',
+      eq: ['\\frac{(2-x)^{6}}{x^{3}}'],
+    },
+    {
+      target: '\\frac{(x+y)^{5}}{y}',
+      eq: ['(x+y)^{5}y^{-1}'],
+    },
+    {
+      // a removable hole past the limit still keeps two forms apart
+      target: '\\frac{x^{6}-1}{x-1}(x+1)^{4}',
+      ne: ['(x^5+x^4+x^3+x^2+x+1)(x+1)^{4}'],
+    },
+    {
       // sampled, but a point where only one side is defined counts as a difference
       target: '(x+1)^{5}+\\sqrt{x}',
       eq: ['\\sqrt{x}+(1+x)^{5}'],
