@@ -379,8 +379,8 @@ export const isMathEqual = (a: any, b: any) => {
   }
 
   // not multiplied out, only their values can show that two expressions are equal, at points where
-  // both sides are defined or neither is. With a variable denominator they must also be undefined at
-  // the same places, so a removable hole still keeps two forms apart (PIE-1540)
+  // both sides are defined or neither is. With a variable denominator, the denominators must also be
+  // zero at the same values, so a removable hole still keeps two forms apart (PIE-1540)
   if (
     expansion.skipped &&
     [as, bs].every((node) => isPlainExpression(node) && !hasVariableExponentOfSum(node))

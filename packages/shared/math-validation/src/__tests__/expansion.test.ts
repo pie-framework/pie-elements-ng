@@ -177,4 +177,39 @@ describe('haveSameDenominatorZeros', () => {
   ])('%s and %s are not', (a, b) => {
     expect(same(a, b)).toBe(false);
   });
+
+  // a factor written out, repeated or spread over several fractions is zero at the same values (PIE-1540)
+  it.each([
+    ['\\frac{(x+1)^{5}}{x^{2}(x+2)}', '\\frac{(x+1)^{5}}{x^{3}+2x^{2}}'],
+    ['(x+1)^{5}(x-1)^{-2}', '\\frac{(x+1)^{5}}{x^{2}-2x+1}'],
+    ['\\frac{x+2}{x^{2}-1}', '\\frac{1}{x-1}+\\frac{1}{x^{2}-1}'],
+    ['\\frac{1}{0.5x+1}', '\\frac{1}{x+2}'],
+    ['\\frac{1}{x^{2}y}', '\\frac{1}{xy\\cdot x}'],
+    ['\\frac{1}{x^{3}y+2x^{2}y}', '\\frac{1}{x^{2}y(x+2)}'],
+    ['\\frac{1}{x^{2}+2xy+y^{2}}', '\\frac{1}{(x+y)^{2}}'],
+    // the other factors still match
+    ['\\frac{1}{(x^{3}+2x^{2})\\sqrt{x}}', '\\frac{1}{x^{2}(x+2)\\sqrt{x}}'],
+    // 1/x and x cancel as factors, so a fraction inside a denominator hides a hole, as in 1.4.3
+    ['\\frac{(x+1)^{8}}{\\frac{1}{x}}', 'x(x+1)^{8}'],
+  ])('%s and %s are zero at the same values', (a, b) => {
+    expect(same(a, b)).toBe(true);
+    expect(same(b, a)).toBe(true);
+  });
+
+  it.each([
+    // a hole at x = -2, at x = -1, and where x = -2 for any y
+    ['\\frac{1}{x^{3}+2x^{2}}', '\\frac{1}{x^{2}}'],
+    ['\\frac{1}{x^{3}-x}', '\\frac{1}{x(x-1)}'],
+    ['\\frac{1}{x^{3}y+2x^{2}y}', '\\frac{1}{x^{2}y}'],
+    // zeros are compared over the complex numbers, where x^2+2 has two
+    ['\\frac{1}{x^{2}+1}', '\\frac{1}{(x^{2}+1)(x^{2}+2)}'],
+    // the other factors differ
+    ['\\frac{1}{(x^{3}+2x^{2})\\sqrt{x}}', '\\frac{1}{x^{2}(x+2)\\left|x\\right|}'],
+    // the same zeros, but undecided, so kept apart: past the degree limit, and past the safe integers
+    ['\\frac{1}{x^{25}+x^{24}}', '\\frac{1}{x(x+1)}'],
+    ['\\frac{1}{x^{3}+10^{16}x^{2}}', '\\frac{1}{x^{2}(x+10^{16})}'],
+  ])('%s and %s are not zero at the same values', (a, b) => {
+    expect(same(a, b)).toBe(false);
+    expect(same(b, a)).toBe(false);
+  });
 });
