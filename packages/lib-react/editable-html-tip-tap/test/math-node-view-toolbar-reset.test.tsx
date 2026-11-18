@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 
 vi.mock('@pie-lib/math-toolbar', () => ({ MathPreview: () => null, MathToolbar: () => null }));
 vi.mock('@tiptap/react', () => ({
@@ -16,6 +16,7 @@ describe('MathNodeView', () => {
     const editor = {
       _toolbarOpened: false,
       isDestroyed: false,
+      isEditable: true,
       state: { selection: { node: { type: { name: 'math' } } }, doc: {} },
       view: {
         dom: document.createElement('div'),
@@ -64,6 +65,7 @@ describe('MathNodeView', () => {
     const editor = {
       _toolbarOpened: false,
       isDestroyed: false,
+      isEditable: true,
       instanceId: 'editor-1',
       state: { selection: { node: { type: { name: 'math' } }, from: 0 }, doc: {} },
       view: {
@@ -113,5 +115,39 @@ describe('MathNodeView', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('opens no toolbar in a read-only editor, from a click or from the selection a click makes', () => {
+    const editor = {
+      _toolbarOpened: false,
+      isDestroyed: false,
+      isEditable: false,
+      instanceId: 'read-only',
+      state: { selection: { node: { type: { name: 'math' } }, from: 0 }, doc: {} },
+      view: {
+        dom: document.createElement('div'),
+        coordsAtPos: () => ({ top: 0, left: 0, bottom: 0, right: 0 }),
+      },
+      commands: { focus: vi.fn() },
+      on: vi.fn(),
+      off: vi.fn(),
+      emit: vi.fn(),
+    };
+    const props = {
+      node: { attrs: { latex: 'x', wrapper: null }, nodeSize: 1 },
+      updateAttributes: vi.fn(),
+      editor,
+      selected: false,
+      options: {},
+      getPos: () => 0,
+    };
+
+    const { container, rerender, unmount } = render(<MathNodeView {...props} />);
+
+    fireEvent.click(container.querySelector('[contenteditable="false"]'));
+    rerender(<MathNodeView {...props} selected />);
+
+    expect(document.querySelector('[data-toolbar-for="read-only"]')).toBeNull();
+    unmount();
   });
 });
