@@ -194,8 +194,8 @@ export const describeChoiceTile = (
 ) => {
   const title = config.answers.find((a) => String(a.id) === String(answerId))?.title;
 
-  // A choice made of an image or math has nothing to read as text; leave it to name itself.
-  if (title && !stripHtml(title)) {
+  // A choice with an image or math in it would lose that content to a text label; leave it to name itself.
+  if (title && (!stripHtml(title) || /<(img|svg|math|audio|video|object|embed|iframe)\b/i.test(title))) {
     return undefined;
   }
 

@@ -146,7 +146,8 @@ export class Main extends React.Component {
   onDragStart: any = (event) => {
     const { active } = event;
 
-    this.pointerDrag = !(event.activatorEvent instanceof KeyboardEvent);
+    // Compared by type, not instanceof: inside an iframe the event's constructor is another realm's.
+    this.pointerDrag = /^(pointer|mouse|touch)/.test(event.activatorEvent?.type || '');
 
     if (active?.data?.current) {
       let rect = null;
@@ -319,6 +320,8 @@ export class Main extends React.Component {
   // call unconditionally, including when no drag is actually live (dnd-kit simply has
   // no listener attached in that case, and the dispatch is a no-op).
   endAnyLiveKeyboardDrag: any = () => {
+    // dnd-kit's cancel handler runs onDragCancel and its announcement synchronously (it only awaits
+    // for a drop with `cancelDrop`), so the flag is still up when they read it.
     this.endingDragForPlacement = true;
 
     try {
