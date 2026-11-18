@@ -6,6 +6,7 @@ import {
   mathContentLanguage,
   normalizeResponse,
 } from '../src/response-normalizer.js';
+import { LETTER_VARIANTS_HELP } from '../src/letter-variants-help.js';
 import { DIGIT_ZEROS as ZEROS, inSystem } from './digit-systems.js';
 
 // A fixed-seed generator, so a failure reproduces.
@@ -344,5 +345,28 @@ describe('foldCase', () => {
     expect(foldCase('İI')).toBe('İI'.toLowerCase());
     expect(foldCase('İI', 'not a tag!')).toBe('İI'.toLowerCase());
     expect(foldCase('Paris', 'en-US')).toBe('paris');
+  });
+});
+
+describe('LETTER_VARIANTS_HELP', () => {
+  const arabic = LETTER_VARIANTS_HELP.flatMap((part) =>
+    typeof part === 'string' ? [] : [part.ar]
+  );
+  const fold = (value: string) => normalizeResponse(value, { foldLetterVariants: true });
+
+  it('reads as the authoring help text is fixed', () => {
+    const text = LETTER_VARIANTS_HELP.map((part) =>
+      typeof part === 'string' ? part : part.ar
+    ).join('');
+    expect(text).toBe('Accepts أ إ آ ٱ as ا, ignores tashkeel, accepts ه for ة and ي for ى.');
+  });
+
+  it('names the variants the fold accepts', () => {
+    const [alefForms, alef, heh, tehMarbuta, yeh, alefMaksura] = arabic;
+
+    expect(fold(alefForms)).toBe([alef, alef, alef, alef].join(' '));
+    expect(fold(tehMarbuta)).toBe(heh);
+    expect(fold(alefMaksura)).toBe(yeh);
+    expect(fold('مَدْرَسَة')).toBe(fold('مدرسة'));
   });
 });

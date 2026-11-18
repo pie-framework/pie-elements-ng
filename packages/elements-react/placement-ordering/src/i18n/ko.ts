@@ -38,4 +38,9 @@ export default {
   },
   useTabToAnotherObject: 'Tab 키로 다른 개체로 이동하세요.',
   noLongerSelected: '개체 {text}의 선택이 해제되었습니다.',
+  moveUp: '{text} 위로 이동',
+  moveDown: '{text} 아래로 이동',
+  moveLeft: '{text} 왼쪽으로 이동',
+  moveRight: '{text} 오른쪽으로 이동',
+  movedToPosition: '{text}을(를) {total}개 중 {position}번째로 이동했습니다.',
 } satisfies MessageCatalog;

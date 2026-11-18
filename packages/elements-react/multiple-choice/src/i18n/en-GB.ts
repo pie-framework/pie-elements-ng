@@ -15,5 +15,4 @@ export default {
   partAnswerChoicesA11y: '{partLabel}, answer choices',
   pickTheAnswerBelowA11y: 'Pick the answer below',
   choiceNameA11y: 'Choice {key}',
-  eliminatedA11y: '(eliminated)',
 } satisfies MessageCatalog;

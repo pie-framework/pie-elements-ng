@@ -38,4 +38,9 @@ export default {
   },
   useTabToAnotherObject: 'ใช้ Tab เพื่อไปยังออบเจ็กต์อื่น',
   noLongerSelected: 'ออบเจ็กต์ {text} ไม่ได้ถูกเลือกอีกต่อไป',
+  moveUp: 'ย้าย {text} ขึ้น',
+  moveDown: 'ย้าย {text} ลง',
+  moveLeft: 'ย้าย {text} ไปทางซ้าย',
+  moveRight: 'ย้าย {text} ไปทางขวา',
+  movedToPosition: 'ย้าย {text} ไปยังตำแหน่งที่ {position} จาก {total} แล้ว',
 } satisfies MessageCatalog;

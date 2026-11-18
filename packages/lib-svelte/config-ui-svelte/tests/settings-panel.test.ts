@@ -79,6 +79,26 @@ describe('SettingsPanel', () => {
     expect(el.querySelectorAll('input')).toHaveLength(1);
   });
 
+  it('shows a toggle’s help text under it as the switch’s description', () => {
+    const el = render({
+      model: {},
+      groups: {
+        Settings: {
+          promptEnabled: { ...toggle('Prompt'), helperText: 'Shows the prompt.' },
+          rationaleEnabled: toggle('Rationale'),
+        },
+      },
+      onChangeModel: vi.fn(),
+    });
+    const [described, plain] = [...el.querySelectorAll('input[role="switch"]')];
+    const help = document.getElementById(described.getAttribute('aria-describedby') ?? '');
+
+    expect(help?.textContent?.trim()).toBe('Shows the prompt.');
+    expect(described.closest('label')?.textContent?.trim()).toBe('Prompt');
+    expect(plain.hasAttribute('aria-describedby')).toBe(false);
+    expect(el.querySelectorAll('.pie-settings-help')).toHaveLength(1);
+  });
+
   it('offers a choice as a labelled radio group', () => {
     const onChangeModel = vi.fn();
     const el = render({

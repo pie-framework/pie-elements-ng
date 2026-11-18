@@ -11,6 +11,7 @@ import type { ConfigureLanguageOptions, EditableHtmlConfigureProp } from '@pie-e
 
 import ECRToolbar from './ecr-toolbar.js';
 import AlternateResponses from './alternateResponses.js';
+import { LetterVariantsHelp, withAreaFold } from './fold-letter-variants.js';
 import { decodeHTML, getAdjustedLength } from './markupUtils.js';
 import { generateValidationMessage } from './utils.js';
 import type { ExplicitConstructedResponseValidationErrors } from '../controller/index.js';
@@ -169,15 +170,27 @@ export class Main extends React.Component<MainProps, State> {
     onModelChanged({ maxLengthPerChoice });
   };
 
+  onFoldLetterVariantsChanged = (checked: boolean, areaKey: string) => {
+    const { model, onModelChanged } = this.props;
+
+    onModelChanged({ foldLetterVariantsPerChoice: withAreaFold(model.foldLetterVariantsPerChoice, areaKey, checked) });
+  };
+
   onChangeResponse = (index: string, newVal: string) => {
     const { model, onModelChanged } = this.props;
     const { choices } = model;
     // componentDidMount sets `maxLengthPerChoice`, so it is present here.
     let maxLengthPerChoice = model.maxLengthPerChoice as number[];
+    let foldLetterVariantsPerChoice: boolean[] | undefined;
     const newValLength = decodeHTML(newVal || '').length;
 
     if (!choices[index] || !choices[index].length) {
       choices[index] = [{ label: newVal || '', value: '0' }];
+
+      // A new area starts strict, whatever an entry left at its index says.
+      if (Array.isArray(model.foldLetterVariantsPerChoice) && model.foldLetterVariantsPerChoice[Number(index)]) {
+        foldLetterVariantsPerChoice = withAreaFold(model.foldLetterVariantsPerChoice, index, false);
+      }
 
       // add default values for missing choices up to the new index position
       const nbOfMissingChoices =
@@ -197,12 +210,12 @@ export class Main extends React.Component<MainProps, State> {
       }
     }
 
-    onModelChanged({ choices, maxLengthPerChoice });
+    onModelChanged({ choices, maxLengthPerChoice, ...(foldLetterVariantsPerChoice && { foldLetterVariantsPerChoice }) });
   };
 
   onChange = (markup: string) => {
     const {
-      model: { choices, maxLengthPerChoice },
+      model: { choices, maxLengthPerChoice, foldLetterVariantsPerChoice },
       onModelChanged,
     } = this.props;
     const domMarkup = createElementFromHTML(markup);
@@ -210,6 +223,8 @@ export class Main extends React.Component<MainProps, State> {
 
     const allChoices: Choices = {};
     const updatedMaxLengthPerChoice: number[] = [];
+    // Each area's spelling-variant choice follows it to its new index, as its maximum length does.
+    const updatedFoldLetterVariantsPerChoice: boolean[] = [];
 
     allRespAreas.forEach((el, index) => {
       const areaIndex = el.dataset.index as string;
@@ -222,6 +237,8 @@ export class Main extends React.Component<MainProps, State> {
         };
 
         updatedMaxLengthPerChoice[index] = (maxLengthPerChoice as number[])[Number(areaIndex)];
+        updatedFoldLetterVariantsPerChoice[index] =
+          Array.isArray(foldLetterVariantsPerChoice) && foldLetterVariantsPerChoice[Number(areaIndex)] === true;
       }
 
       allChoices[index] = newChoices;
@@ -233,6 +250,10 @@ export class Main extends React.Component<MainProps, State> {
         choices: allChoices,
         slateMarkup: domMarkup.innerHTML,
         maxLengthPerChoice: updatedMaxLengthPerChoice,
+        // Written only for an item that has the entries, so other items' models are unchanged.
+        ...(Array.isArray(foldLetterVariantsPerChoice) && {
+          foldLetterVariantsPerChoice: Array.from(updatedFoldLetterVariantsPerChoice, (fold) => fold === true),
+        }),
       });
 
     this.setState({ cachedChoices: undefined }, callback);
@@ -292,6 +313,7 @@ export class Main extends React.Component<MainProps, State> {
       collapseWhitespace = {},
       ignoreSlashSpacing = {},
       ignoreAccents = {},
+      foldLetterVariants = {},
       maxResponseAreas,
       partialScoring = {},
       playerSpellCheck = {},
@@ -312,6 +334,7 @@ export class Main extends React.Component<MainProps, State> {
     const {
       errors,
       extraCSSRules,
+      foldLetterVariantsEnabled,
       maxLengthPerChoiceEnabled,
       promptEnabled,
       rationaleEnabled,
@@ -347,6 +370,10 @@ export class Main extends React.Component<MainProps, State> {
       language: language.settings && language.enabled && dropdown(languageChoices.label, languageChoices.options),
       'responseAreaInputConfiguration.inputConfiguration.characters.disabled':
         spanishButton.settings && toggle(spanishButton.label, true),
+      foldLetterVariantsEnabled: foldLetterVariants.settings && {
+        ...toggle(foldLetterVariants.label),
+        helperText: <LetterVariantsHelp />,
+      },
     };
     const panelProperties = {
       teacherInstructionsEnabled: teacherInstructions.settings && toggle(teacherInstructions.label),
@@ -494,6 +521,8 @@ export class Main extends React.Component<MainProps, State> {
           onChange={this.onResponsesChanged}
           onLengthChange={this.onLengthChanged}
           maxLengthPerChoiceEnabled={maxLengthPerChoiceEnabled as boolean}
+          foldLetterVariantsEnabled={foldLetterVariantsEnabled === true}
+          onFoldLetterVariantsChange={this.onFoldLetterVariantsChanged}
           spellCheck={spellCheckEnabled}
           choicesErrors={choicesErrors}
           pluginProps={getPluginProps(responseAreaInputConfiguration?.inputConfiguration)}

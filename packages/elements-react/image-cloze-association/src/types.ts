@@ -68,6 +68,8 @@ export interface ImageClozeAssociationImage {
   width?: number;
   /** The height of the image */
   height?: number;
+  /** The alternative text of the image */
+  alt?: string;
 }
 
 export interface ImageClozeAssociationUiStyle {

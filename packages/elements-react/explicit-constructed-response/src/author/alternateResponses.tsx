@@ -13,6 +13,8 @@ export class AlternateResponses extends React.Component {
     onChange: PropTypes.func.isRequired,
     onLengthChange: PropTypes.func.isRequired,
     maxLengthPerChoiceEnabled: PropTypes.bool.isRequired,
+    foldLetterVariantsEnabled: PropTypes.bool,
+    onFoldLetterVariantsChange: PropTypes.func,
     spellCheck: PropTypes.bool,
     pluginProps: PropTypes.object,
   };
@@ -33,15 +35,16 @@ export class AlternateResponses extends React.Component {
       !isEqual(this.state.choices, props.model.choices) ||
       !isEqual(props.model.choices, this.props.model.choices) ||
       (this.state.values && Object.keys(this.state.values).length !== Object.keys(this.props.model.choices).length) ||
-      props.maxLengthPerChoiceEnabled !== this.props.maxLengthPerChoiceEnabled
+      props.maxLengthPerChoiceEnabled !== this.props.maxLengthPerChoiceEnabled ||
+      props.foldLetterVariantsEnabled !== this.props.foldLetterVariantsEnabled
     ) {
       const { choices, maxLengthPerChoice } = props.model;
 
       const selectedValues = reduce(
         choices,
         (obj, c, key) => {
-          // if maxLengthPerChoiceEnabled is true, we display all the choices
-          if (c && (props.maxLengthPerChoiceEnabled || c.length > 1)) {
+          // with a maximum length or spelling-variant toggle per area, every area is listed
+          if (c && (props.maxLengthPerChoiceEnabled || props.foldLetterVariantsEnabled || c.length > 1)) {
             obj[key] = c[0];
           }
 
@@ -165,7 +168,9 @@ export class AlternateResponses extends React.Component {
   render() {
     const { choices } = this.state;
     const {
-      model: { maxLengthPerChoice, maxLengthPerChoiceEnabled },
+      model: { maxLengthPerChoice, maxLengthPerChoiceEnabled, foldLetterVariantsPerChoice },
+      foldLetterVariantsEnabled,
+      onFoldLetterVariantsChange,
       spellCheck,
       choicesErrors,
       pluginProps,
@@ -174,8 +179,8 @@ export class AlternateResponses extends React.Component {
     return (
       <div>
         {map(choices, (c, key) => {
-          // if maxLengthPerChoiceEnabled is true, we display all the choices
-          if (c && (maxLengthPerChoiceEnabled || c.length > 1)) {
+          // with a maximum length or spelling-variant toggle per area, every area is listed
+          if (c && (maxLengthPerChoiceEnabled || foldLetterVariantsEnabled || c.length > 1)) {
             const selected = this.state.values[key];
 
             return (
@@ -192,6 +197,9 @@ export class AlternateResponses extends React.Component {
                 choices={c}
                 maxLength={maxLengthPerChoice[key]}
                 showMaxLength={maxLengthPerChoiceEnabled}
+                showFoldLetterVariants={foldLetterVariantsEnabled}
+                foldLetterVariants={Array.isArray(foldLetterVariantsPerChoice) && foldLetterVariantsPerChoice[key] === true}
+                foldLetterVariantsChanged={(checked) => onFoldLetterVariantsChange(checked, key)}
                 spellCheck={spellCheck}
                 pluginProps={pluginProps}
               />

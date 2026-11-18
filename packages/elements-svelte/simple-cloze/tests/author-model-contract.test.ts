@@ -99,9 +99,14 @@ describe('simple-cloze author model contract', () => {
     const { element } = await mount({
       prompt: { label: 'Question' },
       teacherInstructions: { label: 'Notes for teachers' },
+      foldLetterVariants: { label: 'Accept spelling variants' },
     });
 
-    expect(switchLabels(element)).toEqual(['Question', 'Notes for teachers']);
+    expect(switchLabels(element)).toEqual([
+      'Question',
+      'Accept spelling variants',
+      'Notes for teachers',
+    ]);
     expect(fieldLabels(element)).toEqual(['Notes for teachers', 'Question']);
     expect(editorNames(element)).toEqual(['Notes for teachers', 'Question']);
   });
@@ -116,9 +121,48 @@ describe('simple-cloze author model contract', () => {
   });
 
   it('leaves out settings the configuration does not offer', async () => {
-    const { element } = await mount({ prompt: { settings: false } });
+    const { element } = await mount({
+      prompt: { settings: false },
+      foldLetterVariants: { settings: false },
+    });
 
     expect(switchLabels(element)).toEqual(['Teacher Instructions']);
+  });
+
+  it('offers Arabic spelling variants off, and announces turning them on', async () => {
+    const { element, updates } = await mount();
+    const toggle = switchFor(element, 'Accept Arabic Spelling Variants');
+
+    expect(switchLabels(element)).toEqual([
+      'Prompt',
+      'Accept Arabic Spelling Variants',
+      'Teacher Instructions',
+    ]);
+    expect(toggle.checked).toBe(false);
+
+    toggle.click();
+    flushSync();
+
+    expect(updates.at(-1)?.detail.update).toEqual(edited({ foldLetterVariants: true }));
+  });
+
+  it('describes the Arabic spelling variants toggle with the variants it accepts', async () => {
+    const { element } = await mount();
+    const toggle = switchFor(element, 'Accept Arabic Spelling Variants');
+    const help = document.getElementById(toggle.getAttribute('aria-describedby') ?? '');
+
+    expect(help?.textContent?.trim()).toBe(
+      'Accepts أ إ آ ٱ as ا, ignores tashkeel, accepts ه for ة and ي for ى.'
+    );
+    expect([...(help?.querySelectorAll('[lang="ar"]') ?? [])].map((el) => el.textContent)).toEqual([
+      'أ إ آ ٱ',
+      'ا',
+      'ه',
+      'ة',
+      'ي',
+      'ى',
+    ]);
+    expect(switchFor(element, 'Prompt').hasAttribute('aria-describedby')).toBe(false);
   });
 
   it('hides the settings panel when the configuration disables it', async () => {

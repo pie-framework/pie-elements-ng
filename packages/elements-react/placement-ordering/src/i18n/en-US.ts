@@ -85,4 +85,15 @@ export default {
   useTabToAnotherObject: 'Use TAB to move to another object.',
   /** A selection ended without moving the object. */
   noLongerSelected: 'Object {text} is no longer selected.',
+
+  /**
+   * The buttons that move an object one position when the item has no response areas. Slot `{text}` is the
+   * object's text.
+   */
+  moveUp: 'Move {text} up',
+  moveDown: 'Move {text} down',
+  moveLeft: 'Move {text} left',
+  moveRight: 'Move {text} right',
+  /** After a button moved an object. Slots `{text}`, `{position}` and `{total}`. */
+  movedToPosition: 'Moved {text} to position {position} of {total}.',
 };

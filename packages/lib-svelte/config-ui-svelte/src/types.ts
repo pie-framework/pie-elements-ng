@@ -20,6 +20,11 @@ export type ToggleSetting = {
   label: string;
   isConfigProperty: boolean;
   disabled: boolean;
+  /**
+   * Shown under the switch and set as its description. A snippet can mark the language of
+   * the words it quotes.
+   */
+  helperText?: string | Snippet;
 };
 
 export type RadioSetting = {
