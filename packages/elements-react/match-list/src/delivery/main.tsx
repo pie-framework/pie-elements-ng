@@ -2,7 +2,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { swap } from '@pie-lib/drag';
 import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode } from '@dnd-kit/core';
 import { restrictToWindowEdges  } from '@dnd-kit/modifiers';
 import { closestResponseArea } from './collision-detection.js';
@@ -39,11 +38,20 @@ const renderUi =
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
 import { styled } from '@mui/material/styles';
-import { findKey, isUndefined } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer, buildDragId } from './answer.js';
 import { catalogs } from '../i18n/index.js';
+import { visuallyHidden } from './visually-hidden.js';
+import {
+  applyPlacement,
+  choiceLabel,
+  describeDeselection,
+  describeFocusTarget,
+  describeIntro,
+  describePlacementResult,
+  describeSelection,
+} from './announcements.js';
 
 // A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
 // the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
@@ -76,6 +84,7 @@ const sensors = [
 ];
 
 const MainContainer: any = styled('div')({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -118,6 +127,8 @@ export class Main extends React.Component {
       showCorrectAnswer: false,
       draggingElement: null,
       selectedAnswer: null,
+      // What a placement just did, for the live region; dnd-kit's own region only knows the drag.
+      resultMessage: '',
     };
     this.lastDragEndAt = 0;
   }
@@ -144,6 +155,7 @@ export class Main extends React.Component {
 
       this.setState({
         draggingElement: { ...active.data.current, rect },
+        resultMessage: '',
       });
       this.selectAnswer(active.data.current);
     }
@@ -166,65 +178,33 @@ export class Main extends React.Component {
       config: { duplicates },
     } = model;
 
-    if (isUndefined(session.value)) {
-      session.value = {};
-    }
+    const next = applyPlacement(session.value, activeData, overData, duplicates);
 
-    // dropping a placed answer back to the choices pool = remove it
-    if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
-      session.value[activeData.promptId] = undefined;
-      onSessionChange(session);
+    // A drop that changes nothing is not a change to report.
+    if (next === session.value) {
       return;
     }
 
-    const answerId = activeData.id;
-    const sourcePromptId = activeData.promptId;
+    session.value = next;
+    onSessionChange(session);
+  };
 
-    // Handle dropping onto a drop zone
-    if (overData.type === 'drop-zone' && overData.promptId != null) {
-      const targetPromptId = overData.promptId;
+  // The i18n view and the model's slice the announcements are built from.
+  getAnnouncementContext: any = () => {
+    const { model, session, language } = this.props;
+    const i18n = catalogs.forLocale(language);
 
-      if (activeData.type === 'choice' && targetPromptId !== undefined) {
-        // check if this choice is already placed somewhere
-        const existingPlacement = findKey(session.value, (val) => val === answerId);
+    return { t: i18n.t.bind(i18n), config: model.config, value: session.value || {} };
+  };
 
-        if (existingPlacement && !duplicates) {
-          // swap if duplicates not allowed
-          session.value = swap(session.value, existingPlacement, targetPromptId);
-        } else {
-          // place answer
-          session.value[targetPromptId] = answerId;
-        }
-      }
-      // Handle moving a placed item (target) to another drop zone
-      else if (activeData.type === 'target' && sourcePromptId != null) {
-        // If moving to a different placeholder
-        if (sourcePromptId !== targetPromptId) {
-          const targetHasItem = session.value[targetPromptId] != null;
+  // Describes the placement against the session as it is *before* the placement is applied.
+  announceResult: any = (activeData, overData) => {
+    const { t, config, value } = this.getAnnouncementContext();
+    const resultMessage = overData
+      ? describePlacementResult(t, config, value, activeData, overData)
+      : describeDeselection(t, config, activeData.id);
 
-          if (targetHasItem && !duplicates) {
-            // Without duplicates each choice is placed at most once, so trading the two
-            // answers is the only way to fill the target without dropping the answer it
-            // already holds.
-            const temp = session.value[targetPromptId];
-            session.value[targetPromptId] = answerId;
-            session.value[sourcePromptId] = temp;
-          } else {
-            // Empty target, or duplicates allowed: the moved answer takes the target and
-            // the source area is vacated. Any answer displaced from the target is simply
-            // available in the pool again — which with duplicates enabled always lists
-            // every choice anyway — matching how the choice -> occupied target path above
-            // already behaves. Leaving this case unhandled (as it was) made moving a
-            // placed answer onto an occupied area a silent no-op whenever duplicates
-            // were enabled.
-            session.value[targetPromptId] = answerId;
-            delete session.value[sourcePromptId];
-          }
-        }
-      }
-
-      onSessionChange(session);
-    }
+    this.setState({ resultMessage });
   };
 
   onPlaceAnswer: any = (event) => {
@@ -244,6 +224,7 @@ export class Main extends React.Component {
 
     const destinationDragId = this.getDestinationDragId(activeData, overData);
 
+    this.announceResult(activeData, overData);
     this.placeAnswer(activeData, overData);
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
@@ -300,15 +281,22 @@ export class Main extends React.Component {
   // Unconditionally selects (used by the drag-start mirror, and internally when
   // switching from one choice to another).
   selectAnswer: any = (data) => {
-    this.setState({ selectedAnswer: data });
+    this.setState({ selectedAnswer: data, resultMessage: '' });
   };
 
   // Click-to-select semantics: selecting the currently-selected answer again clears
   // the selection instead of re-selecting it.
   toggleAnswerSelection: any = (data) => {
-    this.setState((state) => ({
-      selectedAnswer: this.isSameAnswer(state.selectedAnswer, data) ? null : data,
-    }));
+    const { t, config } = this.getAnnouncementContext();
+
+    this.setState((state) => {
+      const deselecting = this.isSameAnswer(state.selectedAnswer, data);
+
+      return {
+        selectedAnswer: deselecting ? null : data,
+        resultMessage: deselecting ? describeDeselection(t, config, data.id) : describeSelection(t, config, data.id),
+      };
+    });
   };
 
   cancelSelection: any = () => {
@@ -338,6 +326,7 @@ export class Main extends React.Component {
 
     const destinationDragId = this.getDestinationDragId(selectedAnswer, overData);
 
+    this.announceResult(selectedAnswer, overData);
     this.placeAnswer(selectedAnswer, overData);
     this.cancelSelection();
     this.endAnyLiveKeyboardDrag();
@@ -394,65 +383,39 @@ export class Main extends React.Component {
     const { prompt } = config;
     const i18n = catalogs.forLocale(language);
 
-    // Helpers for accessible announcements
-    const getChoiceLabel = (answerId) => {
-      const answer = config.answers.find((a) => String(a.id) === String(answerId));
-      // Strip HTML tags for screen reader
-      const text = answer?.title ? answer.title.replace(/<[^>]*>/g, '').trim() : '';
+    const { t, config: announcementConfig, value: announcementValue } = this.getAnnouncementContext();
+    const dragData = (event) => event?.data?.current;
 
-      return text || i18n.t('answerA11y', { id: String(answerId) });
-    };
-
-    // Read the dragged choice off the tile's own drag data rather than parsing it back
-    // out of the drag id: a drag id identifies the tile (a response area, for a placed
-    // answer — see buildDragId in ./answer), not the choice the tile holds.
-    const getDraggedLabel = (active) => getChoiceLabel(active?.data?.current?.id);
-
-    const getDropTargetLabel = (over) => {
-      const overData = over?.data?.current;
-
-      if (overData?.type === 'choices-pool' || over?.id === 'choices-pool') {
-        return { label: i18n.t('choicesListA11y'), choiceId: null };
-      }
-
-      // Prefer the droppable's own data; fall back to the id for a droppable registered
-      // without any (the id shape is "drop-{promptId}").
-      const promptId = overData?.promptId != null ? overData.promptId : String(over?.id).replace(/^drop-/, '');
-      const promptItem = config.prompts.find((p) => String(p.id) === String(promptId));
-      const label = promptItem?.title
-        ? i18n.t('responseAreaForA11y', { prompt: promptItem.title.replace(/<[^>]*>/g, '').trim() })
-        : i18n.t('responseAreaA11y', { id: String(promptId) });
-      const choiceId = session.value?.[promptId];
-
-      return { label, choiceId: choiceId != null ? choiceId : null };
-    };
-
+    // dnd-kit's own live region carries the drag as it unfolds; what a drop did is announced
+    // from `resultMessage`, which knows the session before and after.
     const announcements = {
       onDragStart({ active }) {
-        return i18n.t('pickedUpA11y', { choice: getDraggedLabel(active) });
+        return describeSelection(t, announcementConfig, dragData(active)?.id);
       },
 
       onDragOver({ active, over }) {
         if (!over) {
-          return i18n.t('notOverResponseAreaA11y', { choice: getDraggedLabel(active) });
+          return t('notOverResponseAreaA11y', {
+            choice: choiceLabel(t, announcementConfig, dragData(active)?.id),
+          });
         }
 
-        const target = getDropTargetLabel(over);
-        return target.choiceId
-          ? i18n.t('overFilledA11y', { target: target.label, choice: getChoiceLabel(target.choiceId) })
-          : i18n.t('overEmptyA11y', { target: target.label });
+        // A droppable registered without data is still named by its id: "choices-pool" or "drop-{promptId}".
+        const overData =
+          dragData(over) ||
+          (over.id === 'choices-pool'
+            ? { type: 'choices-pool' }
+            : { type: 'drop-zone', promptId: String(over.id).replace(/^drop-/, '') });
+
+        return describeFocusTarget(t, announcementConfig, dragData(active), overData);
       },
 
-      onDragEnd({ active, over }) {
-        if (!over) {
-          return i18n.t('returnedA11y', { choice: getDraggedLabel(active) });
-        }
-
-        return i18n.t('droppedA11y', { choice: getDraggedLabel(active), target: getDropTargetLabel(over).label });
+      onDragEnd() {
+        return undefined;
       },
 
       onDragCancel({ active }) {
-        return i18n.t('cancelledA11y', { choice: getDraggedLabel(active) });
+        return describeDeselection(t, announcementConfig, dragData(active)?.id);
       },
     };
 
@@ -475,6 +438,11 @@ export class Main extends React.Component {
         <MainContainer>
           <PreviewPrompt className="prompt" prompt={prompt} />
 
+          {mode === 'gather' && <div style={visuallyHidden}>{describeIntro(t, announcementConfig, announcementValue)}</div>}
+          <div style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
+            {this.state.resultMessage}
+          </div>
+
           <CorrectAnswerToggle
             show={mode === 'evaluate'}
             toggled={showCorrectAnswer}
@@ -489,6 +457,7 @@ export class Main extends React.Component {
                 model={model}
                 session={session}
                 onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
+                t={t}
                 disabled={mode !== 'gather'}
                 showCorrect={showCorrectAnswer}
                 selectedAnswer={this.state.selectedAnswer}
@@ -500,6 +469,7 @@ export class Main extends React.Component {
                 instanceId={this.instanceId}
                 model={model}
                 session={session}
+                t={t}
                 disabled={mode !== 'gather'}
                 onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
                 selectedAnswer={this.state.selectedAnswer}

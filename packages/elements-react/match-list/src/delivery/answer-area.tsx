@@ -9,6 +9,8 @@ import Arrow from './arrow.js';
 import DragAndDropAnswer from './answer.js';
 import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { describeChoiceTile, describeObject } from './announcements.js';
+import { visuallyHidden } from './visually-hidden.js';
 
 // matches the min width of the answer entries (see AnswerContainer in ./answer), so the two columns
 // give the row an intrinsic min width that the horizontal scroll container can overflow.
@@ -66,6 +68,7 @@ export class AnswerArea extends React.Component {
     selectedAnswer: PropTypes.object,
     onChoiceClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    t: PropTypes.func.isRequired,
   };
 
   getAnswerFromSession: any = (promptId) => {
@@ -143,6 +146,8 @@ export class AnswerArea extends React.Component {
       selectedAnswer,
       onChoiceClick,
       onPlacementClick,
+      t,
+      model,
     } = this.props;
     const rows = this.buildRows();
     const correctnessMap = this.getCorrectOrIncorrectMap();
@@ -151,12 +156,14 @@ export class AnswerArea extends React.Component {
       <ItemList>
         {rows.map(({ sessionAnswer, title, id }, index) => {
           const labelId = `${instanceId}-prompt-label-${id}`;
+          const reading = describeObject(t, model.config, index, sessionAnswer.id);
 
           return (
             // Keyed by prompt id, not row index: each row owns a dnd-kit draggable/droppable
             // registration derived from its promptId, so React must not reuse one row's
             // instance for a different prompt.
             <Row key={id}>
+              <span style={visuallyHidden}>{reading.object}</span>
               <PromptEntry id={labelId} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />
 
               <ArrowEntry>
@@ -180,7 +187,9 @@ export class AnswerArea extends React.Component {
                 selectedAnswer={selectedAnswer}
                 onSelectClick={onChoiceClick}
                 onPlacementClick={onPlacementClick}
+                ariaLabel={isEmpty(sessionAnswer) ? undefined : describeChoiceTile(t, model.config, sessionAnswer.id, id)}
               />
+              <span style={visuallyHidden}>{reading.dropArea}</span>
             </Row>
           );
         })}
