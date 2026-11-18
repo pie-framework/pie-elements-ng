@@ -59,5 +59,31 @@ export default {
       target: '(x^{2})^{3}',
       eq: ['x^{6}'],
     },
+    {
+      // equal values, so symbolic mode matches the fractions that literal mode with ignoreOrder keeps
+      // apart
+      target: '\\frac{2}{3}\\cdot\\frac{4}{5}',
+      eq: [
+        '\\frac{4}{3}\\cdot\\frac{2}{5}',
+        '\\frac{2\\cdot4}{3\\cdot5}',
+        '\\frac{4}{5}\\cdot\\frac{2}{3}',
+        '\\frac{8}{15}',
+      ],
+      ne: ['\\frac{2}{3}\\cdot\\frac{5}{4}'],
+    },
+    {
+      target: '\\frac{x}{y}\\cdot\\frac{1}{z}',
+      eq: ['\\frac{x}{z}\\cdot\\frac{1}{y}', '\\frac{x}{yz}', '\\frac{1}{z}\\cdot\\frac{x}{y}'],
+      ne: ['\\frac{x}{z}\\cdot\\frac{1}{z}'],
+    },
+    {
+      target: '\\frac{a}{b}\\cdot\\frac{c}{d}',
+      eq: ['\\frac{c}{d}\\cdot\\frac{a}{b}', '\\frac{a}{d}\\cdot\\frac{c}{b}', '\\frac{ac}{bd}'],
+      ne: ['\\frac{a}{c}\\cdot\\frac{b}{d}'],
+    },
+    {
+      target: '2\\cdot\\frac{4}{5}',
+      eq: ['\\frac{2\\cdot4}{5}', '\\frac{8}{5}'],
+    },
   ],
 };

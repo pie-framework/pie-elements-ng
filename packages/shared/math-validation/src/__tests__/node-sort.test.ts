@@ -140,6 +140,37 @@ it.each`
   expect(result).toEqual(ex);
 });
 
+// literal mode with ignoreOrder only reorders: a product of several quotients keeps them, and a single
+// quotient still takes the factors beside it into its numerator (PIE-1541)
+it.each([
+  [
+    ['*', ['/', 1, 'x'], ['/', 'a', 'y']],
+    ['*', ['/', 1, 'x'], ['/', 'a', 'y']],
+  ],
+  [
+    ['*', ['/', 2, 3], ['/', 4, 5], 'x'],
+    ['*', ['/', 2, 3], ['/', 4, 5], 'x'],
+  ],
+  [
+    ['*', ['/', ['*', 'a', ['/', 'b', 'c']], 'd'], ['/', 'e', 'f']],
+    ['*', ['/', ['/', ['*', 'b', 'a'], 'c'], 'd'], ['/', 'e', 'f']],
+  ],
+  [
+    ['*', 2, ['/', 4, 5]],
+    ['/', ['*', 4, 2], 5],
+  ],
+  [
+    ['*', 7, 9, ['/', 8, 6], '3'],
+    ['/', ['*', 8, 7, 9, '3'], 6],
+  ],
+  [
+    ['*', ['^', ['+', 'x', 1], 5], ['/', 1, 'x']],
+    ['/', ['*', 1, ['^', ['+', 'x', 1], 5]], 'x'],
+  ],
+])('with keepQuotients, %j flattens to %j', (input, expected) => {
+  expect(flattenNode(atm.convert(input), { keepQuotients: true })).toEqual(atm.convert(expected));
+});
+
 expect.extend({
   toEqualExpression(received, expected: string | string[]) {
     const options = {

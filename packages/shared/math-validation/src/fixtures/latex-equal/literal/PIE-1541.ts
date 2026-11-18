@@ -33,5 +33,64 @@ export default {
       target: '(3^{x})^{2}',
       ne: ['2^{3^{x}}'],
     },
+    {
+      // ignoreOrder only reorders, so a product of several fractions keeps its numerators and
+      // denominators where they are
+      opts: ignoreOrder,
+      target: '\\frac{2}{3}\\cdot\\frac{4}{5}',
+      eq: ['\\frac{4}{5}\\cdot\\frac{2}{3}'],
+      ne: ['\\frac{4}{3}\\cdot\\frac{2}{5}', '\\frac{2\\cdot4}{3\\cdot5}'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{4}{3}\\cdot\\frac{2}{5}',
+      ne: ['\\frac{2}{3}\\cdot\\frac{4}{5}'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{2\\cdot4}{3\\cdot5}',
+      eq: ['\\frac{4\\cdot2}{5\\cdot3}'],
+      ne: ['\\frac{2}{3}\\cdot\\frac{4}{5}'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{x}{y}\\cdot\\frac{1}{z}',
+      eq: ['\\frac{1}{z}\\cdot\\frac{x}{y}'],
+      ne: ['\\frac{x}{z}\\cdot\\frac{1}{y}', '\\frac{x}{yz}'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{x}{z}\\cdot\\frac{1}{y}',
+      ne: ['\\frac{x}{y}\\cdot\\frac{1}{z}'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{a}{b}\\cdot\\frac{c}{d}',
+      eq: ['\\frac{c}{d}\\cdot\\frac{a}{b}'],
+      ne: ['\\frac{a}{d}\\cdot\\frac{c}{b}', '\\frac{ac}{bd}'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{1}{2}x\\cdot\\frac{3}{4}',
+      eq: ['\\frac{3}{4}\\cdot\\frac{1}{2}x'],
+    },
+    {
+      // with several fractions, a factor beside them stays where it is
+      opts: ignoreOrder,
+      target: '\\frac{1}{x}\\cdot\\frac{1}{y}\\cdot(x+1)',
+      eq: ['(x+1)\\cdot\\frac{1}{y}\\cdot\\frac{1}{x}'],
+      ne: ['\\frac{1}{x}\\cdot\\frac{1}{y}\\cdot(x+2)', '\\frac{x+1}{x}\\cdot\\frac{1}{y}'],
+    },
+    {
+      // a single fraction still takes the factors beside it into its numerator, as in 1.4.3
+      opts: ignoreOrder,
+      target: '2\\cdot\\frac{4}{5}',
+      eq: ['\\frac{2\\cdot4}{5}', '\\frac{4}{5}\\cdot2'],
+    },
+    {
+      opts: ignoreOrder,
+      target: '\\frac{2\\cdot4}{5}',
+      eq: ['2\\cdot\\frac{4}{5}'],
+    },
   ],
 };
