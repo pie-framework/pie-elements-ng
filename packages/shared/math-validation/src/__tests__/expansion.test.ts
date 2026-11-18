@@ -1,13 +1,16 @@
 import { AstToMathJs } from '../conversion/ast-to-mathjs.js';
 import { LatexToAst } from '../conversion/latex-to-ast.js';
 import {
+  denominatorFactors,
   expansionTerms,
   hasVariableDenominator,
   hasVariableExponentOfSum,
+  haveSameDenominatorZeros,
   isTooLargeToExpand,
   multipliedSums,
   multipliedTerms,
 } from '../symbolic/expansion.js';
+import { getVariables } from '../symbolic/utils.js';
 
 const lta = new LatexToAst();
 const atm = new AstToMathJs();
@@ -131,5 +134,82 @@ describe('hasVariableDenominator', () => {
 
   it.each(['\\frac{x}{2}', '(x+1)^{8}', 'x^{y}'])('%s has none', (latex) => {
     expect(hasVariableDenominator(node(latex))).toBe(false);
+  });
+});
+
+describe('denominatorFactors', () => {
+  it.each([
+    ['\\frac{1}{x}', ['x']],
+    ['\\frac{(x+1)^{5}}{x(x+2)}', ['x', 'x+2']],
+    ['\\frac{1}{x^{2}}+\\frac{1}{x}', ['x']],
+    ['(x+1)^{5}x^{-1}(x+2)^{-1}', ['x', 'x+2']],
+    ['-\\frac{1}{-x}', ['x']],
+    ['\\frac{x}{2}', []],
+    ['(x+1)^{8}', []],
+  ])('%s has %j', (latex, factors) => {
+    expect(denominatorFactors(node(latex)).map(String)).toEqual(
+      factors.map((factor) => node(factor).toString())
+    );
+  });
+});
+
+describe('haveSameDenominatorZeros', () => {
+  const same = (a: string, b: string) => {
+    const [first, second] = [node(a), node(b)];
+    const variables = [...new Set([...getVariables(first), ...getVariables(second)])];
+    return haveSameDenominatorZeros(first, second, variables);
+  };
+
+  it.each([
+    ['\\frac{(x+1)^{5}}{x}', '(x+1)^{5}x^{-1}'],
+    ['\\frac{(x+1)^{5}}{x(x+2)}', '\\frac{(x+1)^{5}}{x^{2}+2x}'],
+    ['\\frac{1}{x}', '\\frac{1}{2x^{3}}'],
+    ['(x+1)^{8}', '(1+x)^{8}'],
+  ])('%s and %s are undefined at the same places', (a, b) => {
+    expect(same(a, b)).toBe(true);
+  });
+
+  it.each([
+    // a removable hole
+    ['\\frac{x^{6}-1}{x-1}', 'x^{5}+x^{4}+x^{3}+x^{2}+x+1'],
+    ['\\frac{(x+1)^{5}}{x}', '\\frac{(x+1)^{5}}{x+1}'],
+    ['\\frac{1}{x(x+2)}', '\\frac{1}{x(x-2)}'],
+  ])('%s and %s are not', (a, b) => {
+    expect(same(a, b)).toBe(false);
+  });
+
+  // a factor written out, repeated or spread over several fractions is zero at the same values (PIE-1540)
+  it.each([
+    ['\\frac{(x+1)^{5}}{x^{2}(x+2)}', '\\frac{(x+1)^{5}}{x^{3}+2x^{2}}'],
+    ['(x+1)^{5}(x-1)^{-2}', '\\frac{(x+1)^{5}}{x^{2}-2x+1}'],
+    ['\\frac{x+2}{x^{2}-1}', '\\frac{1}{x-1}+\\frac{1}{x^{2}-1}'],
+    ['\\frac{1}{0.5x+1}', '\\frac{1}{x+2}'],
+    ['\\frac{1}{x^{2}y}', '\\frac{1}{xy\\cdot x}'],
+    ['\\frac{1}{x^{3}y+2x^{2}y}', '\\frac{1}{x^{2}y(x+2)}'],
+    ['\\frac{1}{x^{2}+2xy+y^{2}}', '\\frac{1}{(x+y)^{2}}'],
+    // the other factors still match
+    ['\\frac{1}{(x^{3}+2x^{2})\\sqrt{x}}', '\\frac{1}{x^{2}(x+2)\\sqrt{x}}'],
+    // 1/x and x cancel as factors, so a fraction inside a denominator hides a hole, as in 1.4.3
+    ['\\frac{(x+1)^{8}}{\\frac{1}{x}}', 'x(x+1)^{8}'],
+  ])('%s and %s are zero at the same values', (a, b) => {
+    expect(same(a, b)).toBe(true);
+    expect(same(b, a)).toBe(true);
+  });
+
+  it.each([
+    // a hole at x = -2, at x = -1, and where x = -2 for any y
+    ['\\frac{1}{x^{3}+2x^{2}}', '\\frac{1}{x^{2}}'],
+    ['\\frac{1}{x^{3}-x}', '\\frac{1}{x(x-1)}'],
+    ['\\frac{1}{x^{3}y+2x^{2}y}', '\\frac{1}{x^{2}y}'],
+    // zeros are compared over the complex numbers, where x^2+2 has two
+    ['\\frac{1}{x^{2}+1}', '\\frac{1}{(x^{2}+1)(x^{2}+2)}'],
+    // the other factors differ
+    ['\\frac{1}{(x^{3}+2x^{2})\\sqrt{x}}', '\\frac{1}{x^{2}(x+2)\\left|x\\right|}'],
+    // the same zeros, but undecided, so kept apart: past the degree limit, and past the safe integers
+    ['\\frac{1}{x^{25}+x^{24}}', '\\frac{1}{x(x+1)}'],
+    ['\\frac{1}{x^{3}+10^{16}x^{2}}', '\\frac{1}{x^{2}(x+10^{16})}'],
+  ])('%s and %s are not zero at the same values', (a, b) => {
+    expect(same(a, b)).toBe(false);
+    expect(same(b, a)).toBe(false);
   });
 });

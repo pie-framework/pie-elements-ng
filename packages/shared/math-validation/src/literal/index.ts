@@ -11,10 +11,11 @@ export const isMathEqual = (a: MathNode, b: MathNode, opts?: LiteralOpts) => {
     b = simplify(b, [TRAILING_ZEROS_RULE]);
   }
 
+  // ignoreOrder only reorders terms and factors, so a product of several fractions keeps them (PIE-1541)
   if (opts && opts.ignoreOrder) {
-    a = sort(a);
+    a = sort(a, { keepQuotients: true });
 
-    b = sort(b);
+    b = sort(b, { keepQuotients: true });
   }
 
   return a.equals(b);

@@ -88,7 +88,20 @@ const firstChildOperator = (args: any, operator?: string) => {
   return result;
 };
 
-export const flattenNode = (node: MathNode) => {
+// only a sum or a product takes its nested sums or products into its own terms or factors: a nested
+// negation, quotient or power keeps its shape, since -(-x) is not -x and a/(b/c) is not (b/c)/a (PIE-1541)
+const isAssociative = (node: MathNode) => node.fn === 'add' || node.fn === 'multiply';
+
+/**
+ * How sorting may rewrite an expression besides reordering it. By default, as in symbolic mode, the
+ * quotients of a product are joined into one, which keeps the value. keepQuotients, for literal mode
+ * with ignoreOrder, keeps a product of several quotients as it is, since joining them is not a
+ * reordering: 2/3 * 4/5 then matches 4/5 * 2/3 but not 4/3 * 2/5 or (2 * 4)/(3 * 5). A single quotient
+ * still takes the factors beside it into its numerator, as in 1.4.3.
+ */
+export type SortOptions = { keepQuotients?: boolean };
+
+export const flattenNode = (node: MathNode, { keepQuotients = false }: SortOptions = {}) => {
   while (node.isParenthesisNode && node.content) {
     node = node.content;
   }
@@ -111,11 +124,15 @@ export const flattenNode = (node: MathNode) => {
   let resultNode = node;
 
   resultNode = resultNode.transform((currentNode) => {
-    while (firstChildOperator(currentNode, currentNode.fn) && !currentNode.isArrayNode) {
+    while (
+      isAssociative(currentNode) &&
+      firstChildOperator(currentNode, currentNode.fn) &&
+      !currentNode.isArrayNode
+    ) {
       const flatten = currentNode;
 
       flatten.traverse((node, path, parent) => {
-        if (parent?.fn === node.fn) {
+        if (parent?.fn === node.fn && isAssociative(node)) {
           const indexToRemove = path.replace(/[^0-9]/g, '');
 
           parent.args!.splice(+indexToRemove, 1) || [];
@@ -139,47 +156,48 @@ export const flattenNode = (node: MathNode) => {
     return currentNode;
   });
 
-  resultNode = resultNode.transform((currentNode) => {
-    if (currentNode.fn === 'multiply' && firstChildOperator(currentNode.args, 'divide')) {
-      let divisionNode = currentNode;
-
-      if (divisionNode.fn === 'multiply' && firstChildOperator(divisionNode, 'divide')) {
-        let newNode!: MathNode;
-        divisionNode = divisionNode.traverse((node, _path, parent) => {
-          if (parent && parent.fn === 'multiply' && node.fn === 'divide') {
-            if (node.args![0].isOperatorNode) {
-              parent.args!.forEach((arg) => {
-                if (!arg.isOperatorNode) {
-                  node.args![0].args!.push(arg);
-                }
-              });
-            } else {
-              const newArgs = [];
-
-              newArgs.push(node.args![0]);
-
-              parent.args!.forEach((arg) => {
-                if (!arg.isOperatorNode) {
-                  newArgs.push(arg);
-                }
-              });
-
-              node.args![0] = new m.OperatorNode('*', 'multiply', newArgs);
-            }
-            newNode = node;
-          }
-        });
-        return newNode;
-      }
-    }
-
-    return currentNode;
-  });
-
-  return resultNode;
+  return joinQuotients(resultNode, keepQuotients);
 };
 
-export const sortRelationalNode = (node: any) => {
+// a product with quotients among its factors becomes one quotient, as 3 * 8/6 becomes (8 * 3)/6, so
+// that it sorts like the quotient written out. Every factor goes into the numerator and every
+// denominator under the bar: keeping only the symbols and constants dropped factors such as (x+1)^5 in
+// (x+1)^5 * 1/x, so (x+1) x^{-1} matched (x+2) x^{-1} (PIE-1541). With keepQuotients, a product of
+// several quotients keeps them, since joining them is not a reordering.
+const joinQuotients = (node: MathNode, keepQuotients: boolean): MathNode =>
+  node.transform((currentNode) => {
+    if (currentNode.fn !== 'multiply' || !firstChildOperator(currentNode.args, 'divide')) {
+      return currentNode;
+    }
+
+    const factors = currentNode.args || [];
+
+    // left to the transform, which joins what is inside the quotients
+    if (keepQuotients && factors.filter((arg) => arg.fn === 'divide').length > 1) {
+      return currentNode;
+    }
+
+    const args = factors.map((arg) => joinQuotients(arg, keepQuotients));
+    const quotients = args.filter((arg) => arg.fn === 'divide');
+    const others = args.filter((arg) => arg.fn !== 'divide');
+    const factorsOf = (product: MathNode) =>
+      product.fn === 'multiply' ? product.args! : [product];
+    // the numerators' factors come first, then the other factors
+    const numerator = [
+      ...quotients.flatMap((quotient) => factorsOf(quotient.args![0]!)),
+      ...others,
+    ];
+    const denominators = quotients.map((quotient) => quotient.args![1]!);
+
+    return new m.OperatorNode('/', 'divide', [
+      new m.OperatorNode('*', 'multiply', numerator),
+      denominators.length === 1
+        ? denominators[0]
+        : new m.OperatorNode('*', 'multiply', denominators.flatMap(factorsOf)),
+    ]);
+  });
+
+export const sortRelationalNode = (node: any, options: SortOptions = {}) => {
   log('THIS IS THE START ++++', JSON.stringify(node));
 
   const smaller = ['smaller', 'smallerEq'];
@@ -220,7 +238,7 @@ export const sortRelationalNode = (node: any) => {
     }
 
     if (parent && parent.type === 'RelationalNode' && node.args) {
-      node = sort(node);
+      node = sort(node, options);
     }
 
     return node;
@@ -229,11 +247,11 @@ export const sortRelationalNode = (node: any) => {
   return resultNode;
 };
 
-export const sort = (node: MathNode) => {
+export const sort = (node: MathNode, options: SortOptions = {}) => {
   let resultNode = node;
 
   if (node.type === 'RelationalNode') {
-    return sortRelationalNode(node);
+    return sortRelationalNode(node, options);
   }
 
   if (node.isOperatorNode && node.fn === 'smaller') {
@@ -262,7 +280,7 @@ export const sort = (node: MathNode) => {
     node.isOperatorNode &&
     (node.fn === 'larger' || node.fn === 'largerEq' || node.fn === 'equal' || node.fn === 'unequal')
   ) {
-    node.args = node.args!.map(sort);
+    node.args = node.args!.map((arg) => sort(arg, options));
 
     if (node.fn === 'equal' || node.fn === 'unequal') {
       node.args = node.args.sort(newCompare);
@@ -275,7 +293,7 @@ export const sort = (node: MathNode) => {
     return node;
   }
 
-  const flattened = flattenNode(node);
+  const flattened = flattenNode(node, options);
 
   resultNode = flattened.transform(applySort);
 

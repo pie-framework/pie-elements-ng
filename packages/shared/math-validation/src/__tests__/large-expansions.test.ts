@@ -18,11 +18,15 @@ describe('large expansions are compared without multiplying them out', () => {
     expect(performance.now() - start).toBeLessThan(LIMIT_MS);
   });
 
-  it('leaves an expression with a variable denominator to the structural comparison', () => {
+  it('keeps a removable hole apart past the size limit, where sample points cannot see it', () => {
     // past the size limit, and equal except at x = 1, where the first is undefined: whether that counts
-    // is an open decision (PIE-1465), and sample points can't see the hole, so size must not decide it
+    // is an open decision (PIE-1465), so the sampled comparison must not decide it. The denominators
+    // are not zero at the same values, which keeps the two apart (PIE-1540).
     expect(
       latexEqual('\\frac{x^{6}-1}{x-1}(x+1)^{4}', '(x^5+x^4+x^3+x^2+x+1)(x+1)^{4}', symbolic)
+    ).toBe(false);
+    expect(
+      latexEqual('(x^5+x^4+x^3+x^2+x+1)(x+1)^{4}', '\\frac{x^{6}-1}{x-1}(x+1)^{4}', symbolic)
     ).toBe(false);
   });
 });

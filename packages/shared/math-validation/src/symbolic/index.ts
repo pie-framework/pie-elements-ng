@@ -8,6 +8,7 @@ import { compareCompoundInequations } from './compare-compound-inequations.js';
 import {
   hasVariableDenominator,
   hasVariableExponentOfSum,
+  haveSameDenominatorZeros,
   isTooLargeToExpand,
 } from './expansion.js';
 import { areNumericallyEquivalent, getVariables } from './utils.js';
@@ -378,16 +379,17 @@ export const isMathEqual = (a: any, b: any) => {
   }
 
   // not multiplied out, only their values can show that two expressions are equal, at points where
-  // both sides are defined or neither is
+  // both sides are defined or neither is. With a variable denominator, the denominators must also be
+  // zero at the same values, so a removable hole still keeps two forms apart (PIE-1540)
   if (
     expansion.skipped &&
-    [as, bs].every(
-      (node) =>
-        isPlainExpression(node) && !hasVariableDenominator(node) && !hasVariableExponentOfSum(node)
-    )
+    [as, bs].every((node) => isPlainExpression(node) && !hasVariableExponentOfSum(node))
   ) {
     const variables = [...new Set([...getVariables(as), ...getVariables(bs)])];
-    return areNumericallyEquivalent(as, bs, variables, undefined, { sameDomain: true });
+    return (
+      areNumericallyEquivalent(as, bs, variables, undefined, { sameDomain: true }) &&
+      haveSameDenominatorZeros(as, bs, variables)
+    );
   }
 
   return equality;
