@@ -199,7 +199,12 @@ function DragAndDropAnswer(props) {
     selectedAnswer,
     onSelectClick,
     onPlacementClick,
+    ariaLabel,
   } = props;
+
+  // dnd-kit announces a tile as a "draggable" button; the match-list spec reads it as the answer
+  // choice itself, so the tile is named after the choice and drops the role description.
+  const tileA11y = ariaLabel ? { 'aria-label': ariaLabel, 'aria-roledescription': undefined } : {};
 
   const dragId = buildDragId({ type, id, promptId });
   // droppable only if promptId exists
@@ -355,7 +360,7 @@ function DragAndDropAnswer(props) {
         <div
           ref={setDragRef}
           {...listeners}
-          {...(draggable && !disabled ? attributes : {})}
+          {...(draggable && !disabled ? { ...attributes, ...tileA11y } : {})}
           data-tile-id={`${instanceId}:${dragId}`}
           style={{ transform: transformStyle, transition }}
         >
@@ -380,6 +385,7 @@ function DragAndDropAnswer(props) {
       ref={setDragRef}
       {...listeners}
       {...attributes}
+      {...tileA11y}
       data-tile-id={`${instanceId}:${dragId}`}
       onClick={handleChoiceClick}
       style={{
@@ -410,6 +416,7 @@ DragAndDropAnswer.propTypes = {
   selectedAnswer: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
+  ariaLabel: PropTypes.string,
 };
 
 export default DragAndDropAnswer;

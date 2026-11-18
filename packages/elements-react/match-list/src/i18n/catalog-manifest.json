@@ -5,126 +5,148 @@
       "from": "added on 2026-11-09 by Claude (Anthropic) when the element moved its hardcoded screen-reader strings into a catalog",
       "awaitingReview": {
         "keys": [
-          "choicesListA11y",
-          "answerA11y",
-          "responseAreaForA11y",
-          "responseAreaA11y",
           "dragInstructionsA11y",
-          "pickedUpA11y",
-          "notOverResponseAreaA11y",
-          "overFilledA11y",
-          "overEmptyA11y",
-          "returnedA11y",
-          "droppedA11y",
-          "cancelledA11y"
+          "answerChoiceA11y",
+          "answerChoiceInDropAreaA11y",
+          "introReusableA11y",
+          "introNotReusableA11y",
+          "keyboardHelpA11y",
+          "progressA11y",
+          "objectA11y",
+          "dropAreaEmptyA11y",
+          "dropAreaFilledA11y",
+          "availableCountA11y",
+          "availableEndA11y",
+          "selectedA11y",
+          "overDropAreaA11y",
+          "overPoolFromDropAreaA11y",
+          "overPoolUnplacedA11y",
+          "placedA11y",
+          "movedA11y",
+          "removedA11y",
+          "remainingA11y",
+          "completeA11y",
+          "deselectedA11y"
         ],
-        "note": "translated on 2026-11-09 by Claude (Anthropic); anchored so the gate passes, not yet reviewed by a person"
+        "note": "translated on 2026-11-17 by Claude (Anthropic) for the PIE-836 screen-reader announcements; anchored so the gate passes, not yet reviewed by a person"
       },
       "english": {
-        "choicesListA11y": "Choices list",
         "answerA11y": "Answer {id}",
-        "responseAreaForA11y": "Response area for {prompt}",
-        "responseAreaA11y": "Response area {id}",
-        "dragInstructionsA11y": "Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel. You can also click an answer choice to select it, then click a response area to place it there.",
-        "pickedUpA11y": "Picked up {choice}. Use Tab to move between response areas, then press Space or Enter to drop.",
+        "dragInstructionsA11y": "Press ENTER to select.",
+        "answerChoiceA11y": "Answer choice: {choice}",
+        "answerChoiceInDropAreaA11y": "Answer choice: {choice} in drop area for Object {number} {text}",
+        "introReusableA11y": "This question has {total} objects that need a match. Each object has one drop area for one answer choice. Answer choices can be reused. Place an answer choice in every drop area.",
+        "introNotReusableA11y": "This question has {total} objects that need a match. Each object has one drop area for one answer choice. Answer choices cannot be reused. Place an answer choice in every drop area.",
+        "keyboardHelpA11y": "Use TAB to move between answer choices and drop areas, ENTER to select/drop, and ESC to cancel.",
+        "progressA11y": "{filled} of {total} drop areas have an answer choice.",
+        "objectA11y": "Object {number}.",
+        "dropAreaEmptyA11y": "Drop area {number} is empty",
+        "dropAreaFilledA11y": "Drop area {number} contains the answer choice {choice}",
+        "availableCountA11y": "{count} available answer choices.",
+        "availableEndA11y": "End of available answer choices. Use TAB to move to an answer choice.",
+        "selectedA11y": "Selected answer choice {choice}. Use TAB to choose a drop area.",
         "notOverResponseAreaA11y": "{choice} is not over a response area.",
-        "overFilledA11y": "Over {target}. Currently contains {choice}.",
-        "overEmptyA11y": "Over {target}. Currently empty.",
-        "returnedA11y": "{choice} was returned to its original position.",
-        "droppedA11y": "Dropped {choice} in {target}.",
-        "cancelledA11y": "Cancelled. {choice} was returned to its original position."
+        "overDropAreaA11y": "Selected drop area for Object {number} {text}. Press ENTER to move selected answer choice {choice} here or TAB to move to a different drop area.",
+        "overPoolFromDropAreaA11y": "Press ENTER to remove selected answer choice from Object {number} drop area or TAB to move to a different drop area. Selected answer choice: {choice}. Object {number}: {text}",
+        "overPoolUnplacedA11y": "Press ENTER to leave selected answer choice unplaced or TAB to move to a drop area. Selected answer choice: {choice}",
+        "placedA11y": "Placed answer choice {choice} in drop area for Object {number}: {text}",
+        "movedA11y": "Moved answer choice {choice} from Object {from} drop area to Object {to} drop area. {text}",
+        "removedA11y": "Removed answer choice {choice} from Object {number} drop area",
+        "remainingA11y": "{filled} of {total} drop areas have an answer choice. {available} available answer choices. Use TAB to select an answer choice.",
+        "completeA11y": "Answer is complete. {total} of {total} drop areas have an answer choice.",
+        "deselectedA11y": "Answer choice {choice} is no longer selected. Use TAB to select an answer choice."
       },
-      "reviewedAt": "2026-11-09"
+      "reviewedAt": "2026-11-17"
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, identical to en-US where no key carries a British form",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; shares en-GB's values per pie-players' briefs/en-AU.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; carries all six CLDR plural categories",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; carries all six CLDR plural categories",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ro": {
       "status": "generated",
-      "sourceHash": "b278d54e131c88518866af8f8a4d7f664c4e9046fb37b7217c4a48f0f5245a13",
+      "sourceHash": "8488e0bb592ca213f794ac701276e454e7c6f361ca3e0e9a19db367badd09254",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md; three CLDR plural forms with 'de' in other",
-      "generatedAt": "2026-11-09",
+      "generatedAt": "2026-11-17",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     }
   }

@@ -9,8 +9,8 @@ type Host = HTMLElement & { model: object; session: object };
 
 customElements.define('test-match-list-interface-locale', MatchList as unknown as CustomElementConstructor);
 
-const SPANISH = 'Presiona Espacio o Intro para tomar esta opción de respuesta.';
-const ENGLISH = 'Press Space or Enter to pick up this answer choice.';
+const SPANISH = 'Presiona ENTER para seleccionar.';
+const ENGLISH = 'Press ENTER to select.';
 
 /** A stand-in player: answers the interface-locale subscription and can publish a new locale later. */
 function mountPlayer(locale: string) {
