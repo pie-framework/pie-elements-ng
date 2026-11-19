@@ -1,5 +1,31 @@
 # @pie-element/cli
 
+## 0.1.7
+
+### Patch Changes
+
+- [#552](https://github.com/pie-framework/pie-elements-ng/pull/552) [`b00321c`](https://github.com/pie-framework/pie-elements-ng/commit/b00321cc5bc48b72de24f6e5db52fb446a5e9e8d) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#554](https://github.com/pie-framework/pie-elements-ng/pull/554) [`2dbea14`](https://github.com/pie-framework/pie-elements-ng/commit/2dbea14cafd48f625de556462255c1f8ac191ea2) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump webpack from 5.111.1 to 5.112.2
+
+- [#555](https://github.com/pie-framework/pie-elements-ng/pull/555) [`1451b20`](https://github.com/pie-framework/pie-elements-ng/commit/1451b2064c6514c0f73f49905dda94c9dfe475b8) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump bun-types from 1.4.3 to 1.4.4
+
+- [#557](https://github.com/pie-framework/pie-elements-ng/pull/557) [`74704d0`](https://github.com/pie-framework/pie-elements-ng/commit/74704d03b32ec1195db7ca95ebec111971161422) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @oclif/core from 5.1.8 to 5.1.9
+
+- [#573](https://github.com/pie-framework/pie-elements-ng/pull/573) [`be48de1`](https://github.com/pie-framework/pie-elements-ng/commit/be48de15eea60dde95a6a920350760bcaeda4098) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump es-module-lexer from 3.0.3 to 3.0.4
+
+- [#600](https://github.com/pie-framework/pie-elements-ng/pull/600) [`7d564c5`](https://github.com/pie-framework/pie-elements-ng/commit/7d564c5438eae87ea2684b30692b00bbdb82b82c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump glob from 13.0.6 to 14.0.3
+
+- [#638](https://github.com/pie-framework/pie-elements-ng/pull/638) [`2d26dea`](https://github.com/pie-framework/pie-elements-ng/commit/2d26dea8459af2c542d4709885565a83d604a9d2) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @biomejs/biome from 2.6.4 to 2.6.6 in the dev-dependencies group across 1 directory
+
+- [#646](https://github.com/pie-framework/pie-elements-ng/pull/646) [`c0b7781`](https://github.com/pie-framework/pie-elements-ng/commit/c0b7781522d5c1186a0b407c26f18a14ba1d9942) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @oclif/core from 5.1.9 to 5.1.11
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#686](https://github.com/pie-framework/pie-elements-ng/pull/686) [`40f62bd`](https://github.com/pie-framework/pie-elements-ng/commit/40f62bda0762a8c6f773acd3537cf86bd05ad480) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @oclif/core from 5.1.11 to 5.1.12
+- Updated dependencies [[`6ac2b66`](https://github.com/pie-framework/pie-elements-ng/commit/6ac2b6616b4c49333cf0aee02d08d89b453a73cd), [`645296a`](https://github.com/pie-framework/pie-elements-ng/commit/645296affd8a2247a2ee6befeb7ce2996d6fdc57), [`ed83d10`](https://github.com/pie-framework/pie-elements-ng/commit/ed83d10befe3b4337cdfd2db07ea7aec157f0b96), [`bd2ac97`](https://github.com/pie-framework/pie-elements-ng/commit/bd2ac97c3885674d03a164897f386d1254264b3c), [`37be6b8`](https://github.com/pie-framework/pie-elements-ng/commit/37be6b84f1a50dcf53f6df9dccce05fd58d54c60), [`f6e8801`](https://github.com/pie-framework/pie-elements-ng/commit/f6e880189215966f224b93da5072cfa1e8d1b839), [`925b561`](https://github.com/pie-framework/pie-elements-ng/commit/925b561f6adf37c2191eb43a7cb439f11c9a86c3)]:
+  - @pie-element/element-bundler@0.1.6
+
 ## 0.1.6
 
 ### Patch Changes

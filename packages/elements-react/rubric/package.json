@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/rubric",
-  "version": "9.0.7",
+  "version": "9.0.8",
   "description": "Rubric Scoring Interaction",
   "license": "MIT",
   "repository": {
@@ -124,7 +124,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

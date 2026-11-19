@@ -1,5 +1,29 @@
 # @pie-element/shared-player-events
 
+## 0.2.2
+
+### Patch Changes
+
+- [#564](https://github.com/pie-framework/pie-elements-ng/pull/564) [`3d364e6`](https://github.com/pie-framework/pie-elements-ng/commit/3d364e651386bd5ec5c03c0cbac9800dbed51ea8) Thanks [@chillenious](https://github.com/chillenious)! - `interfaceLocaleContext` and `InterfaceLocaleContextValue` come from `@pie-players/pie-context` 1.0.0-beta.6, which now publishes them, in place of a local copy on the same `Symbol.for` key.
+
+- [#552](https://github.com/pie-framework/pie-elements-ng/pull/552) [`b00321c`](https://github.com/pie-framework/pie-elements-ng/commit/b00321cc5bc48b72de24f6e5db52fb446a5e9e8d) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#559](https://github.com/pie-framework/pie-elements-ng/pull/559) [`efc633c`](https://github.com/pie-framework/pie-elements-ng/commit/efc633cb4a3b7870f2237d374d43bcd6d1b18d8c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.4 to 8.3.5
+
+- [#570](https://github.com/pie-framework/pie-elements-ng/pull/570) [`0585bc2`](https://github.com/pie-framework/pie-elements-ng/commit/0585bc20bf7669c380e6a30e6f8816152063d514) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vitest from 4.1.11 to 5.0.5
+
+- [#603](https://github.com/pie-framework/pie-elements-ng/pull/603) [`c0d40a0`](https://github.com/pie-framework/pie-elements-ng/commit/c0d40a001058f0051e7e557b1f1da8ba217233e5) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @pie-players/pie-context from 1.0.0-beta.6 to 1.0.0-beta.7
+
+- [#641](https://github.com/pie-framework/pie-elements-ng/pull/641) [`6b3a398`](https://github.com/pie-framework/pie-elements-ng/commit/6b3a3987fe0b11cc885d75168622ccbfa85d5e44) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the test-dependencies group across 1 directory with 2 updates
+
+- [#647](https://github.com/pie-framework/pie-elements-ng/pull/647) [`7d3a323`](https://github.com/pie-framework/pie-elements-ng/commit/7d3a32301eb3393937961919256da39e57e8104f) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.5 to 8.3.6
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#687](https://github.com/pie-framework/pie-elements-ng/pull/687) [`e0e39b7`](https://github.com/pie-framework/pie-elements-ng/commit/e0e39b73edc6cbe89afa07d222bf8db3236e1e38) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @pie-players/pie-context from 1.0.0-beta.7 to 1.0.0-beta.10
+
+- [#655](https://github.com/pie-framework/pie-elements-ng/pull/655) [`38838ba`](https://github.com/pie-framework/pie-elements-ng/commit/38838bae2b474a1cb629b6d47022c4b64b740850) Thanks [@chillenious](https://github.com/chillenious)! - Ship the license and NOTICE texts of every bundled third-party package in `THIRD_PARTY_LICENSES.txt` files beside the build output that bundles it.
+
 ## 0.2.1
 
 ### Patch Changes

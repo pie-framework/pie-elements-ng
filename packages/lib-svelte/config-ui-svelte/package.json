@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/config-ui-svelte",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Authoring layout and settings panel for Svelte 5 PIE author elements, after @pie-lib/config-ui",
   "type": "module",
