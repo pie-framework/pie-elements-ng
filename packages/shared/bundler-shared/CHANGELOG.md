@@ -1,5 +1,23 @@
 # @pie-element/element-bundler
 
+## 0.1.6
+
+### Patch Changes
+
+- [#552](https://github.com/pie-framework/pie-elements-ng/pull/552) [`b00321c`](https://github.com/pie-framework/pie-elements-ng/commit/b00321cc5bc48b72de24f6e5db52fb446a5e9e8d) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#554](https://github.com/pie-framework/pie-elements-ng/pull/554) [`2dbea14`](https://github.com/pie-framework/pie-elements-ng/commit/2dbea14cafd48f625de556462255c1f8ac191ea2) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump webpack from 5.111.1 to 5.112.2
+
+- [#558](https://github.com/pie-framework/pie-elements-ng/pull/558) [`bca9aae`](https://github.com/pie-framework/pie-elements-ng/commit/bca9aae767b2462fabf7334f3f16d489cc261038) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump pacote from 22.0.0 to 22.0.1
+
+- [#605](https://github.com/pie-framework/pie-elements-ng/pull/605) [`932e3d9`](https://github.com/pie-framework/pie-elements-ng/commit/932e3d92a3485296b95e1068080641f7c578858e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump svelte from 5.57.2 to 5.57.3
+
+- [#638](https://github.com/pie-framework/pie-elements-ng/pull/638) [`2d26dea`](https://github.com/pie-framework/pie-elements-ng/commit/2d26dea8459af2c542d4709885565a83d604a9d2) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @biomejs/biome from 2.6.4 to 2.6.6 in the dev-dependencies group across 1 directory
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#665](https://github.com/pie-framework/pie-elements-ng/pull/665) [`0ab8e40`](https://github.com/pie-framework/pie-elements-ng/commit/0ab8e404ed458cdc71127259367dee7814396028) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - Exports `BUNDLE_TARGET`, the ECMAScript version its webpack configs compile bundles to (`es2015`, as before).
+
 ## 0.1.5
 
 ### Patch Changes
