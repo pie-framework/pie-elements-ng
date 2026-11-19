@@ -1,0 +1,5 @@
+# Formatting-only commits, skipped by GitHub's blame view and by
+# `git config blame.ignoreRevsFile .git-blame-ignore-revs` locally.
+
+# style(math-validation): apply the workspace Biome format
+d21d322efea5142af0d4e6c9b8483fae5b4c8761

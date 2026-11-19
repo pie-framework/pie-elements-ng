@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'Réponse {id}',
+  dragInstructionsA11y: 'Appuyez sur ENTRÉE pour sélectionner.',
+  answerChoiceA11y: 'Choix de réponse : {choice}',
+  answerChoiceInDropAreaA11y: 'Choix de réponse : {choice} dans la zone de dépôt de l\'objet {number} {text}',
+  introReusableA11y: 'Cette question comporte {total} objets à associer. Chaque objet dispose d\'une zone de dépôt pour un choix de réponse. Les choix de réponse peuvent être réutilisés. Placez un choix de réponse dans chaque zone de dépôt.',
+  introNotReusableA11y: 'Cette question comporte {total} objets à associer. Chaque objet dispose d\'une zone de dépôt pour un choix de réponse. Les choix de réponse ne peuvent pas être réutilisés. Placez un choix de réponse dans chaque zone de dépôt.',
+  keyboardHelpA11y: 'Utilisez TAB pour passer d\'un choix de réponse ou d\'une zone de dépôt à l\'autre, ENTRÉE pour sélectionner ou déposer, et ÉCHAP pour annuler.',
+  progressA11y: '{filled} zones de dépôt sur {total} contiennent un choix de réponse.',
+  objectA11y: 'Objet {number}.',
+  dropAreaEmptyA11y: 'La zone de dépôt {number} est vide',
+  dropAreaFilledA11y: 'La zone de dépôt {number} contient le choix de réponse {choice}',
+  availableCountA11y: '{count} choix de réponse disponibles.',
+  availableEndA11y: 'Fin des choix de réponse disponibles. Utilisez TAB pour accéder à un choix de réponse.',
+  selectedA11y: 'Choix de réponse sélectionné : {choice}. Utilisez TAB pour choisir une zone de dépôt.',
+  notOverResponseAreaA11y: "{choice} n'est pas au-dessus d'une zone de réponse.",
+  overDropAreaA11y: 'Zone de dépôt sélectionnée pour l\'objet {number} {text}. Appuyez sur ENTRÉE pour y déplacer le choix de réponse sélectionné {choice} ou sur TAB pour passer à une autre zone de dépôt.',
+  overPoolFromDropAreaA11y: 'Appuyez sur ENTRÉE pour retirer le choix de réponse sélectionné de la zone de dépôt de l\'objet {number} ou sur TAB pour passer à une autre zone de dépôt. Choix de réponse sélectionné : {choice}. Objet {number} : {text}',
+  overPoolUnplacedA11y: 'Appuyez sur ENTRÉE pour laisser le choix de réponse sélectionné non placé ou sur TAB pour passer à une zone de dépôt. Choix de réponse sélectionné : {choice}',
+  placedA11y: 'Choix de réponse {choice} placé dans la zone de dépôt de l\'objet {number} : {text}',
+  movedA11y: 'Choix de réponse {choice} déplacé de la zone de dépôt de l\'objet {from} vers la zone de dépôt de l\'objet {to}. {text}',
+  removedA11y: 'Choix de réponse {choice} retiré de la zone de dépôt de l\'objet {number}',
+  remainingA11y: '{filled} zones de dépôt sur {total} contiennent un choix de réponse. {available} choix de réponse disponibles. Utilisez TAB pour sélectionner un choix de réponse.',
+  completeA11y: 'La réponse est complète. {total} zones de dépôt sur {total} contiennent un choix de réponse.',
+  deselectedA11y: 'Le choix de réponse {choice} n\'est plus sélectionné. Utilisez TAB pour sélectionner un choix de réponse.',
+} satisfies MessageCatalog;

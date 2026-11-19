@@ -9,9 +9,9 @@ Students enter math responses inline with prompt content through a math editor o
 - `inline-math-editor-controls`: editor naming, keyboard reachability, rendered math semantics, and math alternatives.
 - `inline-math-evaluate-feedback`: evaluate-mode feedback, math alternatives, and status semantics.
 
-Each response field's textarea is named "Enter answer" by `@pie-lib/math-input`, and math-inline adds the keypad instructions as its description ([PIE-1164](https://illuminate.atlassian.net/browse/PIE-1164)). The advanced response type names it in the item language; the simple one stays English because `@pie-lib/math-toolbar` does not pass the language to its input.
+The response areas are prompts of one MathLive `<math-field>`, which `@pie-lib/math-input-mathlive` names "Enter answer", and math-inline adds the keypad instructions as its description ([PIE-1164](https://illuminate.atlassian.net/browse/PIE-1164)). The advanced response type names it in the item language; the simple one stays English because `@pie-lib/math-toolbar` does not pass the language to its input.
 
-Keypad keys draw the [THEMING.md](../THEMING.md) focus chain on keyboard focus, backed inside by a 2px `--pie-background` ring, and their labels take `--pie-text` darkened to hold 4.5:1 on the key fills under grey-on-light-grey and purple-on-light-green. In the response fields the MathQuill caret and bars take the text colour and an unfocused field border takes `--pie-border-dark` ([PIE-1200](https://illuminate.atlassian.net/browse/PIE-1200)). Submitted answers in evaluate and view render outside that styling and keep MathQuill's black and `#4d4d4d` bars.
+Keypad keys draw the [THEMING.md](../THEMING.md) focus chain on keyboard focus, backed inside by a 2px `--pie-background` ring, and their labels take `--pie-text` darkened to hold 4.5:1 on the key fills under grey-on-light-grey and purple-on-light-green ([PIE-1200](https://illuminate.atlassian.net/browse/PIE-1200)). The response field draws MathLive's own caret, bars and border. Submitted answers in evaluate and view render as MathLive static markup, whose bars take the text colour.
 
 ## Not Covered / Manual
 

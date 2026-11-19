@@ -6,19 +6,21 @@ The production PIE bundles from `pie-api-aws` follow this structure:
 
 ```javascript
 // IIFE wrapper
-(()=>{
+(() => {
   // Webpack module system
   var modules = {
     // ... module definitions
   };
 
   // Module loader
-  function require(id) { /* ... */ }
+  function require(id) {
+    /* ... */
+  }
 
   // Export structure
   var exports = {
-    "@pie-element/passage": { Element: PassageComponent },
-    "@pie-element/passage@1.12.2": { Element: PassageComponent }
+    '@pie-element/passage': { Element: PassageComponent },
+    '@pie-element/passage@1.12.2': { Element: PassageComponent },
   };
 
   // Global assignment
@@ -105,6 +107,7 @@ curl -s "URL" | tail -c 10000 | grep -B20 "window.pie"
 ✅ **COMPATIBLE**
 
 Our bundler implementation:
+
 1. Uses webpack 5 with correct output configuration
 2. Generates entry files with matching export structure
 3. Produces IIFE bundles that assign to `window.pie`

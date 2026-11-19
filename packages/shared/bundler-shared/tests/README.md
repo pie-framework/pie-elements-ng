@@ -43,11 +43,13 @@ bun run test:coverage
 ## Test Performance
 
 ### Unit Tests
+
 - **Duration**: ~10-20ms
 - **Network**: Not required
 - **Cache**: Not applicable
 
 ### Integration Tests
+
 - **First Run**: 2-3 minutes per test (downloads packages from NPM)
 - **Cached Run**: 30-60 seconds per test (packages already downloaded)
 - **Network**: Required for package downloads
@@ -55,6 +57,7 @@ bun run test:coverage
 ## Integration Test Details
 
 The integration tests create temporary directories for testing:
+
 - **Output**: `/tmp/pie-bundler-test-output/`
 - **Cache**: `/tmp/pie-bundler-test-cache/`
 
@@ -69,16 +72,19 @@ These directories are cleaned up automatically after tests complete.
 3. Bun install fails when trying to resolve this missing git dependency
 
 **Current workaround in pie-elements-ng:**
+
 - Use local workspace package testing to bypass broken historical NPM dependencies
 - Once updated element packages are published to NPM, the integration tests will work
 
 **Status:**
+
 - ✅ **Unit tests** run in `bun run test`
 - ⚠️ **Integration tests** (`bundler.test.ts`) are skipped with `describe.skip()`
 - ⏳ **Waiting for:** Modernized elements to be published to NPM with fixed dependencies
 
 **Alternative Testing:**
 Until NPM packages are fixed, use the **CLI test command** with local workspace packages:
+
 ```bash
 # Test with local workspace packages (bypasses NPM entirely)
 bun cli dev:test-bundler
@@ -149,6 +155,7 @@ If integration tests fail:
 3. Check disk space (bundles can be large)
 4. Review console output for webpack errors
 5. Manually inspect temp directories:
+
    ```bash
    ls -la /tmp/pie-bundler-test-output/
    ls -la /tmp/pie-bundler-test-cache/
@@ -169,7 +176,9 @@ Example:
 ```typescript
 it('should handle edge case', async () => {
   const result = await bundler.build({
-    dependencies: [/* ... */],
+    dependencies: [
+      /* ... */
+    ],
   });
 
   expect(result.success).toBe(true);

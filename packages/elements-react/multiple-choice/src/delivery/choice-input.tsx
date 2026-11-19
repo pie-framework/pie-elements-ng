@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import { Feedback as FeedbackImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { Feedback as FeedbackImport, color, createUniqueId, hasTextAlternative, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -53,21 +53,25 @@ const labelContent = (label) => {
     math: MATH_MARKERS.some((marker) => html.includes(marker)),
     table: html.includes('<table'),
     image: html.includes('<img'),
+    nameless: !hasTextAlternative(html),
   };
 };
 
 const CLASS_NAME = 'multiple-choice-component';
 
+/*
+ * The row, the holder and the label paint no background: the element's main container paints
+ * --pie-background behind them, and a fill of their own covers the choice's selected or hover
+ * fill, leaving it as a frame around an opaque box.
+ */
 const Row: any = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: color.background(),
 });
 
 const CheckboxHolder: any = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: color.background(),
   flex: 1,
   '& .MuiFormControlLabel-root': {
     marginLeft: '-14px', // to be consistent to previous versions before MUI v5 upgrade
@@ -94,17 +98,20 @@ const BelowSelectionComponent: any = styled('span')(({ theme }) => ({
 
 const SrOnly: any = styled('span')({
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 });
 
 export const StyledFormControlLabel: any = styled(FormControlLabel)({
   '& .MuiFormControlLabel-label': {
     color: `${color.text()} !important`,
-    backgroundColor: color.background(),
     letterSpacing: 'normal',
   },
   '&.Mui-disabled *': {
@@ -257,9 +264,11 @@ export class ChoiceInput extends React.Component {
     isEvaluateMode: PropTypes.bool,
     choicesLayout: PropTypes.oneOf(['vertical', 'grid', 'horizontal']),
     isSelectionButtonBelow: PropTypes.bool,
-    mathOutsideNames: PropTypes.bool,
-    // The translated note a math choice's name ends with when math is kept out of names.
+    // The choice's position, the hidden key of a math choice that has no key.
+    index: PropTypes.number,
+    // The translated note a math choice's name ends with.
     pickTheAnswerBelow: PropTypes.string,
+    choiceName: PropTypes.string,
   };
 
   static defaultProps = {
@@ -328,8 +337,9 @@ export class ChoiceInput extends React.Component {
       checked,
       tagName,
       isSelectionButtonBelow,
-      mathOutsideNames,
+      index,
       pickTheAnswerBelow,
+      choiceName,
     } = this.props;
 
     const Tag = choiceMode === 'checkbox' ? StyledCheckbox : StyledRadio;
@@ -355,20 +365,23 @@ export class ChoiceInput extends React.Component {
       }),
     };
 
-    // By default a choice is named from its label, the renderer labelling its math with speech.
-    // With math kept out of names, which the Player switches on to compare the two patterns, a
-    // lettered choice holding math is named from its key and a note that the answer follows,
-    // "A. Pick the answer below", and the screen reader reads its MathML in the content. A choice
-    // with no key keeps its label as its name (PIE-1244).
+    // A choice holding math or a table is named from its key and a note that the answer follows,
+    // "A. Pick the answer below", and keeps its math out of its name: the screen reader reads the
+    // MathML in the content, where the student can explore it and a braille display shows it as
+    // math. A choice with no key gets its position as a hidden key, so the names stay distinct.
+    // Other choices are named from their label (PIE-1244), and a label with no text and no image
+    // description from its key or position, "Choice A" (PIE-1484).
     const content = labelContent(label);
-    const namedByNote = Boolean(displayKey) && mathOutsideNames && (content.math || content.table);
+    const namedByNote = content.math || content.table;
+    const nameless = !namedByNote && content.nameless;
+    const key = displayKey || (namedByNote || nameless ? `${index + 1}` : '');
 
-    // The default key text is the one choices carried before this change, read-aloud included.
-    let keyText = displayKey;
-    if (namedByNote) keyText = `${displayKey}.`;
-    else if (content.math || content.image) keyText = `Pick the answer below, ${displayKey}`;
+    let keyText = key;
+    if (namedByNote) keyText = `${key}.`;
+    else if (nameless) keyText = choiceName || key;
+    else if (content.image) keyText = `${pickTheAnswerBelow}, ${key}`;
 
-    const screenReaderLabel = displayKey ? (
+    const screenReaderLabel = key ? (
       <SrOnly id={this.descId} className={namedByNote ? 'pie-sr-only' : undefined}>
         {keyText}
       </SrOnly>
@@ -422,7 +435,7 @@ export class ChoiceInput extends React.Component {
 
     return (
       <div className={classNames(className, 'corespring-' + classSuffix, 'choice-input')}>
-        <Row>
+        <Row className="choice-input-row">
           {!hideTick && isEvaluateMode && <FeedbackTick correctness={correctness} />}
           <CheckboxHolder className="checkbox-holder" sx={holderSx}>
             <StyledFormControlLabel
@@ -431,6 +444,7 @@ export class ChoiceInput extends React.Component {
               htmlFor={this.choiceId}
               labelPlacement={isSelectionButtonBelow ? 'top' : undefined}
               control={control}
+              slotProps={{ typography: { className: 'choice-input-label' } }}
             />
           </CheckboxHolder>
         </Row>

@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import Palette from '../drawable-palette';
+
+// The element loads the item's locale before it renders; these render its parts directly.
+beforeAll(() => loadLocale('es_ES'));
 
 const props = {
   fillColor: 'transparent',

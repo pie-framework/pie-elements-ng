@@ -1,8 +1,6 @@
-import Translator from '@pie-lib/translator';
 import * as math from 'mathjs';
 import { normalizeTicks } from './tick-utils.js';
-
-const { translator } = Translator;
+import { catalogs } from '../../../i18n/index.js';
 
 type EndPoint = 'full' | 'empty';
 
@@ -24,8 +22,6 @@ export interface NumberLineLabelInput extends DescriptionContext {
   width: number;
 }
 
-const optionsFor = (language?: string) => ({ lng: language, interpolation: { escapeValue: false } });
-
 /** Formats a value the way the tick labels show it: a fraction in fraction mode, else up to 3 decimals. */
 const formatValue = (value: number | math.Fraction, asFraction: boolean): string => {
   const exact = math.fraction(value);
@@ -42,8 +38,7 @@ const formatValue = (value: number | math.Fraction, asFraction: boolean): string
 export function labelNumberLine({ domain, ticks, width, fraction = false, language }: NumberLineLabelInput): string {
   const { minor } = normalizeTicks(domain, width, ticks, { fraction });
 
-  return translator.t('numberLine.graphLabel', {
-    ...optionsFor(language),
+  return catalogs.forLocale(language).t('graphLabel', {
     min: formatValue(domain.min, fraction),
     max: formatValue(domain.max, fraction),
     interval: formatValue(minor, fraction),
@@ -55,34 +50,31 @@ export function describePlottedElements(
   elements: readonly PlottedElement[],
   { fraction = false, language }: DescriptionContext = {},
 ): string {
-  const options = optionsFor(language);
+  const i18n = catalogs.forLocale(language);
   const value = (v: number) => formatValue(v, fraction);
   const end = (point: EndPoint) =>
-    translator.t(point === 'empty' ? 'numberLine.openEnd' : 'numberLine.closedEnd', options);
+    i18n.t(point === 'empty' ? 'openEnd' : 'closedEnd');
 
   const verdict = (element: PlottedElement) =>
     element.correct === true || element.correct === false
-      ? ` ${translator.t(element.correct ? 'numberLine.elementCorrect' : 'numberLine.elementIncorrect', options)}`
+      ? ` ${i18n.t(element.correct ? 'elementCorrect' : 'elementIncorrect')}`
       : '';
 
   const describeElement = (element: PlottedElement): string => {
     switch (element.type) {
       case 'point':
-        return translator.t(element.pointType === 'empty' ? 'numberLine.pointOpen' : 'numberLine.pointClosed', {
-          ...options,
+        return i18n.t(element.pointType === 'empty' ? 'pointOpen' : 'pointClosed', {
           position: value(element.position),
         });
       case 'line':
-        return translator.t('numberLine.line', {
-          ...options,
+        return i18n.t('line', {
           left: value(element.position.left),
           leftEnd: end(element.leftPoint),
           right: value(element.position.right),
           rightEnd: end(element.rightPoint),
         });
       case 'ray':
-        return translator.t(element.direction === 'negative' ? 'numberLine.rayLeft' : 'numberLine.rayRight', {
-          ...options,
+        return i18n.t(element.direction === 'negative' ? 'rayLeft' : 'rayRight', {
           position: value(element.position),
           end: end(element.pointType),
         });
@@ -97,5 +89,5 @@ export function describePlottedElements(
   });
 
   const described = sentences.filter(Boolean);
-  return described.length ? described.join(' ') : translator.t('numberLine.plottedNone', options);
+  return described.length ? described.join(' ') : i18n.t('plottedNone');
 }

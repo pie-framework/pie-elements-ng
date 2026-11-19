@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
   name?: string;
@@ -19,7 +20,7 @@ export default defineConfig(({ mode, command }) => {
 
   // Build mode: build the library
   return {
-  plugins: [react()],
+  plugins: [react(), thirdPartyLicenses()],
   define: {
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
     __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
@@ -58,8 +59,8 @@ export default defineConfig(({ mode, command }) => {
           /^react-redux($|\/)/.test(id) ||
           /^use-sync-external-store($|\/)/.test(id) ||
           // mathjs is bundled into this package, not external. Shared, it breaks any bundle that
-          // also holds @pie-framework/math-validation (math-inline, math-templated): that loads
-          // mathjs's CommonJS build while this package loads its ES build, the bundle service
+          // also holds one of the CommonJS builds of @pie-framework/math-validation published from the old
+          // repo (1.4.3 and earlier): that loads mathjs's CommonJS build while this package loads its ES build, the bundle service
           // gives both one typed-function module, and each mathjs build creates its default
           // instance on typed-function's shared singleton, so the second build's parser throws
           // `There is already a conversion from "string" to "Node"` and the whole bundle fails

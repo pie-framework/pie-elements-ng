@@ -73,6 +73,18 @@ The element writes each learner change into the session object the player set, k
 
 Svelte elements get this from `defineDeliveryElement` in `@pie-lib/delivery-events-svelte`; React elements mutate the session they were given.
 
+### Focus Hook
+
+A delivery element may define `focusFirstInput(options?: FocusOptions): boolean | Promise<boolean>`. The item player's `focus()` asks the elements its item renders, in document order, and stops at the first that returns true.
+
+- It focuses the element's first input where Tab would land, and honours `options` as `HTMLElement.focus()` does: the input scrolls into view unless `preventScroll` is set.
+- It returns true once the input has focus, and false when the element shows no input, such as a display-only evaluate view.
+- An element whose input mounts asynchronously returns a promise that settles after the mount. The promise always settles: it resolves false, and leaves focus alone, when focus moved while it waited, the element left the page or its view failed to render.
+- A call made while an earlier one waits returns the earlier call's promise. The first to settle moves focus, so a later call would see focus gone and resolve false.
+- Focusing opens no keypad, popup or other change of context (WCAG 3.2.1).
+
+The item player focuses the first tabbable descendant of an element without the hook, or one whose hook throws, so only an element whose input mounts after the item loads, or whose first tab stop is not its input, needs one.
+
 ### Authoring Contract
 
 A player registers an element's author view under `<tag>-config` and sets two properties on it, `model` and then `configuration`. The element declares both; an undeclared property lands on the instance, where the element never reads it.
@@ -101,7 +113,13 @@ Package `exports`, `main`, `module`, `types`, `unpkg`, and `jsdelivr` entries mu
 
 Every element package also exports `./package.json`, so a host reads the installed version from the package itself.
 
+Every publishable package carries a `LICENSE` beside its `package.json` that begins with the repository's root `LICENSE` text; npm packs it whatever `files` says. A package under further terms appends them after that text. When the root `LICENSE` changes, copy it into each package again.
+
 Sourcemaps may be published, but they must include source content so consumers can debug without unpacked source files.
+
+### Third-Party License Notices
+
+A package ships the license notices of every third-party package its build output bundles. Each Vite build in the workspace uses `thirdPartyLicenses()` from `tools/vite/third-party-licenses.ts`, which writes the license and NOTICE files of each bundled package to `THIRD_PARTY_LICENSES.txt` at the root of a multi-chunk build, or to `<chunk>.THIRD_PARTY_LICENSES.txt` beside the single chunk of a single-file build (`dist/index.iife.THIRD_PARTY_LICENSES.txt`, `module/print.THIRD_PARTY_LICENSES.txt`). A build that bundles another workspace package's output carries over the notices that output ships, so private packages build with the plugin too, and a build fails when it bundles a vendored copy no notices file covers. Third-party code copied into a package's own sources looks first-party by its path, so the package declares it with the plugin's `copied` option, which names the copied sources and the notice to reproduce. math-validation declares its LaTeX parser, derived from math-expressions, this way.
 
 ### Self-Contained Svelte
 
@@ -302,7 +320,7 @@ runtime.
 
 Packages that declare `exports["./print"]` may additionally publish a second, unrelated print artifact at the package root:
 
-- `module/print.js` (and its sourcemap `module/print.js.map`)
+- `module/print.js` (and its sourcemap `module/print.js.map`, and `module/print.THIRD_PARTY_LICENSES.txt`)
 - `module/assets/`, the assets the stylesheets `module/print.js` installs reference, as browser ESM chunks do
 
 This exists solely so the unmodified, currently-deployed `@pie-framework/pie-print` client loader — which fetches `<pkg>/module/print.js` directly by CDN path and does a bare `import()` with no import map — can load `pie-elements-ng` print bundles. It is **not** part of the `./browser/print` contract above: `dist/browser/print/index.js` stays the artifact for the new `pie-players/pie-print-player`, which does inject an import map. `module/print.js` is fully self-contained instead (no externals, React included), because its loader injects nothing. See [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) and [`docs/prds/legacy-print-compatibility/PRD.md`](prds/legacy-print-compatibility/PRD.md).
@@ -321,10 +339,10 @@ Packages that publish `./browser/*` exports may omit `./runtime-support` unless 
 
 Every element package publishes JSON Schemas for its model and session, and for its authoring configuration when it exports `./author`:
 
-| Export | Target |
-| --- | --- |
-| `./schemas/model.schema.json` | `./dist/schemas/model.schema.json` |
-| `./schemas/session.schema.json` | `./dist/schemas/session.schema.json` |
+| Export                                | Target                                     |
+| ------------------------------------- | ------------------------------------------ |
+| `./schemas/model.schema.json`         | `./dist/schemas/model.schema.json`         |
+| `./schemas/session.schema.json`       | `./dist/schemas/session.schema.json`       |
 | `./schemas/configuration.schema.json` | `./dist/schemas/configuration.schema.json` |
 
 The build generates them from `<Name>Model`, `<Name>Session` and `<Name>Configuration` in the package's `src/types.ts`, where `<Name>` is the PascalCase package name, and the root entry re-exports those types. Each schema is draft-07 with `$id` set to its versioned jsDelivr URL. Model and configuration roots reject unknown top-level keys, as the legacy schemas do. Nested objects and the session accept them, because players and controllers write extra state into the session. Hosts validate leniently by default, logging errors as warnings, and strictly by choice. [`docs/ELEMENT_SCHEMAS.md`](ELEMENT_SCHEMAS.md) covers declaring the types and using the schemas; [`docs/prds/element-json-schemas/PRD.md`](prds/element-json-schemas/PRD.md) is the decision record.
@@ -382,10 +400,11 @@ bun run verify:element-contracts
 
 The aggregate verifier runs the contract-relevant checks for:
 
-- npm publish surface and browser ESM policy,
+- npm publish surface, browser ESM policy and package LICENSE files,
 - controller/configure packaging and compatibility shims,
 - runtime-support export coverage,
 - JSON Schema exports on element packages,
-- sourcemap source content.
+- sourcemap source content,
+- third-party license notices.
 
 Release publishing and full lint checks must include this verifier so new and changed packages cannot silently drift from the contract.

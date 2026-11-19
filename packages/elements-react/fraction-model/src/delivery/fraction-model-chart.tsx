@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bar, BarChart, Cell, LabelList, Pie, PieChart, YAxis } from 'recharts';
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const PieChartParentDiv: any = styled('div')({
   display: 'grid',
@@ -150,8 +148,7 @@ const FractionModelChart = (props) => {
    * @param chartIndex: 1-based index of the model
    * */
   const modelLabel = (chartIndex) =>
-    translator.t('fractionModel.modelLabel', {
-      lng: language,
+    catalogs.forLocale(language).plural('modelLabel', {
       index: chartIndex,
       total: noOfModels,
       selected: clickedIndexArray.find((item) => item.id === chartIndex)?.value ?? 0,

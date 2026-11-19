@@ -443,7 +443,198 @@ export const specialConfig = {
   ],
 };
 
+// Characters an Arabic author may lack on a Latin keyboard, or cannot see: Arabic-Indic digits,
+// Arabic punctuation and separators, the hamza and alef forms, and the direction marks.
+export const arabicConfig = {
+  hasPreview: true,
+  characters: [
+    [
+      {
+        unicode: 'U+0660',
+        description: 'ARABIC-INDIC DIGIT ZERO',
+        write: '٠',
+        label: '٠',
+      },
+      {
+        unicode: 'U+0661',
+        description: 'ARABIC-INDIC DIGIT ONE',
+        write: '١',
+        label: '١',
+      },
+      {
+        unicode: 'U+0662',
+        description: 'ARABIC-INDIC DIGIT TWO',
+        write: '٢',
+        label: '٢',
+      },
+      {
+        unicode: 'U+0663',
+        description: 'ARABIC-INDIC DIGIT THREE',
+        write: '٣',
+        label: '٣',
+      },
+      {
+        unicode: 'U+0664',
+        description: 'ARABIC-INDIC DIGIT FOUR',
+        write: '٤',
+        label: '٤',
+      },
+      {
+        unicode: 'U+0665',
+        description: 'ARABIC-INDIC DIGIT FIVE',
+        write: '٥',
+        label: '٥',
+      },
+      {
+        unicode: 'U+0666',
+        description: 'ARABIC-INDIC DIGIT SIX',
+        write: '٦',
+        label: '٦',
+      },
+      {
+        unicode: 'U+0667',
+        description: 'ARABIC-INDIC DIGIT SEVEN',
+        write: '٧',
+        label: '٧',
+      },
+      {
+        unicode: 'U+0668',
+        description: 'ARABIC-INDIC DIGIT EIGHT',
+        write: '٨',
+        label: '٨',
+      },
+      {
+        unicode: 'U+0669',
+        description: 'ARABIC-INDIC DIGIT NINE',
+        write: '٩',
+        label: '٩',
+      },
+    ],
+    [
+      {
+        unicode: 'U+060C',
+        description: 'ARABIC COMMA',
+        write: '،',
+        label: '،',
+      },
+      {
+        unicode: 'U+061B',
+        description: 'ARABIC SEMICOLON',
+        write: '؛',
+        label: '؛',
+      },
+      {
+        unicode: 'U+061F',
+        description: 'ARABIC QUESTION MARK',
+        write: '؟',
+        label: '؟',
+      },
+      {
+        unicode: 'U+066A',
+        description: 'ARABIC PERCENT SIGN',
+        write: '٪',
+        label: '٪',
+      },
+      {
+        unicode: 'U+066B',
+        description: 'ARABIC DECIMAL SEPARATOR',
+        write: '٫',
+        label: '٫',
+      },
+      {
+        unicode: 'U+066C',
+        description: 'ARABIC THOUSANDS SEPARATOR',
+        write: '٬',
+        label: '٬',
+      },
+      {
+        unicode: 'U+00AB',
+        description: 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
+        write: '«',
+        label: '«',
+      },
+      {
+        unicode: 'U+00BB',
+        description: 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
+        write: '»',
+        label: '»',
+      },
+    ],
+    [
+      {
+        unicode: 'U+0621',
+        description: 'ARABIC LETTER HAMZA',
+        write: 'ء',
+        label: 'ء',
+      },
+      {
+        unicode: 'U+0623',
+        description: 'ARABIC LETTER ALEF WITH HAMZA ABOVE',
+        write: 'أ',
+        label: 'أ',
+      },
+      {
+        unicode: 'U+0625',
+        description: 'ARABIC LETTER ALEF WITH HAMZA BELOW',
+        write: 'إ',
+        label: 'إ',
+      },
+      {
+        unicode: 'U+0622',
+        description: 'ARABIC LETTER ALEF WITH MADDA ABOVE',
+        write: 'آ',
+        label: 'آ',
+      },
+      {
+        unicode: 'U+0624',
+        description: 'ARABIC LETTER WAW WITH HAMZA ABOVE',
+        write: 'ؤ',
+        label: 'ؤ',
+      },
+      {
+        unicode: 'U+0626',
+        description: 'ARABIC LETTER YEH WITH HAMZA ABOVE',
+        write: 'ئ',
+        label: 'ئ',
+      },
+      {
+        unicode: 'U+0629',
+        description: 'ARABIC LETTER TEH MARBUTA',
+        write: 'ة',
+        label: 'ة',
+      },
+      {
+        unicode: 'U+0649',
+        description: 'ARABIC LETTER ALEF MAKSURA',
+        write: 'ى',
+        label: 'ى',
+      },
+    ],
+    [
+      {
+        unicode: 'U+200F',
+        description: 'RIGHT-TO-LEFT MARK',
+        write: '\u200F',
+        label: 'RLM',
+      },
+      {
+        unicode: 'U+200E',
+        description: 'LEFT-TO-RIGHT MARK',
+        write: '\u200E',
+        label: 'LRM',
+      },
+      {
+        unicode: 'U+061C',
+        description: 'ARABIC LETTER MARK',
+        write: '\u061C',
+        label: 'ALM',
+      },
+    ],
+  ],
+};
+
 export const characterIcons = {
   spanish: 'ñ',
   special: '€',
+  arabic: 'ع',
 };

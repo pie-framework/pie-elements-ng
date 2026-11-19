@@ -7,6 +7,7 @@
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { noCdnHosts } from './vite.no-cdn';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 const DECLARATION = `/**
  * \`html\` with each TeX expression in it replaced by a \`<math>\` element in MathML Core. HTML without
@@ -26,7 +27,7 @@ function declaration(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [noCdnHosts(), declaration()],
+  plugins: [noCdnHosts(), declaration(), thirdPartyLicenses()],
   build: {
     outDir: 'dist/tex-to-mathml',
     emptyOutDir: true,

@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: '解答 {id}',
+  dragInstructionsA11y: '選択するには ENTER を押します。',
+  answerChoiceA11y: '解答の選択肢：{choice}',
+  answerChoiceInDropAreaA11y: '解答の選択肢：{choice}（オブジェクト {number} {text} のドロップ領域内）',
+  introReusableA11y: 'この問題には、対応づけが必要なオブジェクトが {total} 個あります。各オブジェクトには、解答の選択肢を 1 つ置けるドロップ領域が 1 つあります。解答の選択肢は再利用できます。すべてのドロップ領域に解答の選択肢を置いてください。',
+  introNotReusableA11y: 'この問題には、対応づけが必要なオブジェクトが {total} 個あります。各オブジェクトには、解答の選択肢を 1 つ置けるドロップ領域が 1 つあります。解答の選択肢は再利用できません。すべてのドロップ領域に解答の選択肢を置いてください。',
+  keyboardHelpA11y: '解答の選択肢とドロップ領域の間を移動するには TAB、選択または配置するには ENTER、キャンセルするには ESC を使います。',
+  progressA11y: '{total} 個のドロップ領域のうち {filled} 個に解答の選択肢があります。',
+  objectA11y: 'オブジェクト {number}。',
+  dropAreaEmptyA11y: 'ドロップ領域 {number} は空です',
+  dropAreaFilledA11y: 'ドロップ領域 {number} に解答の選択肢 {choice} があります',
+  availableCountA11y: '利用可能な解答の選択肢は {count} 個です。',
+  availableEndA11y: '利用可能な解答の選択肢は以上です。解答の選択肢に移動するには TAB を使います。',
+  selectedA11y: '解答の選択肢 {choice} を選択しました。ドロップ領域を選ぶには TAB を使います。',
+  notOverResponseAreaA11y: '{choice}は解答欄の上にありません。',
+  overDropAreaA11y: 'オブジェクト {number} {text} のドロップ領域を選択しました。選択中の解答の選択肢 {choice} をここに移動するには ENTER、別のドロップ領域に移動するには TAB を押します。',
+  overPoolFromDropAreaA11y: '選択中の解答の選択肢をオブジェクト {number} のドロップ領域から取り除くには ENTER、別のドロップ領域に移動するには TAB を押します。選択中の解答の選択肢：{choice}。オブジェクト {number}：{text}',
+  overPoolUnplacedA11y: '選択中の解答の選択肢を置かないままにするには ENTER、ドロップ領域に移動するには TAB を押します。選択中の解答の選択肢：{choice}',
+  placedA11y: '解答の選択肢 {choice} をオブジェクト {number} のドロップ領域に置きました：{text}',
+  movedA11y: '解答の選択肢 {choice} をオブジェクト {from} のドロップ領域からオブジェクト {to} のドロップ領域に移動しました。{text}',
+  removedA11y: '解答の選択肢 {choice} をオブジェクト {number} のドロップ領域から取り除きました',
+  remainingA11y: '{total} 個のドロップ領域のうち {filled} 個に解答の選択肢があります。利用可能な解答の選択肢は {available} 個です。解答の選択肢を選ぶには TAB を使います。',
+  completeA11y: '解答が完成しました。{total} 個のドロップ領域のうち {total} 個に解答の選択肢があります。',
+  deselectedA11y: '解答の選択肢 {choice} の選択が解除されました。解答の選択肢を選ぶには TAB を使います。',
+} satisfies MessageCatalog;

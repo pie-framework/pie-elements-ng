@@ -1,6 +1,7 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import { loadLocale } from '@pie-element/shared-i18n';
 import PlacementOrderingComponent from '../placement-ordering';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -390,6 +391,9 @@ describe('PlacementOrdering drag preview', () => {
 });
 
 describe('PlacementOrdering toggles', () => {
+  // The component reads its catalogs synchronously; the Spanish case needs them resident.
+  beforeAll(() => loadLocale('es_ES'));
+
   it.each([
     ['en_US', 'Show Teacher Instructions', 'Show Rationale'],
     ['es_ES', 'Mostrar instrucciones para el maestro', 'Mostrar justificación'],

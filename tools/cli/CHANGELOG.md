@@ -32,7 +32,7 @@
 ### Patch Changes
 
 - [#429](https://github.com/pie-framework/pie-elements-ng/pull/429) [`7ca6fe6`](https://github.com/pie-framework/pie-elements-ng/commit/7ca6fe6735c2b9b95209b39221c6484ac282bbdf) Thanks [@chillenious](https://github.com/chillenious)! - Each element publishes JSON Schemas for its model and session, and for its authoring configuration when it has one, at `@pie-element/<name>/schemas/<kind>.schema.json`. The root entry exports the `<Name>Model`, `<Name>Session` and `<Name>Configuration` types they are generated from. `@pie-element/shared-types` adds the authoring building blocks those types share.
-  
+
   `docs:generate` in `@pie-element/cli` documents each property from the element's schemas, with its defaults alongside. `@pie-element/shared-types` drops `PieDocsPropertyMetadata`, `PieDocsViewMetadata` and the `description` and `metadata` fields of `PieDocsViewContract`, which no element set.
 
 ## 0.1.3
@@ -60,7 +60,7 @@
 - [#163](https://github.com/pie-framework/pie-elements-ng/pull/163) [`4fe8ce6`](https://github.com/pie-framework/pie-elements-ng/commit/4fe8ce6735adf3b7923a657bca2d94883f374111) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - `upstream:sync` now forces every `@tiptap/*` dependency of a synced `@pie-lib` package to one exact version instead of taking the upstream manifest's. tiptap pins its own peers exactly from 3.24.0 on, so the mixed set upstream declares resolves a second `@tiptap/core` and breaks ProseMirror on duplicate schema and plugin identity (PIE-1042)
 
 - [#191](https://github.com/pie-framework/pie-elements-ng/pull/191) [`d242e4c`](https://github.com/pie-framework/pie-elements-ng/commit/d242e4cbf8f1194c5ae67689f2e3e21d5c783339) Thanks [@chillenious](https://github.com/chillenious)! - The placement-ordering controller scores responses of two or more tiles, where it threw for every one (PIE-1098). Its scorer called js-combinatorics 0.5's `combination(seed, size)` against the 2.x dependency, which counts combinations instead; the upstream sync now rewrites that call to 2.x's `Combination` class.
-  
+
   `uniq` from `@pie-element/shared-lodash` returns `[]` for a value without a length, as lodash does, where it threw on a non-iterable.
 
 - [#199](https://github.com/pie-framework/pie-elements-ng/pull/199) [`c4e2ba3`](https://github.com/pie-framework/pie-elements-ng/commit/c4e2ba313d3137c90af800715606e3f372e4beac) Thanks [@chillenious](https://github.com/chillenious)! - Add `@pie-element/shared-editor-runtime`, one browser ESM build of the tiptap editor engine, and an editor-runtime variant of each browser view of the elements that bundle the engine, declared in `pie.browserEditorRuntime`, which `pie-cli` sync now writes. `./browser/*` and the IIFE builds are unchanged.
@@ -81,7 +81,7 @@
 
 - [#142](https://github.com/pie-framework/pie-elements-ng/pull/142) [`8d69fb5`](https://github.com/pie-framework/pie-elements-ng/commit/8d69fb58ff9b482b46d74a9165ac4a4da700b8c9) Thanks [@chillenious](https://github.com/chillenious)! - Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
   subpaths from what a package declares.
-  
+
   An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
   and never reads the exports map, so print needs the same root shim `controller.js` and
   `configure.js` already provide. Without it the subpath resolved only from TypeScript
@@ -106,7 +106,7 @@
 - Depend on `i18next` alone: the package no longer declares React, `prop-types`, `debug` or `@pie-element/shared-lodash`, none of which it imports. Add English and Spanish strings for the Svelte elements mc-populated-blank, simple-cloze and venn-classification, and stop logging i18next's configuration to the console. Upstream sync leaves the package alone, since this repo now owns it.
 - `upstream:sync` now forces every `@tiptap/*` dependency of a synced `@pie-lib` package to one exact version instead of taking the upstream manifest's. tiptap pins its own peers exactly from 3.24.0 on, so the mixed set upstream declares resolves a second `@tiptap/core` and breaks ProseMirror on duplicate schema and plugin identity (PIE-1042)
 - The placement-ordering controller scores responses of two or more tiles, where it threw for every one (PIE-1098). Its scorer called js-combinatorics 0.5's `combination(seed, size)` against the 2.x dependency, which counts combinations instead; the upstream sync now rewrites that call to 2.x's `Combination` class.
-  
+
   `uniq` from `@pie-element/shared-lodash` returns `[]` for a value without a length, as lodash does, where it threw on a non-iterable.
 - Add `@pie-element/shared-editor-runtime`, one browser ESM build of the tiptap editor engine, and an editor-runtime variant of each browser view of the elements that bundle the engine, declared in `pie.browserEditorRuntime`, which `pie-cli` sync now writes. `./browser/*` and the IIFE builds are unchanged.
 - Merge pull request #198 from pie-framework/fix/browser-packaging
@@ -117,7 +117,7 @@
 - Merge pull request #233 from pie-framework/fix/changesets-version-private-packages
 - Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
   subpaths from what a package declares.
-  
+
   An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
   and never reads the exports map, so print needs the same root shim `controller.js` and
   `configure.js` already provide. Without it the subpath resolved only from TypeScript

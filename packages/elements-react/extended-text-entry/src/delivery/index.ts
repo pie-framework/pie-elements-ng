@@ -6,7 +6,12 @@ import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { stampElementLanguage } from '@pie-element/shared-i18n';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import {
   ModelSetEvent,
   SessionChangedEvent,
@@ -16,9 +21,7 @@ import {
   subscribeIdleSaveDelay,
 } from '@pie-element/shared-player-events';
 import { flushPendingEditorSaves } from '@pie-lib/editable-html-tip-tap';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const log = debug('@pie-elements:extended-text-entry');
 
@@ -61,6 +64,10 @@ export default class RootExtendedTextEntry extends HTMLElement {
     // The player sets it through `sessionCommitContext`; the model carries none. See PIE-916.
     this._idleSaveDelay = DEFAULT_IDLE_SAVE_DELAY_MS;
     this._unsubscribeIdleSaveDelay = null;
+    // The locale the player publishes, once it answers; null until then. While it is null the
+    // chrome follows the item's declared language, else `en-US` (permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._unsubscribeInterfaceLocale = null;
 
     // The session is written synchronously on commit; only the notification is
     // deferred, so a player reading `.session` always sees the committed
@@ -93,9 +100,14 @@ export default class RootExtendedTextEntry extends HTMLElement {
     stampElementLanguage(this, this._model?.language ?? null);
   }
 
-  /** Names the region in the item language, which can change with any model set. */
+  /** The language of the chrome: the player's interface locale, else the item's declared language. */
+  chromeLanguage() {
+    return this._interfaceLocale ?? this._model?.language;
+  }
+
+  /** Names the region in the chrome language, which can change with any model set. */
   setRegionLabel() {
-    this.setAttribute('aria-label', translator.t('extendedTextEntry.writtenResponseQuestion', { lng: this._model?.language }));
+    this.setAttribute('aria-label', catalogs.forLocale(this.chromeLanguage()).t('writtenResponseQuestion'));
   }
 
   set model(m) {
@@ -152,6 +164,16 @@ export default class RootExtendedTextEntry extends HTMLElement {
       this.render();
     });
 
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = subscribeInterfaceLocale(this, ({ locale }) => {
+      if (locale === this._interfaceLocale) {
+        return;
+      }
+
+      this._interfaceLocale = locale;
+      this.render();
+    });
+
     this.render();
   }
 
@@ -161,9 +183,18 @@ export default class RootExtendedTextEntry extends HTMLElement {
     }
 
     if (this._model && this._session) {
+      // Rendered once every catalog on the render path holds the chrome language, so no English
+      // frame precedes it.
+      const language = this.chromeLanguage();
+      if (!isLocaleReady(language)) {
+        void loadLocale(language).then(() => this.render());
+        return;
+      }
+
       let elem = React.createElement(Main, {
         model: this._model,
         session: this._session,
+        language,
         idleSaveDelay: this._idleSaveDelay,
         onValueChange: this.valueChange.bind(this),
         onAnnotationsChange: this.annotationsChange.bind(this),
@@ -193,6 +224,8 @@ export default class RootExtendedTextEntry extends HTMLElement {
   disconnectedCallback() {
     this._unsubscribeIdleSaveDelay?.();
     this._unsubscribeIdleSaveDelay = null;
+    this._unsubscribeInterfaceLocale?.();
+    this._unsubscribeInterfaceLocale = null;
 
     // Unmount first: the response editor sends its pending idle save as it unmounts, and that
     // write has to be in the session before the notifiers flush. Nothing re-renders meanwhile.

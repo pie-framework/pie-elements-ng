@@ -39,10 +39,8 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { styled } from '@mui/material/styles';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import Translator from '@pie-lib/translator';
 import { flatMap, groupBy } from '@pie-element/shared-lodash';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 import Image from './image-container.js';
 import InteractiveSection from './interactive-section.js';
 import PossibleResponses from './possible-responses.js';
@@ -270,15 +268,13 @@ export class ImageClozeAssociationComponent extends React.Component {
 
   // Names a choice by its position among the model's choices, which holds in the pool and in an area.
   getChoiceLabel: any = (value) => {
-    const {
-      model: { possibleResponses = [], language },
-    } = this.props;
+    const { model } = this.props;
+    const { possibleResponses = [] } = model;
     const index = possibleResponses.indexOf(value);
 
     return index === -1
       ? undefined
-      : translator.t('imageClozeAssociation.answerChoice', {
-          lng: language,
+      : catalogs.forLocale(this.props.language ?? model.language).t('answerChoice', {
           index: index + 1,
           total: possibleResponses.length,
         });
@@ -442,7 +438,6 @@ export class ImageClozeAssociationComponent extends React.Component {
         showDashedBorder,
         mode,
         rationale,
-        language,
         uiStyle = {},
         answerChoiceTransparency,
         responseContainerPadding,
@@ -451,6 +446,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         customAudioButton,
       },
     } = this.props;
+    const language = this.props.language ?? this.props.model.language;
     const {
       answers,
       draggingElement,
@@ -484,10 +480,7 @@ export class ImageClozeAssociationComponent extends React.Component {
       });
     }
 
-    const warningMessage = translator.t('imageClozeAssociation.reachedLimit_other', {
-      lng: language,
-      count: maxResponsePerZone,
-    });
+    const warningMessage = catalogs.forLocale(language).plural('reachedLimit', { count: maxResponsePerZone });
 
     let answersToShow =
       responseCorrect !== undefined ? getAnswersCorrectness(answers, validation, duplicateResponses) : answers;
@@ -528,27 +521,28 @@ export class ImageClozeAssociationComponent extends React.Component {
     const renderPossibleResponses = () => {
       if (showCorrect && showToggle) return null;
 
-      return (
-        <React.Fragment>
-          {maxResponsePerZoneWarning && <WarningInfo message={warningMessage} />}
-          <PossibleResponses
-            canDrag={!disabled}
-            data={possibleResponses}
-            getChoiceLabel={this.getChoiceLabel}
-            onAnswerRemove={this.handleOnAnswerRemove}
-            onDragBegin={this.onDragStart}
-            answerChoiceTransparency={answerChoiceTransparency}
-            customStyle={{
-              minWidth: isVertical ? '130px' : image?.width || 'fit-content',
-            }}
-            isVertical={isVertical}
-            minHeight={isVertical ? image?.height : undefined}
-            selectedResponse={this.state.selectedResponse}
-            onSelectClick={this.onResponseClick}
-            onPlacementClick={this.onPlacementClick}
-          />
-        </React.Fragment>
-      );
+      // A list rather than a fragment, so InteractiveSection can put the warning and the pool in
+      // the order they show.
+      return [
+        maxResponsePerZoneWarning && <WarningInfo key="warning" message={warningMessage} />,
+        <PossibleResponses
+          key="pool"
+          canDrag={!disabled}
+          data={possibleResponses}
+          getChoiceLabel={this.getChoiceLabel}
+          onAnswerRemove={this.handleOnAnswerRemove}
+          onDragBegin={this.onDragStart}
+          answerChoiceTransparency={answerChoiceTransparency}
+          customStyle={{
+            minWidth: isVertical ? '130px' : image?.width || 'fit-content',
+          }}
+          isVertical={isVertical}
+          minHeight={isVertical ? image?.height : undefined}
+          selectedResponse={this.state.selectedResponse}
+          onSelectClick={this.onResponseClick}
+          onPlacementClick={this.onPlacementClick}
+        />,
+      ];
     };
 
     return (
@@ -561,12 +555,7 @@ export class ImageClozeAssociationComponent extends React.Component {
       >
         <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
           {showTeacherInstructions && (
-            <StyledTeacherInstructions
-              labels={{
-                hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-                visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-              }}
-            >
+            <StyledTeacherInstructions variant="teacherInstructions" language={language}>
               <PreviewPrompt prompt={teacherInstructions} />
             </StyledTeacherInstructions>
           )}
@@ -595,12 +584,7 @@ export class ImageClozeAssociationComponent extends React.Component {
           </InteractiveSection>
 
           {showRationale && (
-            <StyledRationale
-              labels={{
-                hidden: translator.t('common:showRationale', { lng: language }),
-                visible: translator.t('common:hideRationale', { lng: language }),
-              }}
-            >
+            <StyledRationale variant="rationale" language={language}>
               <PreviewPrompt prompt={rationale} />
             </StyledRationale>
           )}
@@ -658,6 +642,8 @@ ImageClozeAssociationComponent.propTypes = {
   model: PropTypes.object.isRequired,
   session: PropTypes.object,
   updateAnswer: PropTypes.func.isRequired,
+  /** The locale the chrome follows; the item's declared language when omitted. */
+  language: PropTypes.string,
 };
 
 export default ImageClozeAssociationComponent;

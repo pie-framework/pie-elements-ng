@@ -5,7 +5,7 @@
  * each element; print renders delivery as a player shows that role in `view`
  * mode, so the key and teacher instructions print for an instructor only.
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
 import McPopulatedBlankPrint from '../src/print/index.js';
 
@@ -157,7 +157,7 @@ describe('mc-populated-blank print', () => {
       { role: 'student' },
       { ...MODEL, locale: 'es_MX', hasAudio: true, audioUrl: 'x.mp3', audioTranscript: 'Di.' }
     );
-    expect(el.textContent).toContain('Transcripción:');
+    await vi.waitFor(() => expect(el.textContent).toContain('Transcripción:'));
   });
 
   it('omits the prompt when it is disabled', async () => {

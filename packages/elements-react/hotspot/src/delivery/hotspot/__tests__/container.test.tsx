@@ -1,7 +1,8 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { loadLocale } from '@pie-element/shared-i18n';
 
 // Konva draws on a canvas, which happy-dom lacks; the keyboard focusables render outside it. The
 // layer stands in for Konva's with a bare canvas element.
@@ -31,6 +32,9 @@ vi.mock('../circle.js', () => ({ default: recordTooltip }));
 const { Container } = await import('../container');
 
 const theme = createTheme();
+
+// The container reads its catalog synchronously; the Spanish cases need it resident.
+beforeAll(() => loadLocale('es_ES'));
 
 const shapes = {
   rectangles: [
@@ -180,6 +184,30 @@ describe('Container image', () => {
     renderContainer({ language: 'es_ES', shapes: { rectangles: [shapes.rectangles[0]] } });
 
     expect(screen.getByRole('img', { name: 'Imagen con 1 zona activa' })).toBeInTheDocument();
+  });
+
+  it('describes the image by its authored alt text', () => {
+    renderContainer({ imageAltText: 'A plane seen from above' });
+
+    expect(screen.getByRole('img', { name: 'A plane seen from above' })).toHaveAttribute('src', 'plane.png');
+  });
+
+  it('describes the image by its number of hotspots when the alt text is blank', () => {
+    renderContainer({ imageAltText: '  ' });
+
+    expect(screen.getByRole('img', { name: 'Image with 3 hotspots' })).toBeInTheDocument();
+  });
+
+  it('trims the alt text', () => {
+    renderContainer({ imageAltText: '  A plane seen from above ' });
+
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'A plane seen from above');
+  });
+
+  it.each([42, { text: 'A plane' }, null])('describes the image by its number of hotspots when the alt text is %j', (imageAltText) => {
+    renderContainer({ imageAltText });
+
+    expect(screen.getByRole('img', { name: 'Image with 3 hotspots' })).toBeInTheDocument();
   });
 
   it('hides the canvas that redraws the shapes', () => {

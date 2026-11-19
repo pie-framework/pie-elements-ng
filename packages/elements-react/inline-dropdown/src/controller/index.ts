@@ -163,6 +163,14 @@ export async function model(
     choices = choicesWillNullRationales;
   }
 
+  // Which choice is correct reaches the browser only once it may show it; delivery reads the flag
+  // for the correct-answer view alone.
+  if (env.mode !== 'evaluate' && env.role !== 'instructor') {
+    choices = Object.fromEntries(
+      Object.entries(choices).map(([key, area]) => [key, (area || []).map(({ correct: _correct, ...choice }) => choice)]),
+    );
+  }
+
   const out = {
     disabled: env.mode !== 'gather',
     mode: env.mode,

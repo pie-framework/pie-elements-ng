@@ -31,6 +31,7 @@ describe('PIE element contract documentation and verifier', () => {
     expect(verifier).toContain('check-publish-surface.mjs');
     expect(verifier).toContain('verify-runtime-support-exports.mjs');
     expect(verifier).toContain('check-sourcemap-sources.mjs');
+    expect(verifier).toContain('check-third-party-notices.mjs');
     expect(verifier).toContain('verify:controllers');
   });
 

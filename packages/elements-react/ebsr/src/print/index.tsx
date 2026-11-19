@@ -7,9 +7,8 @@ import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
 const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { isLocaleReady, loadLocale } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 const log = debug('pie-element:ebsr:print');
 
@@ -120,30 +119,26 @@ export default class Ebsr extends HTMLElement {
 
   setPartModel(part, key) {
     if (this._model && this._model[key] && part && this._options) {
-      let labels = {
-        partA: undefined,
-        partB: undefined,
-      };
+      // Print has no player, so the labels speak the item's declared language.
+      const language = this._model.language ?? this._model.partA?.language;
+      if (!isLocaleReady(language)) {
+        void loadLocale(language).then(() => this.setPartModel(part, key));
+        return;
+      }
 
+      let partLabel;
       if (this._model.partLabels) {
-        const language = this._model.language;
-
-        labels = {
-          partA: translator.t('ebsr.part', {
-            lng: language,
-            index: this._model.partLabelType === 'Letters' ? 'A' : '1',
-          }),
-          partB: translator.t('ebsr.part', {
-            lng: language,
-            index: this._model.partLabelType === 'Letters' ? 'B' : '2',
-          }),
-        };
+        const letters = this._model.partLabelType === 'Letters';
+        const index = key === 'partA' ? (letters ? 'A' : '1') : letters ? 'B' : '2';
+        partLabel = catalogs.forLocale(language).t('part', { index });
       }
 
       part.model = {
         ...preparePrintModel(this._model[key], this._options),
+        // A part that declares no language takes the item's.
+        language: this._model[key].language ?? language,
         keyMode: this._model[key].choicePrefix,
-        partLabel: labels[key],
+        partLabel,
       };
 
       // pass options to enable print mode detection in multiple-choice component

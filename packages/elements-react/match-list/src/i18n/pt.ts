@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'Resposta {id}',
+  dragInstructionsA11y: 'Pressione ENTER para selecionar.',
+  answerChoiceA11y: 'Opção de resposta: {choice}',
+  answerChoiceInDropAreaA11y: 'Opção de resposta: {choice} na área de soltar do objeto {number} {text}',
+  introReusableA11y: 'Esta pergunta tem {total} objetos que precisam de um par. Cada objeto tem uma área de soltar para uma opção de resposta. As opções de resposta podem ser reutilizadas. Coloque uma opção de resposta em cada área de soltar.',
+  introNotReusableA11y: 'Esta pergunta tem {total} objetos que precisam de um par. Cada objeto tem uma área de soltar para uma opção de resposta. As opções de resposta não podem ser reutilizadas. Coloque uma opção de resposta em cada área de soltar.',
+  keyboardHelpA11y: 'Use TAB para mover entre as opções de resposta e as áreas de soltar, ENTER para selecionar ou soltar e ESC para cancelar.',
+  progressA11y: '{filled} de {total} áreas de soltar têm uma opção de resposta.',
+  objectA11y: 'Objeto {number}.',
+  dropAreaEmptyA11y: 'A área de soltar {number} está vazia',
+  dropAreaFilledA11y: 'A área de soltar {number} contém a opção de resposta {choice}',
+  availableCountA11y: '{count} opções de resposta disponíveis.',
+  availableEndA11y: 'Fim das opções de resposta disponíveis. Use TAB para ir a uma opção de resposta.',
+  selectedA11y: 'Opção de resposta selecionada: {choice}. Use TAB para escolher uma área de soltar.',
+  notOverResponseAreaA11y: '{choice} não está sobre uma área de resposta.',
+  overDropAreaA11y: 'Área de soltar selecionada para o objeto {number} {text}. Pressione ENTER para mover para aqui a opção de resposta selecionada {choice} ou TAB para ir a outra área de soltar.',
+  overPoolFromDropAreaA11y: 'Pressione ENTER para remover a opção de resposta selecionada da área de soltar do objeto {number} ou TAB para ir a outra área de soltar. Opção de resposta selecionada: {choice}. Objeto {number}: {text}',
+  overPoolUnplacedA11y: 'Pressione ENTER para deixar a opção de resposta selecionada sem colocar ou TAB para ir a uma área de soltar. Opção de resposta selecionada: {choice}',
+  placedA11y: 'Opção de resposta {choice} colocada na área de soltar do objeto {number}: {text}',
+  movedA11y: 'Opção de resposta {choice} movida da área de soltar do objeto {from} para a área de soltar do objeto {to}. {text}',
+  removedA11y: 'Opção de resposta {choice} removida da área de soltar do objeto {number}',
+  remainingA11y: '{filled} de {total} áreas de soltar têm uma opção de resposta. {available} opções de resposta disponíveis. Use TAB para selecionar uma opção de resposta.',
+  completeA11y: 'A resposta está completa. {total} de {total} áreas de soltar têm uma opção de resposta.',
+  deselectedA11y: 'A opção de resposta {choice} não está mais selecionada. Use TAB para selecionar uma opção de resposta.',
+} satisfies MessageCatalog;

@@ -3,18 +3,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
-import { createGraphProps, Root, types, utils as plotUtils } from '@pie-lib/plot';
+import { createGraphProps, DragLockContext, Root, types, utils as plotUtils } from '@pie-lib/plot';
 import { createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
 import debug from 'debug';
 
 import { Axes, AxisPropTypes } from './axis/index.js';
 import Grid from './grid.js';
 import { LabelType } from './labels.js';
 import Bg from './bg.js';
-import { isDuplicatedMark } from './utils.js';
-
-const { translator } = Translator;
+import { isDuplicatedMark, markLimitReached } from './utils.js';
+import { catalogs } from './i18n/index.js';
 
 const log = debug('pie-lib:graphing:graph');
 
@@ -24,6 +23,7 @@ export const graphPropTypes = {
   className: PropTypes.string,
   collapsibleToolbar: PropTypes.bool,
   collapsibleToolbarTitle: PropTypes.string,
+  disabled: PropTypes.bool,
   disabledLabels: PropTypes.bool,
   disabledTitle: PropTypes.bool,
   domain: types.DomainType,
@@ -45,6 +45,9 @@ export const graphPropTypes = {
   title: PropTypes.string,
   tools: PropTypes.array,
   limitLabeling: PropTypes.bool,
+  // the most marks of each tool type a student can place, keyed by tool type; a tool without one, or
+  // with 0, is unlimited
+  markLimits: PropTypes.objectOf(PropTypes.number),
   language: PropTypes.string,
 };
 
@@ -60,20 +63,21 @@ const textOf = (html) => (html ? plotUtils.extractTextFromHTML(html).trim() : ''
 // the graph svg's name and description, generated from the model: the title names the graph when
 // there is one, and the description gives the axis ranges and what is plotted, a mark still being
 // drawn left out
-export const graphAlternative = ({ title, domain, range, marks, language }) => {
-  // titles and axis labels are author text, which React escapes
-  const options = { lng: language, interpolation: { escapeValue: false } };
+export const graphAlternative = ({ title, domain, range, marks, language, onLoad }) => {
+  const i18n = catalogs.forLocale(language, onLoad);
   const axis = ({ axisLabel, min, max }, fallback) =>
-    translator.t('graphing.axisRange', { ...options, axis: textOf(axisLabel) || fallback, min, max });
+    i18n.t('axisRange', { axis: textOf(axisLabel) || fallback, min, max });
   const plotted = marks.filter((m) => !m.building);
-  const plottedText = translator.t('graphing.plotted', {
-    ...options,
-    count: plotted.length,
-    marks: plotted.map((m) => translator.t(`graphing.${m.type}`, options).trim()).join(', '),
-  });
+  const plottedText =
+    plotted.length === 0
+      ? i18n.t('plottedNone')
+      : i18n.plural('plotted', {
+          count: plotted.length,
+          marks: plotted.map((m) => i18n.t(dynamicMessageKey(m.type)).trim()).join(', '),
+        });
 
   return {
-    ariaLabel: textOf(title) || translator.t('graphing.graph', options),
+    ariaLabel: textOf(title) || i18n.t('graph'),
     ariaDescription: `${axis(domain, 'x')} ${axis(range, 'y')} ${plottedText}`,
   };
 };
@@ -96,6 +100,9 @@ export const removeBuildingToolIfCurrentToolDiffers = ({ marks, currentTool, onC
 };
 
 export class Graph extends React.Component {
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   constructor(props) {
     super(props);
     this.maskUid = this.generateMaskId();
@@ -200,9 +207,14 @@ export class Graph extends React.Component {
 
     const buildingMark = marks.filter((m) => m.building)[0];
     let updatedMark;
+    const continuesMark = buildingMark && buildingMark.type === currentTool.type;
+
+    if (!continuesMark && markLimitReached(marks, this.props.markLimits, currentTool.type)) {
+      return;
+    }
 
     // if the building mark has a different type, we just replace it
-    if (buildingMark && currentTool && buildingMark.type === currentTool.type) {
+    if (continuesMark) {
       updatedMark = currentTool.addPoint({ x, y }, { ...buildingMark });
     } else {
       updatedMark = currentTool.addPoint({ x, y }, undefined);
@@ -217,6 +229,7 @@ export class Graph extends React.Component {
       currentTool,
       coordinatesOnHover,
       size,
+      disabled,
       disabledLabels,
       disabledTitle,
       domain,
@@ -258,6 +271,7 @@ export class Graph extends React.Component {
       range,
       marks: [...(backgroundMarks || []), ...marks],
       language,
+      onLoad: this.relabel,
     });
 
     return (
@@ -307,26 +321,29 @@ export class Graph extends React.Component {
               );
             })}
 
-            {marks.map((m, index) => {
-              const Component = this.getComponent(m);
-              const markType = m.type;
+            {/* a disabled graph keeps its marks as they look, and only stops them being dragged */}
+            <DragLockContext.Provider value={!!disabled}>
+              {marks.map((m, index) => {
+                const Component = this.getComponent(m);
+                const markType = m.type;
 
-              return (
-                <Component
-                  key={`${markType}-${index}`}
-                  mark={m}
-                  coordinatesOnHover={coordinatesOnHover}
-                  onChange={this.changeMark}
-                  onComplete={this.completeMark}
-                  onClick={this.onBgClick}
-                  onDragStart={this.startDrag}
-                  onDragStop={this.stopDrag}
-                  labelNode={this.state.labelNode}
-                  isToolActive={currentTool && markType === currentTool.type}
-                  {...common}
-                />
-              );
-            })}
+                return (
+                  <Component
+                    key={`${markType}-${index}`}
+                    mark={m}
+                    coordinatesOnHover={coordinatesOnHover}
+                    onChange={this.changeMark}
+                    onComplete={this.completeMark}
+                    onClick={this.onBgClick}
+                    onDragStart={this.startDrag}
+                    onDragStop={this.stopDrag}
+                    labelNode={this.state.labelNode}
+                    isToolActive={currentTool && markType === currentTool.type}
+                    {...common}
+                  />
+                );
+              })}
+            </DragLockContext.Provider>
             <foreignObject
               ref={(labelNode) => (this.labelNode = labelNode)}
               x="0"

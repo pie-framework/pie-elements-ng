@@ -3,7 +3,6 @@
 import React from 'react';
 import Toggle from '@pie-lib/correct-answer-toggle';
 import { cloneDeep, isArray, isEqual, isNumber } from '@pie-element/shared-lodash';
-import Translator from '@pie-lib/translator';
 import { Collapsible as CollapsibleImport, color, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -44,8 +43,7 @@ import PointChooser from './point-chooser/index.js';
 import { buildElementModel } from './graph/elements/builder.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-
-const { translator } = Translator;
+import { catalogs } from '../../i18n/index.js';
 
 export { Graph };
 
@@ -119,7 +117,12 @@ export class NumberLine extends React.Component<NumberLineSizeProps> {
     onClearElements: PropTypes.func.isRequired,
     model: PropTypes.object.isRequired,
     answer: PropTypes.array,
+    /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+    language: PropTypes.string,
   };
+
+  /** Re-renders once the chrome language's catalog lands, for a host that did not preload it. */
+  relabel = () => this.forceUpdate();
 
   constructor(props, context) {
     super(props, context);
@@ -266,9 +269,10 @@ export class NumberLine extends React.Component<NumberLineSizeProps> {
       emptyAnswer,
       feedback,
       colorContrast,
-      language,
       teacherInstructions,
     } = model;
+    const language = this.props.language ?? model.language;
+    const i18n = catalogs.forLocale(language, this.relabel);
     let addElement = this.addElement.bind(this);
     let elementsSelected = !disabled && selectedElements && selectedElements.length > 0;
     const { ticks, domain, arrows, maxNumberOfPoints, height = 100, availableTypes, title, fraction } = graph;
@@ -313,10 +317,7 @@ export class NumberLine extends React.Component<NumberLineSizeProps> {
     // Determine which elements to show on the chart
     let elements = showCorrectAnswer && correctResponse ? getCorrectAnswerElements() : getAnswerElements();
 
-    let maxPointsMessage = () =>
-      maxNumberOfPoints == 1
-        ? translator.t('numberLine.addElementLimit_one', { lng: language, count: 1 })
-        : translator.t('numberLine.addElementLimit_other', { lng: language, count: maxNumberOfPoints });
+    let maxPointsMessage = () => i18n.plural('addElementLimit', { count: Number(maxNumberOfPoints) });
 
     let deleteElements = () => {
       onDeleteElements(selectedElements);
@@ -345,12 +346,7 @@ export class NumberLine extends React.Component<NumberLineSizeProps> {
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules} $colorContrast={colorContrast}>
         {showTeacherInstructions && (
-          <StyledCollapsible
-            labels={{
-              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-            }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </StyledCollapsible>
         )}

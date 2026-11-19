@@ -5,14 +5,14 @@ import ReactDOM from 'react-dom';
 import { Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
-import { MathMLToLaTeX } from '@pie-framework/mathml-to-latex';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { latexToMml, mmlToLatex, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { latexToMml, unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { inlineSideOfArrow, isRightToLeft } from '@pie-element/shared-utils';
+import { convertMathMlToLatex } from '../utils/mathml-to-latex.js';
 import { setToolbarOpened } from '../utils/toolbar.js';
 import { TOOLBAR_BACKGROUND } from '../constants.js';
 
-// `\left.` and `\right.` come out of the MathML converter for fences the editor cannot use.
-const EMPTY_FENCE = /\\left\.\s*|\\right\.\s*/g;
+export { convertMathMlToLatex };
 
 // The invisible function-application operator MathJax writes after `\log` and `\sin`, which only adds space.
 const EMPTY_MO = /<mo(?: [^>]*)?>&#x2061;<\/mo>/g;
@@ -28,33 +28,6 @@ const escapeAttribute = (value) =>
 
 const isDisplayMath = (wrapper) =>
   typeof wrapper === 'string' ? wrapper === 'double_dollar' : ['$$', '\\['].includes(wrapper?.open);
-
-/**
- * LaTeX for a MathML string, or null when there is none to give. A converter the page installed,
- * such as the legacy renderer's, answers first; `mmlToLatex` gives the input back when there is
- * none, and then this converts, so the ESM page, which installs only `renderMath`, converts too.
- * The converter belongs here, not in the math adapter: only authoring needs it, and every
- * element's delivery bundle carries the adapter. It answers an empty string for MathML it cannot
- * read and throws on some; neither is LaTeX, and neither may become a math node.
- */
-export const convertMathMlToLatex = (mathMl) => {
-  const input = mathMl.replaceAll('&nbsp;', ' ');
-  let converted = mmlToLatex(input);
-
-  if (converted === input) {
-    try {
-      converted = MathMLToLaTeX.convert(input);
-    } catch {
-      return null;
-    }
-  }
-
-  if (!converted || converted === input) {
-    return null;
-  }
-
-  return converted.replace(EMPTY_FENCE, '') || null;
-};
 
 /**
  * MathML for LaTeX, or null when there is none to give: MathJax has not started, or cannot read the
@@ -218,6 +191,12 @@ const nodeBeforeZeroWidthSpace = (doc, from) => {
   return i;
 };
 
+/** The element holding the text at `pos`, whose direction decides which arrow key steps back there. */
+const elementAt = (view, pos) => {
+  const { node } = view.domAtPos(pos);
+  return node.nodeType === 1 ? node : node.parentElement;
+};
+
 export const ZeroWidthSpaceHandlingPlugin = new Plugin({
   key: new PluginKey('zeroWidthSpaceHandling'),
   props: {
@@ -238,7 +217,7 @@ export const ZeroWidthSpaceHandlingPlugin = new Plugin({
         return true; // handled
       }
 
-      if (empty && event.key === 'ArrowLeft' && from > 0) {
+      if (empty && from > 0 && inlineSideOfArrow(event.key, elementAt(view, from)) === 'inline-start') {
         const start = nodeBeforeZeroWidthSpace(doc, from);
 
         if (start === -1) {
@@ -384,6 +363,96 @@ export const MathNode = Node.create({
   },
 });
 
+/**
+ * The math toolbar's viewport left edge. Its inline-start edge meets the anchor's, so it opens
+ * rightwards in LTR text and leftwards in RTL, and it stays `margin` inside the visible bounds.
+ */
+export const mathToolbarLeft = (
+  anchor: { left: number; right: number },
+  toolbarWidth: number,
+  rtl: boolean,
+  bounds: { left: number; right: number },
+  margin: number,
+): number => {
+  const left = rtl ? anchor.right - toolbarWidth : anchor.left;
+  return Math.max(bounds.left + margin, Math.min(left, bounds.right - toolbarWidth - margin));
+};
+
+type Bounds = { top: number; bottom: number; left: number; right: number };
+
+const clips = (overflow: string) => ['auto', 'scroll', 'hidden', 'clip'].includes(overflow);
+
+/**
+ * The viewport area in which `el`'s content is visible: the viewport, narrowed by every ancestor
+ * (and `el` itself) that clips its overflow, e.g. a scrolling pane below a sticky header.
+ * `<body>` is skipped (the browser hands its overflow to the viewport, e.g. MUI's
+ * `overflow: hidden` while a dialog is open), and the walk stops at a `position: fixed`
+ * element, since nothing above it can clip it.
+ */
+export const visibleBounds = (el: Element | null): Bounds => {
+  const bounds = { top: 0, bottom: window.innerHeight, left: 0, right: window.innerWidth };
+
+  for (
+    let current = el;
+    current && current !== document.body && current !== document.documentElement;
+    current = current.parentElement
+  ) {
+    const { overflowX, overflowY, position } = window.getComputedStyle(current);
+
+    if (clips(overflowX) || clips(overflowY)) {
+      const rect = current.getBoundingClientRect();
+
+      if (clips(overflowY)) {
+        bounds.top = Math.max(bounds.top, rect.top);
+        bounds.bottom = Math.min(bounds.bottom, rect.bottom);
+      }
+
+      if (clips(overflowX)) {
+        bounds.left = Math.max(bounds.left, rect.left);
+        bounds.right = Math.min(bounds.right, rect.right);
+      }
+    }
+
+    if (position === 'fixed') {
+      break;
+    }
+  }
+
+  return bounds;
+};
+
+/**
+ * The math toolbar's viewport position. It opens beside the anchor (inline-end side first, then
+ * the other), top-aligned with it and kept inside the visible bounds, so it doesn't cover the
+ * anchor. When neither side has room, it opens below or above, whichever has more room, still
+ * kept inside the visible bounds: staying visible matters more than not covering the anchor.
+ */
+export const mathToolbarPosition = (
+  anchor: Bounds,
+  toolbar: { width: number; height: number },
+  rtl: boolean,
+  bounds: Bounds,
+  margin: number,
+): { top: number; left: number } => {
+  const clampTop = (top: number) => Math.max(bounds.top + margin, Math.min(top, bounds.bottom - toolbar.height - margin));
+  const fitsRight = bounds.right - anchor.right - margin >= toolbar.width;
+  const fitsLeft = anchor.left - bounds.left - margin >= toolbar.width;
+
+  if (fitsRight && (!rtl || !fitsLeft)) {
+    return { top: clampTop(anchor.top), left: anchor.right };
+  }
+
+  if (fitsLeft) {
+    return { top: clampTop(anchor.top), left: anchor.left - toolbar.width };
+  }
+
+  const spaceBelow = bounds.bottom - anchor.bottom - margin;
+  const spaceAbove = anchor.top - bounds.top - margin;
+  const top = toolbar.height <= spaceBelow || spaceBelow >= spaceAbove ? anchor.bottom : anchor.top - toolbar.height;
+
+  return { top: clampTop(top), left: mathToolbarLeft(anchor, toolbar.width, rtl, bounds, margin) };
+};
+
 export const MathNodeView = (props) => {
   const { node, updateAttributes, editor, selected, options, getPos } = props;
   const [showToolbar, setShowToolbar] = useState(selected);
@@ -435,8 +504,9 @@ export const MathNodeView = (props) => {
   // Only open the toolbar when this node is *explicitly* selected
   // via a NodeSelection — not when it's merely included in a broader
   // TextSelection or AllSelection (e.g. click-drag across math, or Cmd+A).
+  // A read-only editor (view and evaluate modes) still selects the node on click, but never edits it.
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || !editor.isEditable) return;
 
     const { selection } = editor.state;
     const isNodeSelected = selection.node?.type?.name === 'math';
@@ -449,6 +519,18 @@ export const MathNodeView = (props) => {
   useEffect(() => {
     setToolbarOpened(editor, selected || showToolbar);
   }, [editor, showToolbar, selected]);
+
+  // If the node is removed (e.g. select-all + delete) while selected or its toolbar is open,
+  // the effect above never runs again, leaving `_toolbarOpened` stuck on true. That hides the
+  // text toolbar and makes onBlur skip committing content to the model.
+  useEffect(
+    () => () => {
+      if (editor && !editor.isDestroyed) {
+        setToolbarOpened(editor, false);
+      }
+    },
+    [editor],
+  );
 
   useEffect(() => {
     if (!editor || !showToolbar) {
@@ -468,25 +550,21 @@ export const MathNodeView = (props) => {
       const nodeRect = nodeRef.current?.getBoundingClientRect?.();
 
       // Anchor to the math node element when available; fall back to selection coords.
+      const rtl = isRightToLeft(nodeRef.current ?? editor.view.dom);
       const anchorTop = nodeRect?.height ? nodeRect.top : start.top;
-      const anchorLeft = nodeRect?.width ? nodeRect.left : start.left;
       const anchorBottom = nodeRect?.height ? nodeRect.bottom : (start.bottom ?? start.top);
-
-      const toolbarHeight = toolbarRef.current.offsetHeight;
-      const toolbarWidth = toolbarRef.current.offsetWidth;
-
-      const gap = 0;
-      const spaceBelow = window.innerHeight - (anchorBottom + gap);
-
-      // Place the toolbar's top-left corner directly below the anchor; flip above when needed.
-      let top = spaceBelow >= toolbarHeight ? anchorBottom + gap : anchorTop - toolbarHeight - gap;
-      let left = anchorLeft;
-
-      const margin = 8;
-      top = Math.max(margin, Math.min(top, window.innerHeight - toolbarHeight - margin));
-      left = Math.max(margin, Math.min(left, window.innerWidth - toolbarWidth - margin));
+      const { left: anchorLeft, right: anchorRight } = nodeRect?.width ? nodeRect : start;
 
       const portalEl = editor._tiptapContainerEl || document.body;
+
+      const { top, left } = mathToolbarPosition(
+        { top: anchorTop, bottom: anchorBottom, left: anchorLeft, right: anchorRight },
+        { width: toolbarRef.current.offsetWidth, height: toolbarRef.current.offsetHeight },
+        rtl,
+        visibleBounds(portalEl),
+        8,
+      );
+
       const containerRect = portalEl.getBoundingClientRect();
 
       setPosition({
@@ -517,6 +595,12 @@ export const MathNodeView = (props) => {
     window.addEventListener('scroll', scheduleUpdate, true);
     window.addEventListener('resize', scheduleUpdate);
 
+    // The toolbar can change size while open (keypad mode, custom keys), and the node grows as
+    // the user types; reposition so neither ends up covering the other.
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(scheduleUpdate);
+
+    [toolbarRef.current, nodeRef.current].forEach((el) => el && resizeObserver?.observe(el));
+
     return () => {
       if (frame !== null) {
         cancelAnimationFrame(frame);
@@ -524,17 +608,29 @@ export const MathNodeView = (props) => {
 
       window.removeEventListener('scroll', scheduleUpdate, true);
       window.removeEventListener('resize', scheduleUpdate);
+      resizeObserver?.disconnect();
     };
   }, [editor, showToolbar]);
 
   useEffect(() => {
-    // The toolbar can open from the very click that is still bubbling to `document`
-    // (e.g. the toolbar's math button inserting a node). Ignore any event that
-    // started before this listener was registered, or it closes the toolbar at once.
+    // The toolbar can open from a press (mousedown) or click that is still in flight,
+    // and the resulting `click` would then close it at once. A mouse click is honored only
+    // if its mousedown happened after this listener was registered. A keyboard-triggered
+    // click (`detail === 0`, e.g. Enter on the toolbar's math button) has no mousedown, so
+    // it is honored only if it was dispatched after the listener was registered.
     const listenerAddedAt = performance.now();
+    let pressedSinceOpen = false;
+
+    const handleMouseDown = () => {
+      pressedSinceOpen = true;
+    };
 
     const handleClickOutside = (event) => {
-      if (event?.timeStamp < listenerAddedAt) {
+      const startedBeforeOpen = event?.detail === 0 ? event.timeStamp < listenerAddedAt : !pressedSinceOpen;
+
+      pressedSinceOpen = false;
+
+      if (startedBeforeOpen) {
         return;
       }
 
@@ -584,12 +680,14 @@ export const MathNodeView = (props) => {
     if (showToolbar) {
       // Use `click` (not `mousedown`) so interacting with browser UI like the scrollbar
       // doesn't automatically dismiss the math toolbar.
+      document.addEventListener('mousedown', handleMouseDown, true);
       document.addEventListener('click', handleClickOutside);
-    } else {
-      document.removeEventListener('click', handleClickOutside);
     }
 
-    return () => document.removeEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown, true);
+      document.removeEventListener('click', handleClickOutside);
+    };
   }, [editor, showToolbar, node]);
 
   // MathML kept as MathML (mmlEditing off, or MathML that cannot be read as LaTeX) has no LaTeX to
@@ -608,15 +706,14 @@ export const MathNodeView = (props) => {
 
   return (
     <NodeViewWrapper
-      className={`math-node-${timestamp.current}`}
+      className={`math-node math-node-${timestamp.current}`}
       style={{
         display: 'inline-flex',
-        cursor: 'pointer',
         margin: '0 4px',
       }}
       data-selected={selected}
     >
-      <div ref={nodeRef} onClick={() => setShowToolbar(true)} contentEditable={false}>
+      <div ref={nodeRef} onClick={() => editor.isEditable && setShowToolbar(true)} contentEditable={false}>
         <MathPreview latex={latex} />
       </div>
       {showToolbar &&

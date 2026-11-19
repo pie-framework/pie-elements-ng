@@ -1,4 +1,4 @@
-import { t } from '../i18n.js';
+import { catalogs } from '../i18n/index.js';
 import type { VennTile } from '../types.js';
 
 export function stripHtml(s: string): string {
@@ -15,7 +15,7 @@ export function tileAccessibleName(
 ): string {
   const alt = (tile.imageAlt ?? '').trim();
   if ((tile.imageUrl ?? '').trim() && alt) return alt;
-  return stripHtml(tile.label ?? '') || t('tileFallbackName', language);
+  return stripHtml(tile.label ?? '') || catalogs.forLocale(language).t('tileFallbackName');
 }
 
 export type TileVerdict = 'correct' | 'incorrect' | 'unanswered';
@@ -36,13 +36,14 @@ export function tileStatusName(
   verdict?: TileVerdict | null,
   language?: string
 ): string {
+  const i18n = catalogs.forLocale(language);
   const parts = [
     tileAccessibleName(tile, language),
     regionLabel === null
-      ? t('tileNotPlaced', language)
-      : t('tileInRegion', language, { region: regionLabel }),
+      ? i18n.t('tileNotPlaced')
+      : i18n.t('tileInRegion', { region: regionLabel }),
   ];
-  if (verdict === 'correct') parts.push(t('tileCorrect', language));
-  if (verdict === 'incorrect') parts.push(t('tileIncorrect', language));
-  return parts.join(', ');
+  if (verdict === 'correct') parts.push(i18n.t('tileCorrect'));
+  if (verdict === 'incorrect') parts.push(i18n.t('tileIncorrect'));
+  return parts.join(i18n.t('listSeparator'));
 }

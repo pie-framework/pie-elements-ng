@@ -47,10 +47,10 @@ describe('charting text alternative', () => {
     );
   });
 
-  it('names and describes the chart in the item language', () => {
+  it('names and describes the chart in the item language', async () => {
     renderChart({ language: 'es_ES', data: data.slice(0, 1) });
 
-    expect(screen.getByRole('group', { name: 'Gráfico de barras' })).toHaveAccessibleDescription(
+    expect(await screen.findByRole('group', { name: 'Gráfico de barras' })).toHaveAccessibleDescription(
       'Gráfico de barras. 1 categoría: Apples. Count de 0 a 5.',
     );
   });

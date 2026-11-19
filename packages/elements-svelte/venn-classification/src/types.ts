@@ -63,7 +63,7 @@ export interface VennClassificationModel extends PieModel {
   teacherInstructions?: string;
   /** Unset shows `teacherInstructions`, as in multiple-choice. */
   teacherInstructionsEnabled?: boolean;
-  /** The learner-facing strings' language, as `@pie-lib/translator` reads it (`en_US`, `es_ES`, …). */
+  /** The item's declared language (`en-US`, `es-ES`, …): the `lang` of its content, and of the interface strings when the player publishes no interface locale. */
   language?: string;
 }
 

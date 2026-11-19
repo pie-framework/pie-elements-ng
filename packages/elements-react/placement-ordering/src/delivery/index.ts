@@ -6,6 +6,12 @@ import { compact } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import Main from './main.js';
 
 const log = debug('pie-elements:placement-ordering');
@@ -27,6 +33,11 @@ export default class Ordering extends HTMLElement {
     this._root = null;
     this._mathObserver = null;
     this._mathRenderPending = false;
+    // The locale the player publishes, once it answers; null until then. While
+    // it is null the chrome follows the item's declared language (published,
+    // else `model.language`, else `en-US`; permanent, see the PRD's invariant).
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   _scheduleMathRender: any = () => {
@@ -98,12 +109,25 @@ export default class Ordering extends HTMLElement {
       log('[render] session: ', this._session.value);
       log('[render] model: ', this._model);
 
+      // The chrome speaks the locale the player publishes, else the item's
+      // declared language, else `en-US`. Rendered once every catalog on the
+      // render path holds it, so no English frame precedes it. The declared
+      // language loads too: a stored default note is compared against it.
+      const language = this._interfaceLocale ?? this._model.language;
+      if (!isLocaleReady(language) || !isLocaleReady(this._model.language)) {
+        void Promise.all([loadLocale(language), loadLocale(this._model.language)]).then(() => this.render());
+        return;
+      }
+      // The host names the content language; the chrome roots carry `language`.
+      stampElementLanguage(this, this._model.language);
+
       this._initMathObserver();
 
       const element = React.createElement(Main, {
         model: this._model,
         session: this._session,
         onSessionChange: this.sessionChange,
+        language,
       });
 
       if (!this._root) {
@@ -114,11 +138,21 @@ export default class Ordering extends HTMLElement {
   }
 
   connectedCallback() {
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this.render();
+        }
+      });
+    }
     this._initMathObserver();
     this.render();
   }
 
   disconnectedCallback() {
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();

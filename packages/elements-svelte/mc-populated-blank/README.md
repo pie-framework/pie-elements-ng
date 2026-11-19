@@ -28,16 +28,16 @@ The shared behavior across these flavors is now represented by one element with 
 
 Use this as a practical starting point when mapping CQT payloads into `mc-populated-blank` models.
 
-| CQT `custom_type` | Typical layout meaning | Suggested `interactionMode` | Suggested `choiceMode` | Template hint |
-| --- | --- | --- | --- | --- |
-| `sel_vic` | sentence cloze with audio/transcript | `populate_blank` | `text` | `<p>{before} {{blank}} {after}</p>` |
-| `sr-vic` | sentence cloze without listen button | `populate_blank` | `text` | `<p>{before} {{blank}} {after}</p>` |
-| `sel_r1-g_plusggg` | lead token before blank | `populate_blank` | `text` | `<p>{before_cloze_1} {{blank}}</p>` |
-| `sel_r1-_gplusggg` | short stem + blank | `populate_blank` | `text` | `<p>{before/after segments around {{blank}}}</p>` |
-| `sel_r1-_plusggg` | audio-first blank + horizontal choices | `populate_blank` | `text` | `<p>{{blank}}</p>` |
-| `sel_r1-gg_plusggg` | token-sequence style before blank | `populate_blank` | `text` | `<p>{before_1}{before_2} {{blank}}</p>` |
-| `sel_r1-_ggplusggg` | blank before trailing tokens | `populate_blank` | `text` | `<p>{{blank}} {after_1}{after_2}</p>` |
-| `sel_r1-s3_plusggg` | stimulus-heavy/image-first variant | `populate_blank` | `text` or `image` | include stimulus in `prompt`/`sentenceHtml`; keep single blank in `template` |
+| CQT `custom_type`   | Typical layout meaning                 | Suggested `interactionMode` | Suggested `choiceMode` | Template hint                                                                |
+| ------------------- | -------------------------------------- | --------------------------- | ---------------------- | ---------------------------------------------------------------------------- |
+| `sel_vic`           | sentence cloze with audio/transcript   | `populate_blank`            | `text`                 | `<p>{before} {{blank}} {after}</p>`                                          |
+| `sr-vic`            | sentence cloze without listen button   | `populate_blank`            | `text`                 | `<p>{before} {{blank}} {after}</p>`                                          |
+| `sel_r1-g_plusggg`  | lead token before blank                | `populate_blank`            | `text`                 | `<p>{before_cloze_1} {{blank}}</p>`                                          |
+| `sel_r1-_gplusggg`  | short stem + blank                     | `populate_blank`            | `text`                 | `<p>{before/after segments around {{blank}}}</p>`                            |
+| `sel_r1-_plusggg`   | audio-first blank + horizontal choices | `populate_blank`            | `text`                 | `<p>{{blank}}</p>`                                                           |
+| `sel_r1-gg_plusggg` | token-sequence style before blank      | `populate_blank`            | `text`                 | `<p>{before_1}{before_2} {{blank}}</p>`                                      |
+| `sel_r1-_ggplusggg` | blank before trailing tokens           | `populate_blank`            | `text`                 | `<p>{{blank}} {after_1}{after_2}</p>`                                        |
+| `sel_r1-s3_plusggg` | stimulus-heavy/image-first variant     | `populate_blank`            | `text` or `image`      | include stimulus in `prompt`/`sentenceHtml`; keep single blank in `template` |
 
 Notes:
 
@@ -50,13 +50,13 @@ Notes:
 
 `layoutProfile` selects the arrangement and lands on the root as `layout-<layoutProfile>`; the variant sheet for `customType` tunes sizes on top of it (see [Bundled CQT variant CSS](#bundled-cqt-variant-css)). `choiceLayout` sets the choice direction; unset, choices are horizontal when the template is only `{{blank}}` or `interactionMode` is `audio_mc_only`, and vertical otherwise. `audio_blank_only`, `stimulus_image_blank` and `token_sequence` replace the native audio controls with the listen button; `useFeatureButtonAudio` overrides that either way.
 
-| `layoutProfile` | Arrangement | `customType` in the samples |
-| --- | --- | --- |
-| unset | block flow in DOM order | — |
-| `inline_sentence` | block flow; a two-column grid when `hasAudio` | `sr-vic`, `sel_vic` |
-| `audio_blank_only` | centred block flow around a large blank | `sel_r1-_plusggg`, `sel_r1-_gplusggg` |
-| `token_sequence` | grid: listen row, then a row of token boxes | `sel_r1-g_plusggg`, `sel_r1-gg_plusggg`, `sel_r1-_ggplusggg` |
-| `stimulus_image_blank` | grid: stimulus, blank and listen button in one row | `sel_r1-s3_plusggg` |
+| `layoutProfile`        | Arrangement                                        | `customType` in the samples                                  |
+| ---------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| unset                  | block flow in DOM order                            | —                                                            |
+| `inline_sentence`      | block flow; a two-column grid when `hasAudio`      | `sr-vic`, `sel_vic`                                          |
+| `audio_blank_only`     | centred block flow around a large blank            | `sel_r1-_plusggg`, `sel_r1-_gplusggg`                        |
+| `token_sequence`       | grid: listen row, then a row of token boxes        | `sel_r1-g_plusggg`, `sel_r1-gg_plusggg`, `sel_r1-_ggplusggg` |
+| `stimulus_image_blank` | grid: stimulus, blank and listen button in one row | `sel_r1-s3_plusggg`                                          |
 
 The figures are wireframes: colour marks a region, a dashed region renders only when its content is present, and a labelled size is what renders without a `layoutLimits` override.
 
@@ -89,7 +89,7 @@ The figures are wireframes: colour marks a region, a dashed region renders only 
 - **`layoutLimits`** (optional): numeric visual constraints; defaults are based on current CQT parity behavior and can be overridden per item
 - **`layoutProfilePresets`** (optional): named preset map by `layoutProfile`; use profile as a template and override with `layoutLimits`
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
-- **`language`** (optional): the language of the learner-facing strings (`en_US`, `es_ES`, …), which come from `@pie-lib/translator` as in the React elements; `locale` stands in when it is unset
+- **`language`** (optional): the item's declared language (`en-US`, `es-ES`, …), the `lang` of its content; the interface strings follow the locale the player publishes, else this language, else `en-US`; `locale` stands in when it is unset
 - **`choiceGroupLabel`** (optional): accessibility label used when no visible prompt is present
 - **`lockChoiceOrder`** (optional): `false` shuffles the choices, as in multiple-choice, and an instructor sees the order the student saw; `shuffle: true` is the older spelling and counts only when `lockChoiceOrder` is unset
 - **`teacherInstructions`** and **`teacherInstructionsEnabled`** (optional): shown to instructors in view and evaluate mode, and in an instructor's printout; unset `teacherInstructionsEnabled` shows them

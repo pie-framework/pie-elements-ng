@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'Răspunsul {id}',
+  dragInstructionsA11y: 'Apăsați ENTER pentru a selecta.',
+  answerChoiceA11y: 'Variantă de răspuns: {choice}',
+  answerChoiceInDropAreaA11y: 'Variantă de răspuns: {choice} în zona de plasare a obiectului {number} {text}',
+  introReusableA11y: 'Această întrebare are {total} obiecte care necesită o pereche. Fiecare obiect are o zonă de plasare pentru o variantă de răspuns. Variantele de răspuns pot fi reutilizate. Plasați o variantă de răspuns în fiecare zonă de plasare.',
+  introNotReusableA11y: 'Această întrebare are {total} obiecte care necesită o pereche. Fiecare obiect are o zonă de plasare pentru o variantă de răspuns. Variantele de răspuns nu pot fi reutilizate. Plasați o variantă de răspuns în fiecare zonă de plasare.',
+  keyboardHelpA11y: 'Folosiți TAB pentru a vă deplasa între variantele de răspuns și zonele de plasare, ENTER pentru a selecta sau a plasa și ESC pentru a anula.',
+  progressA11y: '{filled} din {total} zone de plasare au o variantă de răspuns.',
+  objectA11y: 'Obiectul {number}.',
+  dropAreaEmptyA11y: 'Zona de plasare {number} este goală',
+  dropAreaFilledA11y: 'Zona de plasare {number} conține varianta de răspuns {choice}',
+  availableCountA11y: '{count} variante de răspuns disponibile.',
+  availableEndA11y: 'Sfârșitul variantelor de răspuns disponibile. Folosiți TAB pentru a trece la o variantă de răspuns.',
+  selectedA11y: 'Varianta de răspuns selectată: {choice}. Folosiți TAB pentru a alege o zonă de plasare.',
+  notOverResponseAreaA11y: '{choice} nu se află deasupra unei zone de răspuns.',
+  overDropAreaA11y: 'Zona de plasare selectată pentru obiectul {number} {text}. Apăsați ENTER pentru a muta aici varianta de răspuns selectată {choice} sau TAB pentru a trece la altă zonă de plasare.',
+  overPoolFromDropAreaA11y: 'Apăsați ENTER pentru a elimina varianta de răspuns selectată din zona de plasare a obiectului {number} sau TAB pentru a trece la altă zonă de plasare. Varianta de răspuns selectată: {choice}. Obiectul {number}: {text}',
+  overPoolUnplacedA11y: 'Apăsați ENTER pentru a lăsa varianta de răspuns selectată neplasată sau TAB pentru a trece la o zonă de plasare. Varianta de răspuns selectată: {choice}',
+  placedA11y: 'Varianta de răspuns {choice} a fost plasată în zona de plasare a obiectului {number}: {text}',
+  movedA11y: 'Varianta de răspuns {choice} a fost mutată din zona de plasare a obiectului {from} în zona de plasare a obiectului {to}. {text}',
+  removedA11y: 'Varianta de răspuns {choice} a fost eliminată din zona de plasare a obiectului {number}',
+  remainingA11y: '{filled} din {total} zone de plasare au o variantă de răspuns. {available} variante de răspuns disponibile. Folosiți TAB pentru a selecta o variantă de răspuns.',
+  completeA11y: 'Răspunsul este complet. {total} din {total} zone de plasare au o variantă de răspuns.',
+  deselectedA11y: 'Varianta de răspuns {choice} nu mai este selectată. Folosiți TAB pentru a selecta o variantă de răspuns.',
+} satisfies MessageCatalog;

@@ -8,12 +8,22 @@ import {
   createSessionNotifier,
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import Main from './main.js';
 
 export default class MathTemplated extends HTMLElement {
   constructor() {
     super();
     this._root = null;
+    // The locale the player publishes, once it answers; until then the chrome
+    // follows the item's declared language, else `en-US`.
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
     // Session state is already written synchronously in `onSessionChange`; only
     // this dispatch is coalesced, and `disconnectedCallback` flushes it.
     this._sessionNotifier = createSessionNotifier(
@@ -65,8 +75,14 @@ export default class MathTemplated extends HTMLElement {
   }
 
   connectedCallback() {
-    // TODO set accessibility labels
-
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this.render();
+        }
+      });
+    }
     this.render();
   }
 
@@ -76,9 +92,21 @@ export default class MathTemplated extends HTMLElement {
     }
 
     if (this._model && this._session) {
+      const declaredLanguage = this._model.language;
+      // Rendered once every catalog on the render path holds the chrome language, so no English
+      // frame precedes it. The declared language loads too: a stored default note is compared
+      // against it.
+      const language = this._interfaceLocale ?? declaredLanguage;
+      if (!isLocaleReady(language) || !isLocaleReady(declaredLanguage)) {
+        void Promise.all([loadLocale(language), loadLocale(declaredLanguage)]).then(() => this.render());
+        return;
+      }
+      stampElementLanguage(this, declaredLanguage);
+
       const el = React.createElement(Main, {
         model: this._model,
         session: this._session,
+        language,
         onSessionChange: this.onSessionChange.bind(this),
       });
 
@@ -91,6 +119,8 @@ export default class MathTemplated extends HTMLElement {
 
   disconnectedCallback() {
     flushSessionNotifiers(this);
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
 
     if (this._root) {
       this._root.unmount();

@@ -4,7 +4,7 @@ import React from 'react';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import { mq } from '@pie-lib/math-input';
+import { mq } from '@pie-lib/math-input-mathlive';
 import { markFractionBaseSuperscripts } from './utils.js';
 
 const { commonMqFontStyles, longdivStyles, supsubStyles } = mq.CommonMqStyles;
@@ -20,6 +20,10 @@ const MathPreviewContainer: any = styled('div')(({ theme, isSelected }) => ({
   ...longdivStyles,
   '& > .mq-math-mode': {
     border: isSelected ? 'solid 0px lightgrey' : 'solid 1px lightgrey',
+  },
+  '& .ML__latex': {
+    border: isSelected ? 'solid 0px lightgrey' : 'solid 1px lightgrey',
+    padding: isSelected ? '0px' : '5px',
   },
   '& > .mq-focused': {
     outline: 'none',

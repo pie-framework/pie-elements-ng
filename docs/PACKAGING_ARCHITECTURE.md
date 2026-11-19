@@ -14,11 +14,11 @@ enforce the contract.
 Each element package can produce three related, but intentionally different,
 artifact families.
 
-| Family | Typical output | Package surface | Dependency policy | Primary consumers |
-| --- | --- | --- | --- | --- |
-| Node and builder ESM | `dist/<view>/index.js` | `.`, `./delivery`, `./author`, `./print`, `./controller` | Most runtime dependencies are externalized for the host bundler | Node tools, package builders, in-repo ESM player mode |
-| Browser player ESM | `dist/browser/<view>/index.js` | `./browser/delivery`, `./browser/author`, `./browser/print`, `./browser/controller` | React and React DOM are shared singletons; other UI/runtime leaf dependencies stay bundled | Static browser players such as `pie-players` |
-| IIFE | `dist/index.iife.js` or generated `player.js`, `client-player.js`, `editor.js` bundles | Script/global output, not package subpath imports at runtime | Per-element IIFE bundles everything; multi-element bundler externalizes selected shared PIE libs | `@pie-framework/pie-player-components`, legacy players, and demo IIFE strategy |
+| Family               | Typical output                                                                         | Package surface                                                                     | Dependency policy                                                                                | Primary consumers                                                              |
+| -------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Node and builder ESM | `dist/<view>/index.js`                                                                 | `.`, `./delivery`, `./author`, `./print`, `./controller`                            | Most runtime dependencies are externalized for the host bundler                                  | Node tools, package builders, in-repo ESM player mode                          |
+| Browser player ESM   | `dist/browser/<view>/index.js`                                                         | `./browser/delivery`, `./browser/author`, `./browser/print`, `./browser/controller` | React and React DOM are shared singletons; other UI/runtime leaf dependencies stay bundled       | Static browser players such as `pie-players`                                   |
+| IIFE                 | `dist/index.iife.js` or generated `player.js`, `client-player.js`, `editor.js` bundles | Script/global output, not package subpath imports at runtime                        | Per-element IIFE bundles everything; multi-element bundler externalizes selected shared PIE libs | `@pie-framework/pie-player-components`, legacy players, and demo IIFE strategy |
 
 The in-repo `@pie-element/element-player` ESM path loads the standard package
 subpaths such as `@pie-element/multiple-choice/author` and
@@ -137,8 +137,10 @@ long time, so browser ESM must support it for compatibility.
 
 Library mode extracts every stylesheet the bundled code imports into a `.css` file and
 references it nowhere, and browser ESM hosts, `pie-players` and the legacy
-`@pie-framework/pie-print` client alike, load no element CSS. MathQuill's stylesheet shipped
-that way, and math-inline rendered `$$$` and a bare textarea.
+`@pie-framework/pie-print` client alike, load no element CSS, so an element whose library
+imports a stylesheet rendered unstyled. MathLive (`@pie-lib/math-input-mathlive`) imports none:
+it installs its own styles at runtime, inside each `<math-field>`'s shadow root and, for static
+markup, in the document.
 
 `tools/vite/browser-css-loader.ts`, which the React and Svelte browser and legacy print configs
 all use, compiles each extracted stylesheet into the chunks that import it and deletes the
@@ -157,12 +159,12 @@ literal `new URL("./assets/…", import.meta.url)`, which Vite, webpack and the 
 alike. Library mode inlines every asset as a data URI whatever its size; the plugin applies the
 app-build limit instead, keeping data URIs of 4 KiB or less inline and writing larger ones out.
 A `@font-face` rule with a WOFF2 source keeps only its `local()` and WOFF2 sources, because every
-browser that runs these modules reads WOFF2. MathQuill's Symbola font ships as one 148 KB file
-this way, where the extracted stylesheet embedded it in five formats and weighed 2.6 MB.
+browser that runs these modules reads WOFF2, so a font a stylesheet offers in several formats
+ships as one file rather than every format embedded in the stylesheet.
 
 Each `<style>` carries a hash of its stylesheet as `data-pie-css`, and a chunk skips a
-stylesheet the document already has, so the MathQuill stylesheet that most elements ship
-installs once however many of them a page loads.
+stylesheet the document already has, so a stylesheet that several elements ship installs once
+however many of them a page loads.
 
 The bundler-facing `dist/` builds and the IIFE builds keep their CSS imports for the consuming
 bundler, and are untouched.
@@ -180,14 +182,15 @@ Rolldown represents those cases with a generated helper that tries to call
 `require` if the environment provides it and otherwise throws an error like:
 
 ```js
-var req = /* @__PURE__ */ ((fallback) =>
-  typeof require < "u" ? require : fallback)(function (id) {
-  throw Error(
-    'Calling `require` for "' +
-      id +
-      "\" in an environment that doesn't expose the `require` function."
-  );
-});
+var req = /* @__PURE__ */ ((fallback) => (typeof require < 'u' ? require : fallback))(
+  function (id) {
+    throw Error(
+      'Calling `require` for "' +
+        id +
+        '" in an environment that doesn\'t expose the `require` function.'
+    );
+  }
+);
 ```
 
 That helper is not browser-safe. The browser build therefore uses
@@ -215,7 +218,7 @@ The dispatcher is intentionally small and allow-listed:
 For example, a dependency chunk that contains:
 
 ```js
-var PropTypes = req("prop-types");
+var PropTypes = req('prop-types');
 Icon.propTypes = {
   title: PropTypes.string,
   size: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -318,14 +321,14 @@ bundle manifest.
 
 Dependency handling is different for each runtime surface:
 
-| Layer | Where dependencies come from | Singleton or external policy |
-| --- | --- | --- |
-| Node/builder ESM | Host package manager and host bundler | Generated Vite configs externalize common runtime libraries and workspace packages |
-| Browser player ESM | Static `dist/browser` files plus player import map | Only `allowedBareImports` are external; currently React, JSX runtimes, React DOM, and React DOM client |
+| Layer                                      | Where dependencies come from                                                                   | Singleton or external policy                                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Node/builder ESM                           | Host package manager and host bundler                                                          | Generated Vite configs externalize common runtime libraries and workspace packages                                  |
+| Browser player ESM                         | Static `dist/browser` files plus player import map                                             | Only `allowedBareImports` are external; currently React, JSX runtimes, React DOM, and React DOM client              |
 | Browser player ESM, editor-runtime variant | Static `dist/browser/editor-runtime` files plus the runtime's modules in the player import map | `allowedBareImports` and the specifiers in `@pie-element/shared-editor-runtime`'s `pie.browserModules` are external |
-| Per-element IIFE | The element's IIFE build output | Everything is bundled into that element's IIFE |
-| Multi-element IIFE bundler | Temporary install workspace created by `@pie-element/element-bundler` | `@pie-lib/pie-toolbox` and `@pie-lib/math-rendering` are externalized shared PIE libs |
-| Demo dev server | Workspace files and optimized dependencies | Additional ProseMirror aliases pin editor packages to one physical Bun store copy |
+| Per-element IIFE                           | The element's IIFE build output                                                                | Everything is bundled into that element's IIFE                                                                      |
+| Multi-element IIFE bundler                 | Temporary install workspace created by `@pie-element/element-bundler`                          | `@pie-lib/pie-toolbox` and `@pie-lib/math-rendering` are externalized shared PIE libs                               |
+| Demo dev server                            | Workspace files and optimized dependencies                                                     | Additional ProseMirror aliases pin editor packages to one physical Bun store copy                                   |
 
 The browser singleton contract is intentionally not inferred from
 `dependencies` or `peerDependencies`. Those fields describe installation.
@@ -452,8 +455,6 @@ ESM and IIFE together). Preloaded flows are covered in `pie-players`.
   runtime and npm package contract.
 - [`PUBLISHING.md`](PUBLISHING.md) explains release routing and publish-time
   verification.
-- [`IIFE-BUNDLE-ARCHITECTURE.md`](IIFE-BUNDLE-ARCHITECTURE.md) gives deeper
-  background on legacy shared-library IIFE bundling.
 - [`DEMO_SYSTEM.md`](DEMO_SYSTEM.md) explains how the demo app loads package
   artifacts during development.
 - [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) explains how the print bundle is built

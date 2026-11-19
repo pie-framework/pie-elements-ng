@@ -107,18 +107,18 @@ The player typesets math through `window['@pie-lib/math-rendering'].renderMath`,
 
 The player dispatches each event from `<pie-element-player>`, bubbling and composed. A bubble-phase listener on the player, on an ancestor or on `document` hears each event once, with `event.target` the player; a listener outside a shadow root that contains the player sees that root's host instead. The element's own `session-changed` stops at the element, and the player dispatches its copy in its place. A capture-phase listener on the player or above it also hears every `session-changed` the element dispatches, ahead of the player's copy, and should ignore events whose `event.composedPath()[0]` is not the player. That equals `event.target` when no shadow root lies between listener and player. A closed shadow root hides the player from both, so listen in the bubble phase there.
 
-| Event | When | `detail` |
-|---|---|---|
-| `session-changed` | delivery: the learner changes the session, or the element re-reports a session the player set (below) | the element's detail, with `session` the new session |
-| `model-changed` | author: the author edits the model | the whole model |
-| `load-complete` | the element is mounted | `strategy`, `view`, `tagName` |
-| `load-cancelled` | a newer load supersedes this one, or the load fails with an abort error (below) | `reason`, `strategy`, `view` |
-| `player-error` | the load fails | `error`, `strategy`, `view`, `retry` |
-| `build-state` | the load changes stage | `loading`, `error`, `stage`, and `strategy`, `view`, `retry` where known |
-| `bundle-retry-status` | IIFE: a bundle build is polled; any strategy: the load fails with an abort error | the retry state |
-| `bundle-meta` | IIFE: the bundle loads | the bundle's metadata |
-| `controller-load` | a load completes, except a `preloaded` one that finds its tag defined (below) | `status`, `source`, `packageName`, `strategy`, `view`, `message` |
-| `controller-changed` | IIFE delivery: the bundle's controller loads | the controller |
+| Event                 | When                                                                                                  | `detail`                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `session-changed`     | delivery: the learner changes the session, or the element re-reports a session the player set (below) | the element's detail, with `session` the new session                     |
+| `model-changed`       | author: the author edits the model                                                                    | the whole model                                                          |
+| `load-complete`       | the element is mounted                                                                                | `strategy`, `view`, `tagName`                                            |
+| `load-cancelled`      | a newer load supersedes this one, or the load fails with an abort error (below)                       | `reason`, `strategy`, `view`                                             |
+| `player-error`        | the load fails                                                                                        | `error`, `strategy`, `view`, `retry`                                     |
+| `build-state`         | the load changes stage                                                                                | `loading`, `error`, `stage`, and `strategy`, `view`, `retry` where known |
+| `bundle-retry-status` | IIFE: a bundle build is polled; any strategy: the load fails with an abort error                      | the retry state                                                          |
+| `bundle-meta`         | IIFE: the bundle loads                                                                                | the bundle's metadata                                                    |
+| `controller-load`     | a load completes, except a `preloaded` one that finds its tag defined (below)                         | `status`, `source`, `packageName`, `strategy`, `view`, `message`         |
+| `controller-changed`  | IIFE delivery: the bundle's controller loads                                                          | the controller                                                           |
 
 `session-changed` also fires with no learner action. Once the element has a model, the player sets `session` on it, and sets it again whenever the host assigns a different session. A report the element dispatches while that setter runs is dropped; one it dispatches after the setter returns is forwarded.
 

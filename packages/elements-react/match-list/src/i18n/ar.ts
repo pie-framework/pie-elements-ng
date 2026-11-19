@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'الإجابة {id}',
+  dragInstructionsA11y: 'اضغط ENTER للتحديد.',
+  answerChoiceA11y: 'خيار الإجابة: {choice}',
+  answerChoiceInDropAreaA11y: 'خيار الإجابة: {choice} في منطقة الإفلات للعنصر {number} {text}',
+  introReusableA11y: 'يحتوي هذا السؤال على {total} من العناصر التي تحتاج إلى مطابقة. لكل عنصر منطقة إفلات واحدة تتسع لخيار إجابة واحد. يمكن إعادة استخدام خيارات الإجابة. ضع خيار إجابة في كل منطقة إفلات.',
+  introNotReusableA11y: 'يحتوي هذا السؤال على {total} من العناصر التي تحتاج إلى مطابقة. لكل عنصر منطقة إفلات واحدة تتسع لخيار إجابة واحد. لا يمكن إعادة استخدام خيارات الإجابة. ضع خيار إجابة في كل منطقة إفلات.',
+  keyboardHelpA11y: 'استخدم TAB للتنقل بين خيارات الإجابة ومناطق الإفلات، وENTER للتحديد أو الإفلات، وESC للإلغاء.',
+  progressA11y: '{filled} من {total} مناطق إفلات تحتوي على خيار إجابة.',
+  objectA11y: 'العنصر {number}.',
+  dropAreaEmptyA11y: 'منطقة الإفلات {number} فارغة',
+  dropAreaFilledA11y: 'منطقة الإفلات {number} تحتوي على خيار الإجابة {choice}',
+  availableCountA11y: '{count} من خيارات الإجابة المتاحة.',
+  availableEndA11y: 'نهاية خيارات الإجابة المتاحة. استخدم TAB للانتقال إلى خيار إجابة.',
+  selectedA11y: 'تم تحديد خيار الإجابة {choice}. استخدم TAB لاختيار منطقة إفلات.',
+  notOverResponseAreaA11y: '{choice} ليس فوق منطقة إجابة.',
+  overDropAreaA11y: 'تم تحديد منطقة الإفلات للعنصر {number} {text}. اضغط ENTER لنقل خيار الإجابة المحدد {choice} إلى هنا أو TAB للانتقال إلى منطقة إفلات أخرى.',
+  overPoolFromDropAreaA11y: 'اضغط ENTER لإزالة خيار الإجابة المحدد من منطقة الإفلات للعنصر {number} أو TAB للانتقال إلى منطقة إفلات أخرى. خيار الإجابة المحدد: {choice}. العنصر {number}: {text}',
+  overPoolUnplacedA11y: 'اضغط ENTER لترك خيار الإجابة المحدد دون وضعه أو TAB للانتقال إلى منطقة إفلات. خيار الإجابة المحدد: {choice}',
+  placedA11y: 'تم وضع خيار الإجابة {choice} في منطقة الإفلات للعنصر {number}: {text}',
+  movedA11y: 'تم نقل خيار الإجابة {choice} من منطقة الإفلات للعنصر {from} إلى منطقة الإفلات للعنصر {to}. {text}',
+  removedA11y: 'تمت إزالة خيار الإجابة {choice} من منطقة الإفلات للعنصر {number}',
+  remainingA11y: '{filled} من {total} مناطق إفلات تحتوي على خيار إجابة. {available} من خيارات الإجابة المتاحة. استخدم TAB لتحديد خيار إجابة.',
+  completeA11y: 'الإجابة مكتملة. {total} من {total} مناطق إفلات تحتوي على خيار إجابة.',
+  deselectedA11y: 'لم يعد خيار الإجابة {choice} محددًا. استخدم TAB لتحديد خيار إجابة.',
+} satisfies MessageCatalog;

@@ -40,10 +40,8 @@ const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapR
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
-import Translator from '@pie-lib/translator';
 import AnnotationEditor from './annotation/annotation-editor.js';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 const log = debug('@pie-ui:extended-text-entry');
 
@@ -71,11 +69,15 @@ const Editor: any = styled(EditableHtml)(({ theme }) => ({
 
 const SrOnly: any = styled('h2')({
   position: 'absolute',
-  left: '-10000px',
-  top: 'auto',
   width: '1px',
   height: '1px',
+  margin: '-1px',
+  padding: '0',
+  border: '0',
   overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
 });
 
 export class Main extends React.Component {
@@ -84,6 +86,8 @@ export class Main extends React.Component {
     onAnnotationsChange: PropTypes.func.isRequired,
     onCommentChange: PropTypes.func.isRequired,
     model: PropTypes.object,
+    /** The chrome language; `model.language` stays the content language. */
+    language: PropTypes.string,
     idleSaveDelay: PropTypes.number,
     session: PropTypes.shape({
       value: PropTypes.string,
@@ -101,7 +105,9 @@ export class Main extends React.Component {
   // teardown can flush it; holding the value here instead left `.session` stale
   // and unreadable by any other layer, so the callbacks pass straight through.
   render() {
-    const { model, session, idleSaveDelay, onAnnotationsChange, onCommentChange, onValueChange } = this.props;
+    const { model, session, language, idleSaveDelay, onAnnotationsChange, onCommentChange, onValueChange } =
+      this.props;
+    const i18n = catalogs.forLocale(language);
     const {
       animationsDisabled,
       annotatorMode,
@@ -150,14 +156,12 @@ export class Main extends React.Component {
           this.containerRef = ref;
         }}
       >
-        <SrOnly>{translator.t('extendedTextEntry.constructedResponseQuestion', { lng: model.language })}</SrOnly>
+        <SrOnly>{i18n.t('constructedResponseQuestion')}</SrOnly>
 
         {teacherInstructions && (
           <TeacherInstructions>
             {!animationsDisabled ? (
-              <Collapsible
-                labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model.language }) }}
-              >
+              <Collapsible variant="teacherInstructions" language={language}>
                 {teacherInstructionsDiv}
               </Collapsible>
             ) : (
@@ -188,6 +192,7 @@ export class Main extends React.Component {
             customKeys={customKeys}
             keypadMode={equationEditor}
             language={model.language}
+            chromeLanguage={language}
           />
         ) : (
           <Editor
@@ -235,7 +240,7 @@ export class Main extends React.Component {
             languageCharactersProps={languageCharactersProps}
             // The prompt names the response; the generic name covers no prompt, or one with no text.
             ariaLabelledBy={prompt ? this.promptId : undefined}
-            ariaLabel={translator.t('extendedTextEntry.response', { lng: model.language })}
+            ariaLabel={i18n.t('response')}
             language={model.language}
           />
         )}

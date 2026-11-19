@@ -4,14 +4,14 @@ Status: **Accepted** · Tier: 3 · Impl. path: New
 
 ## Context
 
-Classification into overlapping sets is a recurring K-8 pattern across life-science (classify animals that are *reptiles*, *egg-layers*, or both), social studies (attributes of two historical periods), and ELA (character-trait sets that share a region). Most assessment platforms today simulate it using `categorize`, which models **disjoint** buckets and loses the first-class *overlap* region that Venn diagrams depend on. The workaround is visible evidence of demand: authors consistently reach for overlap semantics even when the tooling doesn't support them.
+Classification into overlapping sets is a recurring K-8 pattern across life-science (classify animals that are _reptiles_, _egg-layers_, or both), social studies (attributes of two historical periods), and ELA (character-trait sets that share a region). Most assessment platforms today simulate it using `categorize`, which models **disjoint** buckets and loses the first-class _overlap_ region that Venn diagrams depend on. The workaround is visible evidence of demand: authors consistently reach for overlap semantics even when the tooling doesn't support them.
 
 This PRD specifies a new first-class `venn-classification` element with an explicit overlap region, a tile tray, and the same authoring / delivery / scoring surface as other classification-style PIE elements. **v1 in this repo does not ship a print custom element** (authoring + delivery + controller only); static element docs are generated under `apps/element-demo/static/element-docs/venn-classification/` from `docs.contract.json`.
 
 Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside delivery implementation):
 
 - Delivery (gather mode): ![Venn classification delivery wireframe — two overlapping circles labelled "Reptile" and "Egg-layer", tiles placed in each of the four regions (left-only, overlap, right-only, outside) with a tray of unplaced tiles below.](./wireframes/delivery.jpg)
-- Authoring interface: ![Venn classification authoring wireframe — two-panel layout. Left panel: prompt editor with rich-text toolbar, per-circle label inputs, a tile list with per-row region radios, scoring-policy radios, and a collapsed advanced region-labels disclosure. Right panel: live preview of the 2-set Venn diagram with authored tiles placed in their correct regions.](./wireframes/authoring.jpg) *(Wireframe may still show a 2/3 circle toggle; v1 author is 2-set only, with a resizable editor/preview split.)*
+- Authoring interface: ![Venn classification authoring wireframe — two-panel layout. Left panel: prompt editor with rich-text toolbar, per-circle label inputs, a tile list with per-row region radios, scoring-policy radios, and a collapsed advanced region-labels disclosure. Right panel: live preview of the 2-set Venn diagram with authored tiles placed in their correct regions.](./wireframes/authoring.jpg) _(Wireframe may still show a 2/3 circle toggle; v1 author is 2-set only, with a resizable editor/preview split.)_
 
 ## Goals
 
@@ -50,11 +50,11 @@ Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside d
 - `placements` — `{ [tileId]: number[] | null }`. `null` means the tile is still in the tray. An untouched session carries no `placements`, because a player counts a session with content as a learner response; the learner's first placement writes a key for every tile, so from then on consumers don't need to diff against `model.tiles` to tell "unplaced" from "never asked". `[]` is the outside region, `[0]` is circle 0 only, `[0, 1]` is the overlap of 0 and 1, etc. Arrays are always sorted.
 - `completed` — boolean — true once every tile is placed (no `null` values remain). Host players (e.g. the assessment players Renaissance Star uses) gate learner navigation on this, so it must flip deterministically and atomically on the last placement.
 
-**Modes**: `gather`, `view`, `evaluate`, `configure`. In `evaluate`, delivery is responsible for showing the learner's placements *and* the authored correct regions (per-tile correctness markers plus a "correct answer" reveal affordance); correct-answer rendering is owned by the element, not the player, consistent with other PIE elements.
+**Modes**: `gather`, `view`, `evaluate`, `configure`. In `evaluate`, delivery is responsible for showing the learner's placements _and_ the authored correct regions (per-tile correctness markers plus a "correct answer" reveal affordance); correct-answer rendering is owned by the element, not the player, consistent with other PIE elements.
 
 **Theming**:
 
-The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-theme CSS variables per [`docs/THEMING.md`](../../THEMING.md) (`--pie-primary-*`, `--pie-secondary-*`, `--pie-correct`, `--pie-incorrect`, etc.). **v1 delivery in this repo still uses fixed palette values in component CSS** (not yet wired to `--pie-*` tokens end-to-end); treating token wiring as a follow-up keeps the first delivery milestone shippable without blocking on theme package integration.
+The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-theme CSS variables per [`docs/THEMING.md`](../../THEMING.md) (`--pie-primary-*`, `--pie-secondary-*`, `--pie-correct`, `--pie-incorrect`, etc.). Delivery in this repo reads those tokens end-to-end (`var(--pie-*)` throughout `src/delivery/VennClassification.svelte`), with the authored hex palette kept only as fallback values for pages that set no theme.
 
 **Key delivery interactions**:
 
@@ -80,7 +80,7 @@ The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-the
 
 ## Worked example
 
-> *Prompt*: Sort each animal into the Venn diagram. Place it where **Reptile** and **Egg-layer** are both true, only one is true, or neither is true.
+> _Prompt_: Sort each animal into the Venn diagram. Place it where **Reptile** and **Egg-layer** are both true, only one is true, or neither is true.
 
 Tiles: `Crocodile`, `Frog`, `Dolphin`, `Turtle`.
 
@@ -104,4 +104,4 @@ The item is authored with `circles = [{ label: "Reptile" }, { label: "Egg-layer"
 
 ## Open questions
 
-*(none at this time)*
+_(none at this time)_

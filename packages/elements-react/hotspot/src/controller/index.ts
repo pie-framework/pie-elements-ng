@@ -37,6 +37,7 @@ export function model(question: HotspotModel, session: HotspotSession | null | u
   const normalizedQuestion = normalize(question);
   const {
     imageUrl,
+    imageAltText,
     dimensions,
     hotspotColor,
     hoverOutlineColor,
@@ -65,6 +66,7 @@ export function model(question: HotspotModel, session: HotspotSession | null | u
       mode: env.mode,
       dimensions,
       imageUrl,
+      imageAltText,
       outlineColor,
       hotspotColor,
       hoverOutlineColor: checkNullish(hoverOutlineColor) ? hoverOutlineColor : 'black',

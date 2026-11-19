@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'Antwoord {id}',
+  dragInstructionsA11y: 'Druk op ENTER om te selecteren.',
+  answerChoiceA11y: 'Antwoordkeuze: {choice}',
+  answerChoiceInDropAreaA11y: 'Antwoordkeuze: {choice} in het neerzetgebied van object {number} {text}',
+  introReusableA11y: 'Deze vraag heeft {total} objecten die een koppeling nodig hebben. Elk object heeft één neerzetgebied voor één antwoordkeuze. Antwoordkeuzes kunnen opnieuw worden gebruikt. Plaats een antwoordkeuze in elk neerzetgebied.',
+  introNotReusableA11y: 'Deze vraag heeft {total} objecten die een koppeling nodig hebben. Elk object heeft één neerzetgebied voor één antwoordkeuze. Antwoordkeuzes kunnen niet opnieuw worden gebruikt. Plaats een antwoordkeuze in elk neerzetgebied.',
+  keyboardHelpA11y: 'Gebruik TAB om te schakelen tussen antwoordkeuzes en neerzetgebieden, ENTER om te selecteren of neer te zetten en ESC om te annuleren.',
+  progressA11y: '{filled} van {total} neerzetgebieden hebben een antwoordkeuze.',
+  objectA11y: 'Object {number}.',
+  dropAreaEmptyA11y: 'Neerzetgebied {number} is leeg',
+  dropAreaFilledA11y: 'Neerzetgebied {number} bevat de antwoordkeuze {choice}',
+  availableCountA11y: '{count} beschikbare antwoordkeuzes.',
+  availableEndA11y: 'Einde van de beschikbare antwoordkeuzes. Gebruik TAB om naar een antwoordkeuze te gaan.',
+  selectedA11y: 'Antwoordkeuze {choice} geselecteerd. Gebruik TAB om een neerzetgebied te kiezen.',
+  notOverResponseAreaA11y: '{choice} staat niet boven een antwoordvak.',
+  overDropAreaA11y: 'Neerzetgebied geselecteerd voor object {number} {text}. Druk op ENTER om de geselecteerde antwoordkeuze {choice} hierheen te verplaatsen of op TAB om naar een ander neerzetgebied te gaan.',
+  overPoolFromDropAreaA11y: 'Druk op ENTER om de geselecteerde antwoordkeuze te verwijderen uit het neerzetgebied van object {number} of op TAB om naar een ander neerzetgebied te gaan. Geselecteerde antwoordkeuze: {choice}. Object {number}: {text}',
+  overPoolUnplacedA11y: 'Druk op ENTER om de geselecteerde antwoordkeuze niet te plaatsen of op TAB om naar een neerzetgebied te gaan. Geselecteerde antwoordkeuze: {choice}',
+  placedA11y: 'Antwoordkeuze {choice} geplaatst in het neerzetgebied van object {number}: {text}',
+  movedA11y: 'Antwoordkeuze {choice} verplaatst van het neerzetgebied van object {from} naar het neerzetgebied van object {to}. {text}',
+  removedA11y: 'Antwoordkeuze {choice} verwijderd uit het neerzetgebied van object {number}',
+  remainingA11y: '{filled} van {total} neerzetgebieden hebben een antwoordkeuze. {available} beschikbare antwoordkeuzes. Gebruik TAB om een antwoordkeuze te selecteren.',
+  completeA11y: 'Antwoord is compleet. {total} van {total} neerzetgebieden hebben een antwoordkeuze.',
+  deselectedA11y: 'Antwoordkeuze {choice} is niet meer geselecteerd. Gebruik TAB om een antwoordkeuze te selecteren.',
+} satisfies MessageCatalog;

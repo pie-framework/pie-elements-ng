@@ -166,9 +166,10 @@
    does. The box's 8px bottom margin, centred in the cloze's 150px content area,
    lifts it 4px, as it does in the CQT. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
-  .layout-audio_blank_only,
-  .layout-token_sequence
-) .pie-blank-value {
+    .layout-audio_blank_only,
+    .layout-token_sequence
+  )
+  .pie-blank-value {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -183,9 +184,10 @@
 /* An imageUrl answer is .pie-blank-image directly in the blank, with no
    .pie-blank-value around it; the same margin puts it where a labelHtml image sits. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
-  .layout-audio_blank_only,
-  .layout-token_sequence
-) .pie-blank-image {
+    .layout-audio_blank_only,
+    .layout-token_sequence
+  )
+  .pie-blank-image {
   margin-bottom: 8px;
 }
 

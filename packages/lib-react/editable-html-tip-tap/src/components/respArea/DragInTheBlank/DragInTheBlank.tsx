@@ -44,6 +44,7 @@ const DragDrop = (props) => {
         {...attributes}
         style={{
           display: 'inline-flex',
+          verticalAlign: 'middle',
           minHeight: '50px',
           minWidth: '178px',
           position: 'relative',

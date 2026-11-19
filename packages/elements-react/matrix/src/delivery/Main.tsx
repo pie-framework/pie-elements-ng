@@ -38,6 +38,8 @@ class Main extends React.Component {
     model: PropTypes.object,
     session: PropTypes.object,
     onSessionChange: PropTypes.func,
+    /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -46,11 +48,11 @@ class Main extends React.Component {
   };
 
   render() {
-    const { model, onSessionChange, session } = this.props;
+    const { model, onSessionChange, session, language } = this.props;
     const { extraCSSRules } = model;
     return (
       <PreviewLayout extraCSSRules={extraCSSRules}>
-        <Matrix {...model} session={session} onSessionChange={onSessionChange} />
+        <Matrix {...model} session={session} onSessionChange={onSessionChange} language={language ?? model.language} />
       </PreviewLayout>
     );
   }

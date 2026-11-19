@@ -1,7 +1,11 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { beforeAll, describe, it, expect } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import { loadLocale } from '@pie-element/shared-i18n';
 import RubricComponent from '../main';
+
+// The custom element holds its first render until the chrome locale is resident; so does this.
+beforeAll(() => loadLocale('es_ES'));
 
 const value = {
   excludeZero: false,
@@ -10,7 +14,11 @@ const value = {
 };
 
 // main.tsx is untyped, so its class declares no props.
-const Rubric = RubricComponent as unknown as React.ComponentType<{ model: object; value: typeof value }>;
+const Rubric = RubricComponent as unknown as React.ComponentType<{
+  model: object;
+  value: typeof value;
+  language?: string;
+}>;
 
 describe('Rubric toggle', () => {
   it('is at least 24px tall', () => {
@@ -43,8 +51,8 @@ describe('Rubric toggle', () => {
   it.each([
     ['en_US', 'Rubric', 'Show Rubric', 'Hide Rubric'],
     ['es_ES', 'Rúbrica', 'Mostrar rúbrica', 'Ocultar rúbrica'],
-  ])('names the heading and toggle in the %s item language', (language, heading, show, hide) => {
-    render(<Rubric model={{}} value={{ ...value, language } as typeof value} />);
+  ])('names the heading and toggle in the %s chrome language', (language, heading, show, hide) => {
+    render(<Rubric model={{}} value={value} language={language} />);
 
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: show }));
@@ -59,6 +67,18 @@ describe('Rubric points', () => {
 
     expect(screen.queryByRole('navigation')).toBeNull();
     expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it.each([
+    ['en_US', ['2 PTS', '1 PT', '0 PTS'], 'Sample Answer'],
+    ['es_ES', ['2 PTOS', '1 PTO', '0 PTOS'], 'Respuesta de ejemplo'],
+  ])('are headed by their point value in the %s chrome language', (language, headings, sample) => {
+    const { container } = render(
+      <Rubric model={{}} value={{ ...value, sampleAnswers: ['', 'Some'] }} language={language} />,
+    );
+
+    const titles = [...container.querySelectorAll('h3, h4')].map((title) => title.textContent);
+    expect(titles).toEqual([headings[0], headings[1], sample, headings[2]]);
   });
 });
 

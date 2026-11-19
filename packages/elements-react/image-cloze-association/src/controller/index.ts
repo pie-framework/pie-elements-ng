@@ -73,9 +73,9 @@ export const model = async (
   } = getCompleteResponseDetails(questionCamelized.validation, questionCamelized.possibleResponses as string[]);
 
   const out: ImageClozeAssociationViewModel = {
+    ...questionCamelized,
     disabled: env.mode !== 'gather',
     mode: env.mode,
-    ...questionCamelized,
     responseCorrect: shouldIncludeCorrectResponse ? getScore(questionCamelized, session) === 1 : undefined,
     validation: shouldIncludeCorrectResponse ? questionCamelized.validation : undefined,
     responseAreasToBeFilled,

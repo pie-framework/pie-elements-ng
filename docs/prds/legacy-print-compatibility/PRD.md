@@ -8,7 +8,7 @@ PIE-647 found that print stops working when an item/section renders elements bui
 
 The client-side loader running in production today is `@pie-framework/pie-print` (`key-data-systems/pie-print-support`). Its resolver builds a URL as `` `https://cdn.jsdelivr.net/npm/${pkg}/module/print.js` `` and loads it with a bare `import(url)` — **no import map is ever injected**, not even for React. Classic `pie-elements` satisfies this because its `module/print.js` (built by `pslb`) externalizes React/MUI/lodash/etc. as **relative CDN paths** into sibling `@pie-lib/*-module` packages, so nothing is a bare specifier and nothing needs an import map.
 
-`pie-elements-ng`'s print artifact (`dist/browser/print/index.js`, documented in [`PRINT_SUPPORT.md`](../../PRINT_SUPPORT.md)) is shaped differently: self-contained except for a bare `react` / `react-dom` import, resolved only by an import map that the *new* `pie-print-player` injects. Fed through the current client's loader, it fails twice over — wrong path (`module/print.js` doesn't exist) and an unresolvable `react` specifier (no import map). That's the regression.
+`pie-elements-ng`'s print artifact (`dist/browser/print/index.js`, documented in [`PRINT_SUPPORT.md`](../../PRINT_SUPPORT.md)) is shaped differently: self-contained except for a bare `react` / `react-dom` import, resolved only by an import map that the _new_ `pie-print-player` injects. Fed through the current client's loader, it fails twice over — wrong path (`module/print.js` doesn't exist) and an unresolvable `react` specifier (no import map). That's the regression.
 
 ## Goals
 
@@ -22,7 +22,7 @@ The client-side loader running in production today is `@pie-framework/pie-print`
 - **Not changing `pie-elements` (classic) or `pie-players` (`pie-print-player`, `pie-print-support`)** — those are separate repos; PIE-647 decided the compatibility work happens on the `pie-elements-ng` side, not by asking clients or the player repos to change.
 - **Not replicating the classic `@pie-lib/*-module` DLL / relative-CDN-path trick.** It would avoid duplicating React across element bundles, but only at the cost of standing up and permanently versioning a new shared package, and depending on jsdelivr's undocumented relative-path-across-packages resolution. A fully self-contained artifact reaches the same compatibility goal with materially less ongoing maintenance.
 - **Not deduplicating React across print bundles on one printed page.** Each print custom element already mounts its own isolated `createRoot(this)` — nothing today relies on a shared React singleton across print elements (unlike the interactive multi-element delivery page). Bundling React per element is a size cost, not a correctness risk, and optimizing it is out of scope here.
-- **Not adding print support to elements that don't have it today** (10 of 28, per `PRINT_SUPPORT.md`). This only changes how *already* print-enabled elements are bundled.
+- **Not adding print support to elements that don't have it today** (10 of 28, per `PRINT_SUPPORT.md`). This only changes how _already_ print-enabled elements are bundled.
 - **Not changing `package.json#exports`.** The legacy client resolver fetches `<pkg>/module/print.js` as a raw CDN path — it never goes through Node's exports resolution — so no exports-map change is required for compatibility. An exports entry may still be added later for hygiene, but it isn't load-bearing here.
 
 ## Proposed surface
@@ -44,12 +44,8 @@ A client still running today's unmodified `@pie-framework/pie-print` prints an i
 
 No accessibility surface changes — this PRD only changes how an already-shipped print bundle is packaged for distribution (build output shape and publish path). Rendered DOM, ARIA structure, and print-mode behavior are unchanged; existing per-element print accessibility contracts continue to apply as-is.
 
-## Open questions
-
-- [ ] Does any client's CDN/browser cache need explicit invalidation for versions published *before* this change ships, or is it acceptable that only new element versions gain the `module/print.js` artifact (older, already-published versions never retroactively get one)?
-- [ ] Should a size budget analogous to `maxBrowserJsBytesPerPackage` in `browser-esm-policy.json` apply to the new `module/print.js` lane, given React/ReactDOM add roughly 40-45 KB gzipped per element?
-
 ## Status log
 
 - Raised as proposal from PIE-647 / PIE-839 discussion.
 - Accepted — scoped explicitly to the elements that already have print support today; implementation started in the same session.
+- Both open questions resolved as shipped: no CDN invalidation is needed — jsDelivr serves each version at its own immutable URL, and versions published before this change never gain `module/print.js`; and the lane ships without a size budget — `maxBrowserJsBytesPerPackage` in `browser-esm-policy.json` covers `dist/browser/*` only, and `module/print.js` exists for the legacy loader, not for byte-tuned delivery.

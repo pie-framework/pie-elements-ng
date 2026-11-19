@@ -10,13 +10,11 @@ import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import Translator from '@pie-lib/translator';
 
 import { TickCorrectnessIndicator } from './common/correctness-indicators.js';
 import { bandKey, getRotateAngle, getRotatedLabelOverhang, getTickValues, textOf } from './utils.js';
 import MarkLabel from './mark-label.js';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 // how tall a category label can be before it reaches the axis label below it: a one line input fits,
 // a fraction does not
@@ -102,6 +100,9 @@ export class TickComponent extends React.Component {
     defineChart: PropTypes.bool,
     error: PropTypes.any,
   };
+
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
 
   constructor(props) {
     super(props);
@@ -244,6 +245,7 @@ export class TickComponent extends React.Component {
       { label: '' },
     );
     const distinctMessages = error ? [...new Set(Object.values(error))].join(' ') : '';
+    const i18n = catalogs.forLocale(language, this.relabel);
 
     return (
       <g>
@@ -276,13 +278,8 @@ export class TickComponent extends React.Component {
             rotate={rotate}
             correctness={correctness}
             error={error && error[index]}
-            ariaLabel={translator.t('charting.categoryLabel', { lng: language, index: index + 1 })}
-            mathAriaLabel={translator.t('charting.categoryLabelValue', {
-              lng: language,
-              index: index + 1,
-              label: textOf(label),
-              interpolation: { escapeValue: false },
-            })}
+            ariaLabel={i18n.t('categoryLabel', { index: index + 1 })}
+            mathAriaLabel={i18n.t('categoryLabelValue', { index: index + 1, label: textOf(label) })}
             limitCharacters
             correctnessIndicator={
               showCorrectness &&
@@ -474,6 +471,10 @@ RangeTickLabel.propTypes = {
   y: PropTypes.number,
   formattedValue: PropTypes.string,
 };
+
+// the axis calls its tick component as a function, not as a component, so the hooks in RangeTickLabel would
+// count against the axis and change in number with the ticks; rendering it as an element keeps them its own
+const renderRangeTickLabel = (props) => <RangeTickLabel {...props} />;
 
 export class RawChartAxes extends React.Component {
   static propTypes = {
@@ -714,7 +715,7 @@ export class RawChartAxes extends React.Component {
             tickLength={10}
             tickFormat={(value) => `${value}`}
             tickValues={rowTickValues}
-            tickComponent={RangeTickLabel}
+            tickComponent={renderRangeTickLabel}
           />
         )}
         <AxisBottom

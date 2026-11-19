@@ -110,6 +110,11 @@ export default {
       label: 'Allow Trailing Zeros',
       enabled: true,
     },
+    compareNumbersByValue: {
+      settings: false,
+      label: 'Compare Numbers By Value',
+      enabled: true,
+    },
     maxImageWidth: {
       teacherInstructions: 300,
       prompt: 300,

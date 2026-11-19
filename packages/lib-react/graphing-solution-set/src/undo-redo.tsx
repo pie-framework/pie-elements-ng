@@ -5,9 +5,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 const StyledButton: any = styled(Button)(({ theme }) => ({
   color: color.text(),
@@ -26,11 +24,14 @@ export class UndoRedo extends React.Component {
   };
   static defaultProps = {};
 
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   render() {
     const { className, onReset = false, language } = this.props;
     return (
       <div className={className}>
-        <StyledButton onClick={() => onReset()}>{translator.t('graphing.reset', { lng: language })}</StyledButton>
+        <StyledButton onClick={() => onReset()}>{catalogs.forLocale(language, this.relabel).t('reset')}</StyledButton>
       </div>
     );
   }

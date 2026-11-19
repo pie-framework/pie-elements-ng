@@ -1,0 +1,372 @@
+import { describe, expect, it } from 'vitest';
+import {
+  contentLanguage,
+  foldCase,
+  foldDigits,
+  mathContentLanguage,
+  normalizeResponse,
+} from '../src/response-normalizer.js';
+import { LETTER_VARIANTS_HELP } from '../src/letter-variants-help.js';
+import { DIGIT_ZEROS as ZEROS, inSystem } from './digit-systems.js';
+
+// A fixed-seed generator, so a failure reproduces.
+const random = (() => {
+  let seed = 0x2f6b1d;
+  return () => {
+    seed = (seed * 1103515245 + 12345) % 0x80000000;
+    return seed / 0x80000000;
+  };
+})();
+const randomNumber = () => String(Math.floor(random() * 10 ** (1 + Math.floor(random() * 9))));
+const randomAscii = (length: number) =>
+  Array.from({ length }, () => String.fromCharCode(0x20 + Math.floor(random() * 95))).join('');
+
+const ARABIC_INDIC = 0x0660;
+const EXTENDED_ARABIC_INDIC = 0x06f0;
+const DEVANAGARI = 0x0966;
+const BENGALI = 0x09e6;
+
+describe('foldDigits', () => {
+  it('covers every decimal digit system Unicode defines', () => {
+    expect(ZEROS).toEqual(
+      expect.arrayContaining([0x30, ARABIC_INDIC, EXTENDED_ARABIC_INDIC, DEVANAGARI, BENGALI])
+    );
+    for (const zero of ZEROS) {
+      for (let digit = 0; digit < 10; digit++) {
+        expect(foldDigits(String.fromCodePoint(zero + digit))).toBe(String(digit));
+      }
+    }
+  });
+
+  it('folds numbers in every digit system to the same ASCII number', () => {
+    for (const zero of ZEROS) {
+      for (let i = 0; i < 20; i++) {
+        const number = randomNumber();
+        expect(foldDigits(inSystem(zero, number))).toBe(number);
+      }
+    }
+  });
+
+  it('leaves characters that are numbers but not decimal digits', () => {
+    expect(foldDigits('x² ½ Ⅻ ①')).toBe('x² ½ Ⅻ ①');
+  });
+});
+
+describe('normalizeResponse', () => {
+  it('leaves every ASCII string as it is', () => {
+    for (let i = 0; i < 500; i++) {
+      const ascii = randomAscii(1 + Math.floor(random() * 30));
+      for (const language of [undefined, 'en-US', 'es', 'de', 'fr', 'ar', 'ar-MA', 'tr']) {
+        expect(normalizeResponse(ascii, { language })).toBe(ascii);
+      }
+    }
+  });
+
+  it('is idempotent', () => {
+    for (let i = 0; i < 200; i++) {
+      const value = inSystem(ARABIC_INDIC, `${randomNumber()}٫${randomNumber()} ${randomAscii(8)}`);
+      const once = normalizeResponse(value, {
+        language: 'ar',
+        ignoreCase: true,
+        foldLetterVariants: true,
+      });
+      expect(
+        normalizeResponse(once, { language: 'ar', ignoreCase: true, foldLetterVariants: true })
+      ).toBe(once);
+    }
+  });
+
+  it('reads ٫ and ٬ with the marks the content language writes Western digits with', () => {
+    expect(normalizeResponse('٣٫٥')).toBe('3.5');
+    expect(normalizeResponse('١٬٢٣٤٫٥', { language: 'ar-EG' })).toBe('1,234.5');
+    expect(normalizeResponse('١٬٢٣٤٫٥', { language: 'ar-MA' })).toBe('1.234,5');
+    expect(normalizeResponse('۱٬۲۳۴٫۵', { language: 'fa' })).toBe('1,234.5');
+    expect(normalizeResponse('3٫5', { language: 'de' })).toBe('3,5');
+  });
+
+  it('keeps an ASCII comma as written, whatever the content language', () => {
+    expect(normalizeResponse('3,5', { language: 'en-US' })).toBe('3,5');
+    expect(normalizeResponse('3.5', { language: 'de' })).toBe('3.5');
+  });
+
+  it('matches a separator-and-digit answer against its authored ASCII form in each system', () => {
+    for (const zero of [ARABIC_INDIC, EXTENDED_ARABIC_INDIC, DEVANAGARI, BENGALI]) {
+      for (let i = 0; i < 50; i++) {
+        const [whole, fraction] = [randomNumber(), randomNumber()];
+        const typed = `${inSystem(zero, whole)}٫${inSystem(zero, fraction)}`;
+        expect(normalizeResponse(typed, { language: 'ar' })).toBe(`${whole}.${fraction}`);
+      }
+    }
+  });
+
+  it('falls back to point-decimal marks for an invalid tag', () => {
+    expect(normalizeResponse('٣٫٥', { language: 'not a tag!' })).toBe('3.5');
+  });
+
+  it('keeps point-decimal marks for a tag the runtime has no data for, on a host in any locale', () => {
+    // A German host: Intl resolves a tag it has no data for to `de`.
+    const NumberFormat = Intl.NumberFormat;
+    class GermanHostNumberFormat extends NumberFormat {
+      constructor(locales?: string | string[], options?: Intl.NumberFormatOptions) {
+        super(NumberFormat.supportedLocalesOf(locales ?? []).length ? locales : 'de', options);
+      }
+    }
+    Intl.NumberFormat = GermanHostNumberFormat;
+    try {
+      for (const language of ['xx', 'und', 'english']) {
+        expect(normalizeResponse('١٬٢٣٤٫٥', { language }), language).toBe('1,234.5');
+      }
+      expect(normalizeResponse('١٬٢٣٤٫٥', { language: 'it' })).toBe('1.234,5');
+    } finally {
+      Intl.NumberFormat = NumberFormat;
+    }
+  });
+
+  it('composes decomposed text to NFC', () => {
+    expect(normalizeResponse('e\u0301')).toBe('é');
+    expect(normalizeResponse('ا\u0653')).toBe('آ');
+  });
+
+  it('removes bidi controls and tatweel', () => {
+    expect(normalizeResponse('\u200F١٢\u200E \u2067x\u2069 \u061C\u202Bي\u202C')).toBe('12 x ي');
+    expect(normalizeResponse('كــتــاب')).toBe('كتاب');
+  });
+
+  it('folds Arabic presentation forms to their base letters', () => {
+    expect(normalizeResponse('ﻟﻤﻮ')).toBe('لمو');
+    expect(normalizeResponse('ﻻ')).toBe('لا');
+  });
+
+  it('folds Arabic letter variants only when asked', () => {
+    const variants = 'أَحْمَد إِلى آمِنة مدرسة';
+    expect(normalizeResponse(variants)).toBe(variants.normalize('NFC'));
+    expect(normalizeResponse(variants, { foldLetterVariants: true })).toBe('احمد الي امنه مدرسه');
+  });
+
+  it('folds case only when asked, in the content language', () => {
+    expect(normalizeResponse('Paris')).toBe('Paris');
+    expect(normalizeResponse('Paris', { ignoreCase: true })).toBe('paris');
+    expect(normalizeResponse('İSTANBUL', { language: 'tr', ignoreCase: true })).toBe('istanbul');
+    expect(normalizeResponse('ISPARTA', { language: 'tr-TR', ignoreCase: true })).toBe('ısparta');
+  });
+
+  it('never parts two strings that toLowerCase() folds together, outside Turkish and Azerbaijani', () => {
+    // Letters with special casing, combining marks of different classes, and
+    // the characters the normalizer removes or replaces.
+    const pool = [
+      ...'aeiIİıσςΣsßẞǅǄﬀΩÅKΐǰ١٫٬ .',
+      '\u0301',
+      '\u0307',
+      '\u0308',
+      '\u0327',
+      '\u0345',
+      '\u200E',
+      '\u0640',
+      '\u061C',
+      '\u202E',
+      '\u212B',
+    ];
+    for (let i = 0; i < 20000; i++) {
+      let authored = '';
+      let typed = '';
+      for (let length = 1 + Math.floor(random() * 6); length > 0; length--) {
+        const char = pool[Math.floor(random() * pool.length)];
+        authored += char;
+        typed += random() < 0.5 ? char.toUpperCase() : char.toLowerCase();
+      }
+      if (authored.toLowerCase() !== typed.toLowerCase()) continue;
+      for (const language of [undefined, 'en-US', 'de', 'el', 'lt', 'ar']) {
+        expect(
+          normalizeResponse(typed, { language, ignoreCase: true }),
+          JSON.stringify([authored, typed, language])
+        ).toBe(normalizeResponse(authored, { language, ignoreCase: true }));
+      }
+    }
+  });
+});
+
+describe('normalizeResponse with latexNumbers', () => {
+  const latex = (value: string, language?: string) =>
+    normalizeResponse(value, { language, latexNumbers: true });
+
+  it('reads a comma between digits as the decimal point where the region writes a decimal comma', () => {
+    for (const language of ['es-ES', 'de-DE', 'fr-FR', 'pt-BR', 'ar-MA']) {
+      expect(latex('2,5', language), language).toBe('2.5');
+      expect(latex('2{,}5', language), language).toBe('2.5');
+      expect(latex('-0,75x', language), language).toBe('-0.75x');
+    }
+  });
+
+  it('reads a semicolon as a spaced list separator there, and keeps the TeX space and HTML entities', () => {
+    expect(latex('(1;2,5)', 'es-ES')).toBe('(1, 2.5)');
+    expect(latex('(2;500)', 'de-DE')).toBe('(2, 500)');
+    expect(latex('x\\;y', 'de-DE')).toBe('x\\;y');
+    expect(latex('p&aacute;ginas;2&#233;;3&#xE9;', 'es-ES')).toBe(
+      'p&aacute;ginas, 2&#233;, 3&#xE9;'
+    );
+  });
+
+  it('reads a semicolon after a matrix column as a list separator', () => {
+    expect(latex('\\begin{pmatrix}1;2&3;4\\end{pmatrix}', 'es-ES')).toBe(
+      '\\begin{pmatrix}1, 2&3, 4\\end{pmatrix}'
+    );
+  });
+
+  it('reads the comma of a repeating decimal', () => {
+    expect(latex('0,\\overline{3}', 'es-ES')).toBe('0.\\overline{3}');
+    expect(latex('1{,}2\\overline{45}', 'de-DE')).toBe('1.2\\overline{45}');
+  });
+
+  it('keeps a point as a decimal point, a comma that is not between digits, and a number with two marks', () => {
+    expect(latex('2.5', 'es-ES')).toBe('2.5');
+    expect(latex('1,x', 'es-ES')).toBe('1,x');
+    expect(latex('1\\,000', 'es-ES')).toBe('1\\,000');
+    expect(latex('1.000,5', 'de-DE')).toBe('1.000,5');
+    expect(latex('1,2,3', 'de-DE')).toBe('1,2,3');
+    expect(latex('f(x,5)', 'de-DE')).toBe('f(x,5)');
+  });
+
+  it('decides the decimal comma from a fixed CLDR table, alike on every runtime', () => {
+    const commaRegions = [
+      'es-AR',
+      'fr-CH',
+      'en-ZA',
+      'pt-BR',
+      'sr-Latn-RS',
+      'nl-BE',
+      'de-AT',
+      'ar-DZ',
+      'en-DE',
+    ];
+    const pointRegions = [
+      'es-MX',
+      'es-419',
+      'de-CH',
+      'it-CH',
+      'en-US',
+      'en-GB',
+      'ar-EG',
+      'ja-JP',
+      'zh-CN',
+      'ms-MY',
+    ];
+    for (const language of commaRegions) expect(latex('2,5', language), language).toBe('2.5');
+    for (const language of pointRegions) expect(latex('2,5', language), language).toBe('2,5');
+  });
+
+  it('keeps commas and semicolons as written without a region or in a point-decimal region', () => {
+    for (const language of [
+      undefined,
+      'es',
+      'de',
+      'fr',
+      'es-US',
+      'es-419',
+      'es-MX',
+      'en-US',
+      'ar',
+      'not a tag!',
+    ]) {
+      for (const value of ['2,5', '(1,5)', '1{,}000', 'a;b']) {
+        expect(latex(value, language), `${language} ${value}`).toBe(value);
+      }
+    }
+  });
+
+  it('folds ٫ and ٬ to the point and comma in every language', () => {
+    expect(latex('١٬٢٣٤٫٥', 'ar-MA')).toBe('1,234.5');
+    expect(latex('١٬٢٣٤٫٥', 'de-DE')).toBe('1,234.5');
+    expect(latex('٣٫٥', 'ar')).toBe('3.5');
+  });
+
+  it('reads a decimal comma between digits of another system', () => {
+    expect(latex('٣,٥', 'ar-MA')).toBe('3.5');
+  });
+});
+
+describe('contentLanguage', () => {
+  it("takes the model's language, then the environment's locale", () => {
+    expect(contentLanguage({ language: 'fr-FR' }, { locale: 'de-DE' })).toBe('fr-FR');
+    expect(contentLanguage({}, { locale: 'de-DE' })).toBe('de-DE');
+    expect(contentLanguage({ language: ' ' }, {})).toBeUndefined();
+  });
+
+  it('reads an underscore code with its region', () => {
+    expect(contentLanguage({ language: 'es_ES' })).toBe('es-ES');
+    expect(contentLanguage({}, { locale: 'ar_MA' })).toBe('ar-MA');
+    expect(normalizeResponse('٣٫٥', { language: contentLanguage({ language: 'ar_MA' }) })).toBe(
+      '3,5'
+    );
+  });
+
+  it('canonicalises a hyphenated tag and passes over one that names no language', () => {
+    expect(contentLanguage({ language: 'EN-us' })).toBe('en-US');
+    expect(contentLanguage({ language: 'not a tag!' }, { locale: 'de-DE' })).toBe('de-DE');
+    expect(contentLanguage({ language: 'Spanish' })).toBeUndefined();
+    for (const language of ['und', 'zxx', 'mul', 'mis', 'und-ES']) {
+      expect(contentLanguage({ language }, { locale: 'de-DE' }), language).toBe('de-DE');
+    }
+  });
+});
+
+describe('mathContentLanguage', () => {
+  it('reads an underscore code as its language alone, so it selects no number convention', () => {
+    expect(mathContentLanguage({ language: 'es_ES' })).toBe('es');
+    expect(mathContentLanguage({ language: 'tr_TR' })).toBe('tr');
+    expect(mathContentLanguage({}, { locale: 'en_us' })).toBe('en');
+    expect(
+      normalizeResponse('2,5', {
+        language: mathContentLanguage({ language: 'es_ES' }),
+        latexNumbers: true,
+      })
+    ).toBe('2,5');
+  });
+
+  it('keeps a hyphenated tag and falls through as contentLanguage does', () => {
+    expect(mathContentLanguage({ language: 'es-ES' })).toBe('es-ES');
+    expect(mathContentLanguage({ language: 'und' }, { locale: 'de-DE' })).toBe('de-DE');
+    expect(mathContentLanguage({}, {})).toBeUndefined();
+  });
+});
+
+describe('foldCase', () => {
+  it('folds dotted and dotless i in Turkish and Azerbaijani', () => {
+    for (const language of ['tr', 'az']) {
+      expect(foldCase('İ', language)).toBe('i');
+      expect(foldCase('I', language)).toBe('ı');
+    }
+  });
+
+  it('folds accented capital I to the accented i in Lithuanian', () => {
+    expect(foldCase('Ì Í Ĩ', 'lt')).toBe('ì í ĩ');
+  });
+
+  it('folds as toLowerCase() without a language or with an invalid one', () => {
+    expect(foldCase('İI')).toBe('İI'.toLowerCase());
+    expect(foldCase('İI', 'not a tag!')).toBe('İI'.toLowerCase());
+    expect(foldCase('Paris', 'en-US')).toBe('paris');
+  });
+});
+
+describe('LETTER_VARIANTS_HELP', () => {
+  const arabic = LETTER_VARIANTS_HELP.flatMap((part) =>
+    typeof part === 'string' ? [] : [part.ar]
+  );
+  const fold = (value: string) => normalizeResponse(value, { foldLetterVariants: true });
+
+  it('reads as the authoring help text is fixed', () => {
+    const text = LETTER_VARIANTS_HELP.map((part) =>
+      typeof part === 'string' ? part : part.ar
+    ).join('');
+    expect(text).toBe('Accepts أ إ آ ٱ as ا, ignores tashkeel, accepts ه for ة and ي for ى.');
+  });
+
+  it('names the variants the fold accepts', () => {
+    const [alefForms, alef, heh, tehMarbuta, yeh, alefMaksura] = arabic;
+
+    expect(fold(alefForms)).toBe([alef, alef, alef, alef].join(' '));
+    expect(fold(tehMarbuta)).toBe(heh);
+    expect(fold(alefMaksura)).toBe(yeh);
+    expect(fold('مَدْرَسَة')).toBe(fold('مدرسة'));
+  });
+});

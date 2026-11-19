@@ -1,11 +1,11 @@
 // @ts-nocheck
 
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import classNames from 'clsx';
 import { styled, useTheme } from '@mui/material/styles';
 import { NodeSelection } from 'prosemirror-state';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
 
 import Bold from '@mui/icons-material/FormatBold';
 import Italic from '@mui/icons-material/FormatItalic';
@@ -24,20 +24,30 @@ import TheatersIcon from '@mui/icons-material/Theaters';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import BorderAll from '@mui/icons-material/BorderAll';
 import Delete from '@mui/icons-material/Delete';
+import LeftToRight from '@mui/icons-material/FormatTextdirectionLToR';
+import RightToLeft from '@mui/icons-material/FormatTextdirectionRToL';
+import TranslateIcon from '@mui/icons-material/Translate';
 
 import { useEditorState } from '@tiptap/react';
+import { inlineSideOfArrow } from '@pie-element/shared-utils';
 
 import { PIE_TOOLBAR__CLASS, TOOLBAR_BACKGROUND } from '../constants.js';
 import { ToolbarIcon } from './respArea/ToolbarIcon.js';
-import { spanishConfig, specialConfig } from './characters/characterUtils.js';
-import TextAlignIcon from './icons/TextAlign.js';
+import { logicalAlignment, selectionDirection } from '../extensions/text-direction.js';
+import { writtenLanguage } from '../utils/content-languages.js';
+import { returnFocusToText } from '../utils/focus.js';
+import { insertTypedCharacter } from '../utils/toolbar-typing.js';
+import { arabicConfig, spanishConfig, specialConfig } from './characters/characterUtils.js';
+import TextAlignControl from './icons/TextAlign.js';
+import ToolbarDisclosure from './ToolbarDisclosure.js';
 import CSSIcon from './icons/CssIcon.js';
 import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons/TableIcons.js';
 
 import { CharacterIcon, CharacterPicker } from './CharacterPicker.js';
 import { DoneButton } from './common/done-button.js';
+import { TOOLBAR_ATTRIBUTE } from '../extensions/inactive-caret.js';
+import { catalogs } from '../i18n/index.js';
 
-const { translator } = Translator;
 
 const SuperscriptIcon = () => (
   <svg
@@ -91,6 +101,10 @@ const HeadingIcon = () => (
   </svg>
 );
 
+/** The languages the editor offers for marking text, as `contentLanguageChoices` lists them. */
+const contentLanguages = (editor) =>
+  editor?.extensionManager?.extensions.find(({ name }) => name === 'contentLanguage')?.options.languages() ?? [];
+
 function MenuBar({
   editor,
   classes,
@@ -103,7 +117,17 @@ function MenuBar({
   language,
 }) {
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerTrigger, setPickerTrigger] = useState({ el: null, keyboard: false });
+  const [dismissed, setDismissed] = useState(false);
+  // Bumped once the language's catalog lands, for an element that did not preload it.
+  const [catalogVersion, relabel] = useReducer((version) => version + 1, 0);
+  const i18n = catalogs.forLocale(language, relabel);
   const toolbarRef = useRef(null);
+  // `detail === 0` means the click was synthesized by the keyboard (Enter/Space)
+  const openPicker = (config, e) => {
+    setPickerTrigger({ el: e?.currentTarget ?? null, keyboard: e?.detail === 0 });
+    setShowPicker(config);
+  };
   const toolbarOpts = toolOpts ?? {};
 
   const editorState = useEditorState({
@@ -128,6 +152,7 @@ function MenuBar({
         ctx.editor?.isActive('drag_in_the_blank');
 
       const hasTextSelectionInTable = selection && selection.empty === false && ctx.editor.isActive('table');
+      const direction = selectionDirection(ctx.editor);
 
       return {
         currentNode,
@@ -163,6 +188,10 @@ function MenuBar({
         isBlockquote: ctx.editor.isActive('blockquote') ?? false,
         canUndo: ctx.editor.can().chain().undo().run() ?? false,
         canRedo: ctx.editor.can().chain().redo().run() ?? false,
+        dir: direction.rendered,
+        dirPinned: direction.pinned,
+        alignment: logicalAlignment(direction.textAlign, direction.rendered),
+        contentLanguage: ctx.editor.getAttributes('contentLanguage')?.lang ?? null,
       };
     },
   });
@@ -175,7 +204,33 @@ function MenuBar({
     editorState.hideDefaultToolbar && editorState.currentNode?.type?.name === 'drag_in_the_blank';
   const shown =
     toolbarOpts.alwaysVisible ||
-    (hasFocus && !editorState.toolbarOpened && (!editorState.hideDefaultToolbar || isDragInTheBlankSelected));
+    (hasFocus &&
+      !dismissed &&
+      !editorState.toolbarOpened &&
+      (!editorState.hideDefaultToolbar || isDragInTheBlankSelected));
+
+  // Done from the keyboard closes the toolbar but leaves focus in the text. Editing, moving the
+  // cursor or clicking the text opens it again, as does focus coming back after leaving the editor.
+  useEffect(() => {
+    if (!hasFocus) setDismissed(false);
+  }, [hasFocus]);
+
+  useEffect(() => {
+    if (!dismissed || !editor) return;
+
+    const reopen = () => setDismissed(false);
+    const dom = editor.view.dom;
+
+    editor.on('update', reopen);
+    editor.on('selectionUpdate', reopen);
+    dom.addEventListener('mousedown', reopen);
+
+    return () => {
+      editor.off('update', reopen);
+      editor.off('selectionUpdate', reopen);
+      dom.removeEventListener('mousedown', reopen);
+    };
+  }, [dismissed, editor]);
 
   // Hidden, the toolbar is `inert`, which takes its buttons out of the tab order. Set on the node:
   // React 18 drops a boolean `inert` prop, and React 19 reads the empty-string workaround as false.
@@ -195,11 +250,53 @@ function MenuBar({
 
   const customStyles = toolbarOpts.minWidth !== undefined ? { minWidth: toolbarOpts.minWidth } : {};
 
+  // Arrows move along the toolbar's inline axis, so ArrowRight steps back in a right-to-left one.
+  const handleToolbarKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    // Escape from a toolbar button returns to the text.
+    if (e.key === 'Escape') {
+      if (e.defaultPrevented || !e.currentTarget.contains(e.target as Node)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      // Focus is on the toolbar, so the panel's own Escape handler ignores the key: close an open
+      // panel here, as Escape from inside it does. Focus moves first, so it is never left on a
+      // button that is going away.
+      returnFocusToText(editor);
+      setShowPicker(false);
+      return;
+    }
+
+    if (insertTypedCharacter(editor, e)) {
+      e.stopPropagation();
+      return;
+    }
+
+    const side = inlineSideOfArrow(e.key, e.currentTarget);
+
+    if (!side) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    const target = e.target as HTMLElement;
+
+    if (target.tagName !== 'BUTTON') return;
+
+    // A closed disclosure keeps its options in the DOM, hidden.
+    const buttons = Array.from(
+      e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'),
+    ).filter((button) => !button.closest('[hidden]'));
+    const next = buttons[buttons.indexOf(target as HTMLButtonElement) + (side === 'inline-end' ? 1 : -1)];
+
+    if (next) {
+      e.preventDefault();
+      next.focus();
+    }
+  };
+
   const handleMouseDown = (e) => {
     e.preventDefault();
   };
 
-  const buttonLabel = (key) => translator.t(`editableHtml.buttons.${key}`, { lng: language });
+  const buttonLabel = (key) => i18n.t(dynamicMessageKey(`buttons.${key}`));
 
   const toolbarButtons = useMemo(
     () => [
@@ -379,19 +476,75 @@ function MenuBar({
         icon: <CharacterIcon letter="ñ" />,
         label: buttonLabel('spanishCharacters'),
         hidden: () => !activePlugins?.includes('languageCharacters'),
-        onClick: () => setShowPicker(spanishConfig),
+        onClick: (_editor, e) => openPicker(spanishConfig, e),
       },
       {
         icon: <CharacterIcon letter="€" />,
         label: buttonLabel('specialCharacters'),
         hidden: () => activePlugins?.filter((p) => p === 'languageCharacters').length !== 2,
-        onClick: () => setShowPicker(specialConfig),
+        onClick: (_editor, e) => openPicker(specialConfig, e),
       },
       {
-        icon: <TextAlignIcon editor={editor} />,
-        label: buttonLabel('textAlignment'),
+        icon: <CharacterIcon letter="ع" />,
+        label: buttonLabel('arabicCharacters'),
+        hidden: () => !activePlugins?.includes('arabicCharacters'),
+        onClick: (_editor, e) => openPicker(arabicConfig, e),
+      },
+      {
         hidden: () => !activePlugins?.includes('text-align'),
-        onClick: () => {},
+        render: (state) => (
+          <TextAlignControl
+            editor={editor}
+            alignment={state.alignment}
+            direction={state.dir}
+            label={buttonLabel('textAlignment')}
+            alignmentLabel={(value) => buttonLabel(`align${value[0].toUpperCase()}${value.slice(1)}`)}
+            className={classes.button}
+          />
+        ),
+      },
+      // A block always has one of the two directions, which is the pressed one. Pressing a
+      // direction pins the block to it; pressing the pinned one again returns it to its script's.
+      ...[
+        ['ltr', <LeftToRight />, 'leftToRight'],
+        ['rtl', <RightToLeft />, 'rightToLeft'],
+      ].map(([dir, icon, key]) => ({
+        icon,
+        label: buttonLabel(key),
+        toggle: true,
+        hidden: () => !activePlugins?.includes('text-direction'),
+        onClick: (editor) => {
+          const { rendered, pinned } = selectionDirection(editor);
+          const chain = editor.chain().focus();
+          (rendered === dir && pinned ? chain.unsetBlockDirection() : chain.setBlockDirection(dir)).run();
+        },
+        isActive: (state) => state.dir === dir,
+      })),
+      {
+        // Authors working in one language see no language control, except to remove a span's.
+        hidden: (state) => contentLanguages(editor).length < 2 && !state.contentLanguage,
+        render: (state) => {
+          const current = state.contentLanguage && writtenLanguage(state.contentLanguage);
+          const choices = contentLanguages(editor);
+          // A span in a language the editor does not offer shows it, so the author can see and remove it.
+          const offered = choices.some(({ value }) => writtenLanguage(value) === current);
+          return (
+          <ToolbarDisclosure
+            editor={editor}
+            label={buttonLabel('contentLanguage')}
+            trigger={<TranslateIcon />}
+            options={[
+              ...(current && !offered ? [{ value: state.contentLanguage, label: state.contentLanguage }] : []),
+              ...choices,
+            ]
+              .map(({ value, label }) => ({ key: value, label, pressed: writtenLanguage(value) === current }))
+              .concat(current ? [{ key: '', label: buttonLabel('removeContentLanguage') }] : [])}
+            onSelect={(value) => editor.chain().focus().setContentLanguage(value).run()}
+            className={classes.button}
+            list
+          />
+          );
+        },
       },
       {
         icon: <BulletedListIcon />,
@@ -411,30 +564,36 @@ function MenuBar({
       },
       {
         icon: <Undo />,
-        label: translator.t('common:undo', { lng: language }),
+        label: i18n.t('buttons.undo'),
         hidden: () => !activePlugins?.includes('undo'),
         onClick: (editor) => editor.chain().focus().undo().run(),
         isDisabled: (state) => !state.canUndo,
       },
       {
         icon: <Redo />,
-        label: translator.t('graphing.redo', { lng: language }),
+        label: i18n.t('buttons.redo'),
         hidden: () => !activePlugins?.includes('redo'),
         onClick: (editor) => editor.chain().focus().redo().run(),
         isDisabled: (state) => !state.canRedo,
       },
     ],
-    [activePlugins, editor, language],
+    [activePlugins, editor, i18n, catalogVersion],
   );
 
   return (
-    <div ref={toolbarRef} className={names} style={{ ...customStyles }} onMouseDown={handleMouseDown}>
+    <div
+      ref={toolbarRef}
+      className={names}
+      style={{ ...customStyles }}
+      onMouseDown={handleMouseDown}
+      {...{ [TOOLBAR_ATTRIBUTE]: '' }}
+    >
       {isDragInTheBlankSelected && (
         <div
           className={classes.defaultToolbar}
           role="toolbar"
           tabIndex={-1}
-          aria-label={translator.t('editableHtml.responseAreaToolbar', { lng: language })}
+          aria-label={i18n.t('responseAreaToolbar')}
         >
           <div className={classes.buttonsContainer}>
             <button
@@ -458,12 +617,15 @@ function MenuBar({
           className={classes.defaultToolbar}
           role="toolbar"
           tabIndex={-1}
-          aria-label={translator.t('editableHtml.toolbar', { lng: language })}
+          aria-label={i18n.t('toolbar')}
+          onKeyDown={handleToolbarKeyDown}
         >
           <div className={classes.buttonsContainer}>
             {toolbarButtons
               .filter((btn) => !btn.hidden?.(editorState))
               .map((btn, index) => {
+                if (btn.render) return <React.Fragment key={index}>{btn.render(editorState)}</React.Fragment>;
+
                 const disabled = btn.isDisabled?.(editorState);
                 const active = btn.isActive?.(editorState);
 
@@ -477,7 +639,7 @@ function MenuBar({
                     aria-pressed={btn.toggle ? !!active : undefined}
                     onClick={(e) => {
                       e.preventDefault();
-                      btn.onClick(editor);
+                      btn.onClick(editor, e);
                     }}
                     className={classNames(classes.button, { [classes.active]: active })}
                   >
@@ -503,9 +665,19 @@ function MenuBar({
           {toolbarOpts.showDone && (
             <DoneButton
               language={language}
-              onClick={() => {
+              onClick={(e) => {
                 onChange?.(editor.getHTML());
-                editor.commands.blur();
+
+                // A pointer click leaves focus in the text (see handleMouseDown), so blurring the
+                // editor closes the toolbar. From the keyboard focus is on this button: close the
+                // toolbar and put focus back in the text, with the cursor where it was. Focus moves
+                // first, synchronously, so hiding the toolbar never strands it on the button.
+                if (e.detail === 0) {
+                  returnFocusToText(editor);
+                  setDismissed(true);
+                } else {
+                  editor.commands.blur();
+                }
               }}
             />
           )}
@@ -514,6 +686,8 @@ function MenuBar({
       {showPicker && (
         <CharacterPicker
           editor={editor}
+          triggerEl={pickerTrigger.el}
+          focusOnOpen={pickerTrigger.keyboard}
           opts={{
             ...showPicker,
             renderPopOver: (ev, ch) => console.log('Show popover', ch),
@@ -586,6 +760,11 @@ const StyledMenuBarRoot: any = styled('div')(() => ({
     },
     '&:hover': {
       color: color.text(),
+    },
+    '&:disabled, &:disabled:hover': {
+      opacity: 0.4,
+      color: color.disabled(),
+      cursor: 'not-allowed',
     },
     '&:focus': {
       /*
@@ -672,6 +851,34 @@ const StyledMenuBarRoot: any = styled('div')(() => ({
   },
   '& .shared': {
     display: 'flex',
+  },
+  '& .toolbarDisclosure': {
+    position: 'relative',
+    display: 'inline-flex',
+  },
+  '& .toolbarDisclosureCaret': {
+    alignSelf: 'center',
+    marginInlineStart: '5px',
+    fontSize: '8px',
+  },
+  '& .toolbarDisclosureOptions': {
+    position: 'absolute',
+    top: '100%',
+    insetInlineStart: 0,
+    display: 'flex',
+    background: TOOLBAR_BACKGROUND,
+    boxShadow: '0px 1px 5px 0px rgba(0, 0, 0, 0.2)',
+    '&[hidden]': {
+      display: 'none',
+    },
+  },
+  '& .toolbarDisclosureList': {
+    flexDirection: 'column',
+    '& .toolbarButton': {
+      color: color.text(),
+      padding: '4px 8px',
+      whiteSpace: 'nowrap',
+    },
   },
 }));
 

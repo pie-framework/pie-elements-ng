@@ -37,14 +37,17 @@ class MyElement extends HTMLElement {
     super();
     this._notifier = createSessionNotifier(
       this,
-      () => this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), isComplete(this._session))),
-      { delayMs: 200 },
+      () =>
+        this.dispatchEvent(
+          new SessionChangedEvent(this.tagName.toLowerCase(), isComplete(this._session))
+        ),
+      { delayMs: 200 }
     );
   }
 
   valueChange(value) {
-    this._session.value = value;   // synchronous
-    this._notifier.notify();       // deferred
+    this._session.value = value; // synchronous
+    this._notifier.notify(); // deferred
   }
 
   disconnectedCallback() {

@@ -34,9 +34,7 @@ import { Bundler } from '@pie-element/element-bundler';
 const bundler = new Bundler('./bundles');
 
 const result = await bundler.build({
-  dependencies: [
-    { name: '@pie-element/multiple-choice', version: '0.1.0' }
-  ]
+  dependencies: [{ name: '@pie-element/multiple-choice', version: '0.1.0' }],
 });
 
 console.log(result);
@@ -94,7 +92,7 @@ export const handler = async (event) => {
   const result = await bundler.build(JSON.parse(event.body));
   return {
     statusCode: result.success ? 200 : 500,
-    body: JSON.stringify(result)
+    body: JSON.stringify(result),
   };
 };
 ```

@@ -2,6 +2,7 @@
   "name": "@pie-lib/test-utils",
   "version": "3.0.3",
   "description": "Testing utilities for pie-lib packages with React Testing Library and MUI support",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -11,7 +12,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.11.0",
     "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/user-event": "^14.6.8",
+    "@testing-library/user-event": "^14.6.10",
     "prop-types": "^15.8.1",
     "@testing-library/react": "^16.3.3",
     "@mui/material": "^7.3.11",
@@ -32,13 +33,12 @@
   "sideEffects": false,
   "scripts": {
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
-    "dev": "bun x vite",
-    "test": "bun x vitest run"
+    "dev": "bun x vite"
   },
   "devDependencies": {
-    "vite": "^8.3.4",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

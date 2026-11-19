@@ -1,15 +1,13 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useReducer } from 'react';
 
 import IconButton from '@mui/material/IconButton';
 import Check from '@mui/icons-material/Check';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../../i18n/index.js';
 
 const StyledIconButton: any = styled(IconButton)({
   verticalAlign: 'top',
@@ -22,15 +20,20 @@ const StyledIconButton: any = styled(IconButton)({
   padding: '4px',
 });
 
-export const RawDoneButton = ({ onClick, doneButtonRef, language }) => (
-  <StyledIconButton
-    aria-label={translator.t('editableHtml.buttons.done', { lng: language })}
-    buttonRef={doneButtonRef}
-    onClick={onClick}
-  >
-    <Check />
-  </StyledIconButton>
-);
+export const RawDoneButton = ({ onClick, doneButtonRef, language }) => {
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((version) => version + 1, 0);
+
+  return (
+    <StyledIconButton
+      aria-label={catalogs.forLocale(language, relabel).t('buttons.done')}
+      buttonRef={doneButtonRef}
+      onClick={onClick}
+    >
+      <Check />
+    </StyledIconButton>
+  );
+};
 
 RawDoneButton.propTypes = {
   onClick: PropTypes.func,

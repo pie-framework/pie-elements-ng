@@ -7,9 +7,7 @@ import Scale from './scale.js';
 import Link from '@mui/material/Link';
 import Collapse from '@mui/material/Collapse';
 import { color, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../i18n/index.js';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -47,6 +45,9 @@ class Main extends React.Component {
     this.toggleRubric = this.toggleRubric.bind(this);
   }
 
+  /** Re-renders once the chrome language's catalog lands, for a host that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   toggleRubric() {
     this.setState({ rubricOpen: !this.state.rubricOpen });
   }
@@ -57,6 +58,8 @@ class Main extends React.Component {
     const { extraCSSRules, halfScoring, scales, visible, pointLabels, description, standards, arrowsDisabled } =
       model || {};
     animationsDisabled = animationsDisabled || model.animationsDisabled;
+    const language = this.props.language ?? model?.language;
+    const i18n = catalogs.forLocale(language, this.relabel);
 
     if (!scales || !visible) {
       return null;
@@ -68,7 +71,7 @@ class Main extends React.Component {
         style={{ fontFamily: 'Cerebri Sans', color: color.text(), backgroundColor: color.background() }}
       >
         {halfScoring ? (
-          <div style={{ marginBottom: '16px' }}>* Half-point or in-between scores are permitted under this rubric.</div>
+          <div style={{ marginBottom: '16px' }}>{i18n.t('halfScoringNote')}</div>
         ) : null}
 
         {scales.map((scale, scaleIndex) => (
@@ -80,6 +83,7 @@ class Main extends React.Component {
             showDescription={description}
             showStandards={standards}
             arrowsDisabled={arrowsDisabled}
+            language={language}
           />
         ))}
       </UiLayout>
@@ -98,7 +102,7 @@ class Main extends React.Component {
           style={{ backgroundColor: color.background(), minHeight: '24px' }}
           onClick={this.toggleRubric}
         >
-          {translator.t(this.state.rubricOpen ? 'rubric.hideRubric' : 'rubric.showRubric', { lng: model.language })}
+          {i18n.t(this.state.rubricOpen ? 'hideRubric' : 'showRubric')}
         </Link>
         <Collapse style={{ marginTop: '16px' }} in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>
           {rubricItem}
@@ -134,6 +138,8 @@ Main.propTypes = {
     animationsDisabled: PropTypes.bool,
   }),
   animationsDisabled: PropTypes.bool,
+  /** The interface locale the custom element resolved; without one the chrome follows the item's language. */
+  language: PropTypes.string,
 };
 
 export default Main;

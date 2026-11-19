@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import * as mq from '../src/mq/index.js';
@@ -19,12 +19,12 @@ describe('math input textarea name', () => {
     }
   });
 
-  it('names the response fields in the item language', () => {
+  it('names the response fields in the item language once its catalog loads', async () => {
     const { container } = render(
       <mq.Static latex={'\\MathQuillMathField[r1]{}'} language="es-ES" />,
     );
 
-    expect(fieldTextareas(container)[0]).toHaveAccessibleName('Escribe la respuesta');
+    await waitFor(() => expect(fieldTextareas(container)[0]).toHaveAccessibleName('Escribe la respuesta'));
   });
 
   it('names the fields that a new latex adds', () => {

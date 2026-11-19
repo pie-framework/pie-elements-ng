@@ -14,6 +14,13 @@ export interface SimpleClozeModel extends PieModel {
    * case and extra spaces; a key with no text matches nothing.
    */
   correctAnswer?: string;
+  /**
+   * Accepts a response that differs from the answer key only in Arabic spelling variants: hamza
+   * and madda alef forms read as bare alef, tashkeel ignored, ه accepted for ة and ي for ى. Only
+   * `true` turns it on.
+   * @default false
+   */
+  foldLetterVariants?: boolean;
   /** Shown to instructors in view and evaluate mode. */
   teacherInstructions?: string;
   /**
@@ -21,7 +28,7 @@ export interface SimpleClozeModel extends PieModel {
    * @default true
    */
   teacherInstructionsEnabled?: boolean;
-  /** The learner-facing strings' language, as `@pie-lib/translator` reads it (`en_US`, `es_ES`, …). */
+  /** The item's declared language (`en-US`, `es-ES`, …): the `lang` of its content, and of the interface strings when the player publishes no interface locale. */
   language?: string;
 }
 
@@ -40,6 +47,8 @@ export interface SimpleClozeConfiguration {
   prompt?: SimpleClozeFieldConfigure;
   /** Settings Panel control for teacher instructions; `label` titles the editor */
   teacherInstructions?: ConfigureProp;
+  /** Settings Panel control for `foldLetterVariants`; `settings: false` hides it and leaves the model value in force */
+  foldLetterVariants?: ConfigureProp;
   /** Indicates if the settings panel is not available */
   settingsPanelDisabled?: boolean;
 }

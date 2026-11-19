@@ -4,14 +4,12 @@ Interface strings for PIE elements and the libraries they render through: one ty
 package, `en-US` resident in the bundle, every other locale loaded on demand, and one page-wide
 registry that a host call reaches across every bundled copy of this engine.
 
-The engine is a port of pie-players' `players-shared/src/i18n`. The two repositories share its
-semantics (tag resolution, lookup order, plural handling, host messages) and no code. What
-"shared semantics" means is written down once:
-[`tests/i18n-conformance-fixtures.json`](./tests/i18n-conformance-fixtures.json), a byte-identical
-copy of the file pie-players keeps at `packages/players-shared/tests/`, which each repository runs
+The engine's provider is a port of pie-players' `players-shared/src/i18n`, and both engines import
+their language-tag code from `@pie-players/pie-language-tags`. The two share their semantics (tag
+resolution, lookup order, plural handling, host messages), which that package writes down once in
+`@pie-players/pie-language-tags/i18n-conformance-fixtures.json`. Each repository runs that one file
 against its own engine. A case one engine passes and the other fails is drift; the fix goes to the
-engine. A semantics change edits both copies in the same breath. `biome.json` leaves that one file
-unformatted so the bytes stay the other repository's: byte identity is the whole point of the copy.
+engine.
 
 `@pie-lib/translator` stays in place for every package not yet migrated;
 [`docs/prds/interface-i18n/PRD.md`](../../../docs/prds/interface-i18n/PRD.md) has the design and
@@ -24,8 +22,13 @@ An element translates in the language its item declares in `model.language` (`en
 so a migrated element renders as it did; the PRD moves interface strings to a locale the host
 publishes, with `en-US` as the default. The browser locale is never consulted.
 
-A tag resolves by RFC 4647 lookup, then by its primary subtag: `es_MX` reads `es-MX`, then `es`. A
-tag nothing ships renders English key by key, unless a host registered messages for it.
+A tag resolves by RFC 4647 lookup, then by its primary subtag: `es_MX` reads `es-MX`, then `es`.
+Both steps stay within the tag's script, explicit or the CLDR likely script from
+`Intl.Locale.maximize()`. Lookup tries the language and script before the bare language, so `zh-TW`
+reads `zh-TW`, `zh-Hant`, then `zh`. A catalog under a bare tag declares its likely script, so `zh`
+is Simplified and `sr` Cyrillic: `zh-TW` passes `zh` by, and `sr-ME`, which is Latin, passes `sr`
+by. A tag nothing ships in its script renders English key by key, unless a host registered messages
+for it.
 
 Each key is looked up in order: host messages for the locale, the shipped catalog for the locale,
 host messages for `en-US`, the shipped `en-US` catalog. A miss on all four returns the key.
@@ -37,7 +40,9 @@ import { loadLocale, registerMessages } from '@pie-element/shared-i18n';
 
 // Rename one label, or serve a locale no package ships.
 registerMessages('@pie-lib/correct-answer-toggle', 'en-US', { showCorrectAnswer: 'Reveal answer' });
-registerMessages('@pie-lib/correct-answer-toggle', 'fr-CA', { showCorrectAnswer: 'Afficher la réponse' });
+registerMessages('@pie-lib/correct-answer-toggle', 'fr-CA', {
+  showCorrectAnswer: 'Afficher la réponse',
+});
 
 // Optional: load a locale before mounting, so nothing renders while it loads.
 await loadLocale('es-MX');
@@ -97,12 +102,12 @@ wins over the catalog.
 
 Each package keeps its strings in `src/i18n/`:
 
-| File | Holds |
-|---|---|
-| `en-US.ts` | The source catalog, imported statically. Its shape types every key. |
-| `<tag>.ts` | One file per shipped locale, `satisfies MessageCatalog`. |
-| `index.ts` | `defineCatalogs({ packageName, source, loaders })`. |
-| `catalog-manifest.json` | Each locale's status and provenance. |
+| File                    | Holds                                                               |
+| ----------------------- | ------------------------------------------------------------------- |
+| `en-US.ts`              | The source catalog, imported statically. Its shape types every key. |
+| `<tag>.ts`              | One file per shipped locale, `satisfies MessageCatalog`.            |
+| `index.ts`              | `defineCatalogs({ packageName, source, loaders })`.                 |
+| `catalog-manifest.json` | Each locale's status and provenance.                                |
 
 ```ts
 export const catalogs = defineCatalogs({
@@ -150,10 +155,10 @@ reviewed against, and only the keys whose English moved fail.
 
 ## Locales
 
-| Tag | Status | Serves |
-|---|---|---|
-| `en-US` | source | every tag nothing else matches |
-| `es` | reviewed, carried from `@pie-lib/translator` | every `es-*` tag; Latin American wording |
+| Tag     | Status                                       | Serves                                   |
+| ------- | -------------------------------------------- | ---------------------------------------- |
+| `en-US` | source                                       | every tag nothing else matches           |
+| `es`    | reviewed, carried from `@pie-lib/translator` | every `es-*` tag; Latin American wording |
 
 ## Build artifacts
 
@@ -164,10 +169,9 @@ every loader eager. A newly migrated element joins its `migratedElements` list.
 
 ## Module layout
 
-| Module | Owns |
-|---|---|
-| `provider.ts` | `SimpleI18n`: lookup, interpolation, plurals, direction, formatting |
-| `catalogs.ts` | `defineCatalogs`, the page registry, `isLocaleReady`, `loadLocale`, `registerMessages` |
-| `language-tags.ts` | Tag normalization and RFC 4647 matching |
-| `element-language.ts` | `lang` and `dir` for an element's host |
-| `types.ts` | Catalog, key and translator types |
+| Module                | Owns                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `provider.ts`         | `SimpleI18n`: lookup, interpolation, plurals, direction, formatting                    |
+| `catalogs.ts`         | `defineCatalogs`, the page registry, `isLocaleReady`, `loadLocale`, `registerMessages` |
+| `element-language.ts` | `lang` and `dir` for an element's host                                                 |
+| `types.ts`            | Catalog, key and translator types                                                      |

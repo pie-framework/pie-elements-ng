@@ -38,19 +38,25 @@ const isShippingPath = (packageRelativePath) =>
 // A manifest edit confined to `@types/*` devDependencies changes nothing a package publishes:
 // they hold only declarations, which no build bundles. Every other devDependency ships, because a
 // package can bundle it into `dist` (`shared-lodash` vendors `lodash-es`) or build with it (`vite`),
-// and so does every other field. The comparison keeps key order, because `exports` resolves its
-// conditions in order. A manifest absent or unparseable on either side ships.
+// and so does every other field. Scripts named in NON_SHIPPING_SCRIPT are the same case: no
+// install, pack or build runs them. Every other script ships, `build` and the lifecycle hooks
+// because they shape `dist` or run on install, and any new name until it is listed here. The
+// comparison keeps key order, because `exports` resolves its conditions in order. A manifest
+// absent or unparseable on either side ships.
+const NON_SHIPPING_SCRIPT = /^(?:test|dev|demo|clean)(?::|$)/;
+
 export function manifestChangeShips(before, after) {
   if (!before || !after) return true;
-  const shipped = (manifest) => {
-    const dev = Object.entries(manifest.devDependencies ?? {}).filter(
-      ([name]) => !name.startsWith('@types/')
-    );
-    return JSON.stringify({
-      ...manifest,
-      devDependencies: dev.length > 0 ? Object.fromEntries(dev) : undefined,
-    });
+  const kept = (record, keep) => {
+    const entries = Object.entries(record ?? {}).filter(([name]) => keep(name));
+    return entries.length > 0 ? Object.fromEntries(entries) : undefined;
   };
+  const shipped = (manifest) =>
+    JSON.stringify({
+      ...manifest,
+      scripts: kept(manifest.scripts, (name) => !NON_SHIPPING_SCRIPT.test(name)),
+      devDependencies: kept(manifest.devDependencies, (name) => !name.startsWith('@types/')),
+    });
   return shipped(before) !== shipped(after);
 }
 

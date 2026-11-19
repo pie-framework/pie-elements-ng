@@ -1,17 +1,15 @@
 // @ts-nocheck
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import { AutosizeInput } from './autosize-input.js';
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 import SvgIcon from './label-svg-icon.js';
 import { roundNumber } from './utils.js';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 const DEBOUNCE_DELAY = 500;
 // A new label insists on the focus and the caret for this long, and again on each of the ticks
@@ -213,6 +211,8 @@ export const MarkLabel = (props) => {
   const { mark, graphProps, disabled, autoFocus, inputRef: externalInputRef, language } = props;
 
   const [label, setLabel] = useState(mark.label);
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
   const { correctness, correctnesslabel, correctlabel } = mark;
 
   const isFocused = () =>
@@ -405,10 +405,12 @@ export const MarkLabel = (props) => {
 
   const disabledInput = disabled || mark.disabled;
 
-  const nameAt = (key) =>
+  const i18n = catalogs.forLocale(language, relabel);
+  const nameAt = (key: 'markLabel' | 'correctMarkLabel') =>
     Number.isFinite(mark.x) && Number.isFinite(mark.y)
-      ? translator.t(`graphing.${key}`, { lng: language, x: roundNumber(mark.x), y: roundNumber(mark.y) })
-      : translator.t('graphing.label', { lng: language });
+      ? // as strings: a locale's decimal comma would run into the comma between the two
+        i18n.t(key, { x: String(roundNumber(mark.x)), y: String(roundNumber(mark.y)) })
+      : i18n.t('label');
 
   const renderInput = (inputStyle, labelValue, ariaLabel = nameAt('markLabel')) => (
     <LabelInput

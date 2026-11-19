@@ -15,7 +15,11 @@ PIE elements are themed with CSS custom properties. Keep it simple:
 ## Core Usage
 
 ```ts
-import { PIE_LIGHT_THEME, generateCssVariables, injectCssVariables } from '@pie-element/shared-theming';
+import {
+  PIE_LIGHT_THEME,
+  generateCssVariables,
+  injectCssVariables,
+} from '@pie-element/shared-theming';
 
 const vars = generateCssVariables(PIE_LIGHT_THEME);
 injectCssVariables(vars); // defaults to document.documentElement
@@ -93,6 +97,11 @@ outline: 2px solid
 theme, so the chain falls through to `--pie-button-focus-outline` (set by every
 `pie-players` scheme) and then `--pie-focus-checked-border` (also defined by
 `packages/shared/theming`).
+
+A control drawn on its own fill rather than the page, such as a keypad key, reads
+`--pie-focus-keyboard-outline` ahead of that chain (`color.keyboardFocusOutline()`):
+every `pie-players` scheme sets it to hold 3:1 against the page and that fill,
+where the button focus outline can fall under it.
 
 ## Runtime Theme Changes
 

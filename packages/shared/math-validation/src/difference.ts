@@ -1,0 +1,15 @@
+import { logger } from './log.js';
+
+const log = logger('mv:difference');
+
+export const differenceIsTooGreat = (a: unknown[], b: unknown[]) => {
+  const smallest = Math.min(a.toString().length, b.toString().length);
+  const biggest = Math.max(a.toString().length, b.toString().length);
+  const errorAcceptance = 17;
+  const limit = (1 / smallest) * 100 + 10 + errorAcceptance;
+  const diff = biggest - smallest;
+
+  log('a:', a.toString(), 'b:', b.toString(), 'limit:', limit, 'diff:', diff);
+
+  return diff > limit;
+};

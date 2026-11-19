@@ -1,9 +1,9 @@
 import debug from 'debug';
 import { find, isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { decode } from 'he';
-import { partialScoring } from '@pie-element/shared-controller-utils';
+import { contentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
+import type { NormalizeOptions } from '@pie-element/shared-controller-utils';
 import type { PieEnvironment } from '@pie-element/shared-types';
-import Translator from '@pie-lib/translator';
 import defaults from './defaults.js';
 import type {
   Choice,
@@ -30,8 +30,6 @@ type PreparedChoice = {
   correct?: boolean;
   feedback?: string;
 };
-
-const { translator } = Translator;
 
 const log = debug('explicit-constructed-response:controller');
 
@@ -143,13 +141,16 @@ export async function model(
   );
 
   const { value = {} } = session || {};
+  const matching = matchingOptions(normalizedQuestion, contentLanguage(normalizedQuestion, env));
   const feedback =
     env.mode === 'evaluate'
       ? reduce<Choice[], Record<string, 'correct' | 'incorrect'>>(
           normalizedQuestion.choices,
           (obj, respArea, key) => {
             const chosenValue = value && value[key];
-            const val = !isEmpty(chosenValue) && find(respArea, (c) => prepareVal(c.label) === prepareVal(chosenValue));
+            const options = areaMatching(matching, normalizedQuestion, key);
+            const val =
+              !isEmpty(chosenValue) && find(respArea, (c) => matchesLabel(c.label, chosenValue, options));
 
             obj[key] = getFeedback(val);
 
@@ -161,9 +162,8 @@ export async function model(
 
   // check if at least one choice has an alternate
   const showNote = Object.values(choices).some((choice) => choice?.length > 1);
-  const note =
-    normalizedQuestion.note ||
-    translator.t('common:commonCorrectAnswerWithAlternates', { lng: normalizedQuestion.language });
+  // Delivery renders the alternates default in the chrome locale in place of a missing or default note.
+  const note = normalizedQuestion.note;
 
   const { maxLengthPerChoice = [], maxLengthPerChoiceEnabled } = normalizedQuestion;
   const undefinedLengths = !maxLengthPerChoice.length;
@@ -183,8 +183,13 @@ export async function model(
     }
   });
 
+  // The accepted answers reach the browser only once it may show them; delivery reads them, and
+  // `showNote`, for the correct-answer view alone. `maxLengthPerChoice` is sized from them, so it
+  // goes along only when it caps the input; uncapped, the input takes 25 characters.
+  const includeAnswers = env.mode === 'evaluate' || env.role === 'instructor';
+
   const out = {
-    choices,
+    choices: includeAnswers ? choices : {},
     disabled: env.mode !== 'gather',
     displayType: normalizedQuestion.displayType,
     mode: env.mode,
@@ -192,7 +197,7 @@ export async function model(
     feedback,
     language: normalizedQuestion.language,
     markup: normalizedQuestion.markup,
-    maxLengthPerChoice,
+    maxLengthPerChoice: includeAnswers || maxLengthPerChoiceEnabled ? maxLengthPerChoice : [],
     maxLengthPerChoiceEnabled,
     note,
     // normalize's defaults cover a missing key, but a key present as undefined/null overwrites
@@ -200,8 +205,8 @@ export async function model(
     playerSpellCheckEnabled: normalizedQuestion.playerSpellCheckEnabled === true,
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : defaults.prompt,
     rationale: defaults.rationale,
-    responseCorrect: env.mode === 'evaluate' ? getScore(normalizedQuestion, session) === 1 : undefined,
-    showNote,
+    responseCorrect: env.mode === 'evaluate' ? getScore(normalizedQuestion, session, env) === 1 : undefined,
+    showNote: includeAnswers && showNote,
     teacherInstructions: defaults.teacherInstructions,
     responseAreaInputConfiguration: normalizedQuestion.responseAreaInputConfiguration,
     extraCSSRules: normalizedQuestion.extraCSSRules,
@@ -217,15 +222,58 @@ export async function model(
   return out;
 }
 
+// Trimmed before decoding so existing items keep their scores: an encoded space such as `&nbsp;`
+// counts unless the author turns on `collapseWhitespace`.
 export const prepareVal = (html: string | undefined) => {
   return decodeHTML(getInnerText(html).trim());
 };
 
+type MatchingModel = Pick<
+  ExplicitConstructedResponseModel,
+  | 'ignoreCase'
+  | 'collapseWhitespace'
+  | 'ignoreSlashSpacing'
+  | 'ignoreAccents'
+  | 'foldLetterVariantsEnabled'
+  | 'foldLetterVariantsPerChoice'
+>;
+
+/** The normalizer options for the content language and the item's authored matching options, each off by default. */
+const matchingOptions = (model: MatchingModel | undefined, language: string | undefined): NormalizeOptions => ({
+  language,
+  ignoreCase: !!model?.ignoreCase,
+  collapseWhitespace: !!model?.collapseWhitespace,
+  ignoreSlashSpacing: !!model?.ignoreSlashSpacing,
+  ignoreAccents: !!model?.ignoreAccents,
+});
+
+/**
+ * The options for one response area: the item's, plus the Arabic spelling-variant fold when the
+ * item switch and the area's entry are both `true`, so a stored `null` stays strict.
+ */
+const areaMatching = (
+  options: NormalizeOptions,
+  model: MatchingModel | undefined,
+  areaKey: string | number,
+): NormalizeOptions => ({
+  ...options,
+  foldLetterVariants:
+    model?.foldLetterVariantsEnabled === true &&
+    Array.isArray(model.foldLetterVariantsPerChoice) &&
+    model.foldLetterVariantsPerChoice[Number(areaKey)] === true,
+});
+
+/** Whether a typed value matches an authored label, compared through the shared response normalizer. */
+const matchesLabel = (label: string | undefined, typed: string | undefined, options: NormalizeOptions) =>
+  normalizeResponse(prepareVal(label), options) === normalizeResponse(prepareVal(typed), options);
+
 export const getScore = (
-  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup'>,
+  config: Pick<ExplicitConstructedResponseModel, 'choices' | 'markup' | 'language'> & MatchingModel,
   session: ExplicitConstructedResponseSession | undefined,
+  env?: Partial<PieEnvironment>,
 ) => {
   const { value } = session || {};
+  const matching = matchingOptions(config, contentLanguage(config, env));
 
   if (!session || isEmpty(session) || !value) {
     return 0;
@@ -237,8 +285,9 @@ export const getScore = (
     config.choices,
     (total, respArea, key) => {
       const chosenValue = value && value[key];
+      const options = areaMatching(matching, config, key);
 
-      if (isEmpty(chosenValue) || !find(respArea, (c) => prepareVal(c.label) === prepareVal(chosenValue))) {
+      if (isEmpty(chosenValue) || !find(respArea, (c) => matchesLabel(c.label, chosenValue, options))) {
         return total;
       }
 
@@ -267,6 +316,7 @@ export const getLogTrace = (
   const traceLog: string[] = [];
   const { value } = session || {};
   const { choices, markup } = model || {};
+  const matching = matchingOptions(model, contentLanguage(model, env));
   
   const responseAreas = markup ? markup.match(/\{\{(.+?)\}\}/g) : [];
   const totalAreas = responseAreas ? responseAreas.length : 0;
@@ -280,8 +330,9 @@ export const getLogTrace = (
     Object.keys(choices || {}).forEach((areaKey) => {
       const studentAnswer = (value && value[areaKey]) || '';
       const correctOptions = (choices as Choices)[areaKey] || [];
+      const options = areaMatching(matching, model, areaKey);
       const isCorrect = !isEmpty(studentAnswer.trim()) && 
-        correctOptions.some(option => prepareVal(option.label) === prepareVal(studentAnswer));
+        correctOptions.some((option) => matchesLabel(option.label, studentAnswer, options));
       
       if (studentAnswer.trim()) {
         traceLog.push(`Response area ${parseInt(areaKey) + 1}: ${isCorrect ? 'CORRECT' : 'INCORRECT'}.`);
@@ -298,6 +349,13 @@ export const getLogTrace = (
     traceLog.push(`Alternate answers are accepted for some response areas.`);
   }
 
+  const foldingAreas = Object.keys(choices || {})
+    .filter((areaKey) => areaMatching(matching, model, areaKey).foldLetterVariants)
+    .map((areaKey) => parseInt(areaKey) + 1);
+  if (foldingAreas.length) {
+    traceLog.push(`Arabic spelling variants are accepted for response area(s) ${foldingAreas.join(', ')}.`);
+  }
+
   const partialScoringEnabled = partialScoring.enabled(model, env);
   
   if (partialScoringEnabled) {
@@ -309,8 +367,9 @@ export const getLogTrace = (
       Object.keys(choices || {}).forEach((areaKey) => {
         const studentAnswer = (value && value[areaKey]) || '';
         const correctOptions = (choices as Choices)[areaKey] || [];
+        const options = areaMatching(matching, model, areaKey);
         const isCorrect = !isEmpty(studentAnswer.trim()) && 
-          correctOptions.some(option => prepareVal(option.label) === prepareVal(studentAnswer));
+          correctOptions.some((option) => matchesLabel(option.label, studentAnswer, options));
         if (isCorrect) correctCount++;
       });
       
@@ -321,7 +380,7 @@ export const getLogTrace = (
     traceLog.push(`Student must fill all response areas correctly to receive full credit.`);
   }
 
-  const score = getScore(model, session);
+  const score = getScore(model, session, env);
   traceLog.push(`Score: ${score}.`);
 
   return traceLog;
@@ -353,7 +412,7 @@ export function outcome(
     } else {
       const traceLog = getLogTrace(model, session, env);
       const partialScoringEnabled = partialScoring.enabled(model, env);
-      const score = getScore(model, session);
+      const score = getScore(model, session, env);
 
       resolve({ 
         score: partialScoringEnabled ? score : score === 1 ? 1 : 0, 

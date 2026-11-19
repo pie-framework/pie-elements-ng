@@ -19,4 +19,21 @@ describe('settings panel toggle', () => {
 
     expect(onChangeModel).toHaveBeenCalledWith({ mathInput: true, spanishInput: true }, 'mathInput');
   });
+
+  it('is described by the help text shown under it', () => {
+    render(
+      <Panel
+        model={{}}
+        groups={{
+          Settings: {
+            mathInput: { ...toggle('Math input'), helperText: 'Adds a math keypad.' },
+            spanishInput: toggle('Spanish input'),
+          },
+        }}
+      />
+    );
+
+    expect(screen.getByRole('switch', { name: 'Math input' })).toHaveAccessibleDescription('Adds a math keypad.');
+    expect(screen.getByRole('switch', { name: 'Spanish input' })).not.toHaveAttribute('aria-describedby');
+  });
 });

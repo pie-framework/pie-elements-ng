@@ -72,6 +72,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*"
   },
@@ -80,10 +81,10 @@
     "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/media-svelte": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "svelte": "^5.57.2",
+    "svelte": "^5.57.3",
     "typescript": "^5.9.3",
-    "vite": "^8.3.4",
-    "vitest": "^4.1.11"
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "publishConfig": {
     "access": "public"

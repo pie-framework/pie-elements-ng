@@ -135,6 +135,23 @@ const LINEBREAK_FALLBACK_STYLES = {
   },
 };
 
+/**
+ * MathJax draws the bar of `\overline` (a segment) lower than the shafts of `\overrightarrow` (a ray)
+ * and `\overleftrightarrow` (a line), so a segment, ray and line side by side do not line up. The
+ * bar is lifted to meet them. Only the position changes, not the layout around it.
+ *
+ * The shafts are not at one height themselves: MathJax 4 stretches an arrow over content wider than
+ * about 1.7em, which puts its shaft 0.08em lower than the plain glyph it uses over narrower content.
+ * The bar sits 0.09em below the stretched shafts and 0.17em below the glyph's, and 0.13em lands within
+ * 0.04em of both, under a pixel at body-text size.
+ */
+const OVERLINE_BAR_STYLES = {
+  'mjx-over > mjx-mo > mjx-stretchy-h.mjx-c2015': {
+    position: 'relative',
+    top: '-0.13em',
+  },
+};
+
 /** MathJax's STATE.INSERTED: the item's output is in the document. */
 const STATE_INSERTED = 200;
 
@@ -249,6 +266,7 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
             isolateOutput(startup?.document);
             nameMathOnRender(startup?.document);
             startup?.document?.addStyles?.(LINEBREAK_FALLBACK_STYLES);
+            startup?.document?.addStyles?.(OVERLINE_BAR_STYLES);
             endSpeechOnWorkerFailure(startup?.document as SpeechDocument | undefined);
           }
           Promise.resolve(startup?.promise).then(() => resolve(), reject);

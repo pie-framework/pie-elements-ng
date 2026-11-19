@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
 import McPopulatedBlankElement from '../src/delivery/index.js';
 import {
@@ -73,8 +73,10 @@ describe('teacher instructions', () => {
 
   it("labels the toggle in the item's language", async () => {
     const el = await mount({ teacherInstructions: '<p>Lee en voz alta.</p>', language: 'es_MX' });
-    expect(el.querySelector('.teacher-instructions-toggle')?.textContent?.trim()).toBe(
-      'Mostrar instrucciones para el maestro'
+    await vi.waitFor(() =>
+      expect(el.querySelector('.teacher-instructions-toggle')?.textContent?.trim()).toBe(
+        'Mostrar instrucciones para el maestro'
+      )
     );
   });
 
@@ -84,15 +86,17 @@ describe('teacher instructions', () => {
   });
 });
 
+// The element carries the content language; the controller folds `locale` into `language`.
 describe('content language', () => {
   it('sets no lang when the item has no language, so the page language applies', async () => {
     const el = await mount({});
+    expect(el.hasAttribute('lang')).toBe(false);
     expect(root(el).hasAttribute('lang')).toBe(false);
   });
 
   it('writes the language as a BCP 47 tag', async () => {
-    expect(root(await mount({ language: 'es_MX' })).getAttribute('lang')).toBe('es-MX');
-    expect(root(await mount({ locale: 'en_US' })).getAttribute('lang')).toBe('en-US');
+    expect((await mount({ language: 'es_MX' })).getAttribute('lang')).toBe('es-MX');
+    expect((await mount({ language: 'en_US' })).getAttribute('lang')).toBe('en-US');
   });
 });
 

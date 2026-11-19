@@ -6,6 +6,9 @@ import { color } from '@pie-lib/render-ui';
 import { valueToSize } from '../utils/size.js';
 
 import StyledMenuBar from './MenuBar.js';
+import { TOOLBAR_ATTRIBUTE, setInactiveCaret } from '../extensions/inactive-caret.js';
+
+const inToolbar = (node) => !!node?.closest?.(`[${TOOLBAR_ATTRIBUTE}]`);
 
 const StyledRoot: any = styled('div', {
   shouldForwardProp: (prop) => !['noBorder', 'error'].includes(prop),
@@ -76,7 +79,7 @@ const StyledRoot: any = styled('div', {
   },
   '& blockquote': {
     background: '#f9f9f9',
-    borderLeft: '5px solid #ccc',
+    borderInlineStart: '5px solid #ccc',
     margin: '1.5em 10px',
     padding: '.5em 10px',
   },
@@ -215,13 +218,23 @@ function TiptapContainer(props) {
   const handleFocus = (e) => {
     if (e.currentTarget.contains(e.target)) {
       setHasFocus(true);
+      setInactiveCaret(editor, inToolbar(e.target));
     }
   };
 
+  // Moving into this editor's character picker keeps the toolbar up (and not `inert`), so focus
+  // can return to the toolbar button that opened the picker when it closes.
   const handleBlur = (e) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
+    const intoOwnPicker = e.relatedTarget?.closest?.(
+      `.insert-character-dialog[data-toolbar-for="${editor?.instanceId}"]`,
+    );
+
+    if (!e.currentTarget.contains(e.relatedTarget) && !intoOwnPicker) {
       setHasFocus(false);
     }
+
+    // Focus in the toolbar leaves the text's insertion point showing.
+    setInactiveCaret(editor, inToolbar(e.relatedTarget) && e.currentTarget.contains(e.relatedTarget));
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce } from '@pie-element/shared-lodash';
+import { elementLanguageAttributes, subscribeInterfaceLocale } from '@pie-element/shared-i18n';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { styled } from '@mui/material/styles';
 import StarterKit from '@tiptap/starter-kit';
@@ -18,6 +19,7 @@ import { setPendingSaveFlush } from '../pending-save.js';
 import ExtendedTable from '../extensions/extended-table.js';
 import { ExtendedTableCell, ExtendedTableHeader } from '../extensions/extended-table-cell.js';
 import { DivNode } from '../extensions/div-node.js';
+import { InactiveCaret } from '../extensions/inactive-caret.js';
 import { EnsureEmptyRootIsDiv } from '../extensions/ensure-empty-root-div.js';
 import { EnsureListItemContentIsDiv } from '../extensions/ensure-list-item-content-is-div.js';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -34,10 +36,12 @@ import { Media } from '../extensions/media.js';
 import { CSSMark } from '../extensions/css.js';
 import { ExtendedListItem } from '../extensions/extended-list-item.js';
 import { HeadingParagraph } from '../extensions/heading-paragraph.js';
+import { BlockDirection, ContentLanguage } from '../extensions/text-direction.js';
 
 import EditorContainer from './TiptapContainer.js';
 import { valueToSize } from '../utils/size.js';
 import { buildExtensions, PLUGINS_MAP } from '../extensions/index.js';
+import { contentLanguageChoices } from '../utils/content-languages.js';
 
 const defaultToolbarOpts = {
   position: 'bottom',
@@ -120,7 +124,7 @@ const cssVariables = {
 // update and removes anything no longer listed, and Tiptap merges its own role="textbox" only in
 // createView - not into editor.options, which is what setOptions re-pushes. So every attribute we
 // want to survive has to be listed here. See PIE-1015.
-const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy) => ({
+const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy, language) => ({
   // Tiptap's own attribute, re-declared so it survives setOptions. setEditable alone re-pushes
   // editorProps on every mount, which is what removed it in 2.1.17.
   role: 'textbox',
@@ -138,11 +142,13 @@ const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy) => ({
   // ProseMirror writes an undefined value as the string "undefined".
   ...(ariaLabel && { 'aria-label': ariaLabel }),
   ...(ariaLabelledBy && { 'aria-labelledby': ariaLabelledBy }),
+  // The content language's `lang` and `dir`, which a block the editor has not stamped inherits.
+  ...elementLanguageAttributes(language),
 });
 
 // The attributes editorAttributes sets only when given a value, which a merge would otherwise keep
 // after the caller drops them.
-const OPTIONAL_EDITOR_ATTRIBUTES = ['aria-label', 'aria-labelledby'];
+const OPTIONAL_EDITOR_ATTRIBUTES = ['aria-label', 'aria-labelledby', 'lang', 'dir'];
 
 // How many of its own recent saves the editor recognises when the caller passes them back.
 const SENT_MARKUPS_KEPT = 5;
@@ -276,7 +282,11 @@ export const EditableHtml = (props) => {
 
     customPlugins = customPlugins || [];
 
-    const filteredActivePlugins = (props.activePlugins || DEFAULT_ACTIVE_PLUGINS)?.filter((pluginName) => {
+    // The direction buttons are opt-in, and a right-to-left field shows them unless its `pluginProps` disable them.
+    const directionButtons =
+      otherPluginProps.textDirection?.disabled === false || elementLanguageAttributes(props.language)?.dir === 'rtl';
+    const requested = props.activePlugins || DEFAULT_ACTIVE_PLUGINS;
+    const filteredActivePlugins = [...requested, ...(directionButtons ? ['text-direction'] : [])].filter((pluginName) => {
       const nameToUse = PLUGINS_MAP[pluginName] || pluginName;
       const pluginInfo = otherPluginProps[nameToUse] || {};
 
@@ -311,11 +321,27 @@ export const EditableHtml = (props) => {
     formatting: activePluginsToUse.map((name) => PASTED_FORMATTING_BY_PLUGIN[name]).filter(Boolean),
   };
 
+  // Read by BlockDirection at each edit, for the same reason. Blocks that run in it are not stamped.
+  const baseDirection = useRef('ltr');
+  baseDirection.current = elementLanguageAttributes(props.language)?.dir ?? 'ltr';
+
+  // The interface locale a player publishes: the toolbar's language, and the second language an
+  // author may mark text in.
+  const [interfaceLocale, setInterfaceLocale] = useState(null);
+
+  // Read by the toolbar's language control, which shows when there are two or more.
+  const contentLanguages = useRef(() => []);
+  contentLanguages.current = () => contentLanguageChoices(props.language, interfaceLocale);
+
   const extensions = [
     TextAlign.configure({
       types: ['heading', 'paragraph', 'div', 'headingParagraph', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'td', 'th'],
-      alignments: ['left', 'right', 'center', 'justify'],
+      // The toolbar sets start and end, which follow the block's direction; left and right are
+      // kept so saved markup that uses them round-trips.
+      alignments: ['start', 'center', 'end', 'justify', 'left', 'right'],
     }),
+    BlockDirection.configure({ baseDirection: () => baseDirection.current }),
+    ContentLanguage.configure({ languages: () => contentLanguages.current() }),
     TextStyleKit,
     ExternalPaste.configure({
       settings: () => pasteSettings.current,
@@ -349,6 +375,7 @@ export const EditableHtml = (props) => {
       showOnlyCurrent: false, // show on all empty nodes, not only the current one
       includeChildren: true,
     }),
+    InactiveCaret,
     ExtendedTable,
     TableRow,
     ExtendedTableHeader,
@@ -445,14 +472,14 @@ export const EditableHtml = (props) => {
   // slate-based editor. Players that have to default to off - extended-text-entry, see
   // PIE-978 - resolve that in their controller and pass an explicit false.
   const spellCheckEnabled = props.spellCheck !== false;
-  const { ariaLabel, ariaLabelledBy } = props;
+  const { ariaLabel, ariaLabelledBy, language } = props;
 
   const editor = useEditor(
     {
       extensions,
       immediatelyRender: false,
       editorProps: {
-        attributes: editorAttributes(spellCheckEnabled, ariaLabel, ariaLabelledBy),
+        attributes: editorAttributes(spellCheckEnabled, ariaLabel, ariaLabelledBy, language),
         handleKeyDown(view, event) {
           if (props.onKeyDown) {
             return props.onKeyDown(event);
@@ -500,6 +527,17 @@ export const EditableHtml = (props) => {
     editor?.setEditable(!props.disabled);
   }, [props.disabled, editor]);
 
+  // The player answers from an ancestor of the editor's view.
+  useEffect(() => {
+    let dom;
+    try {
+      dom = editor?.view?.dom;
+    } catch {
+      return undefined;
+    }
+    return dom ? subscribeInterfaceLocale(dom, (value) => setInterfaceLocale(value?.locale ?? null)) : undefined;
+  }, [editor]);
+
   // useEditor replaces the editor when charactersLimit changes. Tiptap emits destroy before it
   // unmounts the view, so the old editor's content can still be read here. The listener isn't
   // removed: an editor drops its listeners when it is destroyed.
@@ -519,7 +557,7 @@ export const EditableHtml = (props) => {
 
     const currentEditorProps = editor.options?.editorProps;
     const currentAttributes = currentEditorProps?.attributes || {};
-    const pieAttributes = editorAttributes(spellCheckEnabled, ariaLabel, ariaLabelledBy);
+    const pieAttributes = editorAttributes(spellCheckEnabled, ariaLabel, ariaLabelledBy, language);
 
     if (
       ['spellcheck', ...OPTIONAL_EDITOR_ATTRIBUTES].every((name) => currentAttributes[name] === pieAttributes[name])
@@ -532,7 +570,7 @@ export const EditableHtml = (props) => {
     );
 
     editor.setOptions({ editorProps: { ...currentEditorProps, attributes: { ...kept, ...pieAttributes } } });
-  }, [spellCheckEnabled, ariaLabel, ariaLabelledBy, editor]);
+  }, [spellCheckEnabled, ariaLabel, ariaLabelledBy, language, editor]);
 
   useEffect(() => {
     if (!editor) {
@@ -586,6 +624,8 @@ export const EditableHtml = (props) => {
         ...props,
         activePlugins: activePluginsToUse,
         toolbarOpts: toolbarOptsToUse,
+        // The toolbar's chrome follows the interface locale, else the content language.
+        language: interfaceLocale ?? props.language,
       }}
       editorState={editorState}
       editor={editor}
@@ -611,6 +651,15 @@ const StyledEditorContent: any = styled(EditorContent, {
 })(({ showParagraph, separateParagraph }) => ({
   display: 'flex',
   outline: 'none !important',
+  position: 'relative',
+
+  // The text cursor kept visible while the formatting toolbar has focus: steady, out of flow.
+  '& > .pie-inactive-caret': {
+    position: 'absolute',
+    width: 0,
+    borderLeft: '1px solid currentColor',
+    pointerEvents: 'none',
+  },
   '& .ProseMirror': {
     flex: 1,
     padding: '5px',
@@ -621,6 +670,12 @@ const StyledEditorContent: any = styled(EditorContent, {
     // reset default margins for all block paragraphs/divs in the editor
     '& > p, & > div': {
       margin: '0',
+    },
+
+    // Math opens its toolbar on click only while the editor is editable. A selector, as Tiptap's
+    // `setEditable` re-renders no node view, and ProseMirror keeps `contenteditable` current.
+    '&[contenteditable="true"] .math-node': {
+      cursor: 'pointer',
     },
 
     // Out of flow so the caret stays at the start of the block; in-flow ::before pushes the caret after the hint text.

@@ -47,7 +47,8 @@ class Main extends React.Component {
     baseHeadingLevel: PropTypes.number,
     includeSrHeading: PropTypes.bool,
     eliminatedChoices: PropTypes.arrayOf(PropTypes.string),
-    mathOutsideNames: PropTypes.bool,
+    // The chrome language the element resolved: the interface locale, else the item's.
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -65,7 +66,7 @@ class Main extends React.Component {
       baseHeadingLevel,
       includeSrHeading,
       eliminatedChoices,
-      mathOutsideNames,
+      language,
     } = this.props;
     const { extraCSSRules, fontSizeFactor } = model;
 
@@ -81,7 +82,7 @@ class Main extends React.Component {
           baseHeadingLevel={baseHeadingLevel}
           includeSrHeading={includeSrHeading}
           eliminatedChoices={eliminatedChoices}
-          mathOutsideNames={mathOutsideNames}
+          language={language ?? model.language}
         />
       </PreviewLayout>
     );

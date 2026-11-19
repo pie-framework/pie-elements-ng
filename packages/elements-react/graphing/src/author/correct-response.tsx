@@ -9,7 +9,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
 import Delete from '@mui/icons-material/Delete';
 import { set, isEqual } from '@pie-element/shared-lodash';
-import { MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material';
 import Info from '@mui/icons-material/Info';
 
 // custom grey values close to old v3 accents
@@ -39,6 +39,13 @@ const AvailableTools: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(1),
   display: 'flex',
   flexWrap: 'wrap',
+}));
+
+const MarkLimits: any = styled('div')(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(2),
 }));
 
 const AvailableTool: any = styled('div')(({ theme }) => ({
@@ -130,6 +137,8 @@ export const Tools = ({
   toolbarTools,
   toggleToolBarTool,
   onDefaultToolChange,
+  markLimits = {},
+  onMarkLimitChange,
 }) => {
   let allTools = availableTools || [];
   const isLabelAvailable = allTools.includes('label');
@@ -182,6 +191,23 @@ export const Tools = ({
           );
         })}
       </AvailableTools>
+      {onMarkLimitChange && toolbarToolsNoLabel.length > 0 && (
+        <MarkLimits>
+          {toolbarToolsNoLabel.map((tool) => (
+            <TextField
+              key={tool}
+              variant="standard"
+              type="number"
+              size="small"
+              label={`Most ${tool} marks`}
+              placeholder="No limit"
+              value={markLimits[tool] ?? ''}
+              onChange={(event) => onMarkLimitChange(tool, event.target.value)}
+              slotProps={{ htmlInput: { min: 1 }, inputLabel: { shrink: true } }}
+            />
+          ))}
+        </MarkLimits>
+      )}
     </GraphingTools>
   );
 };
@@ -193,6 +219,8 @@ Tools.propTypes = {
   defaultTool: PropTypes.string,
   hasErrors: PropTypes.number,
   onDefaultToolChange: PropTypes.func,
+  markLimits: PropTypes.objectOf(PropTypes.number),
+  onMarkLimitChange: PropTypes.func,
 };
 
 export class CorrectResponse extends React.Component {
@@ -249,6 +277,20 @@ export class CorrectResponse extends React.Component {
 
       return object;
     }, {});
+  };
+
+  onMarkLimitChange: any = (tool, value) => {
+    const { model, onChange } = this.props;
+    const markLimits = { ...model.markLimits };
+    const limit = parseInt(value, 10);
+
+    if (limit > 0) {
+      markLimits[tool] = limit;
+    } else {
+      delete markLimits[tool];
+    }
+
+    onChange({ ...model, markLimits });
   };
 
   changeToolbarTools: any = (toolbarTools) => {
@@ -412,6 +454,8 @@ export class CorrectResponse extends React.Component {
           onDefaultToolChange={this.onDefaultToolChange}
           toggleToolBarTool={this.toggleToolBarTool}
           toolbarTools={toolbarTools}
+          markLimits={model.markLimits}
+          onMarkLimitChange={this.onMarkLimitChange}
         />
 
         {toolbarToolsError && <ErrorMessage>{toolbarToolsError}</ErrorMessage>}

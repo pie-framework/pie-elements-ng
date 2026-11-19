@@ -32,7 +32,7 @@ It returns everything `useDraggable` does except `attributes` and `listeners`, p
 - **Disabled**, `controlProps` is empty and the element is plain content: a generic element may not carry a name, and a native control keeps its own role, tab stop and name.
 - Spread `controlProps` on exactly one element, with no focusable descendants: a button's children are presentational to assistive technology. A control that is itself a native button, such as a graphing tool, takes `controlProps` on the `<button>` and `setNodeRef` on the button or a wrapper.
 
-The name resolves in this order: `labelledBy`, `label`, `contentName`, then the browser's name from content, which `role="button"` allows. Generated names come from `@pie-lib/translator` under the element's own namespace, for example "Response area 1 of 3".
+The name resolves in this order: `labelledBy`, `label`, `contentName`, then the browser's name from content, which `role="button"` allows. Generated names come from the element's catalog, for example "Response area 1 of 3".
 
 `contentName` receives the node given to `setNodeRef` after every render and returns the name, or `undefined` to leave it to the browser. It is the place for content the browser cannot name well, such as math. It runs on React renders only, so content that changes outside React, such as MathJax typesetting after mount, is not seen until the next render.
 

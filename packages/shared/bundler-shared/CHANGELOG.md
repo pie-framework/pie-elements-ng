@@ -50,7 +50,7 @@
 
 - [#142](https://github.com/pie-framework/pie-elements-ng/pull/142) [`8d69fb5`](https://github.com/pie-framework/pie-elements-ng/commit/8d69fb58ff9b482b46d74a9165ac4a4da700b8c9) Thanks [@chillenious](https://github.com/chillenious)! - Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
   subpaths from what a package declares.
-  
+
   An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
   and never reads the exports map, so print needs the same root shim `controller.js` and
   `configure.js` already provide. Without it the subpath resolved only from TypeScript
@@ -77,7 +77,7 @@
 - Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
 - Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
   subpaths from what a package declares.
-  
+
   An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
   and never reads the exports map, so print needs the same root shim `controller.js` and
   `configure.js` already provide. Without it the subpath resolved only from TypeScript

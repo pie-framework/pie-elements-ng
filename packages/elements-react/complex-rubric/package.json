@@ -2,6 +2,7 @@
   "name": "@pie-element/complex-rubric",
   "version": "8.0.7",
   "description": "Complex Rubric Scoring Interaction",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -97,14 +98,14 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.3.4",
+    "vite": "^8.3.6",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/debug": "^4.1.12",
-    "vitest": "^4.1.11",
-    "happy-dom": "^20.14.5",
+    "vitest": "^5.1.0",
+    "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/dom": "^10.4.2"
@@ -113,7 +114,7 @@
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
-    "test": "bun x vitest run"
+    "test": "bun x vitest run --root ../../.. ./"
   },
   "pie": {
     "controller": "@pie-element/complex-rubric/controller",

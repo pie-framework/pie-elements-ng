@@ -18,10 +18,9 @@ import FreeformEditor from './freeform-editor.js';
 import AnnotationMenu from './annotation-menu.js';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer } from '@pie-lib/config-ui';
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../../i18n/index.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
-const { translator } = Translator;
 
 const TextContainer: any = styled('div')({
   padding: '10px 120px 10px 16px',
@@ -101,7 +100,10 @@ class AnnotationEditor extends React.Component {
     disabledMath: PropTypes.bool,
     customKeys: PropTypes.array,
     keypadMode: PropTypes.string,
+    /** The content language of the comment editor. */
     language: PropTypes.string,
+    /** The chrome language of the labels and menus. */
+    chromeLanguage: PropTypes.string,
   };
 
   constructor(props) {
@@ -576,6 +578,7 @@ class AnnotationEditor extends React.Component {
       keypadMode,
       height,
       language,
+      chromeLanguage,
       width,
       maxHeight,
       onCommentChange,
@@ -586,7 +589,7 @@ class AnnotationEditor extends React.Component {
 
     const anchorOffset = anchorEl && (anchorEl.offsetTop ? anchorEl.offsetTop : anchorEl.offsetParent.offsetTop);
     const topOffset = this.textRef && anchorOffset ? anchorOffset - this.textRef.scrollTop - 8 : 0;
-    const commentLabel = translator.t('extendedTextEntry.comment', { lng: language });
+    const commentLabel = catalogs.forLocale(chromeLanguage).t('comment');
 
     return (
       <div>
@@ -644,6 +647,7 @@ class AnnotationEditor extends React.Component {
           onEdit={this.editAnnotation}
           onWrite={this.addAnnotation}
           onAnnotate={this.handleMenuClick}
+          language={chromeLanguage}
         />
 
         <FreeformEditor
@@ -656,6 +660,7 @@ class AnnotationEditor extends React.Component {
           onDelete={this.deleteAnnotation}
           onSave={this.updateAnnotation}
           onTypeChange={this.changeAnnotationType}
+          language={chromeLanguage}
         />
       </div>
     );

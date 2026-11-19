@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 import TextSelect from '../text-select';
 
@@ -304,10 +304,10 @@ describe('TokenSelect accessible names', () => {
     expect(screen.getByRole('group', { name: 'Selectable text' })).toBeInTheDocument();
   });
 
-  it('names the group and positions in the item language', () => {
+  it('names the group and positions in the item language', async () => {
     renderText({ maxNoOfSelections: 2, language: 'es_ES' });
 
-    expect(screen.getByRole('group', { name: 'Texto seleccionable, selecciona hasta 2' })).toBeInTheDocument();
+    expect(await screen.findByRole('group', { name: 'Texto seleccionable, selecciona hasta 2' })).toBeInTheDocument();
     expect(token('Mara ran to the barn.')).toHaveAccessibleDescription('2 de 4');
   });
 });
@@ -350,10 +350,10 @@ describe('TokenSelect outside gather', () => {
     expect(token('Rain flooded the valley road.')).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('describes the markings in the item language', () => {
+  it('describes the markings in the item language', async () => {
     renderText({ disabled: true, selected: answered, tokens: evaluated, language: 'es_ES' });
 
-    expect(token('The storm hit at dawn.')).toHaveAccessibleDescription('Respuesta Correcta');
+    await waitFor(() => expect(token('The storm hit at dawn.')).toHaveAccessibleDescription('Respuesta Correcta'));
     expect(token('Mara ran to the barn.')).toHaveAccessibleDescription('Selección Incorrecta');
     expect(token('Rain flooded the valley road.')).toHaveAccessibleDescription('Respuesta Correcta No Seleccionada');
   });

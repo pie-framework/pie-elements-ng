@@ -31,15 +31,40 @@ const StyledSwitch: any = styled(Switch)(({ checked }) => ({
   },
 }));
 
-const Toggle = ({ checked, disabled, label, toggle }) => {
+const StyledHelperText: any = styled('p')(({ theme }) => ({
+  margin: 0,
+  color: 'rgba(0, 0, 0, 0.89)',
+  fontSize: theme.typography.fontSize - 2,
+}));
+
+const Toggle = ({ checked, disabled, label, toggle, helperText }) => {
   // The label names the switch, which is otherwise announced with no name.
   const id = useId();
+  const helpId = `${id}-help`;
 
-  return (
+  const row = (
     <StyledToggle>
       <StyledInputLabel htmlFor={id}>{label}</StyledInputLabel>
-      <StyledSwitch id={id} checked={checked} disabled={disabled} onChange={(e) => toggle(e.target.checked)} />
+      <StyledSwitch
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => toggle(e.target.checked)}
+        {...(helperText ? { slotProps: { input: { 'aria-describedby': helpId } } } : {})}
+      />
     </StyledToggle>
+  );
+
+  if (!helperText) {
+    return row;
+  }
+
+  // The help text describes the switch, and sits under it.
+  return (
+    <div>
+      {row}
+      <StyledHelperText id={helpId}>{helperText}</StyledHelperText>
+    </div>
   );
 };
 
@@ -48,6 +73,7 @@ Toggle.propTypes = {
   disabled: PropTypes.bool,
   label: PropTypes.string.isRequired,
   toggle: PropTypes.func.isRequired,
+  helperText: PropTypes.node,
 };
 
 export default Toggle;

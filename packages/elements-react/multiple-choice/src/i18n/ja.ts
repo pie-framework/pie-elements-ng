@@ -10,9 +10,8 @@ export default {
   maxSelections: {
     other: '選択できるのは{count}個までです。',
   },
-  showTeacherInstructions: '教師用指示を表示',
-  hideTeacherInstructions: '教師用指示を非表示',
   answerChoicesA11y: '解答の選択肢',
   partAnswerChoicesA11y: '{partLabel}、解答の選択肢',
   pickTheAnswerBelowA11y: '下の答えを選択してください',
+  choiceNameA11y: '選択肢 {key}',
 } satisfies MessageCatalog;

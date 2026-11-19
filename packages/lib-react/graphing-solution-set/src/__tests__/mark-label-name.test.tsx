@@ -42,10 +42,10 @@ describe('graphing-solution-set mark label inputs', () => {
     expect(screen.getByRole('textbox', { name: 'Label at (2, 3)' })).toHaveValue('B');
   });
 
-  it('names the labels in the item language', () => {
+  it('names the labels in the item language', async () => {
     renderGraph('es_ES');
 
-    expect(screen.getByRole('textbox', { name: 'Etiqueta en (0, 1)' })).toHaveValue('A');
+    expect(await screen.findByRole('textbox', { name: 'Etiqueta en (0, 1)' })).toHaveValue('A');
   });
 
   it('exposes a label outside label mode as disabled', () => {
@@ -55,10 +55,10 @@ describe('graphing-solution-set mark label inputs', () => {
     expect(screen.getByRole('textbox', { name: 'Label at (2, 3)' })).toBeDisabled();
   });
 
-  it('renders a polygon label, named in the item language', () => {
+  it('renders a polygon label, named in the item language', async () => {
     renderGraph('es_ES', [polygon]);
 
-    const label = screen.getByRole('textbox', { name: 'Etiqueta en (3, 1)' });
+    const label = await screen.findByRole('textbox', { name: 'Etiqueta en (3, 1)' });
 
     expect(label).toHaveValue('R');
     expect(label).toBeDisabled();

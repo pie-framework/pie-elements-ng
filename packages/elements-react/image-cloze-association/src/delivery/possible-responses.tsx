@@ -39,8 +39,29 @@ const PossibleResponses = ({
     }
   };
 
+  // The pool takes a selection back, so while a choice is selected it is a tab stop beside the
+  // response areas, and Space or Enter on it returns the selection, as a click does.
+  const isNativeTabStop = !!selectedResponse && canDrag;
+
+  const handlePoolKeyDown = (e) => {
+    // Only a key pressed on the pool itself, not one bubbling up from a choice in it: a keyboard
+    // drag keeps focus on the dragged choice, so the key that drops it fires there.
+    if (e.target !== e.currentTarget) return;
+
+    if (e.code === 'Space' || e.code === 'Enter') {
+      e.preventDefault();
+      handlePoolClick();
+    }
+  };
+
   return (
-    <BaseContainer style={customStyle} onClick={handlePoolClick}>
+    <BaseContainer
+      style={customStyle}
+      role="group"
+      tabIndex={isNativeTabStop ? 0 : -1}
+      onClick={handlePoolClick}
+      onKeyDown={isNativeTabStop ? handlePoolKeyDown : undefined}
+    >
       <ICADroppablePlaceholder id="ica-board" disabled={!canDrag} isVerticalPool={isVertical} minHeight={minHeight}>
         {(data || []).map((item) => (
           <PossibleResponse

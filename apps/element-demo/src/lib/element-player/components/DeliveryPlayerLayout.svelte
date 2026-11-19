@@ -8,6 +8,7 @@ import { onMount } from 'svelte';
 import { loadController } from '../lib/demo-element-loader';
 import type { PieController } from '../lib/types';
 import type { PlayerType } from '#lib/config/player-runtime.ts';
+import type { PageLayout } from '#lib/config/page-layout.ts';
 
 // Props
 let {
@@ -17,6 +18,7 @@ let {
   mode = $bindable('gather'),
   playerRole = $bindable('student'),
   playerType = 'esm',
+  layout = 'app',
   partialScoring = $bindable(true),
   controller = $bindable<PieController | null>(null),
   capabilities = undefined,
@@ -29,6 +31,8 @@ let {
   mode?: 'gather' | 'view' | 'evaluate';
   playerRole?: 'student' | 'instructor';
   playerType?: PlayerType;
+  /** `page` lets the content grow and the document scroll; see `page-layout.ts`. */
+  layout?: PageLayout;
   partialScoring?: boolean;
   controller?: PieController | null;
   capabilities?: string[];
@@ -85,7 +89,7 @@ function handleModelApply(nextModel: any) {
 }
 </script>
 
-<div class="layout-container">
+<div class="layout-container" class:page-layout={layout === 'page'}>
   {#if loading}
     <div class="flex flex-col items-center justify-center p-12 text-base-content/60">
       <span class="loading loading-spinner loading-lg text-primary"></span>
@@ -112,7 +116,7 @@ function handleModelApply(nextModel: any) {
     {/if}
 
     <div class="player-content">
-      <main class="flex-1 min-w-0 overflow-auto">
+      <main class="flex-1 min-w-0" class:overflow-auto={layout === 'app'}>
         {@render children?.()}
       </main>
     </div>
@@ -132,5 +136,11 @@ function handleModelApply(nextModel: any) {
     flex: 1;
     min-height: 0;
     overflow: hidden;
+  }
+
+  .layout-container.page-layout,
+  .page-layout .player-content {
+    height: auto;
+    overflow: visible;
   }
 </style>

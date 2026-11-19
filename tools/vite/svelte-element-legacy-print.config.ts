@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
+import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
 
@@ -31,6 +32,7 @@ if (!printEntry) {
 export default defineConfig({
   root: packageDir,
   plugins: [
+    thirdPartyLicenses(),
     svelte({
       compilerOptions: {
         customElement: true,

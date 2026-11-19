@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'Ateb {id}',
+  dragInstructionsA11y: 'Pwyswch ENTER i ddewis.',
+  answerChoiceA11y: 'Opsiwn ateb: {choice}',
+  answerChoiceInDropAreaA11y: 'Opsiwn ateb: {choice} yn ardal gollwng gwrthrych {number} {text}',
+  introReusableA11y: 'Mae gan y cwestiwn hwn {total} gwrthrych sydd angen paru. Mae gan bob gwrthrych un ardal gollwng ar gyfer un opsiwn ateb. Gellir ailddefnyddio opsiynau ateb. Rhowch opsiwn ateb ym mhob ardal gollwng.',
+  introNotReusableA11y: 'Mae gan y cwestiwn hwn {total} gwrthrych sydd angen paru. Mae gan bob gwrthrych un ardal gollwng ar gyfer un opsiwn ateb. Ni ellir ailddefnyddio opsiynau ateb. Rhowch opsiwn ateb ym mhob ardal gollwng.',
+  keyboardHelpA11y: 'Defnyddiwch TAB i symud rhwng opsiynau ateb ac ardaloedd gollwng, ENTER i ddewis neu ollwng, ac ESC i ganslo.',
+  progressA11y: 'Mae gan {filled} o {total} ardal gollwng opsiwn ateb.',
+  objectA11y: 'Gwrthrych {number}.',
+  dropAreaEmptyA11y: 'Mae ardal gollwng {number} yn wag',
+  dropAreaFilledA11y: 'Mae ardal gollwng {number} yn cynnwys yr opsiwn ateb {choice}',
+  availableCountA11y: '{count} opsiwn ateb ar gael.',
+  availableEndA11y: 'Diwedd yr opsiynau ateb sydd ar gael. Defnyddiwch TAB i symud at opsiwn ateb.',
+  selectedA11y: 'Dewiswyd yr opsiwn ateb {choice}. Defnyddiwch TAB i ddewis ardal gollwng.',
+  notOverResponseAreaA11y: 'Nid yw {choice} dros ardal ymateb.',
+  overDropAreaA11y: 'Dewiswyd ardal gollwng ar gyfer gwrthrych {number} {text}. Pwyswch ENTER i symud yr opsiwn ateb a ddewiswyd {choice} yma neu TAB i symud i ardal gollwng arall.',
+  overPoolFromDropAreaA11y: 'Pwyswch ENTER i dynnu\'r opsiwn ateb a ddewiswyd o ardal gollwng gwrthrych {number} neu TAB i symud i ardal gollwng arall. Opsiwn ateb a ddewiswyd: {choice}. Gwrthrych {number}: {text}',
+  overPoolUnplacedA11y: 'Pwyswch ENTER i adael yr opsiwn ateb a ddewiswyd heb ei osod neu TAB i symud i ardal gollwng. Opsiwn ateb a ddewiswyd: {choice}',
+  placedA11y: 'Gosodwyd yr opsiwn ateb {choice} yn ardal gollwng gwrthrych {number}: {text}',
+  movedA11y: 'Symudwyd yr opsiwn ateb {choice} o ardal gollwng gwrthrych {from} i ardal gollwng gwrthrych {to}. {text}',
+  removedA11y: 'Tynnwyd yr opsiwn ateb {choice} o ardal gollwng gwrthrych {number}',
+  remainingA11y: 'Mae gan {filled} o {total} ardal gollwng opsiwn ateb. {available} opsiwn ateb ar gael. Defnyddiwch TAB i ddewis opsiwn ateb.',
+  completeA11y: 'Mae\'r ateb yn gyflawn. Mae gan {total} o {total} ardal gollwng opsiwn ateb.',
+  deselectedA11y: 'Nid yw\'r opsiwn ateb {choice} wedi\'i ddewis mwyach. Defnyddiwch TAB i ddewis opsiwn ateb.',
+} satisfies MessageCatalog;

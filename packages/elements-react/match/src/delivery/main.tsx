@@ -37,9 +37,6 @@ const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapR
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import AnswerGrid from './answer-grid.js';
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const StyledPrompt: any = styled('div')({
   verticalAlign: 'middle',
@@ -54,6 +51,8 @@ export class Main extends React.Component {
     session: PropTypes.object.isRequired,
     onSessionChange: PropTypes.func,
     model: PropTypes.object.isRequired,
+    /** The locale the chrome follows; the item's declared language when omitted. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -149,7 +148,8 @@ export class Main extends React.Component {
   render() {
     const { model } = this.props;
     const { showCorrect, session } = this.state;
-    const { correctness = {}, extraCSSRules, language } = model;
+    const { correctness = {}, extraCSSRules } = model;
+    const language = this.props.language ?? model.language;
     const showCorrectAnswerToggle = correctness.correctness && correctness.correctness !== 'correct';
 
     const showRationale = model.rationale && (hasText(model.rationale) || hasMedia(model.rationale));
@@ -159,12 +159,7 @@ export class Main extends React.Component {
     return (
       <UiLayout extraCSSRules={extraCSSRules}>
         {showTeacherInstructions && (
-          <StyledCollapsible
-            labels={{
-              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-            }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={model.teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -192,10 +187,11 @@ export class Main extends React.Component {
           answers={showCorrect ? model.correctResponse || {} : session.answers}
           headers={model.headers}
           rows={model.rows}
+          language={language}
         />
 
         {showRationale && (
-          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <Collapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={model.rationale} />
           </Collapsible>
         )}

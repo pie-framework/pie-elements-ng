@@ -1,5 +1,5 @@
 import type { MediaSource, TextTrackRef, TranscriptRef } from '@pie-element/shared-types';
-import { resolveVideoStimulusUiText, VIDEO_STIMULUS_UI_TEXT_KEYS } from '../i18n.js';
+import { VIDEO_STIMULUS_UI_TEXT_KEYS, videoStimulusUiTextOverrides } from '../ui-text.js';
 import {
   accessibilityProfile as DEFAULT_ACCESSIBILITY_PROFILE,
   model as DEFAULT_MODEL,
@@ -15,7 +15,6 @@ import type {
   VideoStimulusMediaViewModel,
   VideoStimulusModel,
   VideoStimulusPresentation,
-  VideoStimulusUiText,
   VideoStimulusUiTextKey,
   VideoStimulusValidationErrors,
   VideoStimulusViewModel,
@@ -711,17 +710,14 @@ function normalizeMedia(raw: unknown): VideoStimulusMediaViewModel {
   };
 }
 
-function resolveUiText(language: string, overrides: unknown): VideoStimulusUiText {
-  return resolveVideoStimulusUiText(language, overrides);
-}
-
 export function model(
   question: unknown,
   _session: unknown,
   environment: VideoStimulusEnvironment = {}
 ): VideoStimulusViewModel {
   const root = isRecord(question) ? question : {};
-  const language = isValidLanguageTag(root.language) ? root.language.trim() : 'en';
+  const language = isValidLanguageTag(root.language) ? root.language.trim() : undefined;
+  const uiText = videoStimulusUiTextOverrides(root.uiText);
   const rawPresentation = isRecord(root.presentation) ? root.presentation : {};
   const presentation: Required<VideoStimulusPresentation> = {
     showLabel:
@@ -742,9 +738,9 @@ export function model(
     ...(trimmed(root.id) ? { id: trimmed(root.id) } : {}),
     element: trimmed(root.element) ?? 'video-stimulus',
     media: normalizeMedia(root.media),
-    language,
+    ...(language ? { language } : {}),
     presentation,
-    uiText: resolveUiText(language, root.uiText),
+    ...(uiText ? { uiText } : {}),
     mode: typeof environment.mode === 'string' ? environment.mode : undefined,
   };
 }

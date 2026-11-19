@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
-import { color } from '@pie-lib/render-ui';
+import { color, hasTextAlternative } from '@pie-lib/render-ui';
 
 import EvaluationIcon from './evaluation-icon.js';
 import StaticHTMLSpan from './static-html-span.js';
@@ -64,13 +64,6 @@ const StyledSpan: any = styled(StaticHTMLSpan)(() => ({
   },
 }));
 
-// Text, or an image with an `alt`, names the tile; an image with an empty `alt` leaves it unnamed.
-const hasTextAlternative = (html) => {
-  const content = new DOMParser().parseFromString(html || '', 'text/html').body;
-
-  return !!content.textContent.trim() || [...content.querySelectorAll('img')].some((img) => img.alt.trim());
-};
-
 const PossibleResponse = ({
   canDrag,
   containerStyle = {},
@@ -90,6 +83,11 @@ const PossibleResponse = ({
   );
   const longPressTimer = useRef(null);
 
+  // While a choice is selected the tab path runs through the response areas and the pool, the
+  // places it can go, so no choice is a tab stop; with nothing selected every choice is, in the
+  // pool or in an area, and the areas and the pool are not (see image-drop-target.tsx and
+  // possible-responses.tsx). A keyboard drag moves between targets on Tab itself
+  // (keyboard-coordinates.ts), so this governs the path a click selection leaves.
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: `possible-response-${data.id}`,
     data: {
@@ -98,6 +96,7 @@ const PossibleResponse = ({
       containerIndex: data.containerIndex,
     },
     disabled: !canDrag,
+    attributes: { tabIndex: selectedResponse ? -1 : 0 },
   });
 
   const isSelected =

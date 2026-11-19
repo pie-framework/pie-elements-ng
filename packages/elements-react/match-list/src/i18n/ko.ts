@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: '답 {id}',
+  dragInstructionsA11y: '선택하려면 ENTER를 누르세요.',
+  answerChoiceA11y: '답안 선택지: {choice}',
+  answerChoiceInDropAreaA11y: '답안 선택지: {choice}, 개체 {number} {text}의 놓기 영역에 있음',
+  introReusableA11y: '이 문제에는 짝을 찾아야 하는 개체가 {total}개 있습니다. 각 개체에는 답안 선택지 하나를 놓을 수 있는 놓기 영역이 하나씩 있습니다. 답안 선택지는 다시 사용할 수 있습니다. 모든 놓기 영역에 답안 선택지를 놓으세요.',
+  introNotReusableA11y: '이 문제에는 짝을 찾아야 하는 개체가 {total}개 있습니다. 각 개체에는 답안 선택지 하나를 놓을 수 있는 놓기 영역이 하나씩 있습니다. 답안 선택지는 다시 사용할 수 없습니다. 모든 놓기 영역에 답안 선택지를 놓으세요.',
+  keyboardHelpA11y: '답안 선택지와 놓기 영역 사이를 이동하려면 TAB, 선택하거나 놓으려면 ENTER, 취소하려면 ESC를 사용하세요.',
+  progressA11y: '놓기 영역 {total}개 중 {filled}개에 답안 선택지가 있습니다.',
+  objectA11y: '개체 {number}.',
+  dropAreaEmptyA11y: '놓기 영역 {number}이(가) 비어 있습니다',
+  dropAreaFilledA11y: '놓기 영역 {number}에 답안 선택지 {choice}이(가) 있습니다',
+  availableCountA11y: '사용 가능한 답안 선택지 {count}개.',
+  availableEndA11y: '사용 가능한 답안 선택지의 끝입니다. 답안 선택지로 이동하려면 TAB을 사용하세요.',
+  selectedA11y: '답안 선택지 {choice}을(를) 선택했습니다. 놓기 영역을 고르려면 TAB을 사용하세요.',
+  notOverResponseAreaA11y: '{choice}이(가) 응답 영역 위에 있지 않습니다.',
+  overDropAreaA11y: '개체 {number} {text}의 놓기 영역을 선택했습니다. 선택한 답안 선택지 {choice}을(를) 여기로 옮기려면 ENTER, 다른 놓기 영역으로 이동하려면 TAB을 누르세요.',
+  overPoolFromDropAreaA11y: '선택한 답안 선택지를 개체 {number}의 놓기 영역에서 제거하려면 ENTER, 다른 놓기 영역으로 이동하려면 TAB을 누르세요. 선택한 답안 선택지: {choice}. 개체 {number}: {text}',
+  overPoolUnplacedA11y: '선택한 답안 선택지를 놓지 않고 두려면 ENTER, 놓기 영역으로 이동하려면 TAB을 누르세요. 선택한 답안 선택지: {choice}',
+  placedA11y: '답안 선택지 {choice}을(를) 개체 {number}의 놓기 영역에 놓았습니다: {text}',
+  movedA11y: '답안 선택지 {choice}을(를) 개체 {from}의 놓기 영역에서 개체 {to}의 놓기 영역으로 옮겼습니다. {text}',
+  removedA11y: '답안 선택지 {choice}을(를) 개체 {number}의 놓기 영역에서 제거했습니다',
+  remainingA11y: '놓기 영역 {total}개 중 {filled}개에 답안 선택지가 있습니다. 사용 가능한 답안 선택지 {available}개. 답안 선택지를 선택하려면 TAB을 사용하세요.',
+  completeA11y: '답안이 완성되었습니다. 놓기 영역 {total}개 중 {total}개에 답안 선택지가 있습니다.',
+  deselectedA11y: '답안 선택지 {choice}의 선택이 해제되었습니다. 답안 선택지를 선택하려면 TAB을 사용하세요.',
+} satisfies MessageCatalog;

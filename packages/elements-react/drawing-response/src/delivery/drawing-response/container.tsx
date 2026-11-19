@@ -3,7 +3,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
+import { catalogs } from '../../i18n/index.js';
 
 import constants from './constants.js';
 import Button from './button.js';
@@ -13,7 +14,6 @@ import DrawableText from './drawable-text.js';
 import Icon from './icon.js';
 
 const { tools: TOOLS } = constants;
-const { translator } = Translator;
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -88,19 +88,20 @@ export class Container extends Component {
   }
 
   setTranslatedState(language) {
+    const i18n = catalogs.forLocale(language);
     const translatedROGVAIV = ROGVAIV.map((c) => ({
       value: c.value,
-      label: translator.t(`drawingResponse.${c.label}`, { lng: language }),
+      label: i18n.t(dynamicMessageKey(`colors.${c.label}`)),
     }));
 
+    // `paintColor` stays the CSS color value; only the labels translate.
     this.setState({
       fillColorList: [
-        { value: 'transparent', label: translator.t('drawingResponse.noFill', { lng: language }) },
-        { value: 'lightblue', label: translator.t('drawingResponse.lightblue', { lng: language }) },
-        { value: 'lightyellow', label: translator.t('drawingResponse.lightyellow', { lng: language }) },
+        { value: 'transparent', label: i18n.t('colors.noFill') },
+        { value: 'lightblue', label: i18n.t('colors.lightblue') },
+        { value: 'lightyellow', label: i18n.t('colors.lightyellow') },
         ...translatedROGVAIV,
       ],
-      paintColor: translator.t('drawingResponse.red', { lng: language }),
       outlineColorList: translatedROGVAIV,
       paintColorList: translatedROGVAIV,
     });
@@ -263,7 +264,7 @@ export class Container extends Component {
 
               return (
                 <Button
-                  title={translator.t(`drawingResponse.tools.${labelKey}`, { lng: language })}
+                  title={catalogs.forLocale(language).t(dynamicMessageKey(`tools.${labelKey}`))}
                   key={type}
                   disabled={this.checkIfToolIsDisabled(type)}
                   onClick={() => this.handleMakeToolActive(tool)}

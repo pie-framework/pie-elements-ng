@@ -9,6 +9,11 @@ import {
   outcome,
   validate,
 } from '../src/controller/index.js';
+import {
+  DIGIT_ZEROS,
+  inSystem,
+  systemName,
+} from '@workspace/packages/shared/controller-utils/tests/digit-systems.js';
 
 // A player creates every session entry with `id` and its versioned tag before
 // the learner types anything.
@@ -279,5 +284,92 @@ describe('model', () => {
     const out = await model({ ...QUESTION, language: 'es_ES' }, session, { mode: 'gather' });
 
     expect(out.language).toBe('es_ES');
+  });
+});
+
+describe('response normalization', () => {
+  it('scores a response typed in another digit system against an ASCII answer key', async () => {
+    for (const value of ['٤', '۴', '४', '৪']) {
+      const result = await outcome(QUESTION, { id: '1', element: TAG, value });
+      expect(result.score, value).toBe(1);
+    }
+  });
+
+  it('reads the Arabic decimal separator as a point', async () => {
+    const result = await outcome(
+      { ...QUESTION, correctAnswer: '3.5' },
+      { id: '1', element: TAG, value: '٣٫٥' }
+    );
+    expect(result.score).toBe(1);
+  });
+
+  it('folds case in the content language, from the model or the environment', () => {
+    const question = { ...QUESTION, correctAnswer: 'ısparta' };
+    const session = { id: '1', element: TAG, value: 'ISPARTA' };
+
+    expect(getCorrectness(question, session)).toBe('incorrect');
+    expect(getCorrectness({ ...question, language: 'tr_TR' }, session)).toBe('correct');
+    expect(getCorrectness(question, session, { locale: 'tr' })).toBe('correct');
+  });
+});
+
+describe('Arabic spelling variants', () => {
+  const ARABIC = { ...QUESTION, correctAnswer: 'مدرسة', language: 'ar' };
+  const typed = (value: string) => ({ id: '1', element: TAG, value });
+
+  it('accepts a spelling variant only when the model turns folding on', async () => {
+    expect(getCorrectness(ARABIC, typed('مدرسه'))).toBe('incorrect');
+    expect(getCorrectness({ ...ARABIC, foldLetterVariants: true }, typed('مدرسه'))).toBe('correct');
+    expect((await outcome({ ...ARABIC, foldLetterVariants: true }, typed('مدرسه'))).score).toBe(1);
+  });
+
+  it('says in the trace when spelling variants are accepted', async () => {
+    const trace = async (foldLetterVariants: boolean) =>
+      (await outcome({ ...ARABIC, foldLetterVariants }, typed('مدرسه'))).traceLog;
+
+    expect(await trace(true)).toContain('Arabic spelling variants are accepted.');
+    expect(await trace(false)).not.toContain('Arabic spelling variants are accepted.');
+  });
+
+  it('folds the answer key too, so a key with tashkeel and hamza matches the bare spelling', () => {
+    const question = { ...ARABIC, correctAnswer: 'أَحْمَد', foldLetterVariants: true };
+
+    expect(getCorrectness(question, typed('احمد'))).toBe('correct');
+    expect(getCorrectness({ ...question, foldLetterVariants: false }, typed('احمد'))).toBe(
+      'incorrect'
+    );
+  });
+
+  it('stays strict when the field is absent, false or null', () => {
+    for (const foldLetterVariants of [undefined, false, null]) {
+      const question = { ...ARABIC, foldLetterVariants } as typeof ARABIC;
+      expect(getPartialScore(question, typed('مدرسه')), String(foldLetterVariants)).toBe(0);
+    }
+  });
+
+  it('reports the same correctness in evaluate mode as it scores', async () => {
+    const question = { ...ARABIC, foldLetterVariants: true };
+    const out = await model(question, typed('مدرسه'), { mode: 'evaluate' });
+
+    expect(out.correctness).toBe('correct');
+    expect(out).not.toHaveProperty('foldLetterVariants');
+  });
+});
+
+describe('every Unicode digit system', () => {
+  it('scores whole, decimal and grouped numbers against their ASCII answer key', () => {
+    const correctness = (correctAnswer: string, value: string, language?: string) =>
+      getCorrectness(
+        { ...QUESTION, correctAnswer, ...(language ? { language } : {}) },
+        { id: '1', element: TAG, value }
+      );
+    for (const zero of DIGIT_ZEROS) {
+      const name = systemName(zero);
+      expect(correctness('2024', inSystem(zero, '2024')), name).toBe('correct');
+      expect(correctness('3.5', inSystem(zero, '3٫5')), name).toBe('correct');
+      expect(correctness('1,234.5', inSystem(zero, '1٬234٫5')), name).toBe('correct');
+      expect(correctness('1.234,5', inSystem(zero, '1٬234٫5'), 'ar-MA'), name).toBe('correct');
+      expect(correctness('2024', inSystem(zero, '2025')), name).toBe('incorrect');
+    }
   });
 });

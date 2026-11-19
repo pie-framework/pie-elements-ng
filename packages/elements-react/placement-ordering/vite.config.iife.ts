@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { englishOnlyCatalogs } from '../../../tools/vite/iife-english-only-catalogs';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
   name?: string;
@@ -22,6 +23,7 @@ const resolveWorkspaceEntry = (baseDir: string): string | null => {
 
 export default defineConfig({
   plugins: [
+    thirdPartyLicenses(),
     {
       name: 'iife-workspace-and-shim-resolver',
       enforce: 'pre',

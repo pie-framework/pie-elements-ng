@@ -10,6 +10,7 @@
 
 <script lang="ts">
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
+import { LETTER_VARIANTS_HELP } from '@pie-element/shared-controller-utils';
 import {
   ConfigLayout,
   SettingsPanel,
@@ -51,6 +52,9 @@ function handleAnswerChange(e: Event) {
 }
 </script>
 
+<!-- The Arabic letters are marked as Arabic, so a screen reader reads them as letters. -->
+{#snippet foldLetterVariantsHelp()}{#each LETTER_VARIANTS_HELP as part}{#if typeof part === 'string'}{part}{:else}<bdi lang="ar">{part.ar}</bdi>{/if}{/each}{/snippet}
+
 <div class="simple-cloze-author">
   <ConfigLayout hideSettings={config.settingsPanelDisabled === true || !hasSettings(config)}>
     {#snippet settings()}
@@ -60,6 +64,10 @@ function handleAnswerChange(e: Event) {
         groups={{
           Settings: {
             promptEnabled: config.prompt?.settings && toggle(config.prompt.label),
+            foldLetterVariants: config.foldLetterVariants?.settings && {
+              ...toggle(config.foldLetterVariants.label),
+              helperText: foldLetterVariantsHelp,
+            },
           },
           Properties: {
             teacherInstructionsEnabled:

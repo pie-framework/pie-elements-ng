@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: '答案 {id}',
+  dragInstructionsA11y: '按 ENTER 键选择。',
+  answerChoiceA11y: '答案选项：{choice}',
+  answerChoiceInDropAreaA11y: '答案选项：{choice}，位于对象 {number} {text} 的放置区域中',
+  introReusableA11y: '此题有 {total} 个对象需要匹配。每个对象有一个放置区域，可放置一个答案选项。答案选项可以重复使用。请在每个放置区域中放置一个答案选项。',
+  introNotReusableA11y: '此题有 {total} 个对象需要匹配。每个对象有一个放置区域，可放置一个答案选项。答案选项不可重复使用。请在每个放置区域中放置一个答案选项。',
+  keyboardHelpA11y: '使用 TAB 键在答案选项和放置区域之间移动，使用 ENTER 键选择或放置，使用 ESC 键取消。',
+  progressA11y: '{total} 个放置区域中有 {filled} 个已放置答案选项。',
+  objectA11y: '对象 {number}。',
+  dropAreaEmptyA11y: '放置区域 {number} 为空',
+  dropAreaFilledA11y: '放置区域 {number} 包含答案选项 {choice}',
+  availableCountA11y: '有 {count} 个可用的答案选项。',
+  availableEndA11y: '可用答案选项到此结束。使用 TAB 键移至某个答案选项。',
+  selectedA11y: '已选择答案选项 {choice}。使用 TAB 键选择放置区域。',
+  notOverResponseAreaA11y: '{choice}不在作答区上方。',
+  overDropAreaA11y: '已选择对象 {number} {text} 的放置区域。按 ENTER 键将所选答案选项 {choice} 移到此处，或按 TAB 键移至其他放置区域。',
+  overPoolFromDropAreaA11y: '按 ENTER 键将所选答案选项从对象 {number} 的放置区域中移除，或按 TAB 键移至其他放置区域。所选答案选项：{choice}。对象 {number}：{text}',
+  overPoolUnplacedA11y: '按 ENTER 键使所选答案选项保持未放置状态，或按 TAB 键移至某个放置区域。所选答案选项：{choice}',
+  placedA11y: '已将答案选项 {choice} 放置在对象 {number} 的放置区域中：{text}',
+  movedA11y: '已将答案选项 {choice} 从对象 {from} 的放置区域移至对象 {to} 的放置区域。{text}',
+  removedA11y: '已将答案选项 {choice} 从对象 {number} 的放置区域中移除',
+  remainingA11y: '{total} 个放置区域中有 {filled} 个已放置答案选项。有 {available} 个可用的答案选项。使用 TAB 键选择答案选项。',
+  completeA11y: '答案已完成。{total} 个放置区域中有 {total} 个已放置答案选项。',
+  deselectedA11y: '答案选项 {choice} 已不再处于选中状态。使用 TAB 键选择答案选项。',
+} satisfies MessageCatalog;

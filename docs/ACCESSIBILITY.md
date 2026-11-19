@@ -17,15 +17,15 @@ All PIE elements are designed to be:
 
 PIE elements meet all WCAG 2.2 Level AA success criteria:
 
-| Criterion | Requirement | Implementation |
-|-----------|-------------|----------------|
-| 1.4.3 Contrast (Minimum) | 4.5:1 for normal text | DaisyUI themes tested for compliance |
-| 1.4.11 Non-text Contrast | 3:1 for UI components | All interactive elements meet threshold |
-| 2.1.1 Keyboard | All functionality via keyboard | Tab, Space, Enter, Arrow keys |
-| 2.4.7 Focus Visible | Clear focus indicators | 2px outline on all focusable elements |
-| 2.5.8 Target Size (Minimum) | 24×24px touch targets | 44×44px implemented (exceeds requirement) |
-| 3.2.4 Consistent Identification | Consistent UI patterns | Standardized across all elements |
-| 4.1.2 Name, Role, Value | ARIA for custom controls | All interactive elements labeled |
+| Criterion                       | Requirement                    | Implementation                            |
+| ------------------------------- | ------------------------------ | ----------------------------------------- |
+| 1.4.3 Contrast (Minimum)        | 4.5:1 for normal text          | DaisyUI themes tested for compliance      |
+| 1.4.11 Non-text Contrast        | 3:1 for UI components          | All interactive elements meet threshold   |
+| 2.1.1 Keyboard                  | All functionality via keyboard | Tab, Space, Enter, Arrow keys             |
+| 2.4.7 Focus Visible             | Clear focus indicators         | 2px outline on all focusable elements     |
+| 2.5.8 Target Size (Minimum)     | 24×24px touch targets          | 44×44px implemented (exceeds requirement) |
+| 3.2.4 Consistent Identification | Consistent UI patterns         | Standardized across all elements          |
+| 4.1.2 Name, Role, Value         | ARIA for custom controls       | All interactive elements labeled          |
 
 ## Keyboard Navigation
 
@@ -177,7 +177,7 @@ All text meets WCAG AA standards:
 ```css
 /* Normal text: 4.5:1 minimum */
 .prompt {
-  color: rgb(31, 41, 55);      /* #1f2937 */
+  color: rgb(31, 41, 55); /* #1f2937 */
   background: rgb(255, 255, 255); /* #ffffff */
   /* Contrast ratio: 15.85:1 ✅ */
 }
@@ -186,7 +186,7 @@ All text meets WCAG AA standards:
 .heading {
   font-size: 24px;
   font-weight: 600;
-  color: rgb(75, 85, 99);      /* #4b5563 */
+  color: rgb(75, 85, 99); /* #4b5563 */
   background: rgb(255, 255, 255);
   /* Contrast ratio: 9.73:1 ✅ */
 }
@@ -226,7 +226,7 @@ input[type="radio"] {
 
 /* Or use padding on labels */
 input[type="radio"] + label {
-  padding: 12px;  /* Creates 44×44px target */
+  padding: 12px; /* Creates 44×44px target */
   min-width: 44px;
   min-height: 44px;
 }
@@ -295,6 +295,7 @@ button:focus-visible {
 ### Error Messages
 
 Error messages should be:
+
 1. **Specific**: Tell exactly what's wrong
 2. **Actionable**: Explain how to fix
 3. **Visible**: Clearly displayed near the error
@@ -386,6 +387,7 @@ Use browser extensions to simulate color blindness:
 - **Safari**: Web Developer extension
 
 Verify:
+
 - Information isn't conveyed by color alone
 - Correct/incorrect use icons + color
 - Links are underlined or have non-color indicator
@@ -416,11 +418,13 @@ Before releasing an element, verify:
 ### Issue 1: Missing Form Labels
 
 **Problem:**
+
 ```html
 <input type="text" placeholder="Your answer">
 ```
 
 **Solution:**
+
 ```html
 <label for="answer">Your answer</label>
 <input type="text" id="answer" placeholder="e.g., 42">
@@ -429,18 +433,20 @@ Before releasing an element, verify:
 ### Issue 2: Insufficient Contrast
 
 **Problem:**
+
 ```css
 .text {
-  color: #888888;        /* Gray text */
-  background: #ffffff;   /* White background */
+  color: #888888; /* Gray text */
+  background: #ffffff; /* White background */
   /* Contrast: 2.85:1 ❌ */
 }
 ```
 
 **Solution:**
+
 ```css
 .text {
-  color: #595959;        /* Darker gray */
+  color: #595959; /* Darker gray */
   background: #ffffff;
   /* Contrast: 4.54:1 ✅ */
 }
@@ -449,6 +455,7 @@ Before releasing an element, verify:
 ### Issue 3: Keyboard Trap
 
 **Problem:**
+
 ```javascript
 // Modal that traps focus accidentally
 document.addEventListener('keydown', (e) => {
@@ -459,6 +466,7 @@ document.addEventListener('keydown', (e) => {
 ```
 
 **Solution:**
+
 ```javascript
 // Proper focus trapping with escape hatch
 document.addEventListener('keydown', (e) => {
@@ -475,6 +483,7 @@ document.addEventListener('keydown', (e) => {
 ### Issue 4: Invisible Focus Indicator
 
 **Problem:**
+
 ```css
 :focus {
   outline: none; /* ❌ */
@@ -482,6 +491,7 @@ document.addEventListener('keydown', (e) => {
 ```
 
 **Solution:**
+
 ```css
 :focus-visible {
   outline: 2px solid var(--color-primary); /* ✅ */
@@ -514,7 +524,3 @@ document.addEventListener('keydown', (e) => {
 ## See Also
 
 - [README.md](../README.md) - Getting started guide
-
----
-
-**Last Updated**: 2025-01-08

@@ -899,6 +899,22 @@ describe('createMathjaxRenderer', () => {
     });
   });
 
+  it('lifts the bar of an overline to the height of the ray and line shafts', async () => {
+    interceptScripts();
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(\\overline{AB}\\)'));
+    const { mathDocument, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(mathDocument.addStyles).toHaveBeenCalledWith({
+      'mjx-over > mjx-mo > mjx-stretchy-h.mjx-c2015': {
+        position: 'relative',
+        top: '-0.13em',
+      },
+    });
+  });
+
   it('leaves the stylesheet id of a srcUrl build that is not MathJax 4', async () => {
     interceptScripts();
 

@@ -44,8 +44,10 @@ type BestAnswer = {
 /** The model the delivery view receives. */
 type GraphingViewModel = Omit<
   GraphingModel,
-  'arrows' | 'defaultTool' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
+  'answers' | 'arrows' | 'defaultTool' | 'graph' | 'prompt' | 'rationale' | 'teacherInstructions'
 > & {
+  /** Only in evaluate mode or for the instructor: delivery reads `correctResponse` instead */
+  answers?: GraphingModel['answers'];
   arrows?: Arrows;
   defaultTool: GraphingTool | '';
   disabled: boolean;
@@ -312,7 +314,8 @@ export function model(
 
     const base: GraphingViewModel = {
       ...questionProps,
-      answers,
+      // The answer key reaches the browser only once it may show it.
+      ...((mode === 'evaluate' || role === 'instructor') && { answers }),
       arrows,
       defaultTool: normalizedDefaultTool,
       disabled: env.mode !== 'gather',
@@ -528,6 +531,11 @@ export const validate = (
     }
   });
 
+  // only a limit above 0 holds; authoring clears the field to "no limit" by deleting the key
+  const markLimits = Object.entries(model.markLimits ?? {}).filter(
+    (entry): entry is [string, number] => (entry[1] ?? 0) > 0,
+  );
+
   Object.entries(answers || {}).forEach(([key, value]) => {
     if (!value.marks.length) {
       correctAnswerErrors[key] = 'At least 1 graph object should be defined.';
@@ -540,6 +548,16 @@ export const validate = (
           correctAnswerErrors[key] = 'At least 1 graph object is not correctly defined.';
         }
       });
+    }
+
+    // an answer a student cannot reproduce within the mark limits
+    const exceeded = markLimits.find(
+      ([tool, limit]) => value.marks.filter((mark) => mark.type === tool).length > limit,
+    );
+
+    if (exceeded && !correctAnswerErrors[key]) {
+      const [tool, limit] = exceeded;
+      correctAnswerErrors[key] = `This answer has more ${tool} marks than the limit of ${limit}.`;
     }
   });
 

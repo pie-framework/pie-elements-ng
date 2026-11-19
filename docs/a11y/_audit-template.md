@@ -26,8 +26,8 @@ Describe the element or shared surface and the user-facing workflows included in
 ## Open WCAG Gaps
 
 | Gap | WCAG 2.2 criterion | Severity | Evidence | Proposed remediation |
-| --- | --- | --- | --- | --- |
-| TBD | TBD | TBD | TBD | TBD |
+| --- | ------------------ | -------- | -------- | -------------------- |
+| TBD | TBD                | TBD      | TBD      | TBD                  |
 
 ## Manual Validation
 

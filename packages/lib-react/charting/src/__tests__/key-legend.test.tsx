@@ -36,9 +36,9 @@ describe('charting KeyLegend', () => {
   it.each([
     ['en_US', 'Key'],
     ['es_ES', 'Clave'],
-  ])('titles the legend in the %s item language', (language, title) => {
+  ])('titles the legend in the %s item language', async (language, title) => {
     render(<KeyLegend language={language} />);
 
-    expect(screen.getByText(title)).toBeInTheDocument();
+    expect(await screen.findByText(title)).toBeInTheDocument();
   });
 });

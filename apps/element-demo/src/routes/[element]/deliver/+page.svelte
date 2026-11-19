@@ -12,10 +12,7 @@ import {
   parsePlayerType,
   type PlayerType,
 } from '#lib/config/player-runtime.ts';
-import {
-  provideAccessibilitySupports,
-  supportsFromUrl,
-} from '#lib/config/accessibility-context.ts';
+import { parsePageLayout } from '#lib/config/page-layout.ts';
 import { get } from 'svelte/store';
 import '@pie-element/element-player';
 import {
@@ -45,11 +42,7 @@ let esmModelReady = $state(false);
 let modelRequestId = 0;
 const debug = false;
 const playerType = $derived<PlayerType>(parsePlayerType(page.url.searchParams.get('player')));
-
-// Answers the accessibility context as a Player would, before the element connects and again when
-// the URL changes; `&mathNames=outside` keeps math out of multiple-choice choice names (PIE-1244).
-provideAccessibilitySupports(supportsFromUrl(page.url));
-$effect(() => provideAccessibilitySupports(supportsFromUrl(page.url)));
+const layout = $derived(parsePageLayout(page.url.searchParams.get('layout')));
 
 // Normalize session - ensure it's an object without imposing specific structure
 const normalizeSession = (nextSession: any) => {
@@ -437,6 +430,7 @@ function handleBuildState(event: CustomEvent) {
   model={$model}
   session={$session}
   {playerType}
+  {layout}
   bind:mode={$mode}
   bind:playerRole={$role}
   bind:partialScoring={$partialScoring}
@@ -446,7 +440,12 @@ function handleBuildState(event: CustomEvent) {
 >
   {#snippet children()}
     <pie-element-theme-daisyui theme={$theme}>
-      <div class="delivery-view">
+      <div class="delivery-view" class:page-layout={layout === 'page'}>
+        {#if layout === 'page'}
+          <div class="page-filler page-filler-before" data-testid="page-filler-before">
+            <p>Page content above the item.</p>
+          </div>
+        {/if}
         <div class="element-container">
           <pie-element-player
             strategy={playerType}
@@ -469,6 +468,11 @@ function handleBuildState(event: CustomEvent) {
             <div class="model-error">{modelError ?? 'Preparing view model...'}</div>
           {/if}
         </div>
+        {#if layout === 'page'}
+          <div class="page-filler page-filler-after" data-testid="page-filler-after">
+            <p>Page content below the item.</p>
+          </div>
+        {/if}
       </div>
     </pie-element-theme-daisyui>
   {/snippet}
@@ -494,5 +498,24 @@ function handleBuildState(event: CustomEvent) {
   .element-container {
     padding: 1rem;
     max-width: 100%;
+  }
+
+  .delivery-view.page-layout {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Enough page above and below the element for a swipe on it to scroll the document either way. */
+  .page-filler {
+    padding: 1rem;
+  }
+
+  .page-filler-before {
+    min-height: 50vh;
+  }
+
+  .page-filler-after {
+    min-height: 100vh;
   }
 </style>

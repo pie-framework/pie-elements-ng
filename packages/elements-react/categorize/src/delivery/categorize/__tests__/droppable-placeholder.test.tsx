@@ -109,16 +109,24 @@ describe('DroppablePlaceholder', () => {
   describe('click-to-place and keyboard activation', () => {
     const selection = { id: 'c1', categoryId: undefined, choiceIndex: undefined, type: 'choice' };
 
-    it('is a native tab stop when not disabled', () => {
-      const { container } = renderPlaceholder();
+    it('is a native tab stop while a choice is selected', () => {
+      const { container } = renderPlaceholder({ selectedItem: selection });
       const outer = container.firstChild as Element;
 
       expect(outer.getAttribute('role')).toBe('group');
       expect(outer.getAttribute('tabindex')).toBe('0');
     });
 
-    it('is not a tab stop when disabled', () => {
-      const { container } = renderPlaceholder({ disabled: true });
+    it('is not a tab stop while nothing is selected, so the tab path runs through the choices', () => {
+      const { container } = renderPlaceholder({ selectedItem: null });
+      const outer = container.firstChild as Element;
+
+      expect(outer.getAttribute('role')).toBe('group');
+      expect(outer.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('is not a tab stop when disabled, even with something selected', () => {
+      const { container } = renderPlaceholder({ disabled: true, selectedItem: selection });
       const outer = container.firstChild as Element;
 
       expect(outer.getAttribute('role')).toBe('group');

@@ -26,9 +26,9 @@ interface PieEnvironment {
   role: 'student' | 'instructor';
 
   // Optional configuration
-  partialScoring?: boolean;       // false disables partial credit scoring
+  partialScoring?: boolean; // false disables partial credit scoring
   '@pie-element'?: {
-    lockChoiceOrder?: boolean;    // true keeps the authored choice order
+    lockChoiceOrder?: boolean; // true keeps the authored choice order
   };
 }
 ```
@@ -54,19 +54,19 @@ Base interface that all element models extend.
 // `catalog` is the QTI `support=` token and the card's only discriminant.
 // QTI's single content slot is exactly one of `content` or `payload`.
 interface CatalogCard {
-  catalog: string;                  // e.g., "spoken", "sign-language", "braille"
-  language?: string;                // BCP 47 language tag, e.g., "en-US"
-  content?: string;                 // String form — SSML for "spoken", plain text
-  payload?: CatalogCardPayload;     // Structured form, for what a string cannot express
+  catalog: string; // e.g., "spoken", "sign-language", "braille"
+  language?: string; // BCP 47 language tag, e.g., "en-US"
+  content?: string; // String form — SSML for "spoken", plain text
+  payload?: CatalogCardPayload; // Structured form, for what a string cannot express
 }
 
 // One generic slot, not a field per accommodation: `catalog` says how to read it.
 type CatalogCardPayload = SignLanguageCardPayload;
 
 interface SignLanguageCardPayload {
-  signLang?: string;                // Adaptation language; redundant when it equals card `language`
-  media: MediaAssetRef;             // Sources, MIME types, dimensions
-  fragment?: MediaFragmentRange;    // Optional time slice of a longer recording
+  signLang?: string; // Adaptation language; redundant when it equals card `language`
+  media: MediaAssetRef; // Sources, MIME types, dimensions
+  fragment?: MediaFragmentRange; // Optional time slice of a longer recording
 }
 
 // Narrowing for the write side; `isSignLanguageCard` is the runtime guard.
@@ -77,13 +77,13 @@ interface SignLanguageCatalogCard extends CatalogCard {
 }
 
 interface AccessibilityCatalog {
-  identifier: string;               // Stable ID referenced by visible content
+  identifier: string; // Stable ID referenced by visible content
   cards: CatalogCard[];
 }
 
 interface PieModel {
-  id: string;                     // Unique identifier
-  element: string;                // Element tag, the key in the item config's `elements` map (e.g., "multiple-choice")
+  id: string; // Unique identifier
+  element: string; // Element tag, the key in the item config's `elements` map (e.g., "multiple-choice")
   accessibilityCatalogs?: AccessibilityCatalog[];
 }
 ```
@@ -98,7 +98,7 @@ Individual elements are not expected to render this field directly, and default
 models should omit it unless authored content provides catalog entries.
 
 A `sign-language` card carries a signed video translation of the content node it
-is docked to, as an alternate representation *alongside* the written English
+is docked to, as an alternate representation _alongside_ the written English
 rather than a replacement for it. Tag it with the adaptation language on the
 card's `language` — a Spanish item's signed alternate is LSM, not ASL, so it must
 never be inferred from the item's content language. That is the only field
@@ -126,8 +126,8 @@ Represents student response data.
 
 ```typescript
 interface PieSession {
-  id?: string;                    // Optional session identifier
-  [key: string]: unknown;         // Element-specific session data
+  id?: string; // Optional session identifier
+  [key: string]: unknown; // Element-specific session data
 }
 ```
 
@@ -135,13 +135,19 @@ Session structure varies by element type:
 
 ```typescript
 // Multiple Choice (single): still an array, with one value
-{ value: ['a'] }
+{
+  value: ['a'];
+}
 
 // Multiple Choice (multi)
-{ value: ['a', 'c'] }
+{
+  value: ['a', 'c'];
+}
 
 // Hotspot
-{ answers: [{ id: 'shape-1' }] }
+{
+  answers: [{ id: 'shape-1' }];
+}
 ```
 
 ### ViewModel
@@ -150,9 +156,9 @@ Output from controller's `model()` function, ready for rendering.
 
 ```typescript
 interface ViewModel {
-  disabled: boolean;              // Whether interaction is disabled
-  mode: PieEnvironment['mode'];   // Current mode
-  [key: string]: unknown;         // Element-specific view properties
+  disabled: boolean; // Whether interaction is disabled
+  mode: PieEnvironment['mode']; // Current mode
+  [key: string]: unknown; // Element-specific view properties
 }
 ```
 
@@ -162,13 +168,14 @@ Result from controller's `outcome()` function.
 
 ```typescript
 interface OutcomeResult {
-  score: number;                  // Score from 0.0 to 1.0
-  empty: boolean;                 // True if no response provided
-  feedback?: FeedbackConfig;      // Optional feedback messages
+  score: number; // Score from 0.0 to 1.0
+  empty: boolean; // True if no response provided
+  feedback?: FeedbackConfig; // Optional feedback messages
 }
 ```
 
 **Score Scale:**
+
 - `0.0`: Completely incorrect
 - `0.5`: Partially correct (if partial credit enabled)
 - `1.0`: Completely correct
@@ -181,8 +188,8 @@ All PIE elements accept these props, which hosts set as element properties:
 
 ```typescript
 interface CommonElementProps {
-  model: ElementModel;            // Delivery: the controller's view model for the env; author: the authored model
-  session: PieSession;            // Student response; the element writes each change into it
+  model: ElementModel; // Delivery: the controller's view model for the env; author: the authored model
+  session: PieSession; // Student response; the element writes each change into it
 }
 ```
 
@@ -268,30 +275,16 @@ interface PieController {
     question: PieModel,
     session: PieSession | null,
     env: PieEnvironment,
-    updateSession?: (
-      id: string,
-      element: string,
-      properties: Partial<PieSession>
-    ) => Promise<void>
+    updateSession?: (id: string, element: string, properties: Partial<PieSession>) => Promise<void>
   ): Promise<ViewModel>;
 
-  outcome(
-    model: PieModel,
-    session: PieSession,
-    env: PieEnvironment
-  ): Promise<OutcomeResult>;
+  outcome(model: PieModel, session: PieSession, env: PieEnvironment): Promise<OutcomeResult>;
 
   createDefaultModel(partial?: Partial<PieModel>): PieModel;
 
-  validate(
-    model: PieModel,
-    config: CommonConfigSettings
-  ): ValidationErrors;
+  validate(model: PieModel, config: CommonConfigSettings): ValidationErrors;
 
-  createCorrectResponseSession(
-    question: PieModel,
-    env: PieEnvironment
-  ): PieSession;
+  createCorrectResponseSession(question: PieModel, env: PieEnvironment): PieSession;
 }
 ```
 
@@ -305,9 +298,9 @@ Transforms the question model into a view model based on environment.
 import { model } from '@pie-element/multiple-choice/controller';
 
 const viewModel = await model(
-  question,    // Question configuration
-  session,     // Student response (or null)
-  env         // Environment (mode, role)
+  question, // Question configuration
+  session, // Student response (or null)
+  env // Environment (mode, role)
 );
 
 // viewModel includes:
@@ -320,6 +313,7 @@ const viewModel = await model(
 The optional fourth argument, `updateSession(id, element, properties)`, persists `properties` into the stored session and resolves when it is saved. A controller that shuffles choices calls it with `{ shuffledValues }` to keep the order it drew, so a host that implements it with another signature loses that order. `id` and `element` come from the session and can be `undefined`, for a session without them or for an element that shuffles each of its parts separately, so a host keys the write by the model it called `model()` for. `PieUpdateSession` in `@pie-element/shared-types` types it.
 
 **Use cases:**
+
 - Hide correct answers in gather mode
 - Show feedback in evaluate mode
 - Apply configuration options
@@ -342,6 +336,7 @@ console.log(result);
 ```
 
 **Returns:**
+
 - `score`: 0.0 to 1.0
 - `empty`: true if no answer provided
 - `feedback`: optional feedback messages
@@ -355,7 +350,7 @@ import { createDefaultModel } from '@pie-element/multiple-choice/controller';
 
 const model = createDefaultModel({
   id: 'q1',
-  prompt: '<p>New question</p>'
+  prompt: '<p>New question</p>',
 });
 
 // Returns model with sensible defaults:
@@ -410,6 +405,7 @@ interface SessionChangedEvent extends CustomEvent<{ complete: boolean; component
 ```
 
 **Example:**
+
 ```javascript
 element.session = session;
 
@@ -431,6 +427,7 @@ interface ModelUpdatedEvent extends CustomEvent<{ update: ElementModel; reset: b
 ```
 
 **Example:**
+
 ```javascript
 authorElement.addEventListener('model.updated', (event) => {
   const { update, reset } = event.detail;
@@ -448,29 +445,30 @@ authorElement.addEventListener('model.updated', (event) => {
 
 ```typescript
 interface MultipleChoiceModel extends PieModel {
-  prompt: string;                 // Question text (HTML)
-  choices: Choice[];              // Answer choices
+  prompt: string; // Question text (HTML)
+  choices: Choice[]; // Answer choices
   choiceMode: 'radio' | 'checkbox'; // Single or multi-select
   choicePrefix?: 'letters' | 'numbers' | 'none'; // Choice labels
 
   // Feedback
-  feedbackEnabled?: boolean;      // Show choice feedback in evaluate mode
-  rationale?: string;             // Instructor explanation
+  feedbackEnabled?: boolean; // Show choice feedback in evaluate mode
+  rationale?: string; // Instructor explanation
 
   // Configuration
-  partialScoring?: boolean;       // Enable partial credit
-  lockChoiceOrder?: boolean;      // Default true; false lets the controller shuffle the choices once per session
+  partialScoring?: boolean; // Enable partial credit
+  lockChoiceOrder?: boolean; // Default true; false lets the controller shuffle the choices once per session
 }
 
 interface Choice {
-  label: string;                  // Choice text (HTML)
-  value: string;                  // Unique identifier
-  correct?: boolean;              // Is this a correct answer?
-  feedback?: {                    // Shown in evaluate mode when feedbackEnabled is true
+  label: string; // Choice text (HTML)
+  value: string; // Unique identifier
+  correct?: boolean; // Is this a correct answer?
+  feedback?: {
+    // Shown in evaluate mode when feedbackEnabled is true
     type: 'none' | 'default' | 'custom';
-    value?: string;               // Text for 'custom'
+    value?: string; // Text for 'custom'
   };
-  rationale?: string;             // Instructor explanation for this choice
+  rationale?: string; // Instructor explanation for this choice
 }
 ```
 
@@ -493,10 +491,10 @@ const model: MultipleChoiceModel = {
   choices: [
     { label: '3', value: 'a', correct: false },
     { label: '4', value: 'b', correct: true },
-    { label: '5', value: 'c', correct: false }
+    { label: '5', value: 'c', correct: false },
   ],
   choiceMode: 'radio',
-  choicePrefix: 'letters'
+  choicePrefix: 'letters',
 };
 ```
 
@@ -506,11 +504,11 @@ const model: MultipleChoiceModel = {
 
 ```typescript
 interface HotspotModel extends PieModel {
-  prompt: string;                 // Question text (HTML)
-  imageUrl: string;               // Background image
+  prompt: string; // Question text (HTML)
+  imageUrl: string; // Background image
   dimensions: { width: number; height: number }; // Image size the shapes are drawn against
-  multipleCorrect?: boolean;      // Allow multiple selections
-  partialScoring?: boolean;       // Enable partial credit
+  multipleCorrect?: boolean; // Allow multiple selections
+  partialScoring?: boolean; // Enable partial credit
   shapes: {
     rectangles?: (Shape & { x: number; y: number; width: number; height: number })[];
     polygons?: (Shape & { points: { x: number; y: number }[] })[];
@@ -528,7 +526,7 @@ interface Shape {
 
 ```typescript
 interface HotspotSession extends PieSession {
-  answers: { id: string }[];      // Selected shapes
+  answers: { id: string }[]; // Selected shapes
 }
 ```
 
@@ -548,9 +546,9 @@ interface CommonConfigSettings {
 }
 
 interface ConfigureProp {
-  settings?: boolean;             // Show in settings UI
-  label?: string;                 // UI label
-  enabled?: boolean;              // Currently enabled
+  settings?: boolean; // Show in settings UI
+  label?: string; // UI label
+  enabled?: boolean; // Currently enabled
 }
 ```
 
@@ -565,7 +563,7 @@ import type {
   PieSession,
   ViewModel,
   OutcomeResult,
-  PieController
+  PieController,
 } from '@pie-element/shared-types';
 ```
 
@@ -604,7 +602,11 @@ assignProps(element, { model: viewModel, session });
 ### Controller Utilities
 
 ```typescript
-import { getShuffledChoices, lockChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import {
+  getShuffledChoices,
+  lockChoices,
+  partialScoring,
+} from '@pie-element/shared-controller-utils';
 
 // Should choice order stay ordinal? Honours model.lockChoiceOrder and env['@pie-element'].lockChoiceOrder
 if (!lockChoices(model, session, env)) {

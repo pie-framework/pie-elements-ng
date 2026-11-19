@@ -3,9 +3,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { find, isEmpty, isUndefined } from '@pie-element/shared-lodash';
 import DragAndDropAnswer from './answer.js';
 import { DroppablePlaceholder } from './droppable-placeholder.js';
+import { availableAnswers, describeAvailableChoices, describeChoiceTile } from './announcements.js';
+import { visuallyHidden } from './visually-hidden.js';
 
 const ChoicesContainer: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -21,6 +22,7 @@ export class ChoicesList extends React.Component {
     selectedAnswer: PropTypes.object,
     onChoiceClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    t: PropTypes.func.isRequired,
   };
 
   render() {
@@ -33,19 +35,12 @@ export class ChoicesList extends React.Component {
       selectedAnswer,
       onChoiceClick,
       onPlacementClick,
+      t,
     } = this.props;
     const { config } = model;
-    const { duplicates } = config;
+    const value = session?.value || {};
 
-    const filteredAnswers = config.answers
-      .filter(
-        (answer) =>
-          duplicates ||
-          isEmpty(session) ||
-          !session.value ||
-          isUndefined(find(session.value, (val) => val === answer.id)),
-      )
-      .map((answer) => (
+    const filteredAnswers = availableAnswers(config, value).map((answer) => (
         <DragAndDropAnswer
           key={answer.id}
           instanceId={instanceId}
@@ -55,12 +50,19 @@ export class ChoicesList extends React.Component {
           type="choice"
           selectedAnswer={selectedAnswer}
           onSelectClick={onChoiceClick}
+          ariaLabel={describeChoiceTile(t, config, answer.id)}
           {...answer}
         />
       ));
 
+    // Only a live interaction has choices left to move to.
+    const available = disabled ? null : describeAvailableChoices(t, config, value);
+
     return (
       <ChoicesContainer>
+        {available && (
+          <div style={visuallyHidden}>{[available.count, available.end].join(' ')}</div>
+        )}
         <DroppablePlaceholder
           id="choices-pool"
           disabled={disabled}

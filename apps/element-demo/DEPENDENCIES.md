@@ -24,6 +24,7 @@ In production ESM mode, the demo app loads elements from a CDN (like esm.sh, jsp
 ```
 
 The CDN:
+
 1. Serves element packages from npm
 2. Resolves all transitive dependencies automatically
 3. Serves everything as ESM modules
@@ -50,11 +51,13 @@ In local development mode (`vite dev`), the demo uses static imports instead of 
 ```
 
 The empty `cdn-url` triggers the static import path, which:
+
 1. Uses Vite's workspace resolver with `resolveSources: true`
 2. Loads source files instead of built dist files
 3. Requires workspace packages to be available for module resolution
 
 These packages are marked as devDependencies because:
+
 - They're only needed during `vite dev` (not for production builds)
 - In production, elements load from CDN or IIFE bundles
 - They're automatically available through Bun's workspace protocol
@@ -64,6 +67,7 @@ These packages are marked as devDependencies because:
 These were incorrectly listed as runtime dependencies and have been removed:
 
 ### UI Libraries (already in elements)
+
 - `@tiptap/core`, `@tiptap/extension-*` - In element-player
 - `highlight.js`, `lowlight` - In element-player
 - `katex` - In math rendering packages

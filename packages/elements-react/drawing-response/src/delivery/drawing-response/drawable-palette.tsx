@@ -34,9 +34,8 @@ const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputCont
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../../i18n/index.js';
 
-const { translator } = Translator;
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -83,8 +82,9 @@ class Palette extends React.Component {
 
   render() {
     const { fillColor, outlineColor, fillList, outlineList, language } = this.props;
-    const fillLabel = translator.t('drawingResponse.fillColor', { lng: language });
-    const outlineLabel = translator.t('drawingResponse.outlineColor', { lng: language });
+    const i18n = catalogs.forLocale(language);
+    const fillLabel = i18n.t('fillColor');
+    const outlineLabel = i18n.t('outlineColor');
 
     return (
       <BaseContainer>

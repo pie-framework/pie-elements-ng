@@ -74,11 +74,24 @@ export class RawLine extends React.Component {
     }
   }
 
+  // disabling the marks replaces their slider group with a plain one, which remounts the drag handle in the middle
+  // of a drag, so the end of the drag never reaches it: drop the value it was dragging here
+  componentDidUpdate(prevProps) {
+    if (this.props.disabled && !prevProps.disabled && this.state.dragging) {
+      this.setState({ dragging: false, line: getData(this.props.data, this.props.graphProps.domain) });
+    }
+  }
+
   setDragValue = (line) => this.setState({ line });
 
   dragStop: any = (index) => {
-    const { onChange } = this.props;
+    const { onChange, disabled } = this.props;
     this.setState({ dragging: false }, () => {
+      // a drag that was under way when the marks got disabled still ends, but its value is not an answer
+      if (disabled) {
+        return;
+      }
+
       onChange(index, this.state.line[index]);
     });
   };

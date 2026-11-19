@@ -15,9 +15,8 @@ export default {
     many: "Dim ond {count} ateb sy'n cael eu caniatáu.",
     other: "Dim ond {count} o atebion sy'n cael eu caniatáu.",
   },
-  showTeacherInstructions: "Dangos cyfarwyddiadau'r athro",
-  hideTeacherInstructions: "Cuddio cyfarwyddiadau'r athro",
   answerChoicesA11y: 'Dewisiadau ateb',
   partAnswerChoicesA11y: '{partLabel}, dewisiadau ateb',
   pickTheAnswerBelowA11y: 'Dewiswch yr ateb isod',
+  choiceNameA11y: 'Dewis {key}',
 } satisfies MessageCatalog;

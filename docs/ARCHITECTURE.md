@@ -6,7 +6,7 @@ This is a modern implementation of the PIE (Platform Independent Elements) speci
 
 **Current Status**:
 
-- 27 React elements ported from the legacy `pie-elements` and 3 Svelte 5 elements built in this repository
+- 27 React elements ported from the legacy `pie-elements` and 4 Svelte 5 elements built in this repository
 - Element and lib packages publish to npm through Changesets and GitHub Actions: `next` prereleases from `develop`, stable releases from `master`
 
 ## Core Philosophy
@@ -46,7 +46,7 @@ This project differs fundamentally from the legacy pie-elements in eight key way
 - **Controllers** are pure TypeScript business logic (completely framework-independent)
 - **UI implementations** can use any framework (React, Svelte, Vue, Angular) as long as they produce web components
 - **Element Player** loads elements via custom element registry, regardless of underlying framework
-- **Current State**: 27 elements use React and 3 use Svelte 5
+- **Current State**: 27 elements use React and 4 use Svelte 5
 
 This architectural flexibility will allow choosing the right framework for each use case (e.g., Svelte for smaller bundles, React for ecosystem compatibility).
 
@@ -166,14 +166,14 @@ packages/multiple-choice/
 await esmLoader.load(config, document, {
   view: 'delivery-mobile',
   fallback: 'delivery',
-  loadControllers: true
+  loadControllers: true,
 });
 
 // Load accessibility-optimized view
 await esmLoader.load(config, document, {
   view: 'delivery-a11y',
   fallback: 'delivery',
-  loadControllers: true
+  loadControllers: true,
 });
 ```
 
@@ -396,7 +396,7 @@ export async function model(
   question: MultipleChoiceModel,
   session: SessionData | null,
   env: PieEnvironment,
-  updateSession?: PieUpdateSession,
+  updateSession?: PieUpdateSession
 ): Promise<ViewModel> {
   // Transform based on mode (gather/view/evaluate)
   // Apply role-based permissions (student/instructor)
@@ -406,7 +406,7 @@ export async function model(
 export async function outcome(
   question: MultipleChoiceModel,
   session: SessionData,
-  env: PieEnvironment,
+  env: PieEnvironment
 ): Promise<PieOutcome> {
   // Calculate score
   // Generate feedback
@@ -498,7 +498,7 @@ export interface PieController {
     question: PieModel,
     session: SessionData | null,
     env: PieEnvironment,
-    updateSession?: PieUpdateSession,
+    updateSession?: PieUpdateSession
   ): Promise<ViewModel>;
 
   /**
@@ -508,11 +508,7 @@ export interface PieController {
    * @param env - Evaluation environment
    * @returns Score, feedback, and correctness
    */
-  outcome(
-    question: PieModel,
-    session: SessionData,
-    env: PieEnvironment,
-  ): Promise<PieOutcome>;
+  outcome(question: PieModel, session: SessionData, env: PieEnvironment): Promise<PieOutcome>;
 }
 ```
 
@@ -520,8 +516,8 @@ export interface PieController {
 
 ```typescript
 export interface PieEnvironment {
-  mode: "gather" | "view" | "evaluate";
-  role: "student" | "instructor";
+  mode: 'gather' | 'view' | 'evaluate';
+  role: 'student' | 'instructor';
 }
 ```
 
@@ -847,8 +843,8 @@ bun run build
 
 ```javascript
 // dist/index.js
-export { default as MultipleChoice } from "./MultipleChoice.js";
-export { model, outcome } from "./controller.js";
+export { default as MultipleChoice } from './MultipleChoice.js';
+export { model, outcome } from './controller.js';
 ```
 
 **IIFE** (Immediately Invoked Function Expression) format for CDN deployment:
@@ -1113,9 +1109,3 @@ Use `$bindable` only for true bidirectional flow:
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [WCAG 2.2 Guidelines](https://www.w3.org/WAI/WCAG22/quickref/)
 - [Vite Documentation](https://vitejs.dev/)
-
----
-
-**Document Version**: 1.0
-**Last Updated**: 2025-01-07
-**Status**: Living Document

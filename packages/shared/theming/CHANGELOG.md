@@ -45,7 +45,7 @@
 - [#27](https://github.com/pie-framework/pie-elements-ng/pull/27) [`5ca8ec1`](https://github.com/pie-framework/pie-elements-ng/commit/5ca8ec140ac4b115c8d11cb783d856be42f3de7b) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - Republish shared packages with resolved workspace:* dependencies (fixes broken 0.1.0 manifests on npm)
 
 - [#126](https://github.com/pie-framework/pie-elements-ng/pull/126) [`2f26122`](https://github.com/pie-framework/pie-elements-ng/commit/2f261228e302c3d8289d8f45232083e6fc73c5ae) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - Add a `disabled-text` color for disabled text that still has to be read, and use it for charting tick labels (PIE-922)
-  
+
   `@pie-lib/render-ui` gains `color.disabledText()` (`--pie-disabled-text`, default
   `[#545454](https://github.com/pie-framework/pie-elements-ng/issues/545454)`), registered in `@pie-element/shared-theming` and set in the light and dark
   themes. Charting's disabled tick labels took two different colors: the MathJax fraction
@@ -59,7 +59,7 @@
   (`--pie-blue-grey-300`) against that ink, so black on it fell to 3.44:1 in Light
   Gray on Dark Gray and 3.77:1 in White on Black, and black on the selected fill
   (`--pie-blue-grey-100`) was 1.46:1 in the dark schemes.
-  
+
   The `--pie-blue-grey-300` fallback moves to `#81848F`, pie-theme's light base
   value, and the PIE light and dark themes take `#9094A0` and `#526B77` so their
   own ink stays over 4.5:1 on the hover fill.
@@ -82,7 +82,7 @@
   (`--pie-blue-grey-300`) against that ink, so black on it fell to 3.44:1 in Light
   Gray on Dark Gray and 3.77:1 in White on Black, and black on the selected fill
   (`--pie-blue-grey-100`) was 1.46:1 in the dark schemes.
-  
+
   The `--pie-blue-grey-300` fallback moves to `#81848F`, pie-theme's light base
   value, and the PIE light and dark themes take `#9094A0` and `#526B77` so their
   own ink stays over 4.5:1 on the hover fill.
@@ -105,7 +105,7 @@
 - Fix: republish to replace workspace:* with resolved versions in published manifests
 - Republish shared packages with resolved workspace:* dependencies (fixes broken 0.1.0 manifests on npm)
 - Add a `disabled-text` color for disabled text that still has to be read, and use it for charting tick labels (PIE-922)
-  
+
   `@pie-lib/render-ui` gains `color.disabledText()` (`--pie-disabled-text`, default
   `#545454`), registered in `@pie-element/shared-theming` and set in the light and dark
   themes. Charting's disabled tick labels took two different colors: the MathJax fraction

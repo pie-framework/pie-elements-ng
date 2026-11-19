@@ -9,7 +9,7 @@ import { set } from '@pie-element/shared-lodash';
 import { RadioGroup, Typography } from '@mui/material';
 import Radio from '@mui/material/Radio';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils.js';
+import { findSectionsInSolutionSet, findSelectedSection, checkIfLinesAreAdded } from './utils.js';
 
 const SubtitleText: any = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1.5),
@@ -166,26 +166,24 @@ export class CorrectResponse extends React.Component {
   /*
    * Function to handle the changes to solution set on the graph
    * @param {object} point - point selected on the graph
+   * @param {object} rawPoint - unsnapped position of the click, when known
    * */
-  onSolutionSetSelected: any = (point) => {
+  onSolutionSetSelected: any = (point, rawPoint) => {
     const { model, onChange } = this.props;
     const { answers, gssLineData } = model;
-    for (const section of gssLineData.sections) {
-      //check if the point is inside the polygon
-      if (pointInsidePolygon(point, section)) {
-        let polygon = {
-          points: section,
-          building: false,
-          type: 'polygon',
-          closed: true,
-          isSolution: true,
-        };
-        //remove old answer section from correct answer
-        answers.correctAnswer.marks = answers.correctAnswer.marks.filter((mark) => mark.type !== 'polygon');
-        //add new answer section to correct answer
-        answers.correctAnswer.marks.push(polygon);
-        break;
-      }
+    const section = findSelectedSection(gssLineData.sections, point, rawPoint);
+    if (section) {
+      let polygon = {
+        points: section,
+        building: false,
+        type: 'polygon',
+        closed: true,
+        isSolution: true,
+      };
+      //remove old answer section from correct answer
+      answers.correctAnswer.marks = answers.correctAnswer.marks.filter((mark) => mark.type !== 'polygon');
+      //add new answer section to correct answer
+      answers.correctAnswer.marks.push(polygon);
     }
     set(model, 'answers', answers);
     onChange(model);

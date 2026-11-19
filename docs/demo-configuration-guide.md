@@ -24,10 +24,10 @@ export default {
       },
       session: {
         // Optional initial session state
-      }
+      },
     },
     // ... more demos
-  ]
+  ],
 };
 ```
 
@@ -49,9 +49,11 @@ When adding a new element, create a demo config with 3-5 demos:
 4. **Tags**: Add relevant tags for filtering (e.g., `basic`, `math`, `multi-select`)
 
 5. **Update registry**: After creating demos, run:
+
    ```bash
    bun tools/generate-demo-metadata.mjs
    ```
+
    This seeds `apps/element-demo/src/lib/samples/<element>.json` from the config and adds the element to `apps/element-demo/src/lib/elements/registry.ts`. Check the new entry's `title` and `hasSession` there; regeneration keeps both. Set `hasSession: false` for an element without a learner session, which makes the e2e smoke tests skip its delivery interaction check.
 
 ## Editing Existing Demos
@@ -72,18 +74,22 @@ export default {
       title: 'Basic Example',
       description: 'Simple demonstration of core functionality',
       tags: ['basic'],
-      model: { /* ... */ },
-      session: {}
+      model: {
+        /* ... */
+      },
+      session: {},
     },
     {
       id: 'with-math',
       title: 'With Mathematical Content',
       description: 'Example using LaTeX math rendering',
       tags: ['math', 'latex'],
-      model: { /* ... */ },
-      session: {}
-    }
-  ]
+      model: {
+        /* ... */
+      },
+      session: {},
+    },
+  ],
 };
 ```
 
@@ -99,24 +105,30 @@ export default {
       title: 'Mode A - Basic',
       description: 'Basic usage in mode A',
       tags: ['mode-a', 'basic'],
-      model: { /* ... */ }
+      model: {
+        /* ... */
+      },
     },
     {
       id: 'mode-a-advanced',
       title: 'Mode A - Advanced',
       description: 'Advanced features in mode A',
       tags: ['mode-a', 'advanced'],
-      model: { /* ... */ }
+      model: {
+        /* ... */
+      },
     },
     {
       id: 'mode-b',
       title: 'Mode B Example',
       description: 'Demonstration of mode B',
       tags: ['mode-b'],
-      model: { /* ... */ }
+      model: {
+        /* ... */
+      },
     },
     // ... more demos
-  ]
+  ],
 };
 ```
 
@@ -125,6 +137,7 @@ export default {
 When adding demos with mathematical content, consider including both LaTeX and MathML examples:
 
 ### LaTeX Example
+
 ```javascript
 {
   id: 'with-latex',
@@ -139,6 +152,7 @@ When adding demos with mathematical content, consider including both LaTeX and M
 ```
 
 ### MathML Example
+
 ```javascript
 {
   id: 'with-mathml',

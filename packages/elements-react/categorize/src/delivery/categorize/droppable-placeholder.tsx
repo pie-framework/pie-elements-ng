@@ -49,12 +49,13 @@ const DroppablePlaceholder = ({
   const isDragLive = !!active;
   const showsHoverEffect = isDragLive ? isOver : isOver || (hasSelection && isHovered && !disabled);
 
-  // A category is always a valid drop target (it holds 0..N choices), so it is always a
-  // tab stop unless disabled — that's what makes "select a choice, Tab to a category,
-  // press Enter" work. The choices inside it keep their own dnd-kit tab stops for pick-up,
-  // so the target is a group named by its label: a button would nest those choices, and
-  // a button's children are presentational to assistive technology.
-  const isNativeTabStop = !disabled;
+  // A category or the pool only takes a click or a key while a choice is selected, so only
+  // then is it a tab stop — that's what makes "select a choice, Tab to a category, press
+  // Enter" work. With nothing selected the tab path runs through the choices instead (see
+  // choice.tsx), wherever they sit. The choices inside a target keep their own dnd-kit
+  // node, so the target is a group named by its label: a button would nest those choices,
+  // and a button's children are presentational to assistive technology.
+  const isNativeTabStop = !disabled && hasSelection;
 
   const handleClick = () => {
     if (disabled || !selectedItem) return;

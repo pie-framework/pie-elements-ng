@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import fixturesJson from './i18n-conformance-fixtures.json';
+import fixturesJson from '@pie-players/pie-language-tags/i18n-conformance-fixtures.json';
+import { languageTagLookupSequence } from '@pie-players/pie-language-tags';
 import { defineCatalogs, loadLocale, registerMessages } from '../src/catalogs.js';
-import { languageTagLookupSequence } from '../src/language-tags.js';
-import { localeDirection } from '../src/provider.js';
+import { localeDirection, SimpleI18n } from '../src/provider.js';
 import type { MessageCatalog } from '../src/types.js';
 
 /**
  * Conformance of this engine to the cross-repository spec.
  *
- * `i18n-conformance-fixtures.json` is the semantics the two PIE engines share:
- * this one and pie-players' `players-shared/src/i18n`, which this engine ports
- * without sharing code. Each repository runs the same file against its own
- * engine, so a case one engine passes and the other fails is drift made
- * visible. The copies are kept byte-identical; the fixture's `$comment` names
- * both paths.
+ * `@pie-players/pie-language-tags/i18n-conformance-fixtures.json` is the semantics
+ * the two PIE engines share: this one and pie-players' `players-shared/src/i18n`.
+ * Both import their language-tag code from that package and keep their own
+ * providers, and both run this one file against their own engine, so a case one
+ * engine passes and the other fails is drift made visible.
  */
 
 interface Fixtures {
   lookupSequence: { tag: string; expected: string[] }[];
+  catalogMatch: { locale: string; available: string[]; expected: string }[];
   direction: { tag: string; expected: 'ltr' | 'rtl' }[];
   plural: {
     catalogs: Record<string, MessageCatalog>;
@@ -36,6 +36,19 @@ interface Fixtures {
     hostMessages: MessageCatalog;
     expected: Record<string, string>;
   };
+  scenarios: {
+    name: string;
+    locale: string;
+    source: MessageCatalog;
+    shipped: Record<string, MessageCatalog>;
+    hostMessages: Record<string, MessageCatalog>;
+    expected: {
+      locale: string;
+      direction: 'ltr' | 'rtl';
+      t: Record<string, string>;
+      plural: { key: string; count: number; expected: string }[];
+    };
+  }[];
 }
 
 const fixtures = fixturesJson as unknown as Fixtures;
@@ -54,6 +67,16 @@ async function catalogsFor(
   shipped: Record<string, MessageCatalog>,
   hostMessages?: MessageCatalog
 ) {
+  return scenarioCatalogs(locale, source, shipped, hostMessages ? { [locale]: hostMessages } : {});
+}
+
+/** As `catalogsFor`, with host messages registered under each tag exactly as the fixture writes it. */
+async function scenarioCatalogs(
+  locale: string,
+  source: MessageCatalog,
+  shipped: Record<string, MessageCatalog>,
+  hostMessages: Record<string, MessageCatalog>
+) {
   const packageName = `conformance-${packageCounter++}`;
   const loaders = Object.fromEntries(
     Object.entries(shipped)
@@ -61,7 +84,9 @@ async function catalogsFor(
       .map(([tag, catalog]) => [tag, async () => ({ default: catalog })])
   );
   const catalogs = defineCatalogs({ packageName, source, loaders });
-  if (hostMessages) registerMessages(packageName, locale, hostMessages);
+  for (const [tag, messages] of Object.entries(hostMessages)) {
+    registerMessages(packageName, tag, messages);
+  }
   await loadLocale(locale);
   return catalogs.forLocale(locale);
 }
@@ -70,6 +95,19 @@ describe('i18n conformance', () => {
   it('lookup sequence', () => {
     for (const { tag, expected } of fixtures.lookupSequence) {
       expect(languageTagLookupSequence(tag), tag).toEqual(expected);
+    }
+  });
+
+  it('catalog match: script-aware lookup, then widening within the script', async () => {
+    for (const { locale, available, expected } of fixtures.catalogMatch) {
+      // Loaded, because a view names a catalog locale only once its catalog is resident.
+      const i18n = new SimpleI18n({
+        source: {},
+        availableLocales: available,
+        loadCatalog: async () => ({}),
+      });
+      await i18n.setLocale(locale);
+      expect(i18n.getLocale(), `${locale} in ${available.join(', ')}`).toBe(expected);
     }
   });
 
@@ -102,4 +140,19 @@ describe('i18n conformance', () => {
       expect(t.t(key as never), key).toBe(value);
     }
   });
+
+  it.each(fixtures.scenarios.map((scenario) => [scenario.name, scenario] as const))(
+    'scenario: %s',
+    async (_name, { locale, source, shipped, hostMessages, expected }) => {
+      const t = await scenarioCatalogs(locale, source, shipped, hostMessages);
+      expect(t.getLocale(), 'locale').toBe(expected.locale);
+      expect(t.getDirection(), 'direction').toBe(expected.direction);
+      for (const [key, value] of Object.entries(expected.t)) {
+        expect(t.t(key as never), key).toBe(value);
+      }
+      for (const { key, count, expected: text } of expected.plural) {
+        expect(t.plural(key as never, { count }), `${key} ${count}`).toBe(text);
+      }
+    }
+  );
 });

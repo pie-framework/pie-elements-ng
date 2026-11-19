@@ -27,9 +27,8 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { styled } from '@mui/material/styles';
-import Translator from '@pie-lib/translator';
+import { catalogs } from '../../i18n/index.js';
 
-const { translator } = Translator;
 import ImageBackground from './drawable-image.js';
 import Button from './button.js';
 import factory from './factory.js';
@@ -240,10 +239,9 @@ export class DrawableMain extends React.Component {
 
   labelStage: any = () => {
     const { imageUrl, backgroundImageEnabled = true, language } = this.props;
-    const label = translator.t(
-      backgroundImageEnabled && imageUrl ? 'drawingResponse.drawingAreaOverImage' : 'drawingResponse.drawingArea',
-      { lng: language },
-    );
+    const label = catalogs
+      .forLocale(language)
+      .t(backgroundImageEnabled && imageUrl ? 'drawingAreaOverImage' : 'drawingArea');
 
     // Konva creates one canvas per layer
     for (const canvas of this.stageContainer?.querySelectorAll('canvas') ?? []) {
@@ -314,12 +312,12 @@ export class DrawableMain extends React.Component {
           <Button
             disabled={disabled}
             onClick={this.handleUndo}
-            label={translator.t('common:undo', { lng: language })}
+            label={catalogs.forLocale(language).t('undo')}
           />
           <Button
             disabled={disabled}
             onClick={this.handleClearAll}
-            label={translator.t('common:clearAll', { lng: language })}
+            label={catalogs.forLocale(language).t('clearAll')}
           />
         </UndoControls>
         <Base>

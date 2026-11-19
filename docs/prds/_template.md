@@ -1,8 +1,8 @@
 # <Element or feature name>
 
-Status: **Proposal** / **Accepted** / **Superseded** · Tier: 1 / 2 / 3 *(optional)* · Impl. path: New / Extend `<element>` / Cross-cutting
+Status: **Proposal** / **Accepted** / **Superseded** · Tier: 1 / 2 / 3 _(optional)_ · Impl. path: New / Extend `<element>` / Cross-cutting
 
-*Pick one status. See [`docs/prds/README.md`](../README.md#status) for the vocabulary. If `Superseded`, link the replacement inline: `Status: **Superseded** by [foo-bar](../foo-bar/PRD.md)`.*
+_Pick one status. See [`docs/prds/README.md`](../README.md#status) for the vocabulary. If `Superseded`, link the replacement inline: `Status: **Superseded** by [foo-bar](../foo-bar/PRD.md)`._
 
 ## Context
 
@@ -26,7 +26,7 @@ For an **element**:
 
 - **Model** (key fields, not full TypeScript; one-line rationale inline for non-obvious defaults): ...
 - **Session** (key fields): ...
-- **Modes supported**: `gather`, `view`, `evaluate` *(strike any not supported)*. Authoring is the separate `<tag>-config` element, covered under **Authoring surface**.
+- **Modes supported**: `gather`, `view`, `evaluate` _(strike any not supported)_. Authoring is the separate `<tag>-config` element, covered under **Authoring surface**.
 - **Key delivery interactions** (pointer / keyboard / touch — high level only): ...
 - **Controller responsibilities**: ...
 - **Authoring surface** (what the author configures): ...
@@ -40,7 +40,7 @@ For a **cross-cutting change**:
 
 A single concrete prompt → learner action → submitted state walkthrough. One example is enough.
 
-> *Prompt*: ...
+> _Prompt_: ...
 
 The learner ... The submitted response is ...
 
@@ -60,7 +60,7 @@ Things that are deliberately undecided. Visible undecided questions beat invisib
 
 ## Status log
 
-*Optional. Include only once the PRD has transitioned between status values (e.g. `Proposal → Accepted`). One line per transition, no dates (git has them), and no content-change entries. Delete this section for fresh PRDs that have never transitioned.*
+_Optional. Include only once the PRD has transitioned between status values (e.g. `Proposal → Accepted`). One line per transition, no dates (git has them), and no content-change entries. Delete this section for fresh PRDs that have never transitioned._
 
 - Raised as proposal from ...
 - Accepted after ...

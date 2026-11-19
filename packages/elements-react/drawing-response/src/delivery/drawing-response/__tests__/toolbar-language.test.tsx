@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { Container } from '../container';
 import DrawableImage from '../drawable-image';
 
@@ -19,6 +20,9 @@ vi.mock('react-konva', async () => {
     Transformer: shape,
   };
 });
+
+// The element loads the item's locale before it renders; these render its parts directly.
+beforeAll(() => loadLocale('es_ES'));
 
 const props = {
   disabled: false,

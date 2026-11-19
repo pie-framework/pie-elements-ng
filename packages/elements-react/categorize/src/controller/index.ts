@@ -3,7 +3,6 @@ import { buildState, score } from '@pie-lib/categorize';
 import { getFeedbackForCorrectness, type Feedback } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import type { PieEnvironment, PieUpdateSession } from '@pie-element/shared-types';
-import Translator from '@pie-lib/translator';
 import type {
   CategorizeAnswer,
   CategorizeConfiguration,
@@ -14,8 +13,6 @@ import type {
   CategoryCorrectResponse,
   MultiplePlacements,
 } from '../types.js';
-
-const { translator } = Translator;
 import defaults from './defaults.js';
 import { getCompleteResponseDetails, isAlternateDuplicated, isCorrectResponseDuplicated, multiplePlacements } from './utils.js';
 
@@ -187,7 +184,7 @@ export const model = async (
     customAudioButton,
   } = normalizedQuestion;
   let choices: CategoryChoice[] | undefined = normalizedQuestion.choices;
-  let { note } = normalizedQuestion;
+  const { note } = normalizedQuestion;
   let fb: string | undefined;
 
   const lockChoiceOrder = lockChoices(normalizedQuestion, session as SharedSession, env);
@@ -228,13 +225,9 @@ export const model = async (
     return { ...c, categoryCount };
   });
 
-  if (!note) {
-    note = translator.t('common:commonCorrectAnswerWithAlternates', { lng: language });
-  }
-
   const alternates = getAlternates(filteredCorrectResponse);
   const showInstructorContent = role === 'instructor' && (mode === 'view' || mode === 'evaluate');
-  const { responseAreasToBeFilled, possibleResponses, hasUnplacedChoices } = getCompleteResponseDetails(
+  const { responseAreasToBeFilled, hasUnplacedChoices } = getCompleteResponseDetails(
     filteredCorrectResponse,
     normalizedQuestion.allowAlternateEnabled ? alternates : [],
     normalizedQuestion.choices,
@@ -254,7 +247,8 @@ export const model = async (
     rowLabels,
     note,
     env,
-    showNote: alternates && alternates.length > 0,
+    // Delivery shows the note beside the correct answer alone, and it tells that alternates exist.
+    showNote: (mode === 'evaluate' || role === 'instructor') && alternates && alternates.length > 0,
     correctResponse: mode === 'evaluate' ? filteredCorrectResponse : undefined,
     language,
     extraCSSRules,
@@ -264,7 +258,6 @@ export const model = async (
     autoplayAudioHeld,
     completeAudioEnabled,
     customAudioButton,
-    possibleResponses,
     responseAreasToBeFilled,
     hasUnplacedChoices,
     ...(question.allowMultiplePlacementsEnabled == null && { allowMultiplePlacementsEnabled: resolvedAllowMultiple }),

@@ -9,10 +9,9 @@ import { clone, isEqual } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import { noSelect } from '@pie-lib/style-utils';
 import { createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-
-const { translator } = Translator;
+import { dynamicMessageKey } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
 const log = debug('@pie-lib:text-select:token-select');
 
@@ -45,9 +44,9 @@ const normalizeSelectableText = (text = '') =>
 
 // The evaluate marking each token carries as its description, keyed by the Legend's labels.
 const MARKINGS = {
-  correct: 'selectText.correctAnswerSelected',
-  incorrect: 'selectText.incorrectSelection',
-  missing: 'selectText.correctAnswerNotSelected',
+  correct: 'correctAnswerSelected',
+  incorrect: 'incorrectSelection',
+  missing: 'correctAnswerNotSelected',
 };
 
 const markingOf = (t) => {
@@ -255,12 +254,17 @@ export class TokenSelect extends React.Component {
     token?.focus({ preventScroll: true, focusVisible: this.keyboardToggle });
   }
 
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
+  i18n = () => catalogs.forLocale(this.props.language, this.relabel);
+
   groupName = () => {
-    const { maxNoOfSelections, language } = this.props;
+    const { maxNoOfSelections } = this.props;
 
     return maxNoOfSelections > 0
-      ? translator.t('selectText.textGroupWithLimit', { lng: language, max: maxNoOfSelections })
-      : translator.t('selectText.textGroup', { lng: language });
+      ? this.i18n().t('textGroupWithLimit', { max: maxNoOfSelections })
+      : this.i18n().t('textGroup');
   };
 
   /**
@@ -273,7 +277,8 @@ export class TokenSelect extends React.Component {
    * Returns the descriptions the tokens reference alongside the HTML.
    */
   generateTokensInHtml: any = () => {
-    const { tokens, disabled, highlightChoices, animationsDisabled, language } = this.props;
+    const { tokens, disabled, highlightChoices, animationsDisabled } = this.props;
+    const i18n = this.i18n();
     const selectedCount = this.selectedCount();
     const operable = this.operable();
     const descriptions = {};
@@ -313,13 +318,13 @@ export class TokenSelect extends React.Component {
           position += 1;
           describedBy = describe(
             `position-${position}`,
-            translator.t('selectText.tokenPosition', { lng: language, index: position, total }),
+            i18n.t('tokenPosition', { index: position, total }),
           );
         } else {
           const marking = markingOf(t);
 
           if (marking) {
-            describedBy = describe(marking, translator.t(MARKINGS[marking], { lng: language }));
+            describedBy = describe(marking, i18n.t(dynamicMessageKey(MARKINGS[marking])));
           }
         }
 

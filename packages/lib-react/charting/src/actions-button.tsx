@@ -1,15 +1,16 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import { color, createUniqueId } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-const { translator } = Translator;
+import { getLabelMathFormat } from './mark-label.js';
+import { catalogs } from './i18n/index.js';
 
 const StyledActions: any = styled('div')(() => ({
   alignSelf: 'flex-end',
@@ -41,7 +42,28 @@ const StyledMenuItem: any = styled(MenuItem)(({ theme }) => ({
   color: color.defaults.TEXT,
 }));
 
+// a numeric label, typeset as the chart shows it; `math` is built from a validated number, never from free text
+const MathLabel = ({ math }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+
+    if (el) {
+      el.textContent = math;
+      renderMath(el);
+    }
+  }, [math]);
+
+  // MathJax's container takes focus (tabindex -1) and has a context menu of its own; with no pointer events a
+  // press or right-click on the math lands on the option, so focus stays on the option and no second menu opens
+  return <span ref={ref} style={{ pointerEvents: 'none' }} />;
+};
+
 export class ActionsButton extends React.Component {
+  /** Re-renders once the language's catalog lands, for an element that did not preload it. */
+  relabel = () => this.forceUpdate();
+
   constructor(props) {
     super(props);
     this.state = {
@@ -89,6 +111,7 @@ export class ActionsButton extends React.Component {
     const { categories, language } = this.props;
     const { actionsAnchorEl } = this.state;
     const open = Boolean(actionsAnchorEl);
+    const i18n = catalogs.forLocale(language, this.relabel);
 
     const deletable = (categories || [])
       .map((category, index) => ({ category, index }))
@@ -104,7 +127,7 @@ export class ActionsButton extends React.Component {
           aria-controls={open ? this.menuId : undefined}
           onClick={this.handleActionsClick}
         >
-          {translator.t('charting.actions', { lng: language })}
+          {i18n.t('actions')}
         </StyledTrigger>
        <Menu
           id={this.menuId}
@@ -117,14 +140,33 @@ export class ActionsButton extends React.Component {
           slotProps={{ list: { 'aria-labelledby': this.triggerId } }}
         >
           <StyledMenuItem onClick={() => this.handleAddCategory()}>
-            + {translator.t('charting.add', { lng: language })}
+            + {i18n.t('add')}
           </StyledMenuItem>
-          {deletable.map(({ category, index }) => (
-            <StyledMenuItem key={index} onClick={() => this.handleDeleteCategory(index)}>
-              {`${translator.t('charting.delete', { lng: language })} <${category.label ||
-                translator.t('charting.newLabel', { lng: language })}>`}
-            </StyledMenuItem>
-          ))}
+          {deletable.map(({ category, index }) => {
+            const action = i18n.t('delete');
+            // a numeric label is typeset, as it is on the chart, and any other is shown as it is
+            const math = getLabelMathFormat(category.label);
+            const name = category.label || i18n.t('newLabel');
+
+            return (
+              <StyledMenuItem
+                key={index}
+                // the typeset label has no text of its own to name the item by
+                aria-label={math ? `${action} <${category.label.trim()}>` : undefined}
+                onClick={() => this.handleDeleteCategory(index)}
+              >
+                {math ? (
+                  <>
+                    {`${action} <`}
+                    <MathLabel math={math} />
+                    {'>'}
+                  </>
+                ) : (
+                  `${action} <${name}>`
+                )}
+              </StyledMenuItem>
+            );
+          })}
         </Menu>
       </StyledActions>
     );

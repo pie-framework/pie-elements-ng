@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import FractionModelChart from '../fraction-model-chart';
 
 const props = {
@@ -33,7 +34,8 @@ describe('fraction model text alternative', () => {
     expect(screen.getByRole('img', { name: 'Model 1 of 2: 2 of 4 parts selected' })).toBeInTheDocument();
   });
 
-  it('uses the singular for a one-part model and names it in the item language', () => {
+  it('uses the singular for a one-part model and names it in the item language', async () => {
+    await loadLocale('es_ES');
     render(
       <FractionModelChart modelType="bar" noOfModels={1} partsPerModel={1} value={[{ id: 1, value: 1 }]} language="es_ES" />,
     );

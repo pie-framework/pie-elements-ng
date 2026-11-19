@@ -5,11 +5,11 @@ export default [
     // answers: [
     //   {
     //     containerIndex: 1,
-    //     value: '<img alt="" src="https://app.fluence.net/ia/image/729ca157d04c440ab7ae1c2abfb9c057"/>'
+    //     value: '<img alt="Without tire recycling" src="/image-cloze-association/without-tire-recycling.svg"/>'
     //   },
     //   {
     //     containerIndex: 1,
-    //     value: '<img alt="" src="https://app.fluence.net/ia/image/9e5ed1d6762c4dac87b080e190af113d"/>'
+    //     value: '<img alt="With tire recycling" src="/image-cloze-association/with-tire-recycling.svg"/>'
     //   }
     // ]
   },

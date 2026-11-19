@@ -89,6 +89,60 @@ describe('Collapsible', () => {
     expect(toggle.textContent).toBe(hide);
   });
 
+  it.each([
+    ['teacherInstructions', 'en_US', 'Show Teacher Instructions', 'Hide Teacher Instructions'],
+    ['teacherInstructions', 'es_ES', 'Mostrar instrucciones para el maestro', 'Ocultar instrucciones para el maestro'],
+    ['rationale', undefined, 'Show Rationale', 'Hide Rationale'],
+    ['rationale', 'es-MX', 'Mostrar justificación', 'Ocultar justificación'],
+  ])('labels the %s variant in the %s language', async (variant, language, show, hide) => {
+    const container = render(
+      <Collapsible variant={variant} language={language}>
+        <p>Because.</p>
+      </Collapsible>
+    );
+    const toggle = container.querySelector('button') as HTMLButtonElement;
+    await act(() => loadLocale(language));
+
+    expect(toggle.textContent).toBe(show);
+    act(() => toggle.click());
+    expect(toggle.textContent).toBe(hide);
+  });
+
+  it('relabels the variant when the language changes after the first render', async () => {
+    const container = render(
+      <Collapsible variant="teacherInstructions" language="en-US">
+        <p>Because.</p>
+      </Collapsible>
+    );
+    const toggle = container.querySelector('button') as HTMLButtonElement;
+    expect(toggle.textContent).toBe('Show Teacher Instructions');
+
+    act(() =>
+      root?.render(
+        <Collapsible variant="teacherInstructions" language="es">
+          <p>Because.</p>
+        </Collapsible>
+      )
+    );
+    await act(() => loadLocale('es'));
+
+    expect(toggle.textContent).toBe('Mostrar instrucciones para el maestro');
+  });
+
+  it('lets explicit labels win over the variant, each on its own', async () => {
+    const container = render(
+      <Collapsible variant="rationale" language="es" labels={{ hidden: 'Why?' }}>
+        <p>Because.</p>
+      </Collapsible>
+    );
+    const toggle = container.querySelector('button') as HTMLButtonElement;
+    await act(() => loadLocale('es'));
+
+    expect(toggle.textContent).toBe('Why?');
+    act(() => toggle.click());
+    expect(toggle.textContent).toBe('Ocultar justificación');
+  });
+
   it('gives each instance its own panel id', () => {
     const container = render(
       <div>

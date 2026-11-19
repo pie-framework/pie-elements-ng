@@ -1,6 +1,6 @@
 # Extended text entry: plain-text paste
 
-Status: **Proposal** · Impl. path: Extend `extended-text-entry` · Follows Jira [PIE-1145](https://illuminate.atlassian.net/browse/PIE-1145)
+Status: **Accepted** · Impl. path: Extend `extended-text-entry` · Follows Jira [PIE-1145](https://illuminate.atlassian.net/browse/PIE-1145)
 
 ## Context
 
@@ -32,7 +32,7 @@ This PRD adds an item-level setting that makes the response paste plain text. Se
 
 ## Worked example
 
-> *Prompt*: Summarise the passage in two paragraphs.
+> _Prompt_: Summarise the passage in two paragraphs.
 
 A student drafts in Word, with the first sentence in bold and three points as a bulleted list, then pastes the draft into the response. With the setting off, the first sentence stays bold and each point becomes a paragraph of its own. With the setting on, the same paste arrives as plain paragraphs, the first sentence included, and `session.value` holds no `<strong>`.
 
@@ -40,7 +40,7 @@ A student drafts in Word, with the first sentence in bold and three points as a 
 
 The response's accessible name, role and structure are the same under either setting. The toggle is the settings panel's standard switch.
 
-## Open questions
+## Status log
 
-- [ ] **Toggle shown by default.** Proposed `settings: true`, so authors on every host see the toggle after an upgrade. Alternative: `settings: false`, so it appears only where a host opts in.
-- [ ] **Default for the model.** Proposed `false`, which keeps what students get from the Tiptap editor today. `true` would restore the legacy editor's plain-text paste for every item without the setting, and would change today's behaviour for every item already authored.
+- Raised as proposal from PIE-1145.
+- Accepted — implemented as proposed; both open questions resolved as proposed: the author toggle ships with `settings: true`, and the model default stays `false`.

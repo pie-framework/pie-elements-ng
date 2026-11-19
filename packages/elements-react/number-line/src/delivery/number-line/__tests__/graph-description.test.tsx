@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { describePlottedElements, labelNumberLine } from '../graph/description';
 import NumberLineGraph from '../graph/index';
 
@@ -108,8 +109,9 @@ describe('number line text alternative', () => {
     );
   });
 
-  it('describes the graph in the item language', () => {
+  it('describes the graph in the item language', async () => {
     const language = 'es_ES';
+    await loadLocale(language);
 
     expect(labelNumberLine({ ...graphProps, language })).toBe('Recta numérica de 0 a 10, con una marca cada 1');
     expect(
@@ -187,7 +189,8 @@ describe('number line text alternative', () => {
     ).toEqual(['5px', '5px']);
   });
 
-  it('states correctness in the item language', () => {
+  it('states correctness in the item language', async () => {
+    await loadLocale('es_ES');
     expect(
       describePlottedElements([{ type: 'point', pointType: 'full', position: 1, correct: false }], {
         language: 'es_ES',

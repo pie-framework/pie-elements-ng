@@ -1,5 +1,6 @@
 import { isEqual, differenceWith, uniq, uniqWith } from '@pie-element/shared-lodash';
-import type { Mark, MarkPoint, MarkType, Point } from '../types.js';
+import { findSectionsInSolutionSet, pointInsidePolygon } from '../delivery/utils.js';
+import type { GraphSettings, Mark, MarkPoint, MarkType, Point } from '../types.js';
 
 /** Two endpoints: a line mark, or one side of a polygon. */
 type Segment = { from?: MarkPoint; to?: MarkPoint; fill?: Mark['fill'] };
@@ -153,6 +154,57 @@ export const equalPolygon = (poly1: Mark, poly2: Mark) => {
 export const equalMarks: Record<MarkType, MarkComparator> = {
   line: (sessAnswer, mark) => equalLine(sessAnswer, mark),
   polygon: (sessAnswer, poly) => equalPolygon(sessAnswer, poly),
+};
+
+const inside = (points: MarkPoint[] | undefined, region: Mark) =>
+  !!points?.length && points.every((point) => pointInsidePolygon(point, region.points ?? []));
+
+/** The mean of a section's vertices, which lies inside it, since sections are convex. */
+const centroid = (points: Point[]): Point => ({
+  x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
+  y: points.reduce((sum, point) => sum + point.y, 0) / points.length,
+});
+
+const polygon = (points: Point[]): Mark => ({ type: 'polygon', points });
+
+/**
+ * Today's sections each key region stands for, for keys stored before sections were recomputed. A region
+ * covering one section stands for it: the key outlines it with other vertices, or runs past today's grid.
+ * A region covering every section stands for all of them, as the older element's whole-grid region did.
+ * A region covering some but not all is one of the older element's overlapping sections. That element
+ * stored its sections with the item and resolved a click to the first one containing it, so the region
+ * stands for the sections whose clicks resolved to it.
+ */
+export const keyRegionSections = (
+  marks: Mark[],
+  domain?: GraphSettings,
+  range?: GraphSettings,
+  storedSections?: Point[][],
+): Map<Mark, Mark[]> => {
+  const regions = new Map<Mark, Mark[]>();
+  if (!domain || !range) {
+    return regions;
+  }
+  const lines = marks.filter((mark) => mark.type === 'line');
+  const { sections } = findSectionsInSolutionSet({ numberOfLines: lines.length }, lines, domain, range);
+  const resolvesTo = (section: MarkPoint[], region: Mark) => {
+    const stored = storedSections?.find((points) => pointInsidePolygon(centroid(section), points));
+    return !!stored && equalPolygon(polygon(stored), region);
+  };
+  marks.forEach((mark) => {
+    if (mark.type !== 'polygon') {
+      return;
+    }
+    const covered: MarkPoint[][] = sections.filter((section: MarkPoint[]) => inside(section, mark));
+    const standsFor =
+      covered.length === 1 || covered.length === sections.length
+        ? covered
+        : covered.filter((section) => resolvesTo(section, mark));
+    if (standsFor.length) {
+      regions.set(mark, standsFor.map(polygon));
+    }
+  });
+  return regions;
 };
 
 /*

@@ -84,35 +84,33 @@ Until PIE-1121, `develop` ran Changesets prerelease mode (`.changeset/pre.json`)
 
 ## npm Authentication and Trusted Publishers
 
-Migrating this repository to npm trusted publishing (OIDC) is tracked in PIE-834 and is
-deliberately incomplete. The blocker is package-name ownership, not workflow configuration.
+CI publishes through npm trusted publishing (OIDC), PIE-883. Every publishable package has a
+trusted publisher bound to this repository's `release.yml`, so `release.yml` resolves `auto` to
+OIDC: npm exchanges the run's GitHub id-token for a short-lived publish credential, no npm
+secret is read, and each version carries a provenance attestation. Provenance is checked after
+publishing and fails an OIDC run when it is missing.
 
-npm permits exactly **one** trusted publisher per package. This repository publishes `-next.N`
-prereleases of the same `@pie-element/*` and `@pie-lib/*` names that the still-active
-`pie-framework/pie-elements` and `pie-framework/pie-lib` repositories release as stable, and
-those repositories already hold the record for most of them. Measured on 2026-08-01: of 68
-publishable packages, 45 were last published via OIDC by a legacy repository, leaving roughly
-23 names free for this repository to claim.
-
-npm resolves a single auth mode for a publish run as a whole, so OIDC is not a per-package
-choice. That is why `release.yml` resolves `auto` to **token, or failure — never OIDC**: an
-OIDC run would let Changesets bump and commit versions and then fail every legacy-owned publish
-with `ENEEDAUTH`, leaving versions in git that were never released. The full rationale is in
-the workflow's "Resolve npm publish auth mode" step.
-
-So the `NPM_TOKEN` secret must not be deleted: if it ever goes missing, an automated publish
-run fails at that step by design, with remediation instructions. Opting into OIDC is a
-deliberate manual dispatch with `publish_auth=oidc`, and only once every package it would
-publish is confirmed:
+npm permits exactly **one** trusted publisher per package, and an OIDC run publishes every
+package in it the same way, so one unclaimed package would fail with `ENEEDAUTH` while the
+rest publish. The committed ledger `scripts/trusted-publishers.json` records each claim npm
+has confirmed, and the release fails before the version bump if a publishable package is
+missing from it. A package added to the workspace needs a one-time claim, which asks for 2FA
+in the browser:
 
 ```bash
-bun run trusted-publishers -- --verify
+bun run trusted-publishers -- --apply --only @pie-element/new-package
 ```
 
-`--verify` classifies each package as configured, wrong target (a record bound to another
-repository, which matters because it occupies the one available slot), or not configured. It
-parses npm's JSON rather than trusting the exit status, which is essential here: `npm trust
-list` exits 0 and prints an empty list for a package with no record at all.
+A brand-new name has to be published once by hand first, because npm only accepts a trusted
+publisher for a package that already exists. Commit the ledger change with the package.
+
+A manual dispatch with `publish_auth=token` still publishes with the `NPM_TOKEN` secret, as a
+rollback while that secret exists.
+
+`bun run trusted-publishers -- --verify` reads each package's record from npm and classifies it
+as configured, wrong target (a record bound to another repository, which occupies the one
+slot), or not configured. Each read is its own 2FA approval; ticking "skip two-factor
+authentication for the next 5 minutes" on the first one covers a full run.
 
 Ownership can also be audited with no 2FA round trip, because a published version records the
 publisher that produced it:
@@ -234,7 +232,7 @@ Browser ESM for players is a separate static-file surface. Packages that can pro
 
 The same policy file drives the browser build and publish checks. `check:publish-surface` rejects unsupported bare imports, missing or drifted exact `pie.browserSharedDependencies`, packages whose `dist/browser/**/*.js` total exceeds the browser JS budget, stylesheets in `dist/browser` or `module/` that no reachable module loads (hosts load no element CSS; see [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-stylesheets)), and top-level await in the modules those directories ship. For an element that declares `pie.browserEditorRuntime` it applies the same rules to `dist/browser/editor-runtime`, where the specifiers of `@pie-element/shared-editor-runtime` are also allowed, and requires the declared runtime version to be exact and equal to the runtime's workspace version; see [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#shared-editor-runtime). Packages without browser ESM exports must publish `./runtime-support` metadata that marks ESM unsupported, so players and demos cannot silently request static browser ESM for packages that do not provide it. When adding a new shared external, update the policy and `pie-players` import-map generation together; otherwise new dependencies should remain bundled by default. `dependencies` and `peerDependencies` are install metadata only; they are not the browser runtime singleton contract.
 
-Print-capable packages (those with `exports["./print"]`) also publish a root `module/print.js` and its sourcemap `module/print.js.map`, plus `module/assets/` when the stylesheets `module/print.js` installs reference fonts or images, all included in `files`. This is unrelated to `./browser/print` — it exists only so the legacy `@pie-framework/pie-print` client loader (bare `import()`, no import map) can load `pie-elements-ng` print bundles at the CDN path it already requests. See [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#legacy-compatible-print-packaging) and [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md).
+Print-capable packages (those with `exports["./print"]`) also publish a root `module/print.js`, its sourcemap `module/print.js.map` and its notices `module/print.THIRD_PARTY_LICENSES.txt`, plus `module/assets/` when the stylesheets `module/print.js` installs reference fonts or images, all included in `files`. This is unrelated to `./browser/print` — it exists only so the legacy `@pie-framework/pie-print` client loader (bare `import()`, no import map) can load `pie-elements-ng` print bundles at the CDN path it already requests. See [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#legacy-compatible-print-packaging) and [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md).
 
 Debuggability comes from generated sourcemaps, not from importable source files. TypeScript builds must emit sourcemaps with inline source content, and package validation rejects `.js.map` files that require unpacked source files to be present in the npm tarball.
 

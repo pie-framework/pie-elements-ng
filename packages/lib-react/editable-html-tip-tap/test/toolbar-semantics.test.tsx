@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 // MathJax loads off a CDN and has no bearing on the toolbar.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -35,11 +35,11 @@ describe('EditableHtml toolbar', () => {
     expect(document.querySelectorAll('[tabindex]:not([tabindex="-1"]):not([tabindex="0"])')).toHaveLength(0);
   });
 
-  it('takes its name from the translator in the given language', async () => {
+  it('takes its name from the catalog of the given language once it loads', async () => {
     render(editor({ language: 'es_ES' }));
     await textbox();
 
-    expect(toolbar()).toHaveAttribute('aria-label', 'Herramientas de edición');
+    await waitFor(() => expect(toolbar()).toHaveAttribute('aria-label', 'Herramientas de edición'));
   });
 
   it.each([
@@ -49,8 +49,9 @@ describe('EditableHtml toolbar', () => {
     render(editor({ language, activePlugins: ['bold', 'italic', 'bulleted-list', 'undo', 'redo'] }));
     await textbox();
 
+    const labels = () => [...toolbar().querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
+    await waitFor(() => expect(labels()).toEqual([...names, done]));
     const buttons = [...toolbar().querySelectorAll('button')];
-    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([...names, done]);
     // The done button is an icon with no tooltip.
     expect(buttons.map((b) => b.getAttribute('title'))).toEqual([...names, null]);
   });
@@ -72,6 +73,181 @@ describe('EditableHtml toolbar', () => {
 
     act(() => screen.getByRole('button', { name: 'After' }).focus());
     await waitFor(() => expect(inert(toolbar())).toBe(true));
+  });
+
+  describe('Done button', () => {
+    // Focuses the text, then the toolbar's Done button, as Tab from the text does.
+    const focusDone = async (props: Record<string, unknown> = {}) => {
+      let tiptap: any;
+      const onChange = vi.fn();
+      render(
+        editor({
+          markup: '<p>Hello</p>',
+          onChange,
+          editorRef: (instance: unknown) => {
+            tiptap = instance;
+          },
+          ...props,
+        }),
+      );
+      const box = await textbox();
+      await waitFor(() => expect(tiptap).toBeTruthy());
+      act(() => box.focus());
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+      const done = toolbar().querySelector('button[aria-label="Done"]') as HTMLButtonElement;
+      act(() => done.focus());
+
+      return { box, done, onChange, tiptap };
+    };
+
+    // A click the keyboard synthesises (Enter or Space) has `detail` 0.
+    const pressFromKeyboard = (button: HTMLElement) =>
+      act(() => {
+        fireEvent.click(button, { detail: 0 });
+      });
+
+    it('from the keyboard, closes the toolbar and returns the cursor to where it was in the text', async () => {
+      const { box, done, onChange, tiptap } = await focusDone();
+      // Cursor after "He", set while focus is in the toolbar, as it is left when tabbing out of the text.
+      act(() => {
+        tiptap.commands.setTextSelection(3);
+      });
+      act(() => done.focus());
+
+      pressFromKeyboard(done);
+
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      expect(document.activeElement).toBe(box);
+      expect(tiptap.state.selection.empty).toBe(true);
+      expect(tiptap.state.selection.from).toBe(3);
+      expect(onChange).toHaveBeenCalledWith('<p>Hello</p>');
+    });
+
+    it('opens the toolbar again once the text is edited or the cursor moves', async () => {
+      const { done, tiptap } = await focusDone();
+
+      pressFromKeyboard(done);
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      act(() => {
+        tiptap.commands.insertContent('!');
+      });
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+      act(() => done.focus());
+      pressFromKeyboard(done);
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      act(() => {
+        tiptap.commands.setTextSelection(1);
+      });
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+    });
+
+    it('opens the toolbar again when focus leaves the editor and comes back', async () => {
+      const { box, done } = await focusDone();
+
+      pressFromKeyboard(done);
+      await waitFor(() => expect(inert(toolbar())).toBe(true));
+      act(() => screen.getByRole('button', { name: 'After' }).focus());
+      act(() => box.focus());
+
+      await waitFor(() => expect(inert(toolbar())).toBe(false));
+    });
+
+    it('from the keyboard, returns focus to the text when the toolbar is always visible', async () => {
+      const { box, done } = await focusDone({ toolbarOpts: { alwaysVisible: true } });
+
+      pressFromKeyboard(done);
+
+      expect(document.activeElement).toBe(box);
+      expect(inert(toolbar())).toBe(false);
+    });
+  });
+
+  it('returns the cursor to its previous position in the text on Escape from a toolbar button', async () => {
+    let tiptap: any;
+    render(
+      editor({
+        markup: '<p>Hello</p>',
+        activePlugins: ['bold', 'italic'],
+        editorRef: (instance: unknown) => {
+          tiptap = instance;
+        },
+      }),
+    );
+    const box = await textbox();
+    await waitFor(() => expect(tiptap).toBeTruthy());
+    act(() => box.focus());
+    act(() => {
+      tiptap.commands.setTextSelection(3);
+    });
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const button = toolbar().querySelector('button') as HTMLButtonElement;
+    act(() => button.focus());
+    expect(document.activeElement).toBe(button);
+
+    fireEvent.keyDown(button, { key: 'Escape' });
+
+    expect(document.activeElement).toBe(box);
+    expect(tiptap.state.selection.from).toBe(3);
+    // The toolbar stays available while focus is in the text.
+    expect(inert(toolbar())).toBe(false);
+  });
+
+  it('moves focus to the next and previous button with the arrow keys', async () => {
+    render(editor({ activePlugins: ['bold', 'italic', 'bulleted-list', 'undo', 'redo'] }));
+    const box = await textbox();
+    act(() => box.focus());
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const buttons = [...toolbar().querySelectorAll('button')];
+    expect(buttons.length).toBeGreaterThan(3);
+
+    act(() => buttons[0].focus());
+    fireEvent.keyDown(buttons[0], { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(buttons[1]);
+
+    fireEvent.keyDown(buttons[1], { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(buttons[2]);
+
+    fireEvent.keyDown(buttons[2], { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(buttons[1]);
+
+    // No wrapping: the first button stays focused on ArrowLeft.
+    act(() => buttons[0].focus());
+    fireEvent.keyDown(buttons[0], { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('moves focus along the inline axis in a right-to-left toolbar', async () => {
+    render(<div style={{ direction: 'rtl' }}>{editor({ activePlugins: ['bold', 'italic', 'underline'] })}</div>);
+    const box = await textbox();
+    act(() => box.focus());
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const buttons = [...toolbar().querySelectorAll('button')];
+
+    act(() => buttons[1].focus());
+    fireEvent.keyDown(buttons[1], { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(buttons[2]);
+
+    fireEvent.keyDown(buttons[2], { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(buttons[1]);
+  });
+
+  it('steps past the options of a closed disclosure', async () => {
+    render(editor({ activePlugins: ['text-align', 'bulleted-list'] }));
+    const box = await textbox();
+    act(() => box.focus());
+    await waitFor(() => expect(inert(toolbar())).toBe(false));
+
+    const trigger = toolbar().querySelector('[aria-expanded="false"]') as HTMLButtonElement;
+    const after = toolbar().querySelector('[aria-label="Bulleted list"]');
+
+    act(() => trigger.focus());
+    fireEvent.keyDown(trigger, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(after);
   });
 
   it('stays open when the caller keeps it always visible', async () => {

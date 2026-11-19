@@ -11,13 +11,11 @@ import type {
   MathInlineSession,
 } from '../types.js';
 
-import { ResponseTypes } from './utils.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { ResponseTypes, acceptedAnswers, alternateLatex } from './utils.js';
 import defaults from './defaults.js';
 
 import * as mv from '@pie-framework/math-validation';
+import { mathContentLanguage, normalizeResponse } from '@pie-element/shared-controller-utils';
 
 const log = debug('@pie-element:math-inline:controller');
 
@@ -26,11 +24,6 @@ type MathInlineCorrectness = {
   correctness: 'correct' | 'incorrect' | 'unanswered';
   score: number | string;
   correct: boolean;
-};
-
-/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
-type LatexEqualOpts = mv.Opts & {
-  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
 };
 
 /** The model with the controller defaults applied. */
@@ -82,6 +75,7 @@ export type MathInlineValidationErrors = {
 const getResponseCorrectness = (
   model: MathInlineModel,
   answerItem: string | undefined,
+  language: string | undefined,
   isOutcome?: boolean,
 ): MathInlineCorrectness => {
   // An unnormalized model reaches here from `outcome()`, so `responses` can be absent.
@@ -96,7 +90,11 @@ const getResponseCorrectness = (
     };
   }
 
-  const isAnswerCorrect = getIsAnswerCorrect(isAdvanced ? correctResponses : correctResponses.slice(0, 1), answerItem);
+  const isAnswerCorrect = getIsAnswerCorrect(
+    isAdvanced ? correctResponses : correctResponses.slice(0, 1),
+    answerItem,
+    language,
+  );
 
   const correctnessObject: MathInlineCorrectness = {
     correctness: 'incorrect',
@@ -113,31 +111,39 @@ const getResponseCorrectness = (
   return correctnessObject;
 };
 
-function getIsAnswerCorrect(correctResponseItems: MathInlineResponse[] | undefined, answerItem: string) {
+/**
+ * LaTeX with every decimal digit folded to 0–9 and its numbers written with the
+ * marks math-validation computes on: `٫` and, in a decimal-comma region, `,` become `.`.
+ */
+const comparableLatex = <T>(latex: T, language: string | undefined): T =>
+  typeof latex === 'string' ? (normalizeResponse(latex, { language, latexNumbers: true }) as T) : latex;
+
+function getIsAnswerCorrect(
+  correctResponseItems: MathInlineResponse[] | undefined,
+  answerItem: string,
+  language: string | undefined,
+) {
   let answerCorrect = false;
 
   (correctResponseItems || []).forEach((correctResponse) => {
     if (answerCorrect) return;
 
-    const opts: LatexEqualOpts = {
-      mode: correctResponse.validation || defaults.validationDefault,
-    };
+    const mode = correctResponse.validation || defaults.validationDefault;
+    const opts: mv.Opts = { mode };
 
-    if (opts.mode === 'literal') {
+    if (mode === 'literal') {
       opts.literal = {
         allowTrailingZeros: correctResponse.allowTrailingZeros || false,
         ignoreOrder: correctResponse.ignoreOrder || false,
+        compareNumbersByValue: correctResponse.compareNumbersByValue || false,
       };
     }
 
-    const alternates = correctResponse.alternates || {};
-    const acceptedValues = [correctResponse.answer].concat(
-      Object.keys(alternates).map((alternateId) => alternates[alternateId]),
-    );
+    const acceptedValues = acceptedAnswers(correctResponse);
 
     for (let i = 0; i < acceptedValues.length; i++) {
       try {
-        if (mv.latexEqual(answerItem, acceptedValues[i], opts)) {
+        if (mv.latexEqual(comparableLatex(answerItem, language), comparableLatex(acceptedValues[i], language), opts)) {
           answerCorrect = true;
           break;
         }
@@ -163,6 +169,7 @@ const getCorrectness = (
       question.responseType === ResponseTypes.advanced
         ? (session && session.completeAnswer) || ''
         : session && session.response,
+      mathContentLanguage(question, env),
       isOutcome,
     );
   }
@@ -224,16 +231,15 @@ export const getLogTrace = (
     if (validation === 'literal') {
       const allowTrailingZeros = response.allowTrailingZeros || false;
       const ignoreOrder = response.ignoreOrder || false;
+      const compareNumbersByValue = response.compareNumbersByValue || false;
 
       traceLog.push(`Allow trailing zeros: ${allowTrailingZeros ? 'enabled' : 'disabled'}.`);
       traceLog.push(`Ignore order: ${ignoreOrder ? 'enabled' : 'disabled'}.`);
+      traceLog.push(`Compare numbers by value: ${compareNumbersByValue ? 'enabled' : 'disabled'}.`);
     }
     
-    const alternates = response.alternates || {};
-    const acceptedValues = [response.answer].concat(
-      Object.keys(alternates).map((alternateId) => alternates[alternateId])
-    );
-    
+    const acceptedValues = acceptedAnswers(response);
+
     if (acceptedValues.length > 1) {
       traceLog.push(`Accepted answers: ${acceptedValues.length} (including alternates).`);
     }
@@ -312,11 +318,12 @@ export const model = (question: MathInlineModel, session: MathInlineSession | un
       view: env.mode === 'view',
     };
 
-    const note = normalizedQuestion.note || translator.t('mathInline.primaryCorrectWithAlternates', { lng: language });
+    // Delivery renders the alternates default in the chrome locale in place of a missing or default note.
+    const note = normalizedQuestion.note;
     const showNote =
       (config?.responses?.length ?? 0) > 1 ||
       (config?.responses || []).some(
-        (response) => response.validation === 'symbolic' || Object.keys(response.alternates || {}).length > 0,
+        (response) => response.validation === 'symbolic' || response.compareNumbersByValue || Object.keys(response.alternates || {}).length > 0,
       );
 
     if (env.mode === 'evaluate') {
@@ -468,7 +475,9 @@ export const validate = (
 
   (responses || []).forEach((response, index) => {
     const { answer } = response;
-    const reversedAlternates = [...Object.entries(response.alternates || {})].reverse();
+    const reversedAlternates = Object.entries(response.alternates || {})
+      .map(([key, alternate]): [string, string] => [key, alternateLatex(alternate)])
+      .reverse();
     const alternatesErrors: Record<string, string> = {};
     const responseError: { answer?: string } = {};
 

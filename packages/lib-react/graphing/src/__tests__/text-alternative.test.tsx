@@ -46,10 +46,10 @@ describe('graphing text alternative', () => {
     );
   });
 
-  it('names and describes the graph in the item language', () => {
+  it('names and describes the graph in the item language', async () => {
     renderGraph({ language: 'es_ES', marks: [{ type: 'point', x: 1, y: 1 }] });
 
-    expect(screen.getByRole('group', { name: 'Gráfica de coordenadas' })).toHaveAccessibleDescription(
+    expect(await screen.findByRole('group', { name: 'Gráfica de coordenadas' })).toHaveAccessibleDescription(
       'Eje x de -5 a 5. Eje y de -2 a 8. 1 objeto trazado: Punto.',
     );
   });

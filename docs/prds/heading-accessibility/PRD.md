@@ -43,7 +43,7 @@ The shipped slice does **not** implement the proposed player contract below:
 
 ## Goals
 
-- Authors mark headings inside rich content at *relative* importance ("heading 1", "heading 2", "heading 3") and never name an absolute `<hX>` level.
+- Authors mark headings inside rich content at _relative_ importance ("heading 1", "heading 2", "heading 3") and never name an absolute `<hX>` level.
 - Hosts declare where a player sits in their page outline via a single property, and every element inside that player picks the right `<hX>` tag automatically for both authored content and element-owned framing.
 - Hosts that do nothing see byte-identical output on upgrade — no tag changes, no landmarks appearing or disappearing.
 - Screen-reader users get a heading outline whose nesting matches the host's own outline, without skipped levels within a single element's output.

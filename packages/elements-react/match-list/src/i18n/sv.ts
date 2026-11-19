@@ -1,0 +1,28 @@
+import type { MessageCatalog } from '@pie-element/shared-i18n';
+
+export default {
+  answerA11y: 'Svar {id}',
+  dragInstructionsA11y: 'Tryck på ENTER för att välja.',
+  answerChoiceA11y: 'Svarsalternativ: {choice}',
+  answerChoiceInDropAreaA11y: 'Svarsalternativ: {choice} i släppytan för objekt {number} {text}',
+  introReusableA11y: 'Den här frågan har {total} objekt som behöver en matchning. Varje objekt har en släppyta för ett svarsalternativ. Svarsalternativen kan återanvändas. Placera ett svarsalternativ i varje släppyta.',
+  introNotReusableA11y: 'Den här frågan har {total} objekt som behöver en matchning. Varje objekt har en släppyta för ett svarsalternativ. Svarsalternativen kan inte återanvändas. Placera ett svarsalternativ i varje släppyta.',
+  keyboardHelpA11y: 'Använd TAB för att flytta mellan svarsalternativ och släppytor, ENTER för att välja eller släppa och ESC för att avbryta.',
+  progressA11y: '{filled} av {total} släppytor har ett svarsalternativ.',
+  objectA11y: 'Objekt {number}.',
+  dropAreaEmptyA11y: 'Släppyta {number} är tom',
+  dropAreaFilledA11y: 'Släppyta {number} innehåller svarsalternativet {choice}',
+  availableCountA11y: '{count} tillgängliga svarsalternativ.',
+  availableEndA11y: 'Slut på tillgängliga svarsalternativ. Använd TAB för att gå till ett svarsalternativ.',
+  selectedA11y: 'Valt svarsalternativ: {choice}. Använd TAB för att välja en släppyta.',
+  notOverResponseAreaA11y: '{choice} är inte över ett svarsområde.',
+  overDropAreaA11y: 'Vald släppyta för objekt {number} {text}. Tryck på ENTER för att flytta det valda svarsalternativet {choice} hit eller på TAB för att gå till en annan släppyta.',
+  overPoolFromDropAreaA11y: 'Tryck på ENTER för att ta bort det valda svarsalternativet från släppytan för objekt {number} eller på TAB för att gå till en annan släppyta. Valt svarsalternativ: {choice}. Objekt {number}: {text}',
+  overPoolUnplacedA11y: 'Tryck på ENTER för att lämna det valda svarsalternativet oplacerat eller på TAB för att gå till en släppyta. Valt svarsalternativ: {choice}',
+  placedA11y: 'Placerade svarsalternativet {choice} i släppytan för objekt {number}: {text}',
+  movedA11y: 'Flyttade svarsalternativet {choice} från släppytan för objekt {from} till släppytan för objekt {to}. {text}',
+  removedA11y: 'Tog bort svarsalternativet {choice} från släppytan för objekt {number}',
+  remainingA11y: '{filled} av {total} släppytor har ett svarsalternativ. {available} tillgängliga svarsalternativ. Använd TAB för att välja ett svarsalternativ.',
+  completeA11y: 'Svaret är komplett. {total} av {total} släppytor har ett svarsalternativ.',
+  deselectedA11y: 'Svarsalternativet {choice} är inte längre valt. Använd TAB för att välja ett svarsalternativ.',
+} satisfies MessageCatalog;

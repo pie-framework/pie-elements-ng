@@ -18,6 +18,7 @@ import DemoSelector from '#lib/components/DemoSelector.svelte';
 import IifeBuildPanel from '#lib/components/IifeBuildPanel.svelte';
 import { isIifePlayerAvailable, parsePlayerType } from '#lib/config/player-runtime.ts';
 import { installIifeMathRenderer } from '#lib/config/iife-math-renderer.ts';
+import { parsePageLayout } from '#lib/config/page-layout.ts';
 import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
@@ -66,6 +67,7 @@ const currentDemoParamRaw = $derived(page.url.searchParams.get('demo'));
 const currentModeParam = $derived(page.url.searchParams.get('mode'));
 const currentRoleParam = $derived(page.url.searchParams.get('role'));
 const currentPlayerType = $derived(parsePlayerType(page.url.searchParams.get('player')));
+const pageLayout = $derived(parsePageLayout(page.url.searchParams.get('layout')));
 const knownDemoIds = $derived(new Set((data.demos || []).map((d) => d.id)));
 const currentDemoParam = $derived.by(() => {
   if (!currentDemoParamRaw) {
@@ -354,9 +356,9 @@ const isMcPopulatedBlank = $derived(data.elementName === 'mc-populated-blank');
 let showAudioTranscript = $state(false);
 </script>
 
-<div class="flex flex-col h-screen">
+<div class="flex flex-col" class:h-screen={pageLayout === 'app'}>
   <!-- Navbar -->
-  <div class="bg-base-100 shadow-lg">
+  <div class="bg-base-100 border-b border-base-300">
     <div class="navbar">
       <div class="flex items-center min-w-0 gap-1 flex-1">
         <a href="/" class="btn btn-ghost btn-sm shrink-0" title="All Elements">
@@ -463,7 +465,7 @@ let showAudioTranscript = $state(false);
   </div>
 
   <!-- Tab Navigation using DaisyUI tabs -->
-  <div role="tablist" class="tabs tabs-bordered bg-base-100 border-b border-base-300">
+  <div role="tablist" class="tabs tabs-border bg-base-100 border-b border-base-300">
     {#each tabs as tab}
       {@const isDisabled =
         (tab.id === "author" && !$hasConfigure) ||
@@ -485,7 +487,10 @@ let showAudioTranscript = $state(false);
   </div>
 
   <!-- Page Content -->
-  <div class="flex-1 overflow-hidden bg-base-200" class:rli-with-audio-transcript={isMcPopulatedBlank && showAudioTranscript}>
+  <div
+    class="flex-1 bg-base-200"
+    class:overflow-hidden={pageLayout === 'app'}
+    class:rli-with-audio-transcript={isMcPopulatedBlank && showAudioTranscript}>
     {#if iifeMathError}
       <div class="alert alert-error m-4" role="alert">
         <div>

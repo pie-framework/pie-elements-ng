@@ -1,3 +1,4 @@
+export { authoredOrDefault } from './authored-or-default.js';
 export {
   type Catalogs,
   type CatalogsOptions,
@@ -8,6 +9,7 @@ export {
 } from './catalogs.js';
 export {
   canonicalLanguageTag,
+  chromeLanguageAttributes,
   elementLanguageAttributes,
   type LanguageAttributes,
   stampElementLanguage,
@@ -23,7 +25,7 @@ export {
   languageTagsEqual,
   normalizeLanguageTag,
   toLanguageTag,
-} from './language-tags.js';
+} from '@pie-players/pie-language-tags';
 export { DEFAULT_LOCALE, dynamicMessageKey, localeDirection, SimpleI18n } from './provider.js';
 export type {
   CatalogLoader,

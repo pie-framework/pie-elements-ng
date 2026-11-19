@@ -179,6 +179,14 @@ describe('sanitizeModelHtml', () => {
     expect(out.querySelectorAll('img')[1]?.getAttribute('src')).toBe('data:image/png;base64,AAAA');
   });
 
+  it('keeps the direction and language the editor writes', () => {
+    const html =
+      '<p dir="rtl" style="text-align: end">ما هو <span lang="en" dir="ltr">pH</span>؟</p>' +
+      '<p dir="ltr">Say <span lang="ar-SA" dir="rtl">مرحبا</span> \u200F٣</p>';
+
+    expect(sanitizeModelHtml(html)).toBe(html);
+  });
+
   it('keeps text that only looks like markup', () => {
     expect(sanitizeModelHtml('x &lt; 5 and y &gt; 2')).toBe('x &lt; 5 and y &gt; 2');
   });

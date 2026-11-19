@@ -76,7 +76,8 @@ export default class Bg extends React.Component {
       snapped.y = closest(rowTicks, y);
     }
 
-    onClick(snapped);
+    // the unsnapped position lets solution-set selection keep the side of a boundary the click was on
+    onClick(snapped, { x, y });
   };
 
   render() {

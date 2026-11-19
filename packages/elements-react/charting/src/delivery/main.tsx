@@ -37,9 +37,6 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { Chart, chartTypes, KeyLegend } from '@pie-lib/charting';
 import { isEqual } from '@pie-element/shared-lodash';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -62,6 +59,8 @@ export class Main extends React.Component {
     model: PropTypes.object.isRequired,
     onAnswersChange: PropTypes.func,
     categories: PropTypes.array,
+    /** The locale the chrome follows; the item's declared language when omitted. */
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -107,12 +106,12 @@ export class Main extends React.Component {
       showToggle,
       rationale,
       correctAnswer,
-      language,
       env,
       showKeyLegend,
     } = model;
 
     let { correctedAnswer, extraCSSRules } = model;
+    const language = this.props.language ?? model.language;
 
     const correctData = (correctAnswer?.data || []).map((data) => ({ ...data, interactive: false, editable: false }));
     const { mode } = env || {};
@@ -128,12 +127,7 @@ export class Main extends React.Component {
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules}>
         {showTeacherInstructions && (
-          <StyledCollapsible
-            labels={{
-              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-            }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -197,7 +191,7 @@ export class Main extends React.Component {
         )}
         {!showingCorrect && showKeyLegend && <KeyLegend language={language}></KeyLegend>}
         {showRationale && (
-          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
+          <Collapsible variant="rationale" language={language}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}

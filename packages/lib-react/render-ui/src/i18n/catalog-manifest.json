@@ -2,102 +2,106 @@
   "locales": {
     "es": {
       "status": "reviewed",
-      "from": "@pie-lib/translator es catalog, carried unchanged",
+      "from": "@pie-lib/translator es catalog, carried unchanged; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale carried unchanged from the translator's common namespace on 2026-11-09",
       "english": {
         "playAudio": "Play audio",
         "show": "Show",
-        "hide": "Hide"
+        "hide": "Hide",
+        "showTeacherInstructions": "Show Teacher Instructions",
+        "hideTeacherInstructions": "Hide Teacher Instructions",
+        "showRationale": "Show Rationale",
+        "hideRationale": "Hide Rationale"
       },
-      "reviewedAt": "2026-10-16"
+      "reviewedAt": "2026-11-09"
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, currently identical to en-US because no key here carries a British form; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; shares en-GB's values, which are identical to en-US for these keys; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-18",
       "model": "GLM (Z.ai), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen)",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md and its reviewed players-shared nl-NL catalog (impersonal infinitive for labels, imperative for learner instructions, vraag/antwoord/leraar, weergeven/verbergen); showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-19",
       "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     },
     "ro": {
       "status": "generated",
-      "sourceHash": "de84fc9d394215c62f47d4a1531e45ed6986683ea3ad752b96371a519e72d0a0",
-      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other)",
+      "sourceHash": "d4d62f55a9cf4cfad58b1600ad90d2af07454b3d5df4c4547dff8d434e9ee290",
+      "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other); showTeacherInstructions, hideTeacherInstructions, showRationale and hideRationale added on 2026-11-09 by Claude (Anthropic) for the Collapsible variants, the teacher-instruction pair taken from multiple-choice's generated catalog, the rest unchanged, also unreviewed",
       "generatedAt": "2026-10-19",
       "model": "Claude (claude-fable-5-1), agent-driven generation in the pie-elements-ng repo"
     }

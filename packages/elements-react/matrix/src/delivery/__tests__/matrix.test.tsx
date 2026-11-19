@@ -33,7 +33,7 @@ describe('Matrix teacher instructions', () => {
   it.each([
     ['en_US', 'Show Teacher Instructions'],
     ['es_ES', 'Mostrar instrucciones para el maestro'],
-  ])('label their toggle in the %s item language', (language, label) => {
+  ])('label their toggle in the %s item language', async (language, label) => {
     render(
       <Matrix
         columnLabels={['Disagree', 'Agree']}
@@ -47,7 +47,7 @@ describe('Matrix teacher instructions', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-expanded', 'false');
+    expect(await screen.findByRole('button', { name: label })).toHaveAttribute('aria-expanded', 'false');
   });
 });
 

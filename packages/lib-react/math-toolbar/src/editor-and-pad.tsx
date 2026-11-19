@@ -11,7 +11,7 @@ import { isEqual } from '@pie-element/shared-lodash';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 
-import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input';
+import { HorizontalKeypad, KEYPAD_ATTRIBUTE, mq, updateSpans } from '@pie-lib/math-input-mathlive';
 import { color } from '@pie-lib/render-ui';
 import { markFractionBaseSuperscripts } from './utils.js';
 
@@ -214,6 +214,12 @@ const StyledHr: any = styled('hr')(({ theme }) => ({
   borderBottom: `solid 1px ${theme.palette.primary.main}`,
 }));
 
+// Groups the "+ Response Area" button with the keypad for keyboard typing, and draws no box of its
+// own, so the toolbar lays them out as before.
+const KeypadGroup: any = styled('div')({
+  display: 'contents',
+});
+
 const KeyboardContainer: any = styled(HorizontalKeypad)(({ mode }) => ({
   ...commonMqKeyboardStyles,
   ...(mode === 'language' && {
@@ -315,7 +321,9 @@ export class EditorAndPad extends React.Component {
     } else if (c.type === 'cursor') {
       this.input.keystroke(c.value);
     } else if (c.type === 'answer') {
-      this.input.write('%response%');
+      // `%` opens a LaTeX comment, so it is escaped; the field stores `\%response\%`, which the
+      // template's owner replaces with a response area.
+      this.input.write('\\%response\\%');
     } else {
       this.input.write(c.value);
     }
@@ -355,28 +363,21 @@ export class EditorAndPad extends React.Component {
       return;
     }
 
-    // eslint-disable-next-line no-useless-escape
-    const regexMatch = latex.match(/[0-9]\\ \\frac\{[^\{]*\}\{ \}/);
-
-    if (this.input && regexMatch && regexMatch?.length) {
-      try {
-        this.input.mathField.__controller.cursor.insLeftOf(this.input.mathField.__controller.cursor.parent[-1].parent);
-        this.input.mathField.el().dispatchEvent(new KeyboardEvent('keydown', { keyCode: 8 }));
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e.toString());
-      }
-
+    // A mixed number typed with a space (`1\ \frac{2}{}`): the input drops the space and reports
+    // the joined latex as a new change.
+    if (this.input && /[0-9]\\ \\frac\{[^{}]*\}\{\s*\}/.test(latex) && this.input.joinMixedNumber()) {
       return;
     }
 
     onChange(latex);
   };
 
-  /** Only render if the mathquill instance's latex is different
+  /** Only render if the editor's latex is different
    * or the keypad state changed from one state to the other (shown / hidden) */
   shouldComponentUpdate(nextProps, nextState) {
-    const inputIsDifferent = this.input.mathField.latex() !== nextProps.latex;
+    // MathLive loads asynchronously, so the input may not be ready yet; treat that as different
+    // so the first real render is not skipped.
+    const inputIsDifferent = !this.input || this.input.latex() !== nextProps.latex;
     log('[shouldComponentUpdate] ', 'inputIsDifferent: ', inputIsDifferent);
 
     if (!isEqual(this.props.error, nextProps.error)) {
@@ -489,28 +490,31 @@ export class EditorAndPad extends React.Component {
             />
           </InputContainerDiv>
         </InputAndTypeContainer>
-        {allowAnswerBlock && (
-          <AddAnswerBlockButton
-            type="primary"
-            style={{ bottom: shouldShowKeypad ? '320px' : '20px' }}
-            onClick={this.onAnswerBlockClick}
-            disabled={addDisabled}
-          >
-            + Response Area
-          </AddAnswerBlockButton>
-        )}
-        <StyledHr />
-        {shouldShowKeypad && (
-          <KeyboardContainer
-            mode={controlledKeypadMode ? this.state.equationEditor : keypadMode}
-            controlledKeypadMode={controlledKeypadMode}
-            layoutForKeyPad={layoutForKeyPad}
-            additionalKeys={additionalKeys}
-            onClick={this.onClick}
-            noDecimal={noDecimal}
-            setKeypadInteraction={setKeypadInteraction}
-          />
-        )}
+        {/* One keypad for the editor's keyboard typing: Tab reaches the button before the keys. */}
+        <KeypadGroup {...{ [KEYPAD_ATTRIBUTE]: '' }}>
+          {allowAnswerBlock && (
+            <AddAnswerBlockButton
+              type="primary"
+              style={{ bottom: shouldShowKeypad ? '320px' : '20px' }}
+              onClick={this.onAnswerBlockClick}
+              disabled={addDisabled}
+            >
+              + Response Area
+            </AddAnswerBlockButton>
+          )}
+          <StyledHr />
+          {shouldShowKeypad && (
+            <KeyboardContainer
+              mode={controlledKeypadMode ? this.state.equationEditor : keypadMode}
+              controlledKeypadMode={controlledKeypadMode}
+              layoutForKeyPad={layoutForKeyPad}
+              additionalKeys={additionalKeys}
+              onClick={this.onClick}
+              noDecimal={noDecimal}
+              setKeypadInteraction={setKeypadInteraction}
+            />
+          )}
+        </KeypadGroup>
       </MathToolbarContainer>
     );
   }

@@ -1,4 +1,5 @@
 ---
+
 name: accessibility-reviewer-assessments
 description: Reviews educational assessment interfaces for WCAG 2.2 Level AA compliance and assessment-specific accessibility needs. Use when implementing new interactions, reviewing UI changes, or conducting accessibility audits of test-taking interfaces.
 allowed-tools: Read, Glob, Grep, Bash
@@ -63,6 +64,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Web components**: Custom elements expose proper text alternatives through attributes or slots
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Missing alt text on question image -->
 <img src="diagram.png" />
@@ -94,6 +96,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Web components**: Shadow DOM doesn't break semantic structure; use slots appropriately
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Relies on visual position -->
 <p>Select the answer in the top-right box</p>
@@ -128,6 +131,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Styles work correctly whether in light DOM or shadow DOM
 
 **Example Issues to Catch:**
+
 ```css
 /* ❌ Insufficient contrast: 2.8:1 */
 .choice-option {
@@ -173,6 +177,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] Home/End: Jump to first/last item in lists
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Click handler without keyboard support -->
 <div on:click={selectChoice}>Choice A</div>
@@ -201,6 +206,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Timer components expose configuration for accessibility accommodations
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Hard time limit without extension -->
 <Timer duration={60} onExpire={submitAssessment} />
@@ -233,6 +239,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Focus styles work in both shadow and light DOM
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Missing skip link -->
 <nav><!-- Navigation --></nav>
@@ -268,6 +275,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Touch targets account for component padding/margins in all integration modes
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Touch target too small: 20×20px -->
 <button style="width: 20px; height: 20px;">×</button>
@@ -301,6 +309,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Math notation and foreign language content properly marked
 
 **Example Issues to Catch:**
+
 ```html
 <!-- ❌ Missing language attribute -->
 <html>
@@ -324,6 +333,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **3.2.6** (Level A, New in 2.2): Help mechanisms are consistent across components
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Focus triggers navigation -->
 <button on:focus={goToNextQuestion}>Next</button>
@@ -351,6 +361,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Component context**: Validation messages properly announced via ARIA live regions
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Vague error message -->
 <div role="alert">Invalid input</div>
@@ -384,6 +395,7 @@ Educational assessment components have unique accessibility requirements beyond 
 - [ ] **Shadow DOM**: ARIA relationships work across shadow boundaries when needed
 
 **Example Issues to Catch:**
+
 ```svelte
 <!-- ❌ Custom component without ARIA -->
 <div class="checkbox" on:click={toggle}>
@@ -568,11 +580,14 @@ When conducting an accessibility review:
 Provide feedback in this structure:
 
 ### ✅ Accessibility Strengths
+
 - What's working well
 - Good patterns to reinforce
 
 ### 🚨 Critical Issues (WCAG Violations)
+
 For each violation:
+
 - **WCAG Criterion**: e.g., 1.4.3 Contrast (Level AA)
 - **Severity**: Blocker / High / Medium
 - **Location**: File and line number or component name
@@ -581,11 +596,13 @@ For each violation:
 - **Fix**: Specific solution with code
 
 ### ⚠️ Assessment-Specific Concerns
+
 - Test-taking context issues
 - K-12 learner considerations
 - Interaction type accessibility
 
 ### 💡 Enhancements
+
 - Optional improvements beyond WCAG AA
 - Level AAA considerations
 - UX improvements for accessibility

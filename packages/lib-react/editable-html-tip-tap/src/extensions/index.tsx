@@ -33,6 +33,7 @@ export const ALL_PLUGINS = [
 
 export const PLUGINS_MAP = {
   'text-align': 'textAlign',
+  'text-direction': 'textDirection',
   'bulleted-list': 'ul_list',
   'numbered-list': 'ol_list',
 };
@@ -68,8 +69,16 @@ export const buildExtensions = (activeExtensions, customExtensions, opts) => {
     addIf('video'),
     addIf('audio'),
     addIf('math', !!mathPlugin),
-    ...languageCharactersPlugins.map((plugin) => addIf('languageCharacters', plugin)),
+    // The Spanish and special sets keep their positional `languageCharacters` entries; the Arabic
+    // set is asked for by name.
+    ...languageCharactersPlugins
+      .filter((plugin) => plugin?.language !== 'arabic')
+      .map((plugin) => addIf('languageCharacters', plugin)),
+    languageCharactersPlugins.some((plugin) => plugin?.language === 'arabic') &&
+      activeExtensions.includes('languageCharacters') &&
+      'arabicCharacters',
     addIf('text-align'),
+    addIf('text-direction'),
     addIf('blockquote'),
     addIf('h3'),
     addIf('bulleted-list'),

@@ -1,6 +1,6 @@
 # PRDs (Product Requirements Documents)
 
-Lightweight product/feature specs for `pie-elements-ng`. PRDs live here so engineering and product decisions for new elements (and significant cross-cutting changes) have a stable, reviewable artifact. Code and tests remain the source of truth for *behaviour*; PRDs are the source of truth for *intent*.
+Lightweight product/feature specs for `pie-elements-ng`. PRDs live here so engineering and product decisions for new elements (and significant cross-cutting changes) have a stable, reviewable artifact. Code and tests remain the source of truth for _behaviour_; PRDs are the source of truth for _intent_.
 
 ## When to write a PRD
 
@@ -74,7 +74,7 @@ A second top-level PRD in the same subdirectory (not a facet of the current one)
 
 - A **v2 feature expansion** diverges enough that merging it into the original PRD would obscure the v1 contract (e.g. `venn-classification/v2-three-circle.md`).
 - A **scoring-extension** ships on a different timeline from the core element.
-- An **authoring-surface change** materially rewrites the author UI without changing the delivery contract *and* warrants its own scope rather than an `authoring.md` facet of the current PRD.
+- An **authoring-surface change** materially rewrites the author UI without changing the delivery contract _and_ warrants its own scope rather than an `authoring.md` facet of the current PRD.
 
 In those cases, keep `PRD.md` as the canonical current-state PRD and put supplementary PRDs alongside it with descriptive filenames; cross-link them from `PRD.md`. Do not create a second PRD just because the first is getting long — shorten the first instead.
 
@@ -84,13 +84,13 @@ PRDs in this repo capture the **functional** shape of a feature: status, context
 
 ### Status
 
-Every PRD carries a status on the meta line right under the H1, because the same document circulates at different ratification levels (a Jira comment, a PR, a Confluence embed) and readers need to know *before* reading whether they're looking at a proposal or a ratified contract. The vocabulary is deliberately small:
+Every PRD carries a status on the meta line right under the H1, because the same document circulates at different ratification levels (a Jira comment, a PR, a Confluence embed) and readers need to know _before_ reading whether they're looking at a proposal or a ratified contract. The vocabulary is deliberately small:
 
 - **Proposal** — drafted and circulating for review; the surface may change before it's agreed. Agents reading a Proposal must not treat its "Proposed surface" as a fixed contract; they should surface disagreement rather than silently implement against it.
 - **Accepted** — agreed contract. Implementation may be complete, in flight, or not started; the PRD describes the end state and is safe to code against. This is the default once review concludes.
 - **Superseded** — replaced by another PRD. The status line must link to the replacement, and the PRD otherwise stays as-is for history.
 
-Status is *not* a release tracker — there is no `Shipped` state, because once a PRD is Accepted the tests own behaviour, and a hand-edited "shipped" field just drifts away from the release tags / CHANGELOG that already record that information.
+Status is _not_ a release tracker — there is no `Shipped` state, because once a PRD is Accepted the tests own behaviour, and a hand-edited "shipped" field just drifts away from the release tags / CHANGELOG that already record that information.
 
 ### Status log (optional)
 
@@ -110,7 +110,7 @@ Not log entries (keep out):
 ### What PRDs still don't track
 
 - Owners, created-date, last-updated fields. Git already tracks this; a hand-edited field on top of git metadata just drifts.
-- A formal dated "decision log". The *information* such logs try to preserve — *why didn't we do the obvious alternative?* — is valuable, especially for AI-assisted work where agents will re-raise the same alternatives later. But it lives better **inline**, next to the decision itself, than as a separate ledger:
+- A formal dated "decision log". The _information_ such logs try to preserve — _why didn't we do the obvious alternative?_ — is valuable, especially for AI-assisted work where agents will re-raise the same alternatives later. But it lives better **inline**, next to the decision itself, than as a separate ledger:
   - "Why not extend `categorize`?" goes into **Non-goals** as a one-sentence reason on the relevant bullet.
   - "Why is `partialPerTile` the default?" goes into **Proposed surface** next to the field.
   - This keeps the rationale co-located with what it justifies, and it can't drift out of sync the way a separate log can. The status log is the exception only because state transitions are discrete events, not content that can be inlined.
@@ -123,21 +123,21 @@ Start from [`_template.md`](./_template.md). Keep it short — one screen of mar
 
 ## How a PRD relates to other docs
 
-- **Discovery / market survey material** (prioritisation, gap analyses, vendor parity notes) may live outside this repository. Nothing here requires linking to it; a PRD is sufficient on its own for *what* to build in this codebase.
+- **Discovery / market survey material** (prioritisation, gap analyses, vendor parity notes) may live outside this repository. Nothing here requires linking to it; a PRD is sufficient on its own for _what_ to build in this codebase.
 - `AGENTS.md` and package-level READMEs are **standing context** (conventions, patterns, do/don't). PRDs do not migrate this content; reference it where useful but assume it is loaded by the agent already.
 - Implementation lives in `packages/elements-svelte/<name>` (or `packages/elements-react/<name>`, etc.); tests live alongside it. The PRD does not replace any of these — it supplements them.
 
 ## Working with AI tools (Cursor / Claude Code / Codex)
 
-PRDs are the per-feature context that complements `AGENTS.md`. When starting work on a feature with a PRD, point the agent at the PRD file at the start of the session — it gives the agent the *what* and *why* it would otherwise have to guess at.
+PRDs are the per-feature context that complements `AGENTS.md`. When starting work on a feature with a PRD, point the agent at the PRD file at the start of the session — it gives the agent the _what_ and _why_ it would otherwise have to guess at.
 
 A few practical rules to keep PRDs useful with LLMs in the loop:
 
 - **Keep it short.** Aim for one screen of markdown. AI tools fill space if you let them; resist auto-expanding sections that don't add information.
 - **Lean on examples and non-goals.** A single worked example plus an explicit "Non-goals" list does more to constrain an agent's behaviour than five paragraphs of acceptance criteria.
 - **Inline the "why we didn't do the obvious alternative"** next to the relevant Non-goal or Proposed-surface bullet. This is the information a separate decision log would carry, but inline it can't drift out of sync with the content it justifies.
-- **Avoid full type signatures and interface definitions inside PRDs.** Sketch the *shape* of the model and session in 4-6 fields; full TS lives in code, where it can stay accurate.
-- **Use the *Open questions* list liberally.** Decisions that aren't made yet should be visible. Don't let the agent pick a default and bury it under plausible-sounding prose. When a question is resolved, *remove* the bullet — don't keep a "resolved" list; the resolution now lives inline in the relevant section.
+- **Avoid full type signatures and interface definitions inside PRDs.** Sketch the _shape_ of the model and session in 4-6 fields; full TS lives in code, where it can stay accurate.
+- **Use the _Open questions_ list liberally.** Decisions that aren't made yet should be visible. Don't let the agent pick a default and bury it under plausible-sounding prose. When a question is resolved, _remove_ the bullet — don't keep a "resolved" list; the resolution now lives inline in the relevant section.
 - **Don't accept LLM-generated padding.** If a PRD draft has long generic sections about "Performance" or "Security" that say nothing element-specific, delete them. A short PRD that contains only true claims beats a long PRD that pads with truisms.
 
 See [`venn-classification/PRD.md`](./venn-classification/PRD.md) for an example PRD that anchors the expected length and tone.

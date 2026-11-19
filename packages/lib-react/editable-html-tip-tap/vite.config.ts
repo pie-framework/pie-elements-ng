@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
 
 export default defineConfig({
   // ESM-first resolution. A dependency with no exports map (@visx/* v3,
@@ -9,7 +10,7 @@ export default defineConfig({
   // require("react") shim that throws in the browser. Preferring the module
   // field resolves those dependencies to their ESM build instead.
   resolve: { mainFields: ['module', 'browser', 'main'] },
-  plugins: [react()],
+  plugins: [react(), thirdPartyLicenses()],
   build: {
     lib: {
       entry: {

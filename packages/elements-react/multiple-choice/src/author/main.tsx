@@ -9,7 +9,7 @@ import {
   layout,
   choiceUtils as utils,
 } from '@pie-lib/config-ui';
-import { color } from '@pie-lib/render-ui';
+import { color, hasTextAlternative } from '@pie-lib/render-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -110,6 +110,12 @@ const StyledTooltip: any = styled(Tooltip)(({ theme }) => ({
     whiteSpace: 'pre',
     maxWidth: '500px',
   },
+}));
+
+const HintText: any = styled('div')(({ theme }) => ({
+  fontSize: theme.typography.fontSize - 2,
+  color: theme.palette.text.secondary,
+  paddingTop: theme.spacing(1),
 }));
 
 const ErrorText: any = styled('div')(({ theme }) => ({
@@ -336,6 +342,9 @@ const Design = (props: DesignProps) => {
             uploadSoundSupport={uploadSoundSupport}
             mathMlOptions={mathMlOptions}
           />
+          {choice.label?.includes('<img') && !hasTextAlternative(choice.label) && (
+            <HintText>Add alt text to the image so screen readers can name this choice.</HintText>
+          )}
 
           {rationaleEnabled && (
             <RationaleHolder key={`rationale-${index}`} label={rationale.label}>

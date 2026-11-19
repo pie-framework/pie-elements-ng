@@ -67,9 +67,9 @@ describe('graphing KeyLegend', () => {
         'Etiqueta correcta del estudiante',
       ],
     ],
-  ])('labels the legend in the %s item language', (language, title, rows) => {
+  ])('labels the legend in the %s item language', async (language, title, rows) => {
     const { container } = render(<KeyLegend isLabelAvailable language={language} />);
-    const legend = screen.getByText(title).parentElement as HTMLElement;
+    const legend = (await screen.findByText(title)).parentElement as HTMLElement;
 
     expect(container.contains(legend)).toBe(true);
     expect([...legend.children].slice(1).map((row) => row.firstElementChild?.textContent)).toEqual(rows);

@@ -98,7 +98,10 @@ export interface I18nConfig<C extends MessageCatalog = MessageCatalog> {
  * React and Svelte components share it.
  */
 export interface Translator<K extends string = string> {
-  /** Active locale tag, canonicalized to the resolved catalog's tag. */
+  /**
+   * The locale the strings are served in: the resolved catalog's tag once resident, else the
+   * host-message tag when host messages cover the request, else `en-US`.
+   */
   getLocale(): string;
 
   /** Translate a key, interpolating `{placeholder}` slots; a miss returns the key. */
@@ -107,7 +110,7 @@ export interface Translator<K extends string = string> {
   /** Translate a plural group, selecting the CLDR category for `options.count`. */
   plural(key: K | DynamicMessageKey, options: PluralOptions): string;
 
-  /** Writing direction of the active locale. */
+  /** Writing direction of the served locale. */
   getDirection(): TextDirection;
 
   /** Whether a key resolves in the active locale or its fallback chain. */

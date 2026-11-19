@@ -86,12 +86,6 @@ export default defineConfig({
   // all dependencies are properly bundled or available
 
   resolve: {
-    alias: {
-      // Fix @pie-framework/math-validation resolution issue
-      // The package has module: "src/index.ts" which doesn't exist in installed package
-      // Force Vite to use the main field (lib/index.js) instead
-      '@pie-framework/math-validation': '@pie-framework/math-validation/lib/index.js',
-    },
     // Keep a single ProseMirror instance across workspace packages.
     // Without this, mixed tiptap/prosemirror imports can register duplicate
     // selection IDs (e.g. gapcursor) and crash module evaluation.

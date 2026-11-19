@@ -11,7 +11,7 @@ import { DragProvider } from '@pie-lib/drag';
 
 import TraitsHeader from './traitsHeader.js';
 import TraitTile from './trait.js';
-import { Arrow, BlockWidth, DragHandleSpace, MultiTraitButton, PrimaryBlockWidth } from './common.js';
+import { Arrow, BlockWidth, MultiTraitButton, PrimaryBlockWidth } from './common.js';
 import { DecreaseMaxPoints, DeleteScale, DeleteTrait, InfoDialog } from './modals.js';
 import type { ConfigureMathMLProp, EditableHtmlConfigureProp } from '@pie-element/shared-types';
 import type { MultiTraitRubricValidationErrors } from '../controller/index.js';
@@ -319,7 +319,8 @@ export class Scale extends React.Component<ScaleProps> {
     const currentScalePointsLabelsErrors = (scorePointsErrors && scorePointsErrors[scaleIndex]) || {};
 
     const scorePointsValues = [];
-    const secondaryBlockWidth = parseInt(width) - DragHandleSpace - PrimaryBlockWidth || 320; // 320 is minWidth
+    // the header and the trait rows share this width, so the columns fill the row up to its right edge
+    const secondaryBlockWidth = parseInt(width) - PrimaryBlockWidth || 320; // 320 is minWidth
 
     // determining the score points values
     for (let pointValue = maxPoints; pointValue >= excludeZero ? 1 : 0; pointValue -= 1) {

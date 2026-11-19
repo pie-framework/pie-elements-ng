@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computeAudioMode } from './computeAudioMode';
-import { t } from './i18n';
+import { catalogs } from '../i18n/index.js';
 
 interface AudioButtonSkin {
   silentUrl: string;
@@ -38,6 +38,9 @@ let {
   onaudiofailed?: () => void;
 } = $props();
 
+/** `language` is the chrome language, resident before this renders. */
+const i18n = $derived(catalogs.forLocale(language));
+
 let audioEl = $state<HTMLAudioElement | null>(null);
 let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
 let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
@@ -49,9 +52,7 @@ const audioMode = $derived(
 );
 const isMediaPlaying = $derived(audioPlaybackState === AUDIO_PLAYBACK.PLAYING);
 const autoPlayPromptOpen = $derived(audioPlaybackState === AUDIO_PLAYBACK.BLOCKED);
-const audioErrorMessage = $derived(
-  audioMode === 'error' ? t('audioResourceUnavailable', language) : ''
-);
+const audioErrorMessage = $derived(audioMode === 'error' ? i18n.t('audioResourceUnavailable') : '');
 
 // Reset playback state when audioUrl changes so autoplay re-fires for a new question.
 $effect(() => {
@@ -152,17 +153,17 @@ $effect(() => {
         bind:this={featureAudioButtonEl}
         class="listen-button pie-listen-button rli-feature-audio"
         type="button"
-        aria-label={t('listen', language)}
+        aria-label={i18n.t('listen')}
       >
         <img
           class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
           src={featureAudioSkin.silentUrl}
-          alt={t('listenSilentAlt', language)}
+          alt={i18n.t('listenSilentAlt')}
         />
         <img
           class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? 'listen-active' : ''}`}
           src={featureAudioSkin.playingUrl}
-          alt={t('listenPlayingAlt', language)}
+          alt={i18n.t('listenPlayingAlt')}
         />
       </button>
     {:else if audioMode === 'controls'}
@@ -181,7 +182,7 @@ $effect(() => {
           class="autoplay-enable pie-audio-autoplay-enable"
           type="button"
         >
-          {t('clickToEnableAutoplay', language)}
+          {i18n.t('clickToEnableAutoplay')}
         </button>
       {/if}
     {:else if audioMode === 'error'}

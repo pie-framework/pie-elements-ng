@@ -10,7 +10,8 @@ pre-commit:
       run: bun run verify:dependency-integrity --fail-on-hoist
     lint:
       glob: "*.{js,ts,svelte}"
-      run: bun run lint:fix {staged_files}
+      # The staged files only: `lint:fix` covers the whole tree, and its fixes elsewhere stay unstaged.
+      run: bunx biome check --write --no-errors-on-unmatched {staged_files}
     # No glob: the script reads the staged paths itself, so that a commit deleting a .ts file
     # still type-checks the package it leaves behind.
     types:

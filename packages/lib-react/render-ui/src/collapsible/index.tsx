@@ -31,15 +31,26 @@ const StyledCollapse: any = styled(Collapse)(({ theme }) => ({
   paddingTop: theme.spacing(2),
 }));
 
+/** The catalog keys of each variant's collapsed (`hidden`) and expanded (`visible`) label. */
+const VARIANT_LABELS = {
+  teacherInstructions: { hidden: 'showTeacherInstructions', visible: 'hideTeacherInstructions' },
+  rationale: { hidden: 'showRationale', visible: 'hideRationale' },
+};
+
+const DEFAULT_LABELS = { hidden: 'show', visible: 'hide' };
+
 export class Collapsible extends React.Component {
   static propTypes = {
     className: PropTypes.string,
     children: PropTypes.object,
+    /** Labels that replace the variant's, each on its own. */
     labels: PropTypes.shape({
       visible: PropTypes.string,
       hidden: PropTypes.string,
     }),
-    /** The item language, which the default "Show" and "Hide" labels follow. */
+    /** What the panel holds, which picks the toggle's labels; without one they read "Show" and "Hide". */
+    variant: PropTypes.oneOf(Object.keys(VARIANT_LABELS)),
+    /** The locale the toggle's labels follow. */
     language: PropTypes.string,
   };
 
@@ -69,10 +80,11 @@ export class Collapsible extends React.Component {
   }
 
   render() {
-    const { labels, children, className, language } = this.props;
+    const { labels, children, className, language, variant } = this.props;
     const { expanded } = this.state;
     const i18n = catalogs.forLocale(language, this.relabel);
-    const title = expanded ? labels.visible || i18n.t('hide') : labels.hidden || i18n.t('show');
+    const keys = VARIANT_LABELS[variant] ?? DEFAULT_LABELS;
+    const title = expanded ? labels.visible || i18n.t(keys.visible) : labels.hidden || i18n.t(keys.hidden);
 
     return (
       <div className={className} ref={(r) => (this.root = r)}>

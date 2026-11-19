@@ -64,7 +64,7 @@ This PRD consumes the accepted [media asset](https://github.com/pie-framework/pi
 
 ## Worked example
 
-> *Prompt*: Watch the lab safety demonstration. Questions appear when the video reaches relevant steps.
+> _Prompt_: Watch the lab safety demonstration. Questions appear when the video reaches relevant steps.
 
 The element renders local demo video, captions, and transcript in the passage selected by `TimedMediaSectionData.stimulusRef`. At cue 1, the section controller reveals a safety-equipment question. At a later required cue, it pauses through `MediaTimeSource`, reveals a handling-procedure question, and persists timed-media state. The element knows neither question identity nor completion state.
 
@@ -90,7 +90,7 @@ The integration uses an extracted `npm pack` artifact routed through the existin
 
 ## Open questions
 
-*(none at this time)*
+_(none at this time)_
 
 ## Status log
 

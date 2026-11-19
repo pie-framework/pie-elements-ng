@@ -2,11 +2,17 @@
 
 import { ModelSetEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { stampElementLanguage } from '@pie-element/shared-i18n';
+import {
+  isLocaleReady,
+  loadLocale,
+  stampElementLanguage,
+  subscribeInterfaceLocale,
+} from '@pie-element/shared-i18n';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import StimulusTabs from './stimulus-tabs.js';
+import { catalogs } from '../i18n/index.js';
 
 function getBaseHeadingLevel(element) {
   const player =
@@ -44,6 +50,10 @@ export default class PiePassage extends HTMLElement {
     this._mathObserver = null;
     this._mathRenderPending = false;
     this._playerObserver = null;
+    // The locale the player publishes, once it answers; until then the chrome
+    // follows the item's declared language, else `en-US`.
+    this._interfaceLocale = null;
+    this._disconnectInterfaceLocale = null;
   }
 
   setLangAttribute() {
@@ -97,17 +107,30 @@ export default class PiePassage extends HTMLElement {
   }
 
   connectedCallback() {
-    this.setAttribute('aria-label', 'Passage');
     this.setAttribute('role', 'region');
     this._initMathObserver();
     this._initPlayerObserver();
+    if (!this._disconnectInterfaceLocale) {
+      this._disconnectInterfaceLocale = subscribeInterfaceLocale(this, (value) => {
+        if (value?.locale && value.locale !== this._interfaceLocale) {
+          this._interfaceLocale = value.locale;
+          this._render();
+        }
+      });
+    }
     this._render();
   }
 
   _render() {
     const { passages = [] } = this._model;
+    const language = this._interfaceLocale ?? this._model.language;
+    if (!isLocaleReady(language)) {
+      void loadLocale(language).then(() => this._render());
+      return;
+    }
+    this.setAttribute('aria-label', catalogs.forLocale(language).t('passageRegion'));
 
-    if (this._model.passages.length > 0) {
+    if (passages.length > 0) {
       const passagesTabs = passages.map((passage, index) => ({
         id: index,
         ...passage,
@@ -116,6 +139,7 @@ export default class PiePassage extends HTMLElement {
       const elem = React.createElement(StimulusTabs, {
         tabs: passagesTabs,
         model: this._model,
+        language,
         baseHeadingLevel: getBaseHeadingLevel(this),
       });
 
@@ -147,6 +171,8 @@ export default class PiePassage extends HTMLElement {
 
   disconnectedCallback() {
     this._disconnectMathObserver();
+    this._disconnectInterfaceLocale?.();
+    this._disconnectInterfaceLocale = null;
     this._disconnectPlayerObserver();
     if (this._root) {
       this._root.unmount();

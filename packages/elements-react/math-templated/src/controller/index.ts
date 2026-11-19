@@ -1,6 +1,5 @@
 import debug from 'debug';
 import { isEmpty } from '@pie-element/shared-lodash';
-import Translator from '@pie-lib/translator';
 import * as mv from '@pie-framework/math-validation';
 import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import type {
@@ -13,9 +12,8 @@ import type {
 } from '../types.js';
 
 import defaults from './defaults.js';
-import { partialScoring } from '@pie-element/shared-controller-utils';
+import { mathContentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 
-const { translator } = Translator;
 const log = debug('@pie-element:math-templated:controller');
 
 /** The learner's answers, keyed `r<index>` by response area index. */
@@ -26,11 +24,6 @@ type ResponseCorrectness = {
   correctness: 'unanswered' | 'correct' | 'incorrect';
   score: number;
   correct: boolean;
-};
-
-/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
-type LatexEqualOpts = mv.Opts & {
-  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
 };
 
 /** The model as the delivery view receives it. */
@@ -73,13 +66,21 @@ export type MathTemplatedValidationErrors = {
 const getFeedback = (value: boolean) => (value ? 'correct' : 'incorrect');
 const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 
+/**
+ * LaTeX with every decimal digit folded to 0–9 and its numbers written with the
+ * marks math-validation computes on: `٫` and, in a decimal-comma region, `,` become `.`.
+ */
+const comparableLatex = <T>(latex: T, language: string | undefined): T =>
+  typeof latex === 'string' ? (normalizeResponse(latex, { language, latexNumbers: true }) as T) : latex;
+
 const getIsAnswerCorrect = (
   correctResponse: Partial<MathTemplatedResponse>,
   answerItem: MathTemplatedAnswer | undefined,
+  language: string | undefined,
 ) => {
   let answerCorrect = false;
 
-  const opts: LatexEqualOpts = {
+  const opts: mv.Opts = {
     // `defaults` holds `model` and `configuration`, so `defaults.validationDefault` is always undefined.
     mode: correctResponse.validation || (defaults as { validationDefault?: 'literal' | 'symbolic' }).validationDefault,
     ...(correctResponse.validation === 'literal' && {
@@ -95,7 +96,11 @@ const getIsAnswerCorrect = (
 
     try {
       for (const value of acceptedValues) {
-        answerCorrect = mv.latexEqual((answerItem as MathTemplatedAnswer).value, value as string, opts);
+        answerCorrect = mv.latexEqual(
+          comparableLatex((answerItem as MathTemplatedAnswer).value, language),
+          comparableLatex(value as string, language),
+          opts,
+        );
         if (answerCorrect) break;
       }
     } catch (e) {
@@ -110,6 +115,7 @@ const getIsAnswerCorrect = (
 const getResponseCorrectness = (
   question: MathTemplatedModel,
   sessionResponse: Answers | null | undefined,
+  language: string | undefined,
 ): ResponseCorrectness => {
   const correctResponses = question.responses as Record<string, MathTemplatedResponse>;
 
@@ -128,7 +134,7 @@ const getResponseCorrectness = (
       const answerItem = sessionResponse['r' + responseId];
       const correctResponse = correctResponses[responseId] || {};
 
-      const answerCorrect = getIsAnswerCorrect(correctResponse, answerItem);
+      const answerCorrect = getIsAnswerCorrect(correctResponse, answerItem, language);
       if (answerCorrect) {
         correctAnswers++;
       }
@@ -154,7 +160,7 @@ export const getCorrectness = (
   session: MathTemplatedSession | null | undefined,
 ): ResponseCorrectness | undefined => {
   if (env.mode === 'evaluate') {
-    return getResponseCorrectness(question, session && session.answers);
+    return getResponseCorrectness(question, session && session.answers, mathContentLanguage(question, env));
   }
 };
 
@@ -229,7 +235,7 @@ export const getLogTrace = (
     }
 
     if (studentValue) {
-      const isCorrect = getIsAnswerCorrect(correctResponse, answerItem);
+      const isCorrect = getIsAnswerCorrect(correctResponse, answerItem, mathContentLanguage(question, env));
       if (isCorrect) {
         correctCount++;
         traceLog.push(`Response area ${index + 1} is correct.`);
@@ -328,8 +334,9 @@ export const model = (
     session = session || {};
     const normalizedQuestion = createDefaultModel(question);
     const correctness = getCorrectness(normalizedQuestion as MathTemplatedModel, env, session);
-    const { responses, language } = normalizedQuestion;
-    let { note } = normalizedQuestion;
+    const { responses } = normalizedQuestion;
+    // Left as authored: delivery renders the default in the interface locale when it is absent.
+    const { note } = normalizedQuestion;
     let showNote = false;
 
     // check if there is at least one alternate response or if the validation for at least one response is not literal
@@ -341,10 +348,6 @@ export const model = (
         showNote = true;
       }
     });
-
-    if (!note) {
-      note = translator.t('mathInline.primaryCorrectWithAlternates', { lng: language });
-    }
 
     const out: MathTemplatedViewModel = {
       prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
@@ -367,7 +370,7 @@ export const model = (
       Object.keys(responses).forEach((responseId) => {
         const answerItem = answers['r' + responseId];
         const correctResponse = responses[responseId];
-        feedback[responseId] = getIsAnswerCorrect(correctResponse, answerItem);
+        feedback[responseId] = getIsAnswerCorrect(correctResponse, answerItem, mathContentLanguage(normalizedQuestion, env));
       });
     }
 

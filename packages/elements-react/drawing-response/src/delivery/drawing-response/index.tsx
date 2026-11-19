@@ -36,9 +36,7 @@ const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') |
 import { styled } from '@mui/material/styles';
 
 import Container from './container.js';
-import Translator from '@pie-lib/translator';
-
-const { translator } = Translator;
+import { catalogs } from '../../i18n/index.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -78,25 +76,20 @@ class DrawingResponseComponent extends React.Component {
         mode,
         teacherInstructions,
         backgroundImageEnabled,
-        language,
       },
       session,
       onSessionChange,
     } = this.props;
+    const language = this.props.language ?? this.props.model.language;
     const { hasError, errorMessage } = this.state;
     const isEvaluateMode = mode === 'evaluate';
 
     return hasError ? (
-      <ErrorDiv>An error occured: {errorMessage}</ErrorDiv>
+      <ErrorDiv>{catalogs.forLocale(language).t('renderError', { message: errorMessage })}</ErrorDiv>
     ) : (
       <StyledUiLayout extraCSSRules={extraCSSRules}>
         {teacherInstructions && (
-          <StyledCollapsible
-            labels={{
-              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
-              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
-            }}
-          >
+          <StyledCollapsible variant="teacherInstructions" language={language}>
             <PreviewPrompt prompt={teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -122,6 +115,8 @@ DrawingResponseComponent.propTypes = {
   model: PropTypes.object.isRequired,
   onSessionChange: PropTypes.func.isRequired,
   session: PropTypes.object.isRequired,
+  /** The locale the chrome follows; the item's declared language when omitted. */
+  language: PropTypes.string,
 };
 
 export default DrawingResponseComponent;

@@ -11,6 +11,7 @@ import { color } from '@pie-lib/render-ui';
 import { types } from '@pie-lib/plot';
 import { bandKey } from '../../utils.js';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import { DragHover } from '../../common/drag-hover.js';
 import MarkSlider from '../../common/mark-slider.js';
 import { CorrectCheckIcon } from './correct-check-icon.js';
 
@@ -87,23 +88,35 @@ export class RawBar extends React.Component {
       dragValue: undefined,
       isHovered: false,
     };
+    this.hover = new DragHover((isHovered) => this.setState({ isHovered }));
     this.mouseX = 0;
     this.mouseY = 0;
   }
 
   componentDidMount() {
+    this.hover.attach();
     window.addEventListener('mousemove', this.handleMouseMove);
+  }
+
+  // disabling the mark replaces its slider group with a plain one, which remounts the drag handle in the middle of
+  // a drag, so the end of the drag never reaches it and the value it was dragging is dropped here
+  componentDidUpdate(prevProps) {
+    if (this.props.disabled && !prevProps.disabled) {
+      this.hover.stop();
+      this.setDragValue(undefined);
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener('mousemove', this.handleMouseMove);
+    this.hover.dispose();
   }
 
   handleMouseMove: any = (e) => {
     this.mouseX = e.clientX;
     this.mouseY = e.clientY;
-    const isMouseInside = this.isMouseInsideSvgElement();
-    this.setState({ isHovered: isMouseInside });
+
+    this.hover.setInside(this.isMouseInsideSvgElement());
   };
 
   isMouseInsideSvgElement: any = () => {
@@ -116,8 +129,11 @@ export class RawBar extends React.Component {
     );
   };
 
-  handleMouseEnter = () => this.setState({ isHovered: true });
-  handleMouseLeave = () => this.setState({ isHovered: false });
+  handleMouseEnter = () => this.hover.setInside(true);
+
+  handleMouseLeave = () => this.hover.setInside(false);
+
+  dragStart: any = () => this.hover.start();
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
@@ -130,13 +146,16 @@ export class RawBar extends React.Component {
 
   dragStop: any = () => {
     const { dragValue } = this.state;
+    const { disabled } = this.props;
     log('[dragStop]', dragValue);
 
-    if (dragValue !== undefined) {
+    // a drag that was under way when the marks got disabled still ends, but its value is not an answer
+    if (dragValue !== undefined && !disabled) {
       this.changeValue(dragValue);
     }
 
     this.setDragValue(undefined);
+    this.hover.stop();
   };
 
   dragValue: any = (existing, next) => {
@@ -232,6 +251,7 @@ export class RawBar extends React.Component {
           interactive={interactive}
           disabled={disabled}
           width={barWidth}
+          onDragStart={this.dragStart}
           onDrag={(v) => this.dragValue(value, v)}
           onDragStop={this.dragStop}
           graphProps={graphProps}

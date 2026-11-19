@@ -125,15 +125,19 @@ The bundler produces bundles compatible with the production `pie-api-aws` bundle
 
 ```javascript
 // Webpack IIFE wrapper
-(()=>{
+(() => {
   // Module system
-  var modules = { /* ... */ };
-  function require(id) { /* ... */ }
+  var modules = {
+    /* ... */
+  };
+  function require(id) {
+    /* ... */
+  }
 
   // Exports
   var exports = {
     '@pie-element/multiple-choice': { Element: MultipleChoice, controller: Controller },
-    '@pie-element/multiple-choice@0.1.0': { Element: MultipleChoice, controller: Controller }
+    '@pie-element/multiple-choice@0.1.0': { Element: MultipleChoice, controller: Controller },
   };
 
   // Global assignment

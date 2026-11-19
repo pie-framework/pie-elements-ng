@@ -4,6 +4,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import { DndContext } from '@dnd-kit/core';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+import { catalogs } from '../../i18n/index.js';
 import AnswerArea from '../answer-area';
 
 const theme = createTheme();
@@ -25,6 +26,9 @@ const model = {
 // Prompt 2 holds an answer; prompt 1 is empty.
 const session = { value: { 2: 4 } };
 
+const i18n = catalogs.forLocale('en-US');
+const t = i18n.t.bind(i18n);
+
 const renderAnswerArea = (extras?: any) =>
   render(
     <ThemeProvider theme={theme}>
@@ -36,6 +40,7 @@ const renderAnswerArea = (extras?: any) =>
           showCorrect={false}
           disabled={false}
           onRemoveAnswer={vi.fn()}
+          t={t}
           {...extras}
         />
       </DndContext>
@@ -51,10 +56,11 @@ describe('AnswerArea response areas', () => {
     expect(within(empty).queryByRole('button')).not.toBeInTheDocument();
 
     const filled = screen.getByRole('group', { name: 'Prompt two' });
-    expect(within(filled).getByRole('button', { name: 'Answer four' })).toHaveAttribute(
-      'aria-roledescription',
-      'draggable',
-    );
+    // Named after the choice and where it sits (spec row 7), without dnd-kit's "draggable".
+    const tile = within(filled).getByRole('button', {
+      name: 'Answer choice: Answer four in drop area for Object 2 Prompt two',
+    });
+    expect(tile).not.toHaveAttribute('aria-roledescription');
   });
 
   it('make an empty area a button named by its prompt once a choice is selected', () => {
@@ -102,5 +108,12 @@ describe('AnswerArea response areas', () => {
     const ids = [...container.querySelectorAll('[aria-labelledby]')].map((node) => node.getAttribute('aria-labelledby'));
 
     expect(ids).toEqual(['1-prompt-label-1', '1-prompt-label-2']);
+  });
+
+  it('leaves a placed answer unnamed when its id is no longer in the config', () => {
+    renderAnswerArea({ session: { value: { 2: 999 } } });
+
+    expect(screen.queryByRole('button', { name: /Answer choice:/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Drop area 2 is empty')).toBeInTheDocument();
   });
 });

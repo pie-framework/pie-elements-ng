@@ -56,11 +56,12 @@ export async function model(
 ): Promise<ModelView> {
   const normalizedQuestion = normalize(question);
 
-  const normalizedPassages = normalizedQuestion.passages.map((passage, index): PassageView => ({
+  const normalizedPassages = normalizedQuestion.passages.map((passage): PassageView => ({
     teacherInstructions: isEnabled(passage.teacherInstructionsEnabled, normalizedQuestion.teacherInstructionsEnabled)
       ? normalizeTeacherInstructions(passage.teacherInstructions, env)
       : '',
-    label: getContent(passage.title) ? passage.title! : `Passage ${index + 1}`,
+    // An untitled passage's tab reads the catalog's `passageNumber` in the learner's locale.
+    label: getContent(passage.title) ? passage.title! : '',
     title: isEnabled(passage.titleEnabled, normalizedQuestion.titleEnabled) ? passage.title || '' : '',
     subtitle: isEnabled(passage.subtitleEnabled, normalizedQuestion.subtitleEnabled) ? passage.subtitle || '' : '',
     author: isEnabled(passage.authorEnabled, normalizedQuestion.authorEnabled) ? passage.author || '' : '',

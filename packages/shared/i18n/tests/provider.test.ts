@@ -109,6 +109,32 @@ describe('SimpleI18n', () => {
     expect(i18n.getLocale()).toBe('en-US');
   });
 
+  it('lets the last setLocale call win over a slower earlier one', async () => {
+    let releaseSpanish: (catalog: typeof es) => void = () => {};
+    const i18n = create({
+      availableLocales: [DEFAULT_LOCALE, 'es-ES', 'fr'],
+      loadCatalog: (locale) =>
+        locale === 'es-ES'
+          ? new Promise((resolve) => {
+              releaseSpanish = resolve;
+            })
+          : Promise.resolve({ common: { show: 'Afficher' } }),
+    });
+    const spanish = i18n.setLocale('es');
+    await i18n.setLocale('fr');
+    releaseSpanish(es);
+    await spanish;
+    expect(i18n.getLocale()).toBe('fr');
+    expect(i18n.t('common.show')).toBe('Afficher');
+  });
+
+  it('reports a view for a locale nothing serves as English', () => {
+    const view = create().withLocale('he');
+    expect(view.getLocale()).toBe('en-US');
+    expect(view.getDirection()).toBe('ltr');
+    expect(view.t('common.show')).toBe('Show');
+  });
+
   it('shares catalogs with views but notifies only its own subscribers', async () => {
     const i18n = create();
     const view = i18n.withLocale('es-ES');

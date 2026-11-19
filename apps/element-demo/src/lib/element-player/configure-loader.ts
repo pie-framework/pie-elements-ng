@@ -19,7 +19,10 @@ function loadRegistry(): Promise<ElementImportRegistry | null> {
   if (!registryPromise) {
     registryPromise = import('#lib/element-imports.js')
       .then((module) => module as ElementImportRegistry)
-      .catch(() => null);
+      .catch((error) => {
+        console.warn('[element-player/demo] Failed to load the element import registry', error);
+        return null;
+      });
   }
   return registryPromise;
 }
@@ -50,8 +53,8 @@ if (typeof window !== 'undefined' && !window.__pieElementPlayerResolverConfigure
 
     try {
       return await importer();
-    } catch {
-      console.warn(`[element-player/demo] Failed registry import for ${packagePath}`);
+    } catch (error) {
+      console.warn(`[element-player/demo] Failed registry import for ${packagePath}`, error);
       return null;
     }
   });

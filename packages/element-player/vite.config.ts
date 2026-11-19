@@ -2,9 +2,11 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
+import { thirdPartyLicenses } from '../../tools/vite/third-party-licenses';
 
 export default defineConfig({
   plugins: [
+    thirdPartyLicenses(),
     // Tailwind v4 optimization currently warns on daisyUI's standards-track `@property` rule.
     // Disable Tailwind's optimize pass (Vite will still minify CSS).
     tailwindcss({ optimize: false }),

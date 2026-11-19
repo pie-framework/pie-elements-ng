@@ -136,8 +136,10 @@ describe('simple-cloze accessibility', () => {
       { mode: 'evaluate' }
     );
 
-    expect(element.querySelector('.simple-cloze-toggle-label')?.textContent?.trim()).toBe(
-      'Mostrar respuesta correcta'
+    await vi.waitFor(() =>
+      expect(element.querySelector('.simple-cloze-toggle-label')?.textContent?.trim()).toBe(
+        'Mostrar respuesta correcta'
+      )
     );
   });
 

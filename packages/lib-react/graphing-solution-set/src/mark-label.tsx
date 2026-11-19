@@ -1,16 +1,14 @@
 // @ts-nocheck
 
-import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useReducer, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { AutosizeInput } from './autosize-input.js';
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import Translator from '@pie-lib/translator';
 import { roundNumber } from './utils.js';
-
-const { translator } = Translator;
+import { catalogs } from './i18n/index.js';
 
 const StyledAutosizeInput: any = styled(AutosizeInput, {
   shouldForwardProp: (prop) => prop !== 'markDisabled',
@@ -105,6 +103,8 @@ export const MarkLabel = (props) => {
   const { mark, graphProps, disabled, inputRef: externalInputRef, language } = props;
 
   const [label, setLabel] = useState(mark.label);
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
 
   const onChange = (e) => setLabel(e.target.value);
 
@@ -133,10 +133,12 @@ export const MarkLabel = (props) => {
   };
 
   const disabledInput = disabled || mark.disabled;
+  const i18n = catalogs.forLocale(language, relabel);
   const ariaLabel =
     Number.isFinite(mark.x) && Number.isFinite(mark.y)
-      ? translator.t('graphing.markLabel', { lng: language, x: roundNumber(mark.x), y: roundNumber(mark.y) })
-      : translator.t('graphing.label', { lng: language });
+      ? // as strings: a locale's decimal comma would run into the comma between the two
+        i18n.t('markLabel', { x: String(roundNumber(mark.x)), y: String(roundNumber(mark.y)) })
+      : i18n.t('label');
 
   return (
     <StyledAutosizeInput

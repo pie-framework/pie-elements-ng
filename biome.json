@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -26,6 +26,7 @@
       "!packages/elements-react",
       "!packages/lib-react",
       "!packages/shared/*/src/index.ts",
+      "!packages/shared/math-validation/demo/public",
       "!apps/*/src/lib/elements/registry.ts",
       "!apps/*/src/lib/element-imports.js",
       "!apps/*/src/lib/element-imports.d.ts",
@@ -67,9 +68,39 @@
   },
   "overrides": [
     {
-      "includes": ["packages/shared/i18n/tests/i18n-conformance-fixtures.json"],
+      "includes": ["docs/a11y/theme-gap-inventory.md"],
       "formatter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "usePlaywrightValidDescribeCallback": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.spec.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "useDomNodeTextContent": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["scripts/**", "**/vitest.config.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUndeclaredEnvVars": "off"
+          }
+        }
       }
     },
     {

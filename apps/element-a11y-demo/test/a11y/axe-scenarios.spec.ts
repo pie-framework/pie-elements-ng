@@ -319,7 +319,19 @@ async function checkKeyboardTabReach(page: Page): Promise<CheckResult> {
         active = active.shadowRoot.activeElement;
       }
 
-      return !!subject && !!active && subject.contains(active);
+      // `contains` stops at a shadow root, and the focused element can be inside one (the math
+      // input's keyboard input is): walk up through shadow hosts instead.
+      for (
+        let node: Node | null = active;
+        node;
+        node = node.parentNode ?? (node as ShadowRoot).host ?? null
+      ) {
+        if (node === subject) {
+          return true;
+        }
+      }
+
+      return false;
     });
     if (reached) {
       break;
@@ -337,11 +349,16 @@ async function checkKeyboardTabReach(page: Page): Promise<CheckResult> {
 
 async function checkMathAlternatives(page: Page): Promise<CheckResult> {
   const result = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
-    // `.mq-math-mode` is MathQuill's rendered math, static or editable, which the math input
-    // renders in place of MathJax.
-    const mathSelector = ['math', '.MathJax', '.mq-math-mode', '[data-latex]', '[data-math]'].join(
-      ','
-    );
+    // `math-field` is the math input's editable field, and `.ML__latex` its static math, both
+    // MathLive's, which it renders in place of MathJax.
+    const mathSelector = [
+      'math',
+      '.MathJax',
+      'math-field',
+      '.ML__latex',
+      '[data-latex]',
+      '[data-math]',
+    ].join(',');
 
     function isVisible(element: Element) {
       const rect = element.getBoundingClientRect();
@@ -365,8 +382,7 @@ async function checkMathAlternatives(page: Page): Promise<CheckResult> {
         .join(' ');
     }
 
-    // Text assistive technology reads: aria-hidden subtrees and zero-width characters, such as
-    // MathQuill's cursor, carry none.
+    // Text assistive technology reads: aria-hidden subtrees and zero-width characters carry none.
     function exposedText(element: Element) {
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
       let text = '';
@@ -378,10 +394,13 @@ async function checkMathAlternatives(page: Page): Promise<CheckResult> {
       return text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
     }
 
-    // A formula is evaluated once, at its outermost node: MathJax's assistive `math` and the
-    // response slots nested in MathQuill static math belong to the formula around them.
+    // A formula is evaluated once, at its outermost node: MathJax's assistive `math` belongs to
+    // the formula around it. Math hidden from assistive technology is not evaluated: its
+    // alternative is exposed beside it (the math input's static math hides its glyphs behind
+    // MathML).
     const mathNodes = [...subject.querySelectorAll(mathSelector)]
       .filter((element) => !element.parentElement?.closest(mathSelector))
+      .filter((element) => !element.closest('[aria-hidden="true"]'))
       .filter(isVisible);
     const missing = mathNodes
       .filter((element) => {

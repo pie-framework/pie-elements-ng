@@ -1,4 +1,5 @@
 ---
+
 name: pie-element-author
 description: "Implements a new PIE element (or non-trivial extension) end-to-end: PRD review → Model/Session/Controller → Svelte delivery component → authoring surface → tests. Use when adding a new @pie-element/* package or extending an existing element with a new mode or config surface."
 ---
@@ -60,13 +61,13 @@ The package has no Vite or Vitest config. The build script runs the shared confi
 
 All five methods are **pure functions** — no DOM access, no side effects, no `any`.
 
-| Method | Signature (sketch) | Contract |
-| --- | --- | --- |
-| `model(question, session, env)` | `→ ViewModel` | Derives the view-model; never mutates inputs; strips correctness data when `env.mode !== 'evaluate'`. |
-| `outcome(question, session, env)` | `→ { score: number, empty: boolean }` | Score in `[0, 1]`; `empty: true` iff session has no response; must be deterministic. |
-| `createDefaultModel()` | `→ Model` | Returns a model that passes `validate()` with zero errors, usable as a blank starting point for authoring. |
-| `validate(model)` | `→ Record<string, string>` | Returns `{}` for a valid model; returns error messages keyed by field for invalid model; never throws. |
-| `createCorrectResponseSession(question)` | `→ Session` | Returns a session whose `outcome()` produces `score === 1.0`. |
+| Method                                   | Signature (sketch)                    | Contract                                                                                                   |
+| ---------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `model(question, session, env)`          | `→ ViewModel`                         | Derives the view-model; never mutates inputs; strips correctness data when `env.mode !== 'evaluate'`.      |
+| `outcome(question, session, env)`        | `→ { score: number, empty: boolean }` | Score in `[0, 1]`; `empty: true` iff session has no response; must be deterministic.                       |
+| `createDefaultModel()`                   | `→ Model`                             | Returns a model that passes `validate()` with zero errors, usable as a blank starting point for authoring. |
+| `validate(model)`                        | `→ Record<string, string>`            | Returns `{}` for a valid model; returns error messages keyed by field for invalid model; never throws.     |
+| `createCorrectResponseSession(question)` | `→ Session`                           | Returns a session whose `outcome()` produces `score === 1.0`.                                              |
 
 `model()` must never return `any`. The `disabled` field on the view model must reflect `env.mode !== 'gather'` or `env.disabled === true`.
 
@@ -80,7 +81,7 @@ Pattern:
 // In the delivery component, on tile placement / choice selection / etc.
 function handleInteraction(update: SessionUpdate) {
   const next = applyUpdate(session, update);
-  next.completed = isComplete(model, next);  // computed in the same update
+  next.completed = isComplete(model, next); // computed in the same update
   onSessionChange?.(next);
 }
 ```

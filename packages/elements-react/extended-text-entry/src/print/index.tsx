@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { cloneDeep, debounce } from '@pie-element/shared-lodash';
 import Main from '../delivery/main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { isLocaleReady, loadLocale } from '@pie-element/shared-i18n';
 
 import debug from 'debug';
 
@@ -44,11 +45,17 @@ export default class ExtendedTextEntryPrint extends HTMLElement {
     this._rerender = debounce(
       () => {
         if (this._model && this._session && this._options) {
+          // No player publishes a locale to a print view, so the chrome follows the declared language.
+          if (!isLocaleReady(this._model.language)) {
+            void loadLocale(this._model.language).then(() => this._rerender());
+            return;
+          }
           const printModel = preparePrintModel(this._model, this._options);
 
           const element = React.createElement(Main, {
             model: printModel,
             session: {},
+            language: printModel.language,
             onChange: () => {},
             onValueChange: () => {},
             onAnnotationsChange: () => {},

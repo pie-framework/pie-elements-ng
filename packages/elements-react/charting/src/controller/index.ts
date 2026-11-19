@@ -3,7 +3,7 @@ import { isEmpty, isEqual, pick } from '@pie-element/shared-lodash';
 import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
 import defaults from './defaults.js';
 
-import { partialScoring } from '@pie-element/shared-controller-utils';
+import { contentLanguage, normalizeResponse, partialScoring } from '@pie-element/shared-controller-utils';
 import type {
   ChartingCategory,
   ChartingCategoryCorrectness,
@@ -75,10 +75,12 @@ type ChartingOutcome = {
 
 const log = debug('@pie-element:graphing:controller');
 
-const lowerCase = (string?: string) => (string || '').toLowerCase();
+/** A label's comparable form: normalized, and case folded in the content language. */
+const comparableLabel = (label: string | undefined, language: string | undefined) =>
+  normalizeResponse(label || '', { language, ignoreCase: true });
 
-export const checkLabelsEquality = (givenAnswerLabel?: string, correctAnswerLabel?: string) =>
-  lowerCase(givenAnswerLabel) === lowerCase(correctAnswerLabel);
+export const checkLabelsEquality = (givenAnswerLabel?: string, correctAnswerLabel?: string, language?: string) =>
+  comparableLabel(givenAnswerLabel, language) === comparableLabel(correctAnswerLabel, language);
 
 export const setCorrectness = (answers: ChartingCategory[] | undefined, partialScoring: boolean): ScoredCategory[] =>
   answers
@@ -100,6 +102,7 @@ export const getScore = (
 ): ChartingScore => {
   const { correctAnswer, data: initialData = [], scoringType } = question;
   const correctResponses: ChartingCorrectResponse[] = [];
+  const language = contentLanguage(question, env);
 
   const isPartialScoring = partialScoring.enabled(
     { partialScoring: scoringType !== undefined ? scoringType === 'partial scoring' : scoringType },
@@ -123,7 +126,7 @@ export const getScore = (
     const scoreForLabelAndValueEditable = (answer: ScoredCategory, corrAnswer: ChartingCategory) => {
       const { value, label, index } = answer;
       const valueIsCorrect = value === corrAnswer.value;
-      const labelIsCorrect = checkLabelsEquality(label, corrAnswer.label);
+      const labelIsCorrect = checkLabelsEquality(label, corrAnswer.label, language);
       maxScore += 2;
 
       if (valueIsCorrect) {
@@ -191,7 +194,7 @@ export const getScore = (
     answers = answers.map((answer, index): ScoredCategory => {
       const correctAnswer = correctAnswers[index];
       const valueIsCorrect = correctAnswer ? answer.value === correctAnswer.value : false;
-      const labelIsCorrect = correctAnswer ? lowerCase(answer.label) === lowerCase(correctAnswer.label) : false;
+      const labelIsCorrect = correctAnswer ? checkLabelsEquality(answer.label, correctAnswer.label, language) : false;
 
       if (!valueIsCorrect || !labelIsCorrect) {
         result = 0;
@@ -240,6 +243,7 @@ export const getLogTrace = (
   const { correctAnswer, data: initialData = [], scoringType } = model || {};
   const { data: correctAnswers = [] } = correctAnswer || {};
   const studentAnswers = (session && session.answer) || [];
+  const language = contentLanguage(model, env);
 
   const isPartialScoring = partialScoring.enabled(
     { partialScoring: scoringType !== undefined ? scoringType === 'partial scoring' : scoringType },
@@ -263,7 +267,7 @@ export const getLogTrace = (
     }
 
     const valueCorrect = student.value === correct.value;
-    const labelCorrect = checkLabelsEquality(student.label, correct.label);
+    const labelCorrect = checkLabelsEquality(student.label, correct.label, language);
 
     if (!student.interactive) {
       traceLog.push(`Category ${index + 1}: non-interactive category treated as correct.`);
@@ -272,7 +276,7 @@ export const getLogTrace = (
 
     if (studentAnswers.length > 0) {
       const valueChanged = initial ? student.value !== initial.value : true;
-      const labelChanged = initial ? !checkLabelsEquality(student.label, initial.label) : true;
+      const labelChanged = initial ? !checkLabelsEquality(student.label, initial.label, language) : true;
 
       if (!valueChanged && !labelChanged) {
         if (valueCorrect && labelCorrect) {

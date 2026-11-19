@@ -163,6 +163,43 @@ describe('manifest changes', () => {
     ).toBe(true);
   });
 
+  const withScripts = (scripts?: Record<string, string>) => ({ ...MANIFEST, scripts });
+
+  it('does not ship an edit confined to test, dev, demo and clean scripts', () => {
+    const before = withScripts({ build: 'vite build', test: 'vitest', 'test:watch': 'vitest' });
+    expect(
+      manifestChangeShips(
+        before,
+        withScripts({
+          build: 'vite build',
+          test: 'bun x vitest run --root ../../.. ./',
+          dev: 'vite',
+          'demo:serve': 'vite demo',
+          clean: 'rm -rf dist',
+        })
+      )
+    ).toBe(false);
+    expect(manifestChangeShips(withScripts({ test: 'vitest' }), withScripts(undefined))).toBe(
+      false
+    );
+  });
+
+  it('ships an edit to build, a lifecycle hook or an unlisted script', () => {
+    const before = withScripts({ build: 'vite build', test: 'vitest' });
+    expect(
+      manifestChangeShips(before, withScripts({ build: 'tsc && vite build', test: 'vitest' }))
+    ).toBe(true);
+    expect(
+      manifestChangeShips(before, withScripts({ ...before.scripts, postinstall: 'node x.js' }))
+    ).toBe(true);
+    expect(
+      manifestChangeShips(before, withScripts({ ...before.scripts, pretest: 'bun run build' }))
+    ).toBe(true);
+    expect(
+      manifestChangeShips(before, withScripts({ ...before.scripts, 'build:types': 'tsc' }))
+    ).toBe(true);
+  });
+
   it('ships an edit to any other field', () => {
     expect(
       manifestChangeShips(MANIFEST, {
@@ -667,6 +704,33 @@ describe('unreleased-file collection', { timeout: 30_000 }, () => {
       })
     );
     commit(rootDir, 'build(deps): pin @types/bun, vendor lodash-es');
+
+    expect(unreleased(rootDir)).toEqual(['@pie-element/multiple-choice']);
+  });
+
+  it('ignores an unreleased manifest edit confined to test scripts', async () => {
+    const rootDir = await makeGitFixture();
+    commit(rootDir, 'initial');
+
+    await write(
+      rootDir,
+      `${MC}/package.json`,
+      JSON.stringify({
+        version: '1.0.0',
+        name: '@pie-element/mc-populated-blank',
+        scripts: { test: 'bun x vitest run --root ../../.. ./' },
+      })
+    );
+    await write(
+      rootDir,
+      `${CHOICE}/package.json`,
+      JSON.stringify({
+        version: '1.0.0',
+        name: '@pie-element/multiple-choice',
+        scripts: { build: 'vite build' },
+      })
+    );
+    commit(rootDir, 'fix(test): run package tests through the root config, add a build');
 
     expect(unreleased(rootDir)).toEqual(['@pie-element/multiple-choice']);
   });

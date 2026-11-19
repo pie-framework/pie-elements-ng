@@ -140,8 +140,7 @@ describe('video-stimulus controller', () => {
     });
     const viewModel = buildViewModel(candidate, undefined, { mode: 'view' });
     expect(viewModel.media.tracks).toHaveLength(1);
-    expect(viewModel.uiText.showTranscript).toBe('Show transcript');
-    expect(viewModel.uiText).not.toHaveProperty('unexpected');
+    expect(viewModel.uiText).toBeUndefined();
   });
 
   it('rejects incorrect media version and kind without throwing on unknown input', () => {

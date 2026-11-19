@@ -1,0 +1,341 @@
+import { logger } from './log.js';
+
+import { mathjs as mjs } from './mathjs.js';
+
+import type { MathNode } from 'mathjs';
+
+const m: any = mjs;
+
+const log = logger('mv:node-sort');
+
+//import { string } from "mathjs";
+/**
+ * The plan with node sort was to sort all the nodes in an expression where possible
+ * This means any commutative operators aka + and *.
+ *
+ * With symbols sorted - we shoud be able to call `node.equals(other)` and avoid having to call evaluate.
+ */
+
+const newCompare = (a: MathNode, b: MathNode): number => {
+  // log(a.type);
+  log('[compareNodes]: a:', a.toString(), a.type);
+  log('[compareNodes]: b:', b.toString(), b.type);
+
+  if (a.isSymbolNode && b.isSymbolNode) {
+    // log(a.name, "> ", b.name);
+    return a.name!.localeCompare(b.name!);
+  }
+
+  // both constants - sort by value
+  if (a.isConstantNode && b.isConstantNode) {
+    log('a.value', a.value);
+    log('b.value', b.value);
+    return a.value - b.value; //(b.name);
+  }
+
+  // constants before any other node
+  if (a.isConstantNode && !b.isConstantNode) {
+    return -1;
+  }
+
+  if (b.isConstantNode && !a.isConstantNode) {
+    return 1;
+  }
+
+  // symbolNode before operatorNode
+  if (a.isSymbolNode && (b.isOperatorNode || b.isFunctionNode)) {
+    return -1;
+  }
+
+  if (b.isSymbolNode && (a.isOperatorNode || b.isFunctionNode)) {
+    return 1;
+  }
+
+  if (a.isOperatorNode && b.isOperatorNode) {
+    const localeCompareResult = a.args!.toString().localeCompare(b.args!.toString());
+
+    return -localeCompareResult;
+  }
+
+  if (!a.isFunctionNode && b.isFunctionNode) {
+    return -1;
+  }
+
+  // An unordered pair: sort() reads NaN as 0, and sortRelationalNode's `> -1` is false for it.
+  return NaN;
+};
+
+const applySort = (node: MathNode) => {
+  // log("node: ", node.toString());
+  // log("path: ", path);
+  // log("parent: ", parent);
+  if (node.fn === 'add' || node.fn === 'multiply') {
+    node.args = node.args!.sort(newCompare);
+    node.args = node.args.map(applySort);
+  }
+
+  return node;
+};
+
+// orders terms or factors whose insides are sorted: numbers first, by value, then symbols, by name, then
+// the rest by how they print, which is then the same however each was written. newCompare compares
+// operators by their arguments alone, so 1+x and 1/x would tie and keep the order they were written in.
+const compareSorted = (a: MathNode, b: MathNode): number => {
+  const kind = (node: MathNode) => (node.isConstantNode ? 0 : node.isSymbolNode ? 1 : 2);
+
+  if (kind(a) !== kind(b)) {
+    return kind(a) - kind(b);
+  }
+
+  const difference = kind(a) === 0 ? a.value - b.value : 0;
+
+  if (difference !== 0 && !Number.isNaN(difference)) {
+    return difference;
+  }
+
+  const [first, second] = [a.toString(), b.toString()];
+
+  return first < second ? -1 : first > second ? 1 : 0;
+};
+
+// sorts every sum and product after the terms and factors inside it, so that they are ordered by their
+// sorted forms. applySort orders them first, by how they are written, so \frac{zb}{2}\cdot\frac{c}{d}
+// and \frac{bz}{2}\cdot\frac{c}{d} came out in different orders (PIE-1541).
+const sortInnermostFirst = (node: MathNode): MathNode => {
+  const sorted = node.map((child) => sortInnermostFirst(child));
+
+  if (sorted.fn === 'add' || sorted.fn === 'multiply') {
+    sorted.args = (sorted.args || []).sort(compareSorted);
+  }
+
+  return sorted;
+};
+
+const firstChildOperator = (args: any, operator?: string) => {
+  let result = false;
+  args.forEach((arg: any) => {
+    if (arg.fn === operator) {
+      result = true;
+    }
+  });
+
+  return result;
+};
+
+// only a sum or a product takes its nested sums or products into its own terms or factors: a nested
+// negation, quotient or power keeps its shape, since -(-x) is not -x and a/(b/c) is not (b/c)/a (PIE-1541)
+const isAssociative = (node: MathNode) => node.fn === 'add' || node.fn === 'multiply';
+
+/**
+ * How sorting may rewrite an expression besides reordering it. By default, as in symbolic mode, the
+ * quotients of a product are joined into one, which keeps the value. keepQuotients, for literal mode
+ * with ignoreOrder, keeps a product of several quotients as it is, since joining them is not a
+ * reordering: 2/3 * 4/5 then matches 4/5 * 2/3 but not 4/3 * 2/5 or (2 * 4)/(3 * 5). A single quotient
+ * still takes the factors beside it into its numerator, as in 1.4.3.
+ *
+ * innermostFirst, also for literal mode with ignoreOrder, sorts every sum and product after the terms
+ * and factors inside it, so that the order of the fractions, or of the sums beside one, does not depend
+ * on how their insides are written. The default sorts each sum or product before what is inside it.
+ */
+export type SortOptions = { keepQuotients?: boolean; innermostFirst?: boolean };
+
+export const flattenNode = (node: MathNode, { keepQuotients = false }: SortOptions = {}) => {
+  while (node.isParenthesisNode && node.content) {
+    node = node.content;
+  }
+
+  node = node.transform((currentNode, _path, parent) => {
+    if (
+      currentNode.isParenthesisNode &&
+      (parent?.op !== '*' || (parent?.op === '*' && currentNode.content!.op !== '+'))
+    ) {
+      while (currentNode.isParenthesisNode) currentNode = currentNode.content!;
+    }
+
+    return currentNode;
+  });
+
+  if (node.fn === 'multiply' && (node as any).implicit) {
+    (node as any).implicit = false;
+  }
+
+  let resultNode = node;
+
+  resultNode = resultNode.transform((currentNode) => {
+    while (
+      isAssociative(currentNode) &&
+      firstChildOperator(currentNode, currentNode.fn) &&
+      !currentNode.isArrayNode
+    ) {
+      const flatten = currentNode;
+
+      flatten.traverse((node, path, parent) => {
+        if (parent?.fn === node.fn && isAssociative(node)) {
+          const indexToRemove = path.replace(/[^0-9]/g, '');
+
+          parent.args!.splice(+indexToRemove, 1) || [];
+
+          let argstoAdd = parent.args!;
+
+          node.args!.forEach((arg) => {
+            argstoAdd.push(arg);
+          });
+
+          node = new m.OperatorNode(node.op, node.fn, argstoAdd);
+
+          if (node.fn === 'multiply' && (node as any).implicit) {
+            (node as any).implicit = false;
+          }
+        }
+        return node;
+      });
+    }
+
+    return currentNode;
+  });
+
+  return joinQuotients(resultNode, keepQuotients);
+};
+
+// a product with quotients among its factors becomes one quotient, as 3 * 8/6 becomes (8 * 3)/6, so
+// that it sorts like the quotient written out. Every factor goes into the numerator and every
+// denominator under the bar: keeping only the symbols and constants dropped factors such as (x+1)^5 in
+// (x+1)^5 * 1/x, so (x+1) x^{-1} matched (x+2) x^{-1} (PIE-1541). With keepQuotients, a product of
+// several quotients keeps them, since joining them is not a reordering.
+const joinQuotients = (node: MathNode, keepQuotients: boolean): MathNode =>
+  node.transform((currentNode) => {
+    if (currentNode.fn !== 'multiply' || !firstChildOperator(currentNode.args, 'divide')) {
+      return currentNode;
+    }
+
+    const factors = currentNode.args || [];
+
+    // left to the transform, which joins what is inside the quotients
+    if (keepQuotients && factors.filter((arg) => arg.fn === 'divide').length > 1) {
+      return currentNode;
+    }
+
+    const args = factors.map((arg) => joinQuotients(arg, keepQuotients));
+    const quotients = args.filter((arg) => arg.fn === 'divide');
+    const others = args.filter((arg) => arg.fn !== 'divide');
+    const factorsOf = (product: MathNode) =>
+      product.fn === 'multiply' ? product.args! : [product];
+    // the numerators' factors come first, then the other factors
+    const numerator = [
+      ...quotients.flatMap((quotient) => factorsOf(quotient.args![0]!)),
+      ...others,
+    ];
+    const denominators = quotients.map((quotient) => quotient.args![1]!);
+
+    return new m.OperatorNode('/', 'divide', [
+      new m.OperatorNode('*', 'multiply', numerator),
+      denominators.length === 1
+        ? denominators[0]
+        : new m.OperatorNode('*', 'multiply', denominators.flatMap(factorsOf)),
+    ]);
+  });
+
+export const sortRelationalNode = (node: any, options: SortOptions = {}) => {
+  log('THIS IS THE START ++++', JSON.stringify(node));
+
+  const smaller = ['smaller', 'smallerEq'];
+  const bigger = ['larger', 'largerEq'];
+
+  const resultNode = node.transform((node: any, _path: string, parent: any) => {
+    let reverse = false;
+
+    if (node.conditionals) {
+      const smallerAndBigger =
+        smaller.some((small) => node.conditionals.includes(small)) &&
+        bigger.some((big) => node.conditionals.includes(big));
+
+      if (node.conditionals.includes('equal')) {
+        node.params.sort(newCompare);
+      } else if (smallerAndBigger && node.params) {
+        if (newCompare(node.params[0], node.params[node.params.length - 1]) > -1) {
+          node.params.reverse();
+        }
+      } else {
+        node.conditionals = node.conditionals.map((cond: any) => {
+          if (cond === 'smaller') {
+            reverse = true;
+            cond = 'larger';
+          } else if (cond === 'smallerEq') {
+            reverse = true;
+            cond = 'largerEq';
+          }
+
+          return cond;
+        });
+      }
+    }
+
+    if (node.params && reverse) {
+      node.conditionals.reverse();
+      node.params.reverse();
+    }
+
+    if (parent && parent.type === 'RelationalNode' && node.args) {
+      node = sort(node, options);
+    }
+
+    return node;
+  });
+
+  return resultNode;
+};
+
+export const sort = (node: MathNode, options: SortOptions = {}) => {
+  let resultNode = node;
+
+  if (node.type === 'RelationalNode') {
+    return sortRelationalNode(node, options);
+  }
+
+  if (node.isOperatorNode && node.fn === 'smaller') {
+    node.op = '>';
+    node.fn = 'larger';
+    node.args = node.args!.reverse();
+  }
+
+  if (node.isOperatorNode && node.fn === 'smallerEq') {
+    node.op = '>=';
+    node.fn = 'largerEq';
+    node.args = node.args!.reverse();
+  }
+
+  const relationOperators = '=|NE|≃|≈|≈|≉|~|≃|≁|≅|≆';
+
+  if (
+    node.isFunctionNode &&
+    // @ts-expect-error
+    node.fn.name.match(relationOperators)
+  ) {
+    node.args = node.args!.sort(newCompare);
+  }
+
+  if (
+    node.isOperatorNode &&
+    (node.fn === 'larger' || node.fn === 'largerEq' || node.fn === 'equal' || node.fn === 'unequal')
+  ) {
+    node.args = node.args!.map((arg) => sort(arg, options));
+
+    if (node.fn === 'equal' || node.fn === 'unequal') {
+      node.args = node.args.sort(newCompare);
+    }
+  }
+
+  if (node.isArrayNode) {
+    // @ts-expect-error
+    node.items = node.items.sort(newCompare);
+    return node;
+  }
+
+  const flattened = flattenNode(node, options);
+
+  resultNode = options.innermostFirst
+    ? sortInnermostFirst(flattened)
+    : flattened.transform(applySort);
+
+  return resultNode;
+};

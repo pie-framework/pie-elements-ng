@@ -133,6 +133,19 @@ describe('CorrectAnswerToggle', () => {
       expect(labels).toEqual(['Mostrar respuesta correcta', 'Show correct answer']);
     });
 
+    it('names the locale its label is served in on its root', async () => {
+      await loadLocale('es-MX');
+      const spanish = render(<Toggle show language="es-MX" onToggle={() => {}} />);
+      const root = (button: HTMLElement) => button.closest('[lang]');
+      expect(root(spanish)?.getAttribute('lang')).toBe('es');
+
+      // Nothing ships Hebrew, so the label is English and the root says so.
+      const english = render(<Toggle show language="he" onToggle={() => {}} />);
+      expect(english.textContent).toBe('Show correct answer');
+      expect(root(english)?.getAttribute('lang')).toBe('en-US');
+      expect(root(english)?.getAttribute('dir')).toBe('ltr');
+    });
+
     it('prefers labels the caller passes', () => {
       const button = render(<Toggle show showMessage="Reveal" language="es" onToggle={() => {}} />);
       expect(button.textContent).toBe('Reveal');

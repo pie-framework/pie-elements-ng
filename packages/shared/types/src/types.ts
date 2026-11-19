@@ -270,6 +270,11 @@ export interface PieEnvironment {
   // Optional advanced features
   lockChoiceOrder?: boolean;
   partialScoring?: boolean;
+  /**
+   * Content language of the item as a BCP 47 tag, as the player stamps it.
+   * An element's own `model.language` takes precedence.
+   */
+  locale?: string;
   // Optional theme configuration
   theme?: PieTheme;
 }

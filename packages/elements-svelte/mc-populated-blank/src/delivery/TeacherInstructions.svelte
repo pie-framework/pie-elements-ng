@@ -1,8 +1,12 @@
 <script lang="ts">
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
-import { tCommon } from './i18n';
+import { chromeLanguageAttributes } from '@pie-element/shared-i18n';
+import { catalogs } from '../i18n/index.js';
 
+/** `language` is the chrome language, resident before this renders; `html` stays in the item's. */
 let { html, language }: { html: string; language?: string } = $props();
+
+const i18n = $derived(catalogs.forLocale(language));
 
 let expanded = $state(false);
 const panelId = `mpb-teacher-instructions-${Math.random().toString(36).slice(2, 10)}`;
@@ -15,9 +19,10 @@ const panelId = `mpb-teacher-instructions-${Math.random().toString(36).slice(2, 
     class="teacher-instructions-toggle pie-teacher-instructions-toggle"
     aria-expanded={expanded}
     aria-controls={panelId}
+    {...chromeLanguageAttributes(i18n, language)}
     onclick={() => (expanded = !expanded)}
   >
-    {tCommon(expanded ? 'hideTeacherInstructions' : 'showTeacherInstructions', language)}
+    {i18n.t(expanded ? 'hideTeacherInstructions' : 'showTeacherInstructions')}
   </button>
   <div id={panelId} class="teacher-instructions-content pie-teacher-instructions-content" hidden={!expanded}>
     {@html sanitizeModelHtml(html)}

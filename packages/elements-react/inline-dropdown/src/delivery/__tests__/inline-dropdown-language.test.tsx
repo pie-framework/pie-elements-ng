@@ -1,6 +1,7 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { loadLocale } from '@pie-element/shared-i18n';
 
 // MathJax loads off a CDN, and the dropdowns have no bearing on the item's heading and toggles.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -10,6 +11,9 @@ const { default: InlineDropdownComponent } = await import('../inline-dropdown');
 
 // inline-dropdown.tsx is untyped, so its class declares no props.
 const InlineDropdown = InlineDropdownComponent as unknown as React.ComponentType<Record<string, unknown>>;
+
+// The custom element holds its first render until the chrome locale is resident; so does this.
+beforeAll(() => loadLocale('es_ES'));
 
 const choices = { 0: [{ value: '0', label: 'Jupiter', correct: true, rationale: '<p>Largest.</p>' }] };
 
@@ -29,7 +33,7 @@ describe('inline-dropdown language', () => {
         'Mostrar justificación',
       ],
     ],
-  ])('names the heading and toggles in the %s item language', (language, heading, toggles) => {
+  ])('names the heading and toggles in the %s chrome language', (language, heading, toggles) => {
     render(
       <InlineDropdown
         model={{}}

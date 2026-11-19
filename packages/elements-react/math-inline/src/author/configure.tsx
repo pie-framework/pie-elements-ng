@@ -68,6 +68,7 @@ export class Configure extends React.Component<ConfigureProps> {
     const {
       allowTrailingZeros = {},
       baseInputConfiguration = {},
+      compareNumbersByValue = {},
       contentDimensions = {},
       feedback = {},
       ignoreOrder = {},
@@ -123,6 +124,7 @@ export class Configure extends React.Component<ConfigureProps> {
       scoringType: scoringType.settings && radio(scoringType.label, ['auto', 'rubric']),
       'ignoreOrder.enabled': ignoreOrder.settings && toggle(ignoreOrder.label),
       'allowTrailingZeros.enabled': allowTrailingZeros.settings && toggle(allowTrailingZeros.label),
+      'compareNumbersByValue.enabled': compareNumbersByValue.settings && toggle(compareNumbersByValue.label),
       rubricEnabled: withRubric?.settings && toggle(withRubric?.label),
     };
 

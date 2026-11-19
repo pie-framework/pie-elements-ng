@@ -43,10 +43,10 @@ describe('graphing-solution-set text alternative', () => {
     );
   });
 
-  it('names and describes the graph in the item language', () => {
+  it('names and describes the graph in the item language', async () => {
     renderGraph({ language: 'es_ES', marks: [] });
 
-    expect(screen.getByRole('group', { name: 'Gráfica de coordenadas' })).toHaveAccessibleDescription(
+    expect(await screen.findByRole('group', { name: 'Gráfica de coordenadas' })).toHaveAccessibleDescription(
       'Eje x de -10 a 10. Eje y de -10 a 10. Nada trazado.',
     );
   });

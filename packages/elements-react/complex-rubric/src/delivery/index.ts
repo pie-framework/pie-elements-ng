@@ -73,35 +73,26 @@ class ComplexRubric extends HTMLElement {
 
   setRubricModel(simpleRubric) {
     if (this._model && this._model.rubrics && this._model.rubrics.simpleRubric) {
-      const { mode } = this._model;
-
-      simpleRubric.model = {
-        ...this._model.rubrics.simpleRubric,
-        mode,
-      };
+      simpleRubric.model = this.embeddedModel(this._model.rubrics.simpleRubric);
     }
   }
 
   setMultiTraitRubricModel(multiTraitRubric) {
     if (this._model && this._model.rubrics && this._model.rubrics.multiTraitRubric) {
-      const { mode } = this._model;
-
-      multiTraitRubric.model = {
-        ...this._model.rubrics.multiTraitRubric,
-        mode,
-      };
+      multiTraitRubric.model = this.embeddedModel(this._model.rubrics.multiTraitRubric);
     }
   }
 
   setRubriclessModel(rubricless) {
     if (this._model && this._model.rubrics && this._model.rubrics.rubricless) {
-      const { mode } = this._model;
-
-      rubricless.model = {
-        ...this._model.rubrics.rubricless,
-        mode,
-      };
+      rubricless.model = this.embeddedModel(this._model.rubrics.rubricless);
     }
+  }
+
+  /** The embedded rubric's model, with the item's mode and, unless it declares its own, its language. */
+  embeddedModel(rubric) {
+    const { mode, language } = this._model;
+    return { language, ...rubric, mode };
   }
 
   get multiTraitRubric() {

@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { LinePath } from '@visx/shape';
 import { Group } from '@visx/group';
@@ -11,6 +11,7 @@ import { dataToXBand } from '../utils.js';
 import { types } from '@pie-lib/plot';
 import RawLine from './common/line.js';
 import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
+import { useDragHover } from '../common/drag-hover.js';
 
 const StyledLinePath: any = styled(LinePath)(() => ({
   stroke: color.defaults.TEXT,
@@ -20,7 +21,10 @@ const StyledLinePath: any = styled(LinePath)(() => ({
   },
 }));
 
-const StyledGroup: any = styled(Group)(({ correctness, interactive }) => ({
+// correctness and interactive only drive the styles; they are not attributes of the <g>
+const StyledGroup: any = styled(Group, {
+  shouldForwardProp: (prop) => prop !== 'correctness' && prop !== 'interactive',
+})(({ correctness, interactive }) => ({
   stroke: color.defaults.TEXT,
   transition: 'fill 200ms linear, height 200ms linear',
   ...(correctness &&
@@ -40,8 +44,26 @@ const StyledTransparentHandle: any = styled('circle')(() => ({
 }));
 
 const DraggableComponent = (props) => {
-  const { className, scale, x, y, r, correctness, interactive, correctData, label, ...rest } = props;
-  const [hover, setHover] = useState(false);
+  // the drag callbacks are for the drag wrapper, not for the circle they would otherwise land on
+  const {
+    className,
+    scale,
+    x,
+    y,
+    r,
+    correctness,
+    interactive,
+    correctData,
+    label,
+    isDragging,
+    disabled,
+    onDragStart,
+    onDrag,
+    onDragStop,
+    ...rest
+  } = props;
+  // a disabled mark is not dragged, so pressing it does not take the hover from the others
+  const { hovered: hover, onEnter, onLeave } = useDragHover(!!isDragging && !disabled);
 
   const squareSize = r * 4;
   const squareHalf = squareSize / 2;
@@ -88,8 +110,8 @@ const DraggableComponent = (props) => {
         cx={cx}
         cy={cy}
         r={r * 2}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
         {...rest}
       />
       {/* show correctness indicators */}

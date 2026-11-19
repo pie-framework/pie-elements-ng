@@ -14,6 +14,7 @@ import Purpose from './purpose.js';
 import * as color from './color.js';
 import { hasText } from './has-text.js';
 import { hasMedia } from './has-media.js';
+import { hasTextAlternative } from './has-text-alternative.js';
 import EnableAudioAutoplayImage from './assets/enableAudioAutoplayImage.js';
 import { transformDataHeadings } from './transform-headings.js';
 
@@ -32,6 +33,7 @@ export {
   Purpose,
   hasText,
   hasMedia,
+  hasTextAlternative,
   EnableAudioAutoplayImage,
   transformDataHeadings,
 };

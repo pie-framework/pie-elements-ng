@@ -28,15 +28,15 @@ function handleThemeToggle(event: Event) {
 }
 </script>
 
-<div class="min-h-screen bg-base-200">
+<div class="min-h-screen">
   <!-- Header -->
-  <div class="navbar bg-base-100 shadow-lg">
+  <div class="navbar bg-base-100 border-b border-base-300">
     <div class="navbar-start">
       <div class="flex items-center gap-3 px-4">
         <img src="/pie-logo-orange.svg" alt="PIE Logo" class="w-10 h-10" />
         <div class="flex flex-col">
-          <span class="font-bold text-xl">PIE Elements Demo</span>
-          <span class="text-xs opacity-70">Interactive Assessment Components</span>
+          <span class="font-bold text-xl">PIE Elements</span>
+          <span class="text-xs text-site-muted">Live sample library</span>
         </div>
       </div>
     </div>
@@ -64,10 +64,10 @@ function handleThemeToggle(event: Event) {
     <div class="max-w-screen-2xl mx-auto">
       <!-- Welcome Section -->
       <div class="text-center mb-12">
-        <h1 class="text-4xl font-bold mb-4">Welcome to PIE Elements</h1>
-        <p class="text-lg opacity-70 max-w-2xl mx-auto">
-          Explore {data.elements.length} interactive assessment elements. Click on any element below to
-          see it in action with live demos and configuration options.
+        <h1 class="font-editorial text-5xl mb-4">Live PIE samples</h1>
+        <p class="text-lg text-site-muted max-w-2xl mx-auto">
+          Run every element as a student or scorer, author it, print it and inspect its model and
+          session. Pick an element to open its demos.
         </p>
       </div>
 
@@ -124,7 +124,7 @@ function handleThemeToggle(event: Event) {
           <a
             href="/{element.name}"
             data-sveltekit-reload
-            class="card bg-base-100 shadow-lg hover:shadow-2xl transition-shadow duration-200"
+            class="card bg-base-100 border border-base-300 hover:border-primary transition-colors duration-200"
           >
             <div class="card-body">
               <div class="flex items-start justify-between gap-2 mb-2">
@@ -135,7 +135,7 @@ function handleThemeToggle(event: Event) {
                   <span class="badge badge-primary badge-sm shrink-0 whitespace-nowrap">{element.demoCount} {element.demoCount === 1 ? 'demo' : 'demos'}</span>
                 {/if}
               </div>
-              <p class="text-sm opacity-70 truncate">{element.packageName}</p>
+              <p class="text-sm text-site-muted truncate">{element.packageName}</p>
 
               <!-- Features -->
               <div class="flex gap-2 mt-2 flex-wrap">
