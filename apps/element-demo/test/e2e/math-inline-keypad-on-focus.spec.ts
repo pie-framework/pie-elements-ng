@@ -52,6 +52,29 @@ test.describe('math-inline keypad on focus', () => {
     await expect(keypad(page).getByRole('button').first()).toBeFocused();
   });
 
+  // The keypad instructions the field is described by: ArrowDown moves into the keypad, Tab moves
+  // between its buttons, and Escape closes it and returns to the field.
+  test('follows the keypad instructions', async ({ page }) => {
+    await openMathInline(page);
+    const field = mathResponse(mountedElement(page));
+    const keys = keypad(page).getByRole('button');
+
+    await focusAsTab(field);
+    await page.keyboard.press('ArrowDown');
+    await expect(keys.nth(0)).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(keys.nth(1)).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(keypad(page)).toHaveCount(0);
+    await expect(field).toBeFocused();
+    // MathLive's own focus of the field, 60ms on, does not open the keypad again.
+    await page.waitForTimeout(150);
+    await expect(keypad(page)).toHaveCount(0);
+    await expect(field).toBeFocused();
+  });
+
   test('a click on the field opens it after focusFirstInput left it closed', async ({ page }) => {
     await openMathInline(page);
     const field = mathResponse(mountedElement(page));

@@ -294,7 +294,24 @@ export class Main extends React.Component {
         }
       }
     } else if (event.key === 'Escape' && !isComposingKeyEvent(event)) {
+      // Escape in the keypad returns focus to the field, as the keypad instructions say.
+      const fromKeypad = isTrigerredFromActualPieElement && !!event.target?.closest?.('[data-keypad]');
+
       this.setState({ activeAnswerBlock: '' });
+
+      if (fromKeypad) {
+        this.returnFocusToField();
+      }
+    }
+  };
+
+  returnFocusToField: any = () => {
+    const field = this.root?.querySelector('math-field');
+
+    if (field) {
+      // Native focus, as Tab gives it: MathLive's own focus() moves focus 60ms later, once
+      // focusWithoutKeypad has returned, and the keypad would open again.
+      this.focusWithoutKeypad(() => HTMLElement.prototype.focus.call(field));
     }
   };
 
@@ -311,7 +328,8 @@ export class Main extends React.Component {
 
   /**
    * Run `focus` with the keypad left closed: the focus hook opens no keypad (WCAG 3.2.1, see
-   * docs/PIE_ELEMENT_CONTRACT.md). The field reports its focus while `focus` runs.
+   * docs/PIE_ELEMENT_CONTRACT.md), and Escape leaves it closed. The field reports its focus while
+   * `focus` runs.
    */
   focusWithoutKeypad: any = (focus) => {
     this.focusingWithoutKeypad = true;
