@@ -34,9 +34,9 @@ describe('mask-markup interface language', () => {
     );
     const { rerender } = render(blank('es'));
 
-    expect(await screen.findByRole('button', { name: 'Espacio en blanco 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'El espacio en blanco 1 está vacío' })).toBeInTheDocument();
 
     rerender(blank('en_US'));
-    expect(screen.getByRole('button', { name: 'Blank 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Blank 1 is empty' })).toBeInTheDocument();
   });
 });

@@ -229,7 +229,7 @@ const CASES: GestureCase[] = [
         zoomBlock: BLOCKS.dragBoard,
       },
     ],
-    handleDrag: choiceDragTo((root) => root.getByRole('button', { name: 'Blank 1', exact: true })),
+    handleDrag: choiceDragTo((root) => root.getByRole('button', { name: 'Blank 1 is empty', exact: true })),
   },
   {
     element: 'venn-classification',
