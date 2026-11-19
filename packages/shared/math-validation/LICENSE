@@ -46,14 +46,14 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ---
 
-The LaTeX parser and its conversion to mathjs (src/conversion/latex-to-ast.ts,
-src/conversion/ast-to-mathjs.ts, src/conversion/lexer.ts and
-src/conversion/flatten.ts, bundled into dist/index.js) are derived from release
+The LaTeX parser and its conversion to mathjs in @pie-framework/math-validation
+(src/conversion/latex-to-ast.ts, src/conversion/ast-to-mathjs.ts,
+src/conversion/lexer.ts and src/conversion/flatten.ts) are derived from release
 2.0.0-alpha26 of math-expressions (https://github.com/kisonecat/math-expressions),
 Copyright 2014-2017 by Jim Fowler <kisonecat@gmail.com> and Duane Nykamp
 <nykamp@umn.edu>, which is licensed under GPL-3.0 or Apache-2.0. They are used
-under the Apache License, Version 2.0, below, and have been changed for this
-package.
+under the Apache License, Version 2.0, below, and have been changed for
+@pie-framework/math-validation.
 
                                Apache License
                            Version 2.0, January 2004

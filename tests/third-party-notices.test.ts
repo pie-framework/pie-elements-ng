@@ -142,6 +142,20 @@ describe('third-party license notices plugin', () => {
   });
 });
 
+describe('math-validation parser attribution', () => {
+  // The package's LICENSE and the notice its bundles ship both carry the attribution and the
+  // Apache-2.0 text of the parser derived from math-expressions. They must not drift apart.
+  const packageDir = join(__dirname, '..', 'packages', 'shared', 'math-validation');
+
+  it('is identical in LICENSE and in the notice the bundles ship', async () => {
+    const notice = await readFile(join(packageDir, 'licenses', 'math-expressions.txt'), 'utf8');
+    const license = await readFile(join(packageDir, 'LICENSE'), 'utf8');
+
+    expect(notice).toContain('math-expressions');
+    expect(license).toContain(notice.trimEnd());
+  });
+});
+
 describe('third-party notices from other builds', () => {
   it('finds the package an installed file belongs to', () => {
     expect(installedPackageRoot('/w/node_modules/.bun/x@1/node_modules/@a/b/lib/c.js')).toBe(
