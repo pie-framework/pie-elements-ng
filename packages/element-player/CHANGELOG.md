@@ -1,5 +1,29 @@
 # @pie-element/element-player
 
+## 0.1.10
+
+### Patch Changes
+
+- [#674](https://github.com/pie-framework/pie-elements-ng/pull/674) [`8574fb0`](https://github.com/pie-framework/pie-elements-ng/commit/8574fb0be686830c9e67c15931dd114d349cd357) Thanks [@chillenious](https://github.com/chillenious)! - The MathJax speech worker now starts on Safari. WebKit loads a `blob:` worker's script asynchronously, so the URL revocation that MathJax's adaptor and the adapter's browser build performed synchronously after `new Worker` killed the worker before it could load: speech, braille and the explorer stayed off for every Safari student. Both paths now hold the revocation until the worker signals that it started or failed, and release after a grace period otherwise. The element loader keeps the local-ESM dynamic import free of `@vite-ignore`, restoring the intent of 2611a1fe that 2e73a457 had clobbered, so Vite dev servers keep resolving workspace element specifiers.
+
+- [#512](https://github.com/pie-framework/pie-elements-ng/pull/512) [`8332b6e`](https://github.com/pie-framework/pie-elements-ng/commit/8332b6e81b71aea992771ffb5cad7874ee301669) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @tailwindcss/vite from 4.3.0 to 4.3.3
+
+- [#552](https://github.com/pie-framework/pie-elements-ng/pull/552) [`b00321c`](https://github.com/pie-framework/pie-elements-ng/commit/b00321cc5bc48b72de24f6e5db52fb446a5e9e8d) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#559](https://github.com/pie-framework/pie-elements-ng/pull/559) [`efc633c`](https://github.com/pie-framework/pie-elements-ng/commit/efc633cb4a3b7870f2237d374d43bcd6d1b18d8c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.4 to 8.3.5
+
+- [#605](https://github.com/pie-framework/pie-elements-ng/pull/605) [`932e3d9`](https://github.com/pie-framework/pie-elements-ng/commit/932e3d92a3485296b95e1068080641f7c578858e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump svelte from 5.57.2 to 5.57.3
+
+- [#638](https://github.com/pie-framework/pie-elements-ng/pull/638) [`2d26dea`](https://github.com/pie-framework/pie-elements-ng/commit/2d26dea8459af2c542d4709885565a83d604a9d2) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @biomejs/biome from 2.6.4 to 2.6.6 in the dev-dependencies group across 1 directory
+
+- [#647](https://github.com/pie-framework/pie-elements-ng/pull/647) [`7d3a323`](https://github.com/pie-framework/pie-elements-ng/commit/7d3a32301eb3393937961919256da39e57e8104f) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.5 to 8.3.6
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#655](https://github.com/pie-framework/pie-elements-ng/pull/655) [`38838ba`](https://github.com/pie-framework/pie-elements-ng/commit/38838bae2b474a1cb629b6d47022c4b64b740850) Thanks [@chillenious](https://github.com/chillenious)! - Ship the license and NOTICE texts of every bundled third-party package in `THIRD_PARTY_LICENSES.txt` files beside the build output that bundles it.
+- Updated dependencies [[`8574fb0`](https://github.com/pie-framework/pie-elements-ng/commit/8574fb0be686830c9e67c15931dd114d349cd357), [`5479c19`](https://github.com/pie-framework/pie-elements-ng/commit/5479c19523118e69286e8dc8d142eb183edbdf2b), [`2867c08`](https://github.com/pie-framework/pie-elements-ng/commit/2867c082419e42a211067959be12d8e310403e2e), [`23ff76a`](https://github.com/pie-framework/pie-elements-ng/commit/23ff76ae0604fe93b4b4f0f2929238a1d7d3774e), [`d18d9e7`](https://github.com/pie-framework/pie-elements-ng/commit/d18d9e72bb88dc5911cbbd3dab7d314682536961), [`db48dfd`](https://github.com/pie-framework/pie-elements-ng/commit/db48dfd851ae4385d068a9f94cc092bdd05833d3), [`f6e8801`](https://github.com/pie-framework/pie-elements-ng/commit/f6e880189215966f224b93da5072cfa1e8d1b839), [`38838ba`](https://github.com/pie-framework/pie-elements-ng/commit/38838bae2b474a1cb629b6d47022c4b64b740850)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.9
+
 ## 0.1.9
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @pie-element/shared-test-utils
 
+## 0.1.7
+
+### Patch Changes
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+- Updated dependencies [[`8f90c30`](https://github.com/pie-framework/pie-elements-ng/commit/8f90c30d2149d0070c660208729d0cb506ebdc26), [`6ac2b66`](https://github.com/pie-framework/pie-elements-ng/commit/6ac2b6616b4c49333cf0aee02d08d89b453a73cd), [`5479c19`](https://github.com/pie-framework/pie-elements-ng/commit/5479c19523118e69286e8dc8d142eb183edbdf2b), [`2867c08`](https://github.com/pie-framework/pie-elements-ng/commit/2867c082419e42a211067959be12d8e310403e2e), [`d18d9e7`](https://github.com/pie-framework/pie-elements-ng/commit/d18d9e72bb88dc5911cbbd3dab7d314682536961), [`db48dfd`](https://github.com/pie-framework/pie-elements-ng/commit/db48dfd851ae4385d068a9f94cc092bdd05833d3), [`f408704`](https://github.com/pie-framework/pie-elements-ng/commit/f40870446d77da573bc46584f5ffaf497d255688), [`f6e8801`](https://github.com/pie-framework/pie-elements-ng/commit/f6e880189215966f224b93da5072cfa1e8d1b839), [`9072e7c`](https://github.com/pie-framework/pie-elements-ng/commit/9072e7cca26f08246c8f85984651f5b3cbad1a93), [`0fcf803`](https://github.com/pie-framework/pie-elements-ng/commit/0fcf8036fc88c44d4cb7b38181e99f7e21e0d2a2)]:
+  - @pie-element/shared-utils@0.1.7
+  - @pie-element/shared-types@0.2.4
+
 ## 0.1.6
 
 ### Patch Changes

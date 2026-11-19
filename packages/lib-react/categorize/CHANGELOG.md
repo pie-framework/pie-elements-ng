@@ -1,5 +1,27 @@
 # @pie-lib/categorize
 
+## 3.0.3
+
+### Patch Changes
+
+- [#559](https://github.com/pie-framework/pie-elements-ng/pull/559) [`efc633c`](https://github.com/pie-framework/pie-elements-ng/commit/efc633cb4a3b7870f2237d374d43bcd6d1b18d8c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.4 to 8.3.5
+
+- [#566](https://github.com/pie-framework/pie-elements-ng/pull/566) [`a760d62`](https://github.com/pie-framework/pie-elements-ng/commit/a760d62cbe133327784d57dd1719292c44452f5e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @vitejs/plugin-react from 6.1.1 to 6.1.2
+
+- [#615](https://github.com/pie-framework/pie-elements-ng/pull/615) [`ca4e017`](https://github.com/pie-framework/pie-elements-ng/commit/ca4e01737d08875caa6b334f0f596332a31be45e) Thanks [@chillenious](https://github.com/chillenious)! - chore: declare the MIT licence in every published manifest
+
+- [#643](https://github.com/pie-framework/pie-elements-ng/pull/643) [`9db0a48`](https://github.com/pie-framework/pie-elements-ng/commit/9db0a48bd03a2d31bdb805d45258700317b6d8b7) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @vitejs/plugin-react from 6.1.2 to 6.2.1
+
+- [#647](https://github.com/pie-framework/pie-elements-ng/pull/647) [`7d3a323`](https://github.com/pie-framework/pie-elements-ng/commit/7d3a32301eb3393937961919256da39e57e8104f) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.5 to 8.3.6
+
+- [#655](https://github.com/pie-framework/pie-elements-ng/pull/655) [`174a4b8`](https://github.com/pie-framework/pie-elements-ng/commit/174a4b8c7273efcf8da799eccc7cf8577bcf062e) Thanks [@chillenious](https://github.com/chillenious)! - build: ship third-party license notices in every bundling package
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#684](https://github.com/pie-framework/pie-elements-ng/pull/684) [`e729ead`](https://github.com/pie-framework/pie-elements-ng/commit/e729eadca70c1057ca896f84e5033d72a1fbdcff) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @vitejs/plugin-react from 6.2.1 to 6.3.0
+- Updated dependencies [[`6ac2b66`](https://github.com/pie-framework/pie-elements-ng/commit/6ac2b6616b4c49333cf0aee02d08d89b453a73cd), [`5479c19`](https://github.com/pie-framework/pie-elements-ng/commit/5479c19523118e69286e8dc8d142eb183edbdf2b), [`2867c08`](https://github.com/pie-framework/pie-elements-ng/commit/2867c082419e42a211067959be12d8e310403e2e), [`d18d9e7`](https://github.com/pie-framework/pie-elements-ng/commit/d18d9e72bb88dc5911cbbd3dab7d314682536961), [`db48dfd`](https://github.com/pie-framework/pie-elements-ng/commit/db48dfd851ae4385d068a9f94cc092bdd05833d3), [`f408704`](https://github.com/pie-framework/pie-elements-ng/commit/f40870446d77da573bc46584f5ffaf497d255688), [`f6e8801`](https://github.com/pie-framework/pie-elements-ng/commit/f6e880189215966f224b93da5072cfa1e8d1b839)]:
+  - @pie-element/shared-lodash@0.1.4
+
 ## 3.0.2
 
 ### Patch Changes

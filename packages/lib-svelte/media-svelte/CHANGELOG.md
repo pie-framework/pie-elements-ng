@@ -1,5 +1,11 @@
 # @pie-lib/media-svelte
 
+## 0.1.3
+
+### Patch Changes
+
+- [#633](https://github.com/pie-framework/pie-elements-ng/pull/633) [`736ad4f`](https://github.com/pie-framework/pie-elements-ng/commit/736ad4fe6edf8a3fb5af17fe0adf0e936d1368ab) Thanks [@chillenious](https://github.com/chillenious)! - The Svelte elements' interface strings ship in fourteen interface languages and follow the interface locale a player publishes, else the item's declared language, else US English: the correct-answer and teacher-instructions toggles, status messages, blank and choice names, the Venn tray, region and tile names with their announcements, and the video's status messages and transcript controls. An element first renders once its language has loaded, so it shows no English frame first. The element keeps the item's declared language as its content `lang`, and stamps none for an item that declares none. A video stimulus with no declared language no longer reads as English, and its authored `uiText` overrides apply in every interface language.
+
 ## 0.1.2
 
 ### Patch Changes
