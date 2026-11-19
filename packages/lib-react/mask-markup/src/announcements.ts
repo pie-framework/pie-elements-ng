@@ -39,7 +39,8 @@ const stripHtml = (html?: string) =>
           if (name[0] === '#') {
             const code = name[1].toLowerCase() === 'x' ? parseInt(name.slice(2), 16) : parseInt(name.slice(1), 10);
 
-            return Number.isNaN(code) ? entity : String.fromCodePoint(code);
+            // fromCodePoint throws outside the Unicode range; such an entity is left as written
+            return Number.isNaN(code) || code < 0 || code > 0x10ffff ? entity : String.fromCodePoint(code);
           }
 
           return ENTITIES[name.toLowerCase()] ?? entity;

@@ -102,6 +102,12 @@ describe('drag-in-the-blank announcements', () => {
     );
   });
 
+  it('leaves an entity outside the Unicode range as written instead of throwing', () => {
+    const choice = { id: 'x', value: 'A &#x110000; B &#99999999; C &#65;' };
+
+    expect(describeChoiceTile(t, choice)).toBe('Answer choice: A &#x110000; B &#99999999; C A');
+  });
+
   it('counts the pool as the pool shows it, even with a stale entry for a removed blank', () => {
     expect(describeIntro(t, config, { '9': 'a' })).toContain('0 of 3 blanks');
     expect(describePlacementResult(t, config, { '9': 'a' }, fromPool('b'), '0')).toContain('2 available answer choices');
