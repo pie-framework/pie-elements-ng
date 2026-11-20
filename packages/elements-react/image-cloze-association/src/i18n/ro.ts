@@ -13,4 +13,5 @@ export default {
     other: 'Plin',
   },
   responseArea: 'Zona de răspuns {index} din {total}',
+  choicesListA11y: 'Lista de variante',
 } satisfies MessageCatalog;

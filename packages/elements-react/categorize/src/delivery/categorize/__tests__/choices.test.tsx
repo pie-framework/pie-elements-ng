@@ -1,7 +1,8 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { Choices } from '../choices';
 
 vi.mock('../choice', () => ({
@@ -19,10 +20,11 @@ vi.mock('../choice', () => ({
 }));
 vi.mock('../droppable-placeholder', () => ({
   __esModule: true,
-  default: ({ children, id, labelId, selectedItem, onPlacementClick }: any) => (
+  default: ({ children, id, labelId, ariaLabel, selectedItem, onPlacementClick }: any) => (
     <div
       data-testid={`droppable-${id}`}
       data-label-id={labelId}
+      data-aria-label={ariaLabel}
       data-selected-item={selectedItem ? JSON.stringify(selectedItem) : undefined}
       data-has-onplacementclick={typeof onPlacementClick === 'function' ? 'true' : 'false'}
     >
@@ -40,6 +42,9 @@ vi.mock('@pie-lib/drag', () => ({
 }));
 
 const theme = createTheme();
+
+// The components read their catalogs synchronously; the Spanish case needs them resident.
+beforeAll(() => loadLocale('es_ES'));
 
 describe('Choices', () => {
   const renderChoices = (extras?: any) => {
@@ -125,6 +130,23 @@ describe('Choices', () => {
       });
 
       expect(screen.getByTestId('droppable-choices-board')).not.toHaveAttribute('data-label-id');
+    });
+  });
+
+  describe('pool name', () => {
+    it('names the pool by default', () => {
+      renderChoices({ model: { categoriesPerRow: 1, choicesLabel: '' } });
+      expect(screen.getByTestId('droppable-choices-board')).toHaveAttribute('data-aria-label', 'Choices list');
+    });
+
+    it('names the pool in the item language', () => {
+      renderChoices({ language: 'es_ES', model: { categoriesPerRow: 1, choicesLabel: '' } });
+      expect(screen.getByTestId('droppable-choices-board')).toHaveAttribute('data-aria-label', 'Lista de opciones');
+    });
+
+    it('leaves the name to an authored choices label', () => {
+      renderChoices({ model: { categoriesPerRow: 1, choicesLabel: 'Pick one' } });
+      expect(screen.getByTestId('droppable-choices-board')).not.toHaveAttribute('data-aria-label');
     });
   });
 
