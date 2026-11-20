@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDraggable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
@@ -8,6 +8,7 @@ import Chip from '@mui/material/Chip';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { describeChoiceTile, translatorFor } from '../announcements.js';
 
 export const DRAG_TYPE = 'MaskBlank';
 
@@ -68,8 +69,10 @@ const StyledChipLabel: any = styled('span')(() => ({
   },
 }));
 
-export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick }) {
+export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick, language }) {
   const rootRef = useRef(null);
+  // Re-renders once the language's catalog lands, for an element that did not preload it.
+  const [, relabel] = useReducer((n) => n + 1, 0);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `choice-${choice.id}`,
@@ -80,6 +83,10 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
   useEffect(() => {
     renderMath(rootRef.current);
   }, [choice.value]);
+
+  // dnd-kit calls the focused tile "draggable"; it is an answer choice.
+  const tileName = describeChoiceTile(translatorFor(language, relabel), choice);
+  const tileA11y = tileName && !disabled ? { 'aria-label': tileName, 'aria-roledescription': undefined } : {};
 
   const isSelected = !!selectedItem && selectedItem.fromChoice === true && selectedItem.choice.id === choice.id;
 
@@ -106,6 +113,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
       onClick={handleClick}
       {...listeners}
       {...attributes}
+      {...tileA11y}
     >
       <StyledChip
         clickable={false}
@@ -124,4 +132,5 @@ Choice.propTypes = {
   instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectedItem: PropTypes.object,
   onSelectClick: PropTypes.func,
+  language: PropTypes.string,
 };
