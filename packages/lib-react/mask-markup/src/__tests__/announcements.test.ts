@@ -26,7 +26,7 @@ const fromBlank = (blank: string, id: string) => ({ id: blank, choice: config.ch
 describe('drag-in-the-blank announcements', () => {
   it('reads the intro of row 1', () => {
     expect(describeIntro(t, config, { '1': 'b' })).toBe(
-      'This question has 3 blanks and 4 answer choices. Answer choices cannot be reused. Each blank is a drop area that must be filled with a single answer choice. Use TAB to move between answer choices and blanks, ENTER to select/drop, and ESC to cancel. 1 of 3 blanks have an answer choice.',
+      'This question has 3 blanks and 4 answer choices. Each blank is a drop area that must be filled with a single answer choice. Answer choices cannot be reused. Use TAB to move between answer choices and blanks, ENTER to select/drop, and ESC to cancel. 1 of 3 blanks have an answer choice.',
     );
     expect(describeIntro(t, { ...config, duplicates: true }, {})).toContain('Answer choices can be reused.');
   });

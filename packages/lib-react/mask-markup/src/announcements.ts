@@ -159,8 +159,8 @@ export const describeIntro = (t: Translate, config: Config, value: SessionValue)
 
   return [
     t('introCountA11y', { blanks: total, choices: config.choices.length }),
-    t(config.duplicates ? 'introReusableA11y' : 'introNotReusableA11y'),
     t('introDropAreaA11y'),
+    t(config.duplicates ? 'introReusableA11y' : 'introNotReusableA11y'),
     t('keyboardHelpA11y'),
     t('progressA11y', { filled, total }),
   ].join(' ');
