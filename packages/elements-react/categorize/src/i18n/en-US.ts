@@ -11,4 +11,6 @@ export default {
   /** The authoring alert shown when a lower per-category limit is less than the answer choices a category already holds. */
   maxChoicesPerCategoryRestriction:
     'To change this value to {maxChoicesPerCategory}, each category must have {maxChoicesPerCategory} or fewer answer choices.',
+  /** Name of the answer choice pool, read when it is a tab stop; categorize's authored choices label replaces it. */
+  choicesListA11y: 'Choices list',
 };

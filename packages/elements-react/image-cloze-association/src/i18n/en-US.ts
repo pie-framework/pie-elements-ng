@@ -17,4 +17,6 @@ export default {
   },
   /** Accessible name of a response area without an authored one, by its position. */
   responseArea: 'Response area {index} of {total}',
+  /** Name of the answer choice pool, read when it is a tab stop. */
+  choicesListA11y: 'Choices list',
 };

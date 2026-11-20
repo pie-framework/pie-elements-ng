@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 import { ICADroppablePlaceholder } from '@pie-lib/drag';
 
+import { catalogs } from '../i18n/index.js';
 import PossibleResponse from './possible-response.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
@@ -28,6 +29,7 @@ const PossibleResponses = ({
   selectedResponse,
   onSelectClick,
   onPlacementClick,
+  language,
 }) => {
   const handlePoolClick = () => {
     if (!canDrag) return;
@@ -58,6 +60,7 @@ const PossibleResponses = ({
     <BaseContainer
       style={customStyle}
       role="group"
+      aria-label={catalogs.forLocale(language).t('choicesListA11y')}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handlePoolClick}
       onKeyDown={isNativeTabStop ? handlePoolKeyDown : undefined}
@@ -94,6 +97,7 @@ PossibleResponses.propTypes = {
   selectedResponse: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,
+  language: PropTypes.string,
 };
 
 export default PossibleResponses;

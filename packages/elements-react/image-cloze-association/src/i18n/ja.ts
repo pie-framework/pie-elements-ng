@@ -9,4 +9,5 @@ export default {
     other: 'いっぱいです',
   },
   responseArea: '解答エリア {index}/{total}',
+  choicesListA11y: '選択肢の一覧',
 } satisfies MessageCatalog;

@@ -13,4 +13,5 @@ export default {
     other: 'Plein',
   },
   responseArea: 'Zone de réponse {index} sur {total}',
+  choicesListA11y: 'Liste des choix',
 } satisfies MessageCatalog;
