@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
-import { thirdPartyLicenses } from '../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../tools/vite/third-party-licenses.ts';
 
 export default defineConfig({
   plugins: [
@@ -18,12 +18,12 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: path.resolve(import.meta.dirname, 'src/index.ts'),
       name: 'PieElementPlayer',
       fileName: 'pie-element-player',
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         // Put lazy math renderer dynamic imports in dedicated chunks.
         manualChunks: (id) => {

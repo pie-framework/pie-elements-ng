@@ -6,8 +6,8 @@
  */
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
-import { noCdnHosts } from './vite.no-cdn';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { noCdnHosts } from './vite.no-cdn.ts';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 
 const DECLARATION = `/**
  * \`html\` with each TeX expression in it replaced by a \`<math>\` element in MathML Core. HTML without
@@ -32,7 +32,7 @@ export default defineConfig({
     outDir: 'dist/tex-to-mathml',
     emptyOutDir: true,
     lib: {
-      entry: resolve(__dirname, 'src/tex-to-mathml/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/tex-to-mathml/index.ts'),
       formats: ['es'],
       fileName: 'index',
     },

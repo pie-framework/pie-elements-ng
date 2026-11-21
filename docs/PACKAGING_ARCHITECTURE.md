@@ -85,15 +85,16 @@ Those versions are checked against `tools/vite/browser-esm-policy.json`.
 
 The core build pipeline is package-local: each element package builds its
 declared ESM, browser ESM, IIFE, and type artifacts from its own package
-directory. Each React element carries its own package scripts and Vite configs. A
-package with every build lane, such as multiple-choice, runs:
+directory. Each React element carries its own package scripts and main Vite config;
+its other lanes use shared configs in `tools/vite/`. A package with every build lane,
+such as multiple-choice, runs:
 
 ```bash
 vite build
 vite build --config ../../../tools/vite/element-browser.config.ts
 vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts
 vite build --config ../../../tools/vite/element-legacy-print.config.ts
-vite build --config vite.config.iife.ts
+vite build --config ../../../tools/vite/element-iife.config.ts
 tsc --emitDeclarationOnly
 ```
 
@@ -243,10 +244,9 @@ runtime error. Add a new target only when all of the following are true:
 - Focused tests cover the generated helper shape and the expected interop
   behavior in `tools/cli/tests/browser-esm-vite-config.test.ts`.
 
-Per-element IIFE builds use each package's `vite.config.iife.ts`. The React
-configs resolve `@pie-element/shared-*` and
-`@pie-lib/*` imports to workspace source and set webpack/Rollup externalization
-to false, producing a self-contained `dist/index.iife.js` for that package.
+React elements build their IIFE with the shared `tools/vite/element-iife.config.ts`, which
+resolves `@pie-element/shared-*` and `@pie-lib/*` imports to workspace source and bundles
+every dependency, producing a self-contained `dist/index.iife.js` for that package.
 
 Svelte elements carry no Vite configs of their own; every one runs the same
 build script against shared configs in `tools/vite/`:

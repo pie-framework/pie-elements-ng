@@ -84,7 +84,7 @@ test.describe('math toolbar under touch', () => {
   test('extended-text-entry: each toolbar keypad tap after the first registers once', async ({
     page,
   }) => {
-    const { editor, toolbar } = await openToolbar(page);
+    const { toolbar } = await openToolbar(page);
     const field = toolbar.locator('math-field').first();
     const shown = () => shownText(field);
     const tap = (name: string) =>

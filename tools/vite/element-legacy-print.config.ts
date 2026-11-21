@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
@@ -56,14 +55,14 @@ export default defineConfig({
       fileName: () => 'print.js',
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       // Self-contained on purpose: the legacy @pie-framework/pie-print client
       // loads this file with a bare `import(url)` and injects no import map
       // (not even for React), so nothing here can be an external bare
       // specifier. See docs/prds/legacy-print-compatibility/PRD.md.
       external: () => false,
       output: {
-        inlineDynamicImports: true,
+        codeSplitting: false,
       },
     },
   },
