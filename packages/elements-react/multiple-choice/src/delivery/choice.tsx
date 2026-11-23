@@ -42,6 +42,12 @@ const collapseFill = (authored) =>
 const collapseStroke = (authored) =>
   `color-mix(in srgb, ${color.text()} var(--pie-fixed-hue-collapse, 0%), ${authored})`;
 
+/*
+ * What a click in the answer box leaves to itself: the label and the input pick the choice on
+ * their own, and a control in the box, such as the answer eliminator's toggle, does its own job.
+ */
+const OWN_CLICK_TARGETS = 'label, input, button, a, select, textarea, audio, video, [role="button"]';
+
 export class Choice extends React.Component {
   static propTypes = {};
 
@@ -66,6 +72,21 @@ export class Choice extends React.Component {
 
     if (!disabled) {
       onChoiceChanged(choice);
+    }
+  };
+
+  // A click anywhere in the answer box picks the choice, as in LSY, not only one on its radio
+  // button or text (PIE-1549). It goes through the input, as a click on the label does.
+  handleBoxClick: any = (event) => {
+    if (this.props.disabled || event.target.closest?.(OWN_CLICK_TARGETS)) {
+      return;
+    }
+
+    const input = event.currentTarget.querySelector('input[type="radio"], input[type="checkbox"]');
+
+    if (input) {
+      input.focus({ preventScroll: true });
+      input.click();
     }
   };
 
@@ -173,9 +194,10 @@ export class Choice extends React.Component {
       <div 
         className={choiceClass} 
         key={index} 
-        style={{ backgroundColor: choiceBackground, ...strokeStyle }}
+        style={{ backgroundColor: choiceBackground, ...strokeStyle, ...(!disabled && { cursor: 'pointer' }) }}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
+        onClick={this.handleBoxClick}
       >
         <ChoiceContainer 
           component="div"
