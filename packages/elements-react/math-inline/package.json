@@ -105,7 +105,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "mathlive": "0.110.0",
+    "mathlive": "0.111.4",
     "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
