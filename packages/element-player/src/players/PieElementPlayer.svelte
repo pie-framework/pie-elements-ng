@@ -698,28 +698,28 @@ onMount(() => {
   .loading {
     padding: 2rem;
     text-align: center;
-    color: hsl(var(--bc) / 0.6);
+    color: var(--pie-disabled-text, currentColor);
     font-style: italic;
   }
 
   .loading-warning {
     margin-top: 0.5rem;
-    color: #9a6700;
+    color: var(--pie-missing, #9a6700);
     font-style: normal;
   }
 
   .error {
     padding: 1rem;
-    background: hsl(var(--er) / 0.1);
-    border: 1px solid hsl(var(--er) / 0.3);
+    background: var(--pie-incorrect-secondary, #ffebee);
+    border: 1px solid var(--pie-incorrect, #a65f00);
     border-radius: 4px;
-    color: hsl(var(--er));
+    color: var(--pie-text, #000);
   }
 
   .error pre {
     margin: 0.5rem 0 0;
     padding: 0.5rem;
-    background: #fff;
+    background: var(--pie-background, #fff);
     border-radius: 4px;
     font-size: 0.875rem;
     overflow-x: auto;
