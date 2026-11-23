@@ -30,7 +30,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
-import { DragProvider } from '@pie-lib/drag';
+import { DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -509,7 +509,7 @@ export class Main extends React.Component<MainProps, State> {
             </StyledInputContainer>
           )}
         </layout.ConfigLayout>
-        <DragOverlay>
+        <DragOverlay dropAnimation={motionSafeDropAnimation()}>
           <DragPreviewWrapper>
             {renderDragOverlay()}
           </DragPreviewWrapper>

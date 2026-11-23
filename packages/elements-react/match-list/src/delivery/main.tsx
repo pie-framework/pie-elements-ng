@@ -7,6 +7,7 @@ import { restrictToWindowEdges  } from '@dnd-kit/modifiers';
 import { closestResponseArea } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
+import { motionSafeDropAnimation } from '@pie-lib/drag';
 import { color, createUniqueId, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -507,7 +508,7 @@ export class Main extends React.Component {
             <Feedback correctness={model.correctness.correctness} feedback={model.feedback} />
           )}
         </MainContainer>
-        <DragOverlay>{this.renderDragOverlay()}</DragOverlay>
+        <DragOverlay dropAnimation={motionSafeDropAnimation()}>{this.renderDragOverlay()}</DragOverlay>
       </DndContext>
     );
   }
