@@ -6,4 +6,5 @@ export default {
   cancel: '取消',
   commonCorrectAnswerWithAlternates: '注意：上方显示的答案是本题最常见的正确答案。本题还设置了一个或多个其他正确答案，这些答案同样会被判为正确。',
   maxChoicesPerCategoryRestriction: '要将此值改为 {maxChoicesPerCategory}，每个类别的答案选项不得超过 {maxChoicesPerCategory} 个。',
+  choicesListA11y: '选项列表',
 } satisfies MessageCatalog;

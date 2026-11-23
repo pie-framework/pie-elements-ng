@@ -6,4 +6,5 @@ export default {
   cancel: 'Cancel',
   commonCorrectAnswerWithAlternates: 'Note: The answer shown above is the most common correct answer for this item. One or more additional correct answers are also defined, and will also be recognized as correct.',
   maxChoicesPerCategoryRestriction: 'To change this value to {maxChoicesPerCategory}, each category must have {maxChoicesPerCategory} or fewer answer choices.',
+  choicesListA11y: 'Choices list',
 } satisfies MessageCatalog;

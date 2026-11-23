@@ -11,4 +11,5 @@ export default {
     other: 'Vol',
   },
   responseArea: 'Antwoordvak {index} van {total}',
+  choicesListA11y: 'Lijst met keuzes',
 } satisfies MessageCatalog;

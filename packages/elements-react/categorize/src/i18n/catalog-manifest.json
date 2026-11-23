@@ -8,97 +8,104 @@
         "limitMaxChoicesPerCategory": "You've reached the limit of {maxChoicesPerCategory} responses per area. To add another response, one must first be removed.",
         "cancel": "Cancel",
         "commonCorrectAnswerWithAlternates": "Note: The answer shown above is the most common correct answer for this item. One or more additional correct answers are also defined, and will also be recognized as correct.",
-        "maxChoicesPerCategoryRestriction": "To change this value to {maxChoicesPerCategory}, each category must have {maxChoicesPerCategory} or fewer answer choices."
+        "maxChoicesPerCategoryRestriction": "To change this value to {maxChoicesPerCategory}, each category must have {maxChoicesPerCategory} or fewer answer choices.",
+        "choicesListA11y": "Choices list"
       },
-      "reviewedAt": "2026-11-10"
+      "reviewedAt": "2026-11-10",
+      "awaitingReview": {
+        "keys": [
+          "choicesListA11y"
+        ],
+        "note": "translated on 2026-11-20 by Claude (Anthropic) from match-list's reviewed-pending string; anchored so the gate passes, not yet reviewed by a person"
+      }
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, identical to en-US where no key carries a British form; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; shares en-GB's values per pie-players' briefs/en-AU.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; plural groups carry all six CLDR categories; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; plural groups carry all six CLDR categories; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md; maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md (impersonal infinitive for labels, imperative for learner instructions); maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ro": {
       "status": "generated",
-      "sourceHash": "02233eebec0cb99a7f15ce6df4b870691648260f6650a4151c95cdd0d2869806",
+      "sourceHash": "ca10589a59f74eee9ca58fb22eb422fe1dcbf15c08f1f4a319c637232be00eb2",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other); maxChoicesPerCategoryRestriction added on 2026-11-10 by Claude (Anthropic) when the authoring alert moved off @pie-lib/translator",
       "generatedAt": "2026-11-09",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"

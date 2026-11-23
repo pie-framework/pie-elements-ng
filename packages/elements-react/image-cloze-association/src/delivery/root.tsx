@@ -541,6 +541,7 @@ export class ImageClozeAssociationComponent extends React.Component {
           selectedResponse={this.state.selectedResponse}
           onSelectClick={this.onResponseClick}
           onPlacementClick={this.onPlacementClick}
+          language={language}
         />,
       ];
     };
