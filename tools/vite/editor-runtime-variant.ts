@@ -1,9 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import type { Plugin, UserConfig } from 'vite';
 
-const configDir = dirname(fileURLToPath(import.meta.url));
+const configDir = import.meta.dirname;
 
 /** Where the variant lives, under dist/browser: `<directory>/<view>/index.js`. */
 export const EDITOR_RUNTIME_VARIANT_DIRECTORY = 'editor-runtime';
@@ -55,7 +54,7 @@ const editorEngineStaysExternal = (): Plugin => ({
  */
 export function editorRuntimeVariant(base: UserConfig): UserConfig {
   const packageDir = base.root;
-  const baseExternal = base.build?.rollupOptions?.external;
+  const baseExternal = base.build?.rolldownOptions?.external;
   if (typeof packageDir !== 'string' || typeof baseExternal !== 'function') {
     throw new Error('editorRuntimeVariant needs a browser ESM element config');
   }
@@ -78,8 +77,8 @@ export function editorRuntimeVariant(base: UserConfig): UserConfig {
       ...base.build,
       emptyOutDir: true,
       outDir: resolve(packageDir, 'dist/browser', EDITOR_RUNTIME_VARIANT_DIRECTORY),
-      rollupOptions: {
-        ...base.build?.rollupOptions,
+      rolldownOptions: {
+        ...base.build?.rolldownOptions,
         external: (id, importer, isResolved) =>
           runtimeSpecifiers.has(id) || baseExternal(id, importer, isResolved),
       },

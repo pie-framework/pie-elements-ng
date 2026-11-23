@@ -19,4 +19,5 @@ export default {
     other: 'ممتلئة',
   },
   responseArea: 'منطقة الإجابة {index} من {total}',
+  choicesListA11y: 'قائمة الخيارات',
 } satisfies MessageCatalog;

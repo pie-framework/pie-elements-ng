@@ -303,7 +303,7 @@ export const toPolynomial = (node: MathNode, variables: string[]): Polynomial | 
   try {
     const p = bounded(convert(node, variables, { steps: MAX_STEPS }));
     return p.size > 0 ? p : undefined;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
@@ -416,7 +416,7 @@ export const haveSameZeros = (
       first.every((g) => zerosLieIn(g, second, size, budget)) &&
       second.every((g) => zerosLieIn(g, first, size, budget))
     );
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };

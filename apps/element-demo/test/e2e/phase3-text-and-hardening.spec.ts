@@ -120,7 +120,6 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     const root = deliveryContainer(page);
     await expect(root).toBeVisible();
 
-    const option1 = root.locator('input[value="mercury"], label[data-value="mercury"]').first();
     const option2 = root.locator('input[value="jupiter"], label[data-value="jupiter"]').first();
     await selectMultipleChoiceValue(root, 'mercury');
     const before = await waitForSessionMutation(page, {}, 5_000);

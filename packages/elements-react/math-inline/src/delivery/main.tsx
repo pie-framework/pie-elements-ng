@@ -256,7 +256,8 @@ export class Main extends React.Component {
 
   focusFirstKeypadElement: any = () => {
     setTimeout(() => {
-      const keypadElement = document.querySelector('[data-keypad]');
+      // This item's keypad: another item on the page can render one too.
+      const keypadElement = (this.root || document).querySelector('[data-keypad]');
 
       if (keypadElement) {
         const firstButton = keypadElement.querySelector("button, [role='button']");
@@ -280,18 +281,37 @@ export class Main extends React.Component {
       ? holder.contains(document.activeElement) || (isClickOrTouchEvent && holder.contains(event.target))
       : document.activeElement?.tagName === 'MATH-FIELD';
 
+    // Focus opens the keypad, but a field focused with the keypad closed (Escape, the focus hook)
+    // opens it on a click or ArrowDown, and ArrowDown moves into it.
     if (isAnswerInputFocused && (key === 'ArrowDown' || isClickOrTouchEvent)) {
-      if (this.state.activeAnswerBlock !== id && isTrigerredFromActualPieElement) {
-        this.cleanupKeyDownListener();
-        this.setState({ activeAnswerBlock: id }, () => {
-          this.onSubFieldFocus(id);
-          if (key === 'ArrowDown') {
-            this.focusFirstKeypadElement();
-          }
-        });
+      if (isTrigerredFromActualPieElement) {
+        const moveIntoKeypad = key === 'ArrowDown' ? this.focusFirstKeypadElement : undefined;
+
+        if (this.state.activeAnswerBlock !== id) {
+          this.setState({ activeAnswerBlock: id }, moveIntoKeypad);
+        } else {
+          moveIntoKeypad?.();
+        }
       }
     } else if (event.key === 'Escape' && !isComposingKeyEvent(event)) {
+      // Escape in the keypad returns focus to the field, as the keypad instructions say.
+      const fromKeypad = isTrigerredFromActualPieElement && !!event.target?.closest?.('[data-keypad]');
+
       this.setState({ activeAnswerBlock: '' });
+
+      if (fromKeypad) {
+        this.returnFocusToField();
+      }
+    }
+  };
+
+  returnFocusToField: any = () => {
+    const field = this.root?.querySelector('math-field');
+
+    if (field) {
+      // Native focus, as Tab gives it: MathLive's own focus() moves focus 60ms later, once
+      // focusWithoutKeypad has returned, and the keypad would open again.
+      this.focusWithoutKeypad(() => HTMLElement.prototype.focus.call(field));
     }
   };
 
@@ -299,6 +319,26 @@ export class Main extends React.Component {
     // The keypad follows the block that has the caret.
     this.focusedAnswerBlock = id;
     this.listenForKeypadOpen();
+
+    // The learner's focus opens the keypad, as in math-templated.
+    if (!this.focusingWithoutKeypad) {
+      this.setState({ activeAnswerBlock: id });
+    }
+  };
+
+  /**
+   * Run `focus` with the keypad left closed: the focus hook opens no keypad (WCAG 3.2.1, see
+   * docs/PIE_ELEMENT_CONTRACT.md), and Escape leaves it closed. The field reports its focus while
+   * `focus` runs.
+   */
+  focusWithoutKeypad: any = (focus) => {
+    this.focusingWithoutKeypad = true;
+
+    try {
+      return focus();
+    } finally {
+      this.focusingWithoutKeypad = false;
+    }
   };
 
   listenForKeypadOpen: any = () => {

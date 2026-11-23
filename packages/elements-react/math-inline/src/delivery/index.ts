@@ -99,8 +99,8 @@ export default class MathInline extends HTMLElement {
   }
 
   /**
-   * Focus the answer field as Tab does: the caret lands in the first answer block and no keypad
-   * opens. While the field mounts this returns a promise, which resolves false and leaves focus
+   * Focus the answer field as Tab does, except that no keypad opens: the caret lands in the first
+   * answer block. While the field mounts this returns a promise, which resolves false and leaves focus
    * alone when focus moves in the meantime, the element leaves the page or Main fails to render.
    * A call made while one waits returns its promise. False when the item shows no field to type into.
    *
@@ -146,7 +146,13 @@ export default class MathInline extends HTMLElement {
 
     // Native focus, as Tab gives it: the field delegates it to its keyboard sink at once. MathLive's
     // own focus() drops the options and moves focus 60ms later.
-    HTMLElement.prototype.focus.call(field, options);
+    const focus = () => HTMLElement.prototype.focus.call(field, options);
+    // Unlike Tab, it leaves the keypad closed.
+    if (this._main) {
+      this._main.focusWithoutKeypad(focus);
+    } else {
+      focus();
+    }
     // The sink is fixed in place, so focusing it scrolls nothing; scroll as MathLive's focus() does.
     if (!options?.preventScroll) {
       field.scrollIntoView({ block: 'nearest', inline: 'nearest' });

@@ -11,4 +11,5 @@ export default {
     other: 'Lleno',
   },
   responseArea: 'Área de respuesta {index} de {total}',
+  choicesListA11y: 'Lista de opciones',
 } satisfies MessageCatalog;

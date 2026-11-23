@@ -11,4 +11,5 @@ export default {
     other: 'Fullt',
   },
   responseArea: 'Svarsområde {index} av {total}',
+  choicesListA11y: 'Lista med svarsalternativ',
 } satisfies MessageCatalog;

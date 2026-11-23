@@ -11,4 +11,5 @@ export default {
     other: 'Full',
   },
   responseArea: 'Response area {index} of {total}',
+  choicesListA11y: 'Choices list',
 } satisfies MessageCatalog;

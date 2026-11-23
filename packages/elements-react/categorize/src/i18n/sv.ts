@@ -6,4 +6,5 @@ export default {
   cancel: 'Avbryt',
   commonCorrectAnswerWithAlternates: 'Obs! Svaret som visas ovan är det vanligaste rätta svaret på uppgiften. Ett eller flera ytterligare rätta svar har också angetts, och även de räknas som rätt.',
   maxChoicesPerCategoryRestriction: 'Om du vill ändra värdet till {maxChoicesPerCategory} får varje kategori ha högst {maxChoicesPerCategory} svarsalternativ.',
+  choicesListA11y: 'Lista med svarsalternativ',
 } satisfies MessageCatalog;

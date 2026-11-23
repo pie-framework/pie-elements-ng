@@ -103,10 +103,6 @@ const fixtures: Fixture[] = [
   [['f (x) == 15', '15 == f (x)'], ' 15 ==f (x)'],
   [['abs(n) == 1989', '1989 == abs(n)'], ' 1989 == abs(n)'],
 ];
-const ff = [];
-
-// ["parenthesis", ["+"]];
-
 const lta = new LatexToAst();
 const atm = new AstToMathJs();
 

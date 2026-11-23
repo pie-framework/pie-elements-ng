@@ -13,7 +13,7 @@
  */
 
 import type { Plugin } from 'vite';
-import { resolve, dirname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 
 interface WorkspacePackage {

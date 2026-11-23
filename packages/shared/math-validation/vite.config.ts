@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 
 export default defineConfig({
   plugins: [
@@ -20,11 +20,11 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
       fileName: 'index',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => id === 'debug' || id === 'mathjs' || id.startsWith('mathjs/'),
     },
   },

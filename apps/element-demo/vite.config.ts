@@ -4,7 +4,7 @@ import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
-import { findWorkspaceRoot, workspaceResolver } from './src/vite-plugin-workspace-resolver';
+import { findWorkspaceRoot, workspaceResolver } from '../../tools/vite/workspace-resolver.ts';
 import { createReadStream, existsSync, readdirSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -89,16 +89,11 @@ const proseMirrorSingletonAliases = Object.fromEntries(
 /**
  * Vite config for element demo app.
  *
- * Uses workspace resolver to handle @pie-element/* and @pie-lib/* imports.
- * Set resolveSources: true to use source files (enables HMR but may cause loops).
- * Set resolveSources: false to use dist files (prevents loops but no HMR for workspace packages).
+ * The workspace resolver points @pie-element/* and @pie-lib/* imports at package source.
  */
 export default defineConfig({
   plugins: [
-    workspaceResolver({
-      resolveSources: true, // Use source files for proper resolution
-      debug: false,
-    }),
+    workspaceResolver(),
     tailwindcss({ optimize: false }),
     // Add custom plugin BEFORE sveltekit to intercept and disable Svelte processing for pre-compiled files
     {
@@ -119,23 +114,18 @@ export default defineConfig({
       },
     },
     // Transform React TSX/JSX from workspace element packages (SvelteKit does not enable this by default).
-    react({
+    // SvelteKit serves its own HTML and never runs transformIndexHtml, so the plugin's preamble
+    // hooks are dropped: src/app.html injects the React Refresh preamble.
+    ...react({
       include: [
         /\/elements-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
         /\/lib-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
       ],
-    }),
-    // NOTE: The React Refresh preamble is injected directly in `src/app.html`,
-    // not by a Vite plugin. SvelteKit serves its own HTML and skips Vite's
-    // `transformIndexHtml` pipeline, so plugin-based injection never fires.
+    }).map(({ transformIndexHtml: _preamble, ...plugin }) => plugin),
     {
       name: 'serve-demo-iife-bundles',
       apply: 'serve',
       configureServer(server) {
-        if (!bundlerOutputDir) {
-          return;
-        }
-
         server.middlewares.use(async (req, res, next) => {
           const requestUrl = req.url ? req.url.split('?')[0] : '';
           if (!requestUrl.startsWith('/bundles/')) {
@@ -199,17 +189,8 @@ export default defineConfig({
     }),
   ],
 
-  // IMPORTANT: DO NOT add resolve.conditions with 'development'
-  // Even with watch.ignored, it still causes infinite HMR loops
-  // The loops happen because:
-  // 1. Vite resolves to source files in workspace packages
-  // 2. Changes in demo app trigger HMR
-  // 3. HMR reads workspace source files
-  // 4. This triggers file system events that cascade
-  // 5. Loop continues indefinitely
-  //
-  // Solution: Use built dist files (default condition) and ensure
-  // all dependencies are properly bundled or available
+  // Do not add resolve.conditions: ['development']: it caused infinite HMR loops, even with
+  // watch.ignored. workspaceResolver points workspace packages at their source instead.
 
   resolve: {
     alias: {
@@ -248,7 +229,7 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT ?? 5222),
     fs: {
-      allow: [workspaceRoot, bundlerInstanceDir].filter(Boolean),
+      allow: [workspaceRoot, bundlerInstanceDir],
     },
   },
 
@@ -271,7 +252,7 @@ export default defineConfig({
   },
 
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) =>
         id === 'lightningcss/package.json' ||
         id === 'canvas' ||

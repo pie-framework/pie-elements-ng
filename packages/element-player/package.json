@@ -30,11 +30,11 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "@tailwindcss/vite": "^4.3.3",
-    "daisyui": "^5.7.50",
+    "@tailwindcss/vite": "^4.3.5",
+    "daisyui": "^5.8.1",
     "svelte": "^5.57.3",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.3.6",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3"
   },
   "license": "MIT",

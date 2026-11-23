@@ -6,4 +6,5 @@ export default {
   cancel: 'Cancelar',
   commonCorrectAnswerWithAlternates: 'Observação: a resposta mostrada acima é a resposta correta mais comum para esta questão. Uma ou mais respostas corretas adicionais também estão definidas e também serão reconhecidas como corretas.',
   maxChoicesPerCategoryRestriction: 'Para alterar este valor para {maxChoicesPerCategory}, o número de opções de resposta em cada categoria não pode ser maior que {maxChoicesPerCategory}.',
+  choicesListA11y: 'Lista de opções',
 } satisfies MessageCatalog;
