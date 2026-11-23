@@ -1,5 +1,30 @@
 # @pie-element/math-inline
 
+## 13.0.9
+
+### Patch Changes
+
+- [#714](https://github.com/pie-framework/pie-elements-ng/pull/714) [`3596afb`](https://github.com/pie-framework/pie-elements-ng/commit/3596afb8b2327ab7690243f5299519ec9418ab68) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - The math keypad opens when the learner focuses the answer field, by Tab or a click, as in math-templated. It follows the caret between answer blocks and closes on Escape. ArrowDown moves focus into the open keypad, and reopens it after Escape. Escape in the keypad now returns focus to the answer field, where it used to drop focus. The keypad instructions read to screen-reader users now say to use the down arrow key to move into the keypad and the tab key to move between its buttons, in every locale. `focusFirstInput()`, and with it the item player's `focus()`, still leaves the keypad closed, as the element contract's focus hook requires (WCAG 3.2.1) (PIE-1512).
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/shared-configure-events@0.1.4
+  - @pie-element/shared-controller-utils@0.1.6
+  - @pie-element/shared-feedback@0.1.5
+  - @pie-element/shared-i18n@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.10
+  - @pie-element/shared-player-events@0.2.3
+  - @pie-element/shared-types@0.2.5
+  - @pie-element/shared-utils@0.1.8
+  - @pie-framework/math-validation@2.0.1
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/correct-answer-toggle@5.0.9
+  - @pie-lib/editable-html-tip-tap@3.1.4
+  - @pie-lib/math-input-mathlive@2.0.2
+  - @pie-lib/math-toolbar@4.0.9
+  - @pie-lib/render-ui@8.0.9
+
 ## 13.0.8
 
 ### Patch Changes

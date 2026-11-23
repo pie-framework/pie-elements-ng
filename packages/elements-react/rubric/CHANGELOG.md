@@ -1,5 +1,23 @@
 # @pie-element/rubric
 
+## 9.0.9
+
+### Patch Changes
+
+- [#716](https://github.com/pie-framework/pie-elements-ng/pull/716) [`886f4bf`](https://github.com/pie-framework/pie-elements-ng/commit/886f4bf4a03bd1ef2c1a3d15886bd6ac074254f2) Thanks [@CarlaCostea](https://github.com/CarlaCostea)! - fix(rubric): show each sample answer under the score the editor shows PIE-1548
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/shared-configure-events@0.1.4
+  - @pie-element/shared-i18n@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.10
+  - @pie-element/shared-types@0.2.5
+  - @pie-element/shared-utils@0.1.8
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/render-ui@8.0.9
+  - @pie-lib/rubric@3.0.9
+
 ## 9.0.8
 
 ### Patch Changes

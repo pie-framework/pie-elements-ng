@@ -1,5 +1,29 @@
 # @pie-element/categorize
 
+## 14.0.9
+
+### Patch Changes
+
+- [#717](https://github.com/pie-framework/pie-elements-ng/pull/717) [`b215021`](https://github.com/pie-framework/pie-elements-ng/commit/b2150214aca715c9024ec885aa0105ef41d53c5a) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(image-cloze-association,categorize): name the answer choice pool (PIE-1519)
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/shared-configure-events@0.1.4
+  - @pie-element/shared-controller-utils@0.1.6
+  - @pie-element/shared-feedback@0.1.5
+  - @pie-element/shared-i18n@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.10
+  - @pie-element/shared-player-events@0.2.3
+  - @pie-element/shared-types@0.2.5
+  - @pie-element/shared-utils@0.1.8
+  - @pie-lib/categorize@3.0.4
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/correct-answer-toggle@5.0.9
+  - @pie-lib/drag@5.0.9
+  - @pie-lib/editable-html-tip-tap@3.1.4
+  - @pie-lib/render-ui@8.0.9
+
 ## 14.0.8
 
 ### Patch Changes

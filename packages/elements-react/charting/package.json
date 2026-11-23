@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/charting",
-  "version": "13.0.8",
+  "version": "13.0.9",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -108,7 +108,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",
