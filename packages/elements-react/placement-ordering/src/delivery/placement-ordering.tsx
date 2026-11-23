@@ -528,8 +528,6 @@ export class PlacementOrdering extends React.Component {
       return;
     }
 
-    clearTimeout(this.announceTimer);
-
     // A live region only announces a change, so the same message twice in a row differs by a trailing space.
     const say = () =>
       this.setState((state) => ({
@@ -537,6 +535,9 @@ export class PlacementOrdering extends React.Component {
       }));
 
     if (afterFocus) {
+      // A newer result replaces one still waiting; an immediate message (a selection, a button move) leaves it,
+      // so a drop is never left unsaid by what is done right after it.
+      clearTimeout(this.announceTimer);
       // A drop or a cancel moves focus to a tile (see `focusTile`), and the screen reader reads that tile as
       // focus arrives. The result is said once focus has settled, so it is the last thing read and, the region
       // being assertive, cuts that reading off instead of following it.

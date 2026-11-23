@@ -263,6 +263,18 @@ describe('PlacementOrdering screen reader announcements', () => {
     expect(status()).toContain('Lemon');
   });
 
+  it('still says what a drop did when a selection is made before focus has settled', () => {
+    const { container, status } = setup(['c1']);
+    const active = dragged(choice('c2', 'Lemon'));
+
+    act(() => provider.props.onDragStart({ active }));
+    act(() => provider.props.onDragEnd({ active, over: over(target(1, 'c2', '')) }));
+    // a click on another object, made straight away, is announced at once
+    fireEvent.click(container.querySelector('[data-tile-id$="choice-c3"]') as Element);
+
+    expect(status()).toContain('Lemon');
+  });
+
   it('announces an object let go where nothing takes it', () => {
     const { status, onSessionChange } = setup(['c1']);
     const active = { ...dragged(choice('c2', 'Lemon')), rect: { current: {} } };
