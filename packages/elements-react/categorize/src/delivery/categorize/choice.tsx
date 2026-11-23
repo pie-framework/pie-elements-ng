@@ -187,6 +187,7 @@ const DraggableChoice = ({
       onClick={handleClick}
       {...listeners}
       {...attributes}
+      aria-roledescription={undefined}
     >
       <Layout
         id={id}

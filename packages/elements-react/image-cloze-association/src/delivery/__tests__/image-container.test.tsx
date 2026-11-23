@@ -52,7 +52,7 @@ describe('ImageContainer drop targets', () => {
     const answer = within(screen.getByRole('group', { name: 'Response area 2 of 3' })).getByRole('button', {
       name: 'Mercury',
     });
-    expect(answer).toHaveAttribute('aria-roledescription', 'draggable');
+    expect(answer).not.toHaveAttribute('aria-roledescription');
     expect(answer).toHaveAttribute('tabindex', '0');
   });
 

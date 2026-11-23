@@ -35,7 +35,7 @@ import { assertTouchEnabled, touchDrag, touchPinch } from './touch-helpers';
  * differently and still needs a device.
  */
 
-const DRAGGABLE = '[aria-roledescription="draggable"]';
+const DRAGGABLE = '[aria-describedby^="DndDescribedBy"]';
 
 type Point = { x: number; y: number };
 

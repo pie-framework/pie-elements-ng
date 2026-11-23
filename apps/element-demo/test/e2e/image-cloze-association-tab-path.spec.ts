@@ -14,7 +14,7 @@ import {
  * areas and the pool, the places it can go.
  */
 
-const CHOICE = '[aria-roledescription="draggable"][aria-disabled="false"]';
+const CHOICE = '[aria-describedby^="DndDescribedBy"][aria-disabled="false"]';
 // The default demo's two response areas, by their authored names.
 const STEEPER = 'Label for the steeper line';
 const LESS_STEEP = 'Label for the less steep line';

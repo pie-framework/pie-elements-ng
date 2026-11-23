@@ -190,6 +190,7 @@ const PossibleResponse = ({
       aria-label={label}
       {...listeners}
       {...attributes}
+      aria-roledescription={undefined}
     >
       <StyledSpan html={data.value} className={promptClassNames} />
       <EvaluationIcon isCorrect={data.isCorrect} containerStyle={evaluationStyle} />

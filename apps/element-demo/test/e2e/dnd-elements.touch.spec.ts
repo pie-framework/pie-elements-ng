@@ -104,8 +104,9 @@ function forDefect(item: DndCase, key: TestKey) {
   return { run: defect ? test.fixme : test, annotate };
 }
 
-const DRAGGABLE = '[aria-roledescription="draggable"][aria-disabled="false"]';
-const ICA_AREA = ':is([role="button"], [role="group"])[aria-label]:not([aria-roledescription])';
+const DRAGGABLE = '[aria-describedby^="DndDescribedBy"][aria-disabled="false"]';
+const ICA_AREA =
+  ':is([role="button"], [role="group"])[aria-label]:not([aria-describedby^="DndDescribedBy"])';
 
 const CASES: DndCase[] = [
   {
@@ -179,8 +180,10 @@ const CASES: DndCase[] = [
   {
     element: 'drag-in-the-blank',
     choices: (root) => root.locator(DRAGGABLE),
-    target: (root) => root.locator('[role="button"]:not([aria-roledescription])').first(),
-    otherTarget: (root) => root.locator('[role="button"]:not([aria-roledescription])').nth(1),
+    target: (root) =>
+      root.locator('[role="button"]:not([aria-describedby^="DndDescribedBy"])').first(),
+    otherTarget: (root) =>
+      root.locator('[role="button"]:not([aria-describedby^="DndDescribedBy"])').nth(1),
     autoscroll: true,
     placed: (session) => Object.keys((session?.value ?? {}) as object).length,
   },

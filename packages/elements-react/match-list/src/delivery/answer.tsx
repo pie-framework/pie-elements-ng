@@ -203,8 +203,8 @@ function DragAndDropAnswer(props) {
   } = props;
 
   // dnd-kit announces a tile as a "draggable" button; the match-list spec reads it as the answer
-  // choice itself, so the tile is named after the choice and drops the role description.
-  const tileA11y = ariaLabel ? { 'aria-label': ariaLabel, 'aria-roledescription': undefined } : {};
+  // choice itself, so the tile is named after the choice. The role description is dropped either way.
+  const tileA11y = { ...(ariaLabel ? { 'aria-label': ariaLabel } : {}), 'aria-roledescription': undefined };
 
   const dragId = buildDragId({ type, id, promptId });
   // droppable only if promptId exists

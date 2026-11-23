@@ -563,11 +563,11 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       const root = await getDeliveryContainer(page);
       const dragged = await dragAnyCandidateToTarget(page, root, {
         // The choices are dnd-kit draggables (a DIV with
-        // aria-roledescription="draggable"; no `draggable` attribute, and the
+        // the DndDescribedBy aria-describedby; no `draggable` attribute, and the
         // styled-components class names are hashes), and the category drop
         // zones carry data-category-id.
         sourceSelectors: [
-          '[aria-roledescription="draggable"]',
+          '[aria-describedby^="DndDescribedBy"]',
           '[draggable="true"]',
           '[data-draggable="true"]',
           '[class*="choice"]',
@@ -700,7 +700,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
       // An item without response areas has no draggable role: its objects are moved, and dragged, by their buttons
-      let draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+      let draggables = root.locator('[role="button"][aria-describedby^="DndDescribedBy"]');
       let moveButtons = false;
       if ((await draggables.count()) < 2) {
         draggables = root.locator('button[data-move]');
@@ -829,7 +829,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
         // hashes, so class-substring selectors match nothing.
         sourceSelectors: [
           '[data-tile-id*=":choice-"]',
-          '[aria-roledescription="draggable"]',
+          '[aria-describedby^="DndDescribedBy"]',
           '[draggable="true"]',
           '[data-draggable="true"]',
         ],

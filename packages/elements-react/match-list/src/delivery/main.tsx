@@ -106,6 +106,9 @@ const InteractiveRegionContent: any = styled('div')({
   minWidth: 'min-content',
 });
 
+// How long a result message stays in the live region before it is cleared.
+const RESULT_MESSAGE_CLEAR_MS = 100;
+
 export class Main extends React.Component {
   static propTypes = {
     session: PropTypes.object.isRequired,
@@ -133,6 +136,19 @@ export class Main extends React.Component {
     this.lastDragEndAt = 0;
     this.endingDragForPlacement = false;
     this.pointerDrag = false;
+  }
+
+  componentDidUpdate(_prevProps, prevState) {
+    // The region sits in the reading order, so a message is removed once it has been announced rather
+    // than left for a user to find later.
+    if (this.state.resultMessage && this.state.resultMessage !== prevState.resultMessage) {
+      clearTimeout(this.resultMessageTimer);
+      this.resultMessageTimer = setTimeout(() => this.setState({ resultMessage: '' }), RESULT_MESSAGE_CLEAR_MS);
+    }
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.resultMessageTimer);
   }
 
   onRemoveAnswer(id) {

@@ -129,6 +129,9 @@ const getKeyboardDragOptions = (includeTargets, announcements, i18n) =>
 
 const log = debug('pie-elements:placement-ordering');
 
+// How long an announcement stays in the live region before it is cleared.
+const ANNOUNCEMENT_CLEAR_MS = 100;
+
 const PlacementOrderingContainer: any = styled('div')({
   color: color.text(),
   backgroundColor: color.background(),
@@ -525,8 +528,17 @@ export class PlacementOrdering extends React.Component {
       this.setState((state) => ({
         announcement: state.announcement === message ? `${message}\u00a0` : message,
       }));
+
+      // The region sits in the reading order, so the message is removed once it has been announced rather
+      // than left for a user to find later.
+      clearTimeout(this.announcementTimer);
+      this.announcementTimer = setTimeout(() => this.setState({ announcement: '' }), ANNOUNCEMENT_CLEAR_MS);
     }
   };
+
+  componentWillUnmount() {
+    clearTimeout(this.announcementTimer);
+  }
 
   // dnd-kit announces a keyboard drag through its own live region: what is selected as it is picked up,
   // and where it is as it moves over each sort position (spec rows 10 to 15). What a drop or a cancel

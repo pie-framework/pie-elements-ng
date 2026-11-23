@@ -15,7 +15,7 @@ type Box = { x: number; y: number; width: number; height: number };
 type Input = 'mouse' | 'touch';
 
 const INPUTS: Input[] = ['mouse', 'touch'];
-const DRAGGABLE = '[aria-roledescription="draggable"]';
+const DRAGGABLE = '[aria-describedby^="DndDescribedBy"]';
 
 async function boxOf(locator: Locator): Promise<Box> {
   await locator.waitFor({ state: 'visible' });

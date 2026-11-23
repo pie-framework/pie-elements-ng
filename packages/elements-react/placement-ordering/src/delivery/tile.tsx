@@ -465,7 +465,7 @@ export const Tile = (props) => {
   // otherwise bubble up into.
   const dragProps = moveControls
     ? { onPointerDown: listeners?.onPointerDown, onTouchStart: listeners?.onTouchStart }
-    : { ...listeners, ...attributes };
+    : { ...listeners, ...attributes, 'aria-roledescription': undefined };
 
   const contentStyle = moveControls ? { flex: 1, minWidth: 0, minHeight: 0, alignSelf: 'stretch' } : undefined;
 
