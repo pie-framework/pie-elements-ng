@@ -13,8 +13,6 @@ export default {
   sortedObjects: {
     other: '{count} 个已排序对象',
   },
-  unsortedObjectPrefix: '对象：',
-  sortedObjectPrefix: '位置 {position}：',
   endOfUnsorted: '未排序对象结束',
   endOfSorted: '已排序对象结束。',
   useTabToObject: '使用 Tab 键移动到对象。',

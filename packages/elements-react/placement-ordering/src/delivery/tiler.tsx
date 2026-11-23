@@ -14,9 +14,7 @@ import {
   moveButtonLabel,
   readingInstructions,
   sortedHeading,
-  sortedObjectPrefix,
   unsortedHeading,
-  unsortedObjectPrefix,
 } from './announcements.js';
 
 const types = {
@@ -84,10 +82,6 @@ const buildTiles = (props) => {
           {index === firstChoice && <ScreenReaderText>{unsortedHeading(props.i18n, undefined, counts)}</ScreenReaderText>}
           {/* the visible target label is hidden from screen readers, which read it here, in the order of the tiles */}
           {index === firstTarget && <ScreenReaderText>{sortedHeading(props.i18n, props.targetLabel, counts)}</ScreenReaderText>}
-          {tile.type === 'choice' && !tile.empty && <ScreenReaderText>{unsortedObjectPrefix(props.i18n)}</ScreenReaderText>}
-          {tile.type === 'target' && !tile.empty && (
-            <ScreenReaderText>{sortedObjectPrefix(props.i18n, tile.index)}</ScreenReaderText>
-          )}
           <Tile {...tile} ariaLabel={focusLabel(props.i18n, tile, props.selectedChoice, counts)} />
           {index === lastChoice && <ScreenReaderText>{endOfUnsorted(props.i18n)}</ScreenReaderText>}
           {index === lastTarget && <ScreenReaderText>{endOfSorted(props.i18n, props.disabled)}</ScreenReaderText>}

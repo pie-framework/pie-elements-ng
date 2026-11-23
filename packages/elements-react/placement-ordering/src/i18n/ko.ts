@@ -13,8 +13,6 @@ export default {
   sortedObjects: {
     other: '정렬된 개체 {count}개',
   },
-  unsortedObjectPrefix: '개체:',
-  sortedObjectPrefix: '위치 {position}:',
   endOfUnsorted: '정렬되지 않은 개체의 끝',
   endOfSorted: '정렬된 개체의 끝.',
   useTabToObject: 'Tab 키로 개체로 이동하세요.',

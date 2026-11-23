@@ -31,10 +31,6 @@ export default {
     one: '{count} sorted object',
     other: '{count} sorted objects',
   },
-  /** Before the text of each unsorted object. */
-  unsortedObjectPrefix: 'object:',
-  /** Before the text of each sorted object. Slot `{position}`. */
-  sortedObjectPrefix: 'Sort position {position}:',
   endOfUnsorted: 'End of unsorted objects',
   endOfSorted: 'End of sorted objects.',
   /** After `endOfSorted`, when the objects can be moved. */

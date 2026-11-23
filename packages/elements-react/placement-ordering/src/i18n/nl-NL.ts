@@ -16,8 +16,6 @@ export default {
     one: '{count} gesorteerd object',
     other: '{count} gesorteerde objecten',
   },
-  unsortedObjectPrefix: 'object:',
-  sortedObjectPrefix: 'Positie {position}:',
   endOfUnsorted: 'Einde van de ongesorteerde objecten',
   endOfSorted: 'Einde van de gesorteerde objecten.',
   useTabToObject: 'Gebruik Tab om naar een object te gaan.',

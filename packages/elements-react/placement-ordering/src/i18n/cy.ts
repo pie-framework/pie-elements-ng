@@ -28,8 +28,6 @@ export default {
     many: '{count} gwrthrych wedi\'i drefnu',
     other: '{count} gwrthrych wedi\'i drefnu',
   },
-  unsortedObjectPrefix: 'gwrthrych:',
-  sortedObjectPrefix: 'Safle {position}:',
   endOfUnsorted: 'Diwedd y gwrthrychau heb eu trefnu',
   endOfSorted: 'Diwedd y gwrthrychau wedi\'u trefnu.',
   useTabToObject: 'Defnyddiwch Tab i symud i wrthrych.',

@@ -19,8 +19,6 @@ export default {
     few: '{count} obiecte sortate',
     other: '{count} de obiecte sortate',
   },
-  unsortedObjectPrefix: 'obiect:',
-  sortedObjectPrefix: 'Poziția {position}:',
   endOfUnsorted: 'Sfârșitul obiectelor nesortate',
   endOfSorted: 'Sfârșitul obiectelor sortate.',
   useTabToObject: 'Folosește Tab pentru a trece la un obiect.',

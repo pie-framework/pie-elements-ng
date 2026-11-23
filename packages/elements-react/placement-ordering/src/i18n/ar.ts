@@ -28,8 +28,6 @@ export default {
     many: '{count} عنصرًا مرتبًا',
     other: '{count} عنصر مرتب',
   },
-  unsortedObjectPrefix: 'العنصر:',
-  sortedObjectPrefix: 'الموضع {position}:',
   endOfUnsorted: 'نهاية العناصر غير المرتبة',
   endOfSorted: 'نهاية العناصر المرتبة.',
   useTabToObject: 'استخدم Tab للانتقال إلى عنصر.',

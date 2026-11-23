@@ -52,7 +52,7 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
 
     expect(text).toContain('2 de 5 objetos están en la lista ordenada.');
     expect(text).toContain('3 objetos sin ordenar');
-    expect(text).toContain('Posición 1:');
+    expect(text).not.toContain('Posición 1:');
     expect(text).not.toContain('unsorted');
     expect(
       [...container.querySelectorAll('[data-tile-id][aria-label]')].map((el) => el.getAttribute('aria-label')),
@@ -69,7 +69,10 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     expect(text).toContain('Source');
     expect(text).toContain('3 unsorted objects');
     expect(text).toContain('Target 2 sorted objects');
-    expect(text).toContain('Sort position 1:Antigone freely admits to Creon that she buried her brother.');
+    // The tile's own label already says what the spec's rows 3 and 6 ("object:", "Sort position [x]") said.
+    expect(text).toContain('Antigone freely admits to Creon that she buried her brother.');
+    expect(text).not.toContain('Sort position 1:');
+    expect(text).not.toMatch(/object:/i);
   });
 
   it('labels each tile on focus, and leaves the gaps of placed objects out', async () => {

@@ -13,8 +13,6 @@ export default {
   sortedObjects: {
     other: '並べ替え済みのオブジェクト {count}個',
   },
-  unsortedObjectPrefix: 'オブジェクト:',
-  sortedObjectPrefix: '位置 {position}:',
   endOfUnsorted: '並べ替え前のオブジェクトの終わり',
   endOfSorted: '並べ替え済みのオブジェクトの終わり。',
   useTabToObject: 'Tabキーでオブジェクトに移動します。',

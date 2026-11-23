@@ -10,8 +10,6 @@
           "objectsAreOnSortedList",
           "unsortedObjects",
           "sortedObjects",
-          "unsortedObjectPrefix",
-          "sortedObjectPrefix",
           "endOfUnsorted",
           "endOfSorted",
           "useTabToObject",
@@ -55,8 +53,6 @@
           "one": "{count} sorted object",
           "other": "{count} sorted objects"
         },
-        "unsortedObjectPrefix": "object:",
-        "sortedObjectPrefix": "Sort position {position}:",
         "endOfUnsorted": "End of unsorted objects",
         "endOfSorted": "End of sorted objects.",
         "useTabToObject": "Use TAB to move to an object.",
@@ -88,95 +84,95 @@
         "moveRight": "Move {text} right",
         "movedToPosition": "Moved {text} to position {position} of {total}."
       },
-      "reviewedAt": "2026-11-09"
+      "reviewedAt": "2026-11-23"
     },
     "th-TH": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/th-TH.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-GB": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; delta locale per pie-players' briefs/en-GB.md, identical to en-US where no key carries a British form",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "en-AU": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; shares en-GB's values per pie-players' briefs/en-AU.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "fr": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/fr.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ar": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ar.md; plural groups carry all six CLDR categories",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "pt": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/pt.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ko": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ko.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ja": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ja.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "zh": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/zh.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "cy": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/cy.md; plural groups carry all six CLDR categories",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "sv": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/sv.md",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "nl-NL": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/nl-NL.md (impersonal infinitive for labels, imperative for learner instructions)",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
     },
     "ro": {
       "status": "generated",
-      "sourceHash": "1a6605e8d7895ff71f5e284bb4641222f574c9d3eaa5bdfa59d6617bedf85816",
+      "sourceHash": "5c5c27c8fb28698b5413893ac1c366978b684d2bfe7a2027c456c261d98aa961",
       "from": "machine-generated from en-US, unreviewed; register and terminology follow pie-players' packages/pie-i18n-generated/briefs/ro.md (imperative on controls, comma-below diacritics, three CLDR plural forms with 'de' in other)",
       "generatedAt": "2026-11-12",
       "model": "Claude (Anthropic), agent-driven generation in the pie-elements-ng repo"
