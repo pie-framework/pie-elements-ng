@@ -97,6 +97,18 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     expect(text).not.toContain('Sort position 2:');
   });
 
+  it('leaves dnd-kit\'s pick-up instructions and "draggable" off the tiles, whose labels say what to press', async () => {
+    const { container } = await renderItem('gather', ['2', undefined, undefined, '3', undefined]);
+    const tiles = [...container.querySelectorAll('[data-tile-id]')];
+
+    expect(tiles.length).toBeGreaterThan(0);
+    tiles.forEach((tile) => {
+      expect(tile.hasAttribute('aria-describedby')).toBe(false);
+      expect(tile.hasAttribute('aria-roledescription')).toBe(false);
+    });
+    expect(container.ownerDocument.body.textContent).not.toContain('pick up this answer choice');
+  });
+
   it('does not tell a student of a view-only item to press keys', async () => {
     const { container } = await renderItem('view', ['2', undefined, undefined, undefined, undefined]);
     const text = container.textContent ?? '';
@@ -104,7 +116,7 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     expect(text).not.toContain('Build a sorted list');
     expect(text).not.toContain('Press ENTER');
     expect(text).toContain('1 of 5 objects are on the sorted list.');
-    expect(container.querySelector('[aria-live="polite"]')).not.toBeNull();
+    expect(container.querySelector('[role="status"][aria-live="assertive"]')).not.toBeNull();
     // tiles of a disabled item have no role, which a label needs
     expect(container.querySelectorAll('[data-tile-id][aria-label]')).toHaveLength(0);
   });
