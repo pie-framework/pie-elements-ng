@@ -29,18 +29,13 @@ export interface DragData {
 
 const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
 
-// The browser knows every named entity (eacute, rsquo, minus, ...); a textarea decodes one without running anything.
-let decoder: HTMLTextAreaElement | undefined;
-
+// The browser knows every named entity (eacute, rsquo, minus, ...); parsing one decodes it without running anything.
 const decodeNamedEntity = (entity: string) => {
-  if (typeof document === 'undefined') {
+  if (typeof DOMParser === 'undefined') {
     return entity;
   }
 
-  decoder ??= document.createElement('textarea');
-  decoder.innerHTML = entity;
-
-  return decoder.value;
+  return new DOMParser().parseFromString(entity, 'text/html').documentElement.textContent ?? entity;
 };
 
 /** The text a choice reads as: tags gone, block ends and breaks as spaces, entities decoded. */
