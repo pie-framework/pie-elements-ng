@@ -698,7 +698,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
     gap: 1rem;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--pie-border-light);
-    background: var(--pie-white);
+    background: var(--pie-background);
   }
 
   .author-header h1,
@@ -740,7 +740,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
     min-width: 44px;
     border: 1px solid var(--pie-border-light);
     border-radius: 0.5rem;
-    background: var(--pie-white);
+    background: var(--pie-background);
     color: var(--pie-text);
     padding: 0.5rem 0.75rem;
     cursor: pointer;
@@ -777,7 +777,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
     padding: 0.875rem 1rem;
     border: 1px solid var(--pie-border-light);
     border-radius: 0.625rem;
-    background: var(--pie-white);
+    background: var(--pie-background);
   }
 
   .review-summary.errors {
@@ -812,7 +812,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
   .editor-panel,
   .preview-panel {
     min-width: 0;
-    background: var(--pie-white);
+    background: var(--pie-background);
   }
 
   .editor-panel {
@@ -824,7 +824,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
     overflow: clip;
     border: 1px solid var(--pie-border-light);
     border-radius: 0.75rem;
-    background: var(--pie-white);
+    background: var(--pie-background);
   }
 
   .form-section > summary {
@@ -887,9 +887,10 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
   textarea {
     width: 100%;
     min-height: 44px;
-    border: 1px solid var(--pie-border-light);
+    /* The edge is the field's only boundary, so it takes the 3:1 border the panels' light one misses. */
+    border: 1px solid var(--pie-border-dark);
     border-radius: 0.5rem;
-    background: var(--pie-white);
+    background: var(--pie-background);
     color: var(--pie-text);
     padding: 0.55rem 0.625rem;
   }
@@ -997,7 +998,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
     overflow: hidden;
     border: 1px solid var(--pie-border-light);
     border-radius: 0.75rem;
-    background: var(--pie-white);
+    background: var(--pie-background);
   }
 
   @media (max-width: 56rem) {
