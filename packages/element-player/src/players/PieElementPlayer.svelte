@@ -704,7 +704,7 @@ onMount(() => {
 
   .loading-warning {
     margin-top: 0.5rem;
-    color: var(--pie-missing, #9a6700);
+    color: #9a6700;
     font-style: normal;
   }
 
