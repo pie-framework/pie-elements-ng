@@ -437,4 +437,25 @@ describe('EditableHtml styles', () => {
       expect(getComputedStyle(button).paddingTop).toBe('4px');
     }
   });
+
+  // happy-dom computes no outline, so this reads the rules; a browser draws them.
+  it('removes no outline, and rings keyboard focus from the focus tokens', () => {
+    const css = compiledCss().replace(/\/\*[\s\S]*?\*\//g, '');
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selector, body]) => ({
+      selector: selector.trim(),
+      body: body.replace(/\s+/g, ' '),
+    }));
+    const ring =
+      'outline: 2px solid var(--pie-focus-keyboard-outline, var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))));';
+
+    expect(rules.filter(({ body }) => /outline:\s*(none|0)\b/.test(body))).toEqual([]);
+    for (const focused of [
+      '.toolbar button.pie-toolbar-btn:focus-visible',
+      '.ProseMirror:focus-visible',
+    ]) {
+      const rule = rules.find(({ selector }) => selector.endsWith(focused));
+      expect(rule?.body).toContain(ring);
+      expect(rule?.body).toContain('outline-offset: 2px;');
+    }
+  });
 });
