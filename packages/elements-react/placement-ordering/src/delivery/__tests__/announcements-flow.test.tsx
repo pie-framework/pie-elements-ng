@@ -216,19 +216,22 @@ describe('PlacementOrdering screen reader announcements', () => {
   });
 
   it('announces a cancel again when the same one is made twice', () => {
-    const { status } = setup(['c1']);
+    const { status, container } = setup(['c1']);
     const active = dragged(choice('c2', 'Lemon'));
     const cancel = () => {
       act(() => provider.props.onDragStart({ active }));
       act(() => provider.props.onDragCancel());
     };
+    const message = () => container.querySelector('[aria-live="polite"] > span');
 
     cancel();
     const first = status();
+    const firstNode = message();
     cancel();
 
-    expect(status()).not.toBe(first);
-    expect(status()?.trim()).toBe(first);
+    // The same text, in a new node, which a live region announces again.
+    expect(status()).toBe(first);
+    expect(message()).not.toBe(firstNode);
   });
 
   it('announces an object let go where nothing takes it', () => {

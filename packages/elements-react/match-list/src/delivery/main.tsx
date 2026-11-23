@@ -132,6 +132,8 @@ export class Main extends React.Component {
       selectedAnswer: null,
       // What a placement just did, for the live region; dnd-kit's own region only knows the drag.
       resultMessage: '',
+      // Bumped on every result, so one repeated is still a new node in the live region.
+      resultId: 0,
     };
     this.lastDragEndAt = 0;
     this.endingDragForPlacement = false;
@@ -141,7 +143,7 @@ export class Main extends React.Component {
   componentDidUpdate(_prevProps, prevState) {
     // The region sits in the reading order, so a message is removed once it has been announced rather
     // than left for a user to find later.
-    if (this.state.resultMessage && this.state.resultMessage !== prevState.resultMessage) {
+    if (this.state.resultMessage && this.state.resultId !== prevState.resultId) {
       clearTimeout(this.resultMessageTimer);
       this.resultMessageTimer = setTimeout(() => this.setState({ resultMessage: '' }), RESULT_MESSAGE_CLEAR_MS);
     }
@@ -226,7 +228,7 @@ export class Main extends React.Component {
       ? describePlacementResult(t, config, value, activeData, overData)
       : describeDeselection(t, config, activeData.id);
 
-    this.setState({ resultMessage });
+    this.setState((state) => ({ resultMessage, resultId: state.resultId + 1 }));
   };
 
   onPlaceAnswer: any = (event) => {
@@ -317,6 +319,7 @@ export class Main extends React.Component {
       return {
         selectedAnswer: deselecting ? null : data,
         resultMessage: deselecting ? describeDeselection(t, config, data.id) : describeSelection(t, config, data.id),
+        resultId: state.resultId + 1,
       };
     });
   };
@@ -480,7 +483,7 @@ export class Main extends React.Component {
 
           {mode === 'gather' && <div style={visuallyHidden}>{describeIntro(t, announcementConfig, announcementValue)}</div>}
           <div style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
-            {this.state.resultMessage}
+            <span key={this.state.resultId}>{this.state.resultMessage}</span>
           </div>
 
           <CorrectAnswerToggle

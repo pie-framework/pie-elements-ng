@@ -8,6 +8,7 @@ import {
   switchTab,
   updateModelInSource,
   waitForMathRendering,
+  DND_DRAGGABLE,
 } from './test-helpers';
 
 type Point = { x: number; y: number };
@@ -15,7 +16,7 @@ type Box = { x: number; y: number; width: number; height: number };
 type Input = 'mouse' | 'touch';
 
 const INPUTS: Input[] = ['mouse', 'touch'];
-const DRAGGABLE = '[aria-describedby^="DndDescribedBy"]';
+const DRAGGABLE = DND_DRAGGABLE;
 
 async function boxOf(locator: Locator): Promise<Box> {
   await locator.waitFor({ state: 'visible' });

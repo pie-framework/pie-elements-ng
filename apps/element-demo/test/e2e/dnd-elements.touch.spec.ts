@@ -7,6 +7,7 @@ import {
   switchTab,
   updateModelInSource,
   waitForMathRendering,
+  DND_DRAGGABLE,
 } from './test-helpers';
 import {
   assertTouchEnabled,
@@ -104,9 +105,8 @@ function forDefect(item: DndCase, key: TestKey) {
   return { run: defect ? test.fixme : test, annotate };
 }
 
-const DRAGGABLE = '[aria-describedby^="DndDescribedBy"][aria-disabled="false"]';
-const ICA_AREA =
-  ':is([role="button"], [role="group"])[aria-label]:not([aria-describedby^="DndDescribedBy"])';
+const DRAGGABLE = `${DND_DRAGGABLE}[aria-disabled="false"]`;
+const ICA_AREA = `:is([role="button"], [role="group"])[aria-label]:not(${DND_DRAGGABLE})`;
 
 const CASES: DndCase[] = [
   {
@@ -180,10 +180,8 @@ const CASES: DndCase[] = [
   {
     element: 'drag-in-the-blank',
     choices: (root) => root.locator(DRAGGABLE),
-    target: (root) =>
-      root.locator('[role="button"]:not([aria-describedby^="DndDescribedBy"])').first(),
-    otherTarget: (root) =>
-      root.locator('[role="button"]:not([aria-describedby^="DndDescribedBy"])').nth(1),
+    target: (root) => root.locator(`[role="button"]:not(${DND_DRAGGABLE})`).first(),
+    otherTarget: (root) => root.locator(`[role="button"]:not(${DND_DRAGGABLE})`).nth(1),
     autoscroll: true,
     placed: (session) => Object.keys((session?.value ?? {}) as object).length,
   },

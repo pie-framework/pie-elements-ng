@@ -5,6 +5,13 @@ import { type Page, type Locator, expect } from '@playwright/test';
  */
 
 /**
+ * Matches an element dnd-kit made draggable: it points `aria-describedby` at its drag instructions,
+ * whose id starts with this prefix. The elements no longer set `aria-roledescription`, so this is the
+ * one place the specs depend on dnd-kit's id.
+ */
+export const DND_DRAGGABLE = '[aria-describedby^="DndDescribedBy"]';
+
+/**
  * Wait for MathJax to finish rendering LaTeX content
  */
 export async function waitForMathRendering(page: Page, timeout = 5000) {

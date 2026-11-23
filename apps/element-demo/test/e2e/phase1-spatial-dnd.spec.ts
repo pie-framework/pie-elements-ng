@@ -8,6 +8,7 @@ import {
   openDeliverRoute,
   switchToEvaluate,
   mountedElementSelector,
+  DND_DRAGGABLE,
 } from './test-helpers';
 
 type SpatialCase = {
@@ -48,11 +49,11 @@ const CHOICE_DROP_ELEMENTS = new Set([
  * named by `aria-label` (image-cloze-association's response areas while nothing is selected).
  */
 async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
-  const CHOICE = '[aria-describedby^="DndDescribedBy"][aria-disabled="false"]';
+  const CHOICE = `${DND_DRAGGABLE}[aria-disabled="false"]`;
   const choice = root.locator(CHOICE).first();
   const dropZone = root
     .locator(
-      '[role="button"]:not([aria-describedby^="DndDescribedBy"]), [role="group"][tabindex="0"], [role="group"][aria-labelledby], [role="group"][aria-label]'
+      `[role="button"]:not(${DND_DRAGGABLE}), [role="group"][tabindex="0"], [role="group"][aria-labelledby], [role="group"][aria-label]`
     )
     .filter({ hasNot: page.locator(CHOICE) })
     .first();
@@ -210,7 +211,7 @@ async function waitForHostSessionMutation(
 
 async function interactPlacementOrdering(page: Page, root: Locator) {
   // An item without response areas has no draggable role: its objects are dragged from their move buttons
-  let draggables = root.locator('[role="button"][aria-describedby^="DndDescribedBy"]');
+  let draggables = root.locator(`[role="button"]${DND_DRAGGABLE}`);
   let moveButtons = false;
   if ((await draggables.count()) < 2) {
     draggables = root.locator('button[data-move]');

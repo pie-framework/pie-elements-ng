@@ -16,6 +16,7 @@ import {
   waitForElementReady,
   mountedElement,
   mountedElementSelector,
+  DND_DRAGGABLE,
 } from './test-helpers';
 
 type CheckName =
@@ -567,7 +568,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
         // styled-components class names are hashes), and the category drop
         // zones carry data-category-id.
         sourceSelectors: [
-          '[aria-describedby^="DndDescribedBy"]',
+          DND_DRAGGABLE,
           '[draggable="true"]',
           '[data-draggable="true"]',
           '[class*="choice"]',
@@ -700,7 +701,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
       // An item without response areas has no draggable role: its objects are moved, and dragged, by their buttons
-      let draggables = root.locator('[role="button"][aria-describedby^="DndDescribedBy"]');
+      let draggables = root.locator(`[role="button"]${DND_DRAGGABLE}`);
       let moveButtons = false;
       if ((await draggables.count()) < 2) {
         draggables = root.locator('button[data-move]');
@@ -829,7 +830,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
         // hashes, so class-substring selectors match nothing.
         sourceSelectors: [
           '[data-tile-id*=":choice-"]',
-          '[aria-describedby^="DndDescribedBy"]',
+          DND_DRAGGABLE,
           '[draggable="true"]',
           '[data-draggable="true"]',
         ],

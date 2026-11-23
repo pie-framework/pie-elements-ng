@@ -226,6 +226,8 @@ export class PlacementOrdering extends React.Component {
       draggedTile: null,
       // What the screen reader announces of the last change to the answer (spec rows 16 to 21).
       announcement: '',
+      // Bumped on every announcement, so one repeated is still a new node in the live region.
+      announcementId: 0,
     };
     this.lastDragEndAt = 0;
     // When the last placement was made, so the cancel it causes in a live keyboard drag is not announced.
@@ -524,10 +526,7 @@ export class PlacementOrdering extends React.Component {
 
   announce: any = (message) => {
     if (message) {
-      // A live region only announces a change, so the same message twice in a row differs by a trailing space.
-      this.setState((state) => ({
-        announcement: state.announcement === message ? `${message}\u00a0` : message,
-      }));
+      this.setState((state) => ({ announcement: message, announcementId: state.announcementId + 1 }));
 
       // The region sits in the reading order, so the message is removed once it has been announced rather
       // than left for a user to find later.
@@ -779,7 +778,7 @@ export class PlacementOrdering extends React.Component {
         <PlacementOrderingContainer ref={this.containerRef} data-dragging={this.state.draggedTile ? '' : undefined}>
           {(includeTargets || moveProps.onMove) && (
             <ScreenReaderText role="status" aria-live="polite" aria-atomic="true">
-              {this.state.announcement}
+              <span key={this.state.announcementId}>{this.state.announcement}</span>
             </ScreenReaderText>
           )}
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>

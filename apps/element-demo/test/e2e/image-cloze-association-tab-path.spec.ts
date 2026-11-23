@@ -6,6 +6,7 @@ import {
   openDeliverRoute,
   switchTab,
   updateModelInSource,
+  DND_DRAGGABLE,
 } from './test-helpers';
 
 /**
@@ -14,7 +15,7 @@ import {
  * areas and the pool, the places it can go.
  */
 
-const CHOICE = '[aria-describedby^="DndDescribedBy"][aria-disabled="false"]';
+const CHOICE = `${DND_DRAGGABLE}[aria-disabled="false"]`;
 // The default demo's two response areas, by their authored names.
 const STEEPER = 'Label for the steeper line';
 const LESS_STEEP = 'Label for the less steep line';
