@@ -88,6 +88,15 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     );
   });
 
+  it('still reads the sort position of each object of a view-only item, which has no tile label to say it', async () => {
+    const { container } = await renderItem('view', ['2', undefined, undefined, '3', undefined]);
+    const text = container.textContent ?? '';
+
+    expect(text).toContain('Sort position 1:Antigone freely admits to Creon that she buried her brother.');
+    expect(text).toContain('Sort position 4:Creon denies that others agree with Antigone');
+    expect(text).not.toContain('Sort position 2:');
+  });
+
   it('does not tell a student of a view-only item to press keys', async () => {
     const { container } = await renderItem('view', ['2', undefined, undefined, undefined, undefined]);
     const text = container.textContent ?? '';

@@ -16,6 +16,7 @@ export default {
     one: '{count} sorted object',
     other: '{count} sorted objects',
   },
+  sortedObjectPrefix: 'Sort position {position}:',
   endOfUnsorted: 'End of unsorted objects',
   endOfSorted: 'End of sorted objects.',
   useTabToObject: 'Use TAB to move to an object.',

@@ -16,6 +16,7 @@ export default {
     one: '{count} sorterat objekt',
     other: '{count} sorterade objekt',
   },
+  sortedObjectPrefix: 'Position {position}:',
   endOfUnsorted: 'Slut på osorterade objekt',
   endOfSorted: 'Slut på sorterade objekt.',
   useTabToObject: 'Använd Tabb för att gå till ett objekt.',

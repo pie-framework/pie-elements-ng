@@ -31,6 +31,8 @@ export default {
     one: '{count} sorted object',
     other: '{count} sorted objects',
   },
+  /** Before the text of each sorted object of a disabled item, whose tiles have no label of their own. Slot `{position}`. */
+  sortedObjectPrefix: 'Sort position {position}:',
   endOfUnsorted: 'End of unsorted objects',
   endOfSorted: 'End of sorted objects.',
   /** After `endOfSorted`, when the objects can be moved. */

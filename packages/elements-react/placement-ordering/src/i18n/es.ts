@@ -19,6 +19,7 @@ export default {
     many: '{count} objetos ordenados',
     other: '{count} objetos ordenados',
   },
+  sortedObjectPrefix: 'Posición {position}:',
   endOfUnsorted: 'Fin de los objetos sin ordenar',
   endOfSorted: 'Fin de los objetos ordenados.',
   useTabToObject: 'Usa Tab para ir a un objeto.',

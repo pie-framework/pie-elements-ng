@@ -115,8 +115,10 @@ export const unsortedHeading = (i18n: I18n, label: string | undefined, counts: C
 export const sortedHeading = (i18n: I18n, label: string | undefined, counts: Counts) =>
   join(toPlainText(label), i18n.plural('sortedObjects', { count: counts.sorted }));
 
-// Rows 4 and 7
+// Rows 4 and 7 (rows 3 and 6 are gone: a tile's own label says as much; only a disabled item's tiles keep a position prefix)
 export const endOfUnsorted = (i18n: I18n) => i18n.t('endOfUnsorted');
+export const sortedObjectPrefix = (i18n: I18n, index: number) =>
+  i18n.t('sortedObjectPrefix', { position: index + 1 });
 export const endOfSorted = (i18n: I18n, disabled = false) =>
   join(i18n.t('endOfSorted'), disabled ? undefined : i18n.t('useTabToObject'));
 

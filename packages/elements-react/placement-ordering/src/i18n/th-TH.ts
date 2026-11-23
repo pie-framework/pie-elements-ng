@@ -13,6 +13,7 @@ export default {
   sortedObjects: {
     other: '{count} ออบเจ็กต์ที่เรียงลำดับแล้ว',
   },
+  sortedObjectPrefix: 'ตำแหน่งที่ {position}:',
   endOfUnsorted: 'สิ้นสุดออบเจ็กต์ที่ยังไม่ได้เรียงลำดับ',
   endOfSorted: 'สิ้นสุดออบเจ็กต์ที่เรียงลำดับแล้ว',
   useTabToObject: 'ใช้ Tab เพื่อไปยังออบเจ็กต์',
