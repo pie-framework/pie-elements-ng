@@ -85,18 +85,8 @@ const SVELTE_SOURCE_PACKAGES = [
  * `color.tableGrid()` / `tableGridLight()` / `tableStripe()` for authored tables.
  * They chain onto `--pie-text`, `--pie-border-light` and `--pie-background-dark`
  * respectively, which the registry does own.
- *
- * `--pie-disabled-text` (PIE-922) is text that is disabled but still has to be
- * read - a non-editable charting tick label - which canonical `--pie-disabled`
- * cannot carry: that grey is 3.94:1 on white, under WCAG AA for normal text. It
- * chains onto `--pie-text`, so a host that themes only the canonical tokens gets
- * full text contrast rather than an unreadable literal. Promoting it needs a
- * `canonical-semantic` entry in the `pie-players` registry and a value in every
- * scheme there, which is a `@pie-players/pie-theme` change, not one this repo can
- * make.
  */
 const KNOWN_UNREGISTERED_TOKENS = new Set([
-  '--pie-disabled-text',
   '--pie-keypad-button',
   '--pie-keypad-button-hover',
   '--pie-keypad-button-operator',
@@ -135,6 +125,7 @@ const REACT_ALLOWED_TOKENS = new Set([
   '--pie-correct-tertiary',
   '--pie-disabled',
   '--pie-disabled-secondary',
+  '--pie-disabled-text',
   '--pie-dropdown-background',
   '--pie-faded-primary',
   // palette: 0% under a Base Theme, 100% under every colour scheme; folds authored fixed hues.

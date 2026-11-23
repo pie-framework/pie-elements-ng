@@ -693,8 +693,8 @@ function handleDoneClick() {
     -webkit-appearance: none;
     -moz-appearance: none;
 
-    /* Core button styling - matching React MenuBar exactly */
-    color: var(--pie-disabled, grey) !important;
+    /* 80% --pie-text holds 3:1 on the toolbar fill in every pie-players scheme; --pie-disabled does not. */
+    color: color-mix(in srgb, var(--pie-text, black) 80%, var(--pie-background, #ffffff)) !important;
     display: inline-flex !important;
     padding: 2px !important;
     background: none !important;
@@ -725,13 +725,13 @@ function handleDoneClick() {
     outline-offset: 2px;
   }
 
+  .pie-editable-html :global(.toolbar button.pie-toolbar-btn:disabled) {
+    color: var(--pie-disabled, grey) !important;
+  }
+
   .pie-editable-html :global(.pie-toolbar-btn:disabled) {
     opacity: 0.7;
     cursor: not-allowed;
-  }
-
-  .pie-editable-html :global(.pie-toolbar-btn:disabled:hover) {
-    color: var(--pie-disabled, grey);
   }
 
   .pie-editable-html :global(.pie-toolbar-btn.active) {
