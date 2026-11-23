@@ -94,6 +94,7 @@ export default class DragInTheBlank extends React.Component {
     this.lastDragEndAt = 0;
     this.endingDragForPlacement = false;
     this.pointerDrag = false;
+    this.awaitingFirstOver = false;
   }
 
   static propTypes = {
@@ -370,6 +371,10 @@ export default class DragInTheBlank extends React.Component {
     // from `resultMessage`, which knows the session before and after.
     const announcements = {
       onDragStart({ active }) {
+        // dnd-kit's first over event reports where the choice was lifted from, which is not a move
+        // and would replace the selection announcement within milliseconds.
+        element.awaitingFirstOver = true;
+
         return describeSelection(t, announcementConfig, dragData(active)?.choice?.id);
       },
 
@@ -380,12 +385,20 @@ export default class DragInTheBlank extends React.Component {
         }
 
         const selected = dragData(active);
+        const first = element.awaitingFirstOver;
+
+        element.awaitingFirstOver = false;
 
         if (!over) {
           return describeNotOverBlank(t, announcementConfig, selected?.choice?.id);
         }
 
         const overData = dragData(over);
+
+        // A choice lifted from the pool is first reported over the pool; row 12 is for Tab reaching it.
+        if (first && selected?.fromChoice && overData?.toChoiceBoard) {
+          return undefined;
+        }
 
         // A filled blank is its own drop target when picked up; it is where the choice already sits.
         if (!selected || !overData || (!overData.toChoiceBoard && selected.fromChoice === false && String(overData.id) === String(selected.id))) {

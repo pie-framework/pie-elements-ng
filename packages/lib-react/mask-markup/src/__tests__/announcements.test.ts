@@ -108,6 +108,18 @@ describe('drag-in-the-blank announcements', () => {
     expect(describeChoiceTile(t, choice)).toBe('Answer choice: A &#x110000; B &#99999999; C A');
   });
 
+  it('decodes any named entity, not just the common ones', () => {
+    const choice = { id: 'x', value: 'caf&eacute; it&rsquo;s 5 &minus; 3' };
+
+    expect(describeChoiceTile(t, choice)).toBe('Answer choice: café it’s 5 − 3');
+  });
+
+  it('leaves math in any delimiter to name itself', () => {
+    for (const value of ['\\(a^2\\)', '\\[\\pi r^2\\]', '$$x+1$$', '<mjx-container>a</mjx-container>']) {
+      expect(describeChoiceTile(t, { id: 'm', value })).toBeUndefined();
+    }
+  });
+
   it('counts the pool as the pool shows it, even with a stale entry for a removed blank', () => {
     expect(describeIntro(t, config, { '9': 'a' })).toContain('0 of 3 blanks');
     expect(describePlacementResult(t, config, { '9': 'a' }, fromPool('b'), '0')).toContain('2 available answer choices');

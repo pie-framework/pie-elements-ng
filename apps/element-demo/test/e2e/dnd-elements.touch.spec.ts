@@ -105,6 +105,9 @@ function forDefect(item: DndCase, key: TestKey) {
 }
 
 const DRAGGABLE = '[aria-roledescription="draggable"][aria-disabled="false"]';
+const DITB_TILE = '[role="button"][aria-label^="Answer choice:"][aria-disabled="false"]';
+const DITB_BLANK =
+  '[role="button"]:not([aria-roledescription]):not([aria-label^="Answer choice:"])';
 const ICA_AREA = ':is([role="button"], [role="group"])[aria-label]:not([aria-roledescription])';
 
 const CASES: DndCase[] = [
@@ -178,9 +181,10 @@ const CASES: DndCase[] = [
   },
   {
     element: 'drag-in-the-blank',
-    choices: (root) => root.locator(DRAGGABLE),
-    target: (root) => root.locator('[role="button"]:not([aria-roledescription])').first(),
-    otherTarget: (root) => root.locator('[role="button"]:not([aria-roledescription])').nth(1),
+    // Text tiles are named "Answer choice: ..." and drop the draggable roledescription; image and math tiles keep it.
+    choices: (root) => root.locator(`${DRAGGABLE}, ${DITB_TILE}`),
+    target: (root) => root.locator(DITB_BLANK).first(),
+    otherTarget: (root) => root.locator(DITB_BLANK).nth(1),
     autoscroll: true,
     placed: (session) => Object.keys((session?.value ?? {}) as object).length,
   },

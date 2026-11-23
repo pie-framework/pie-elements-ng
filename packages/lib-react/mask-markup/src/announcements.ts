@@ -29,6 +29,20 @@ export interface DragData {
 
 const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
 
+// The browser knows every named entity (eacute, rsquo, minus, ...); a textarea decodes one without running anything.
+let decoder: HTMLTextAreaElement | undefined;
+
+const decodeNamedEntity = (entity: string) => {
+  if (typeof document === 'undefined') {
+    return entity;
+  }
+
+  decoder ??= document.createElement('textarea');
+  decoder.innerHTML = entity;
+
+  return decoder.value;
+};
+
 /** The text a choice reads as: tags gone, block ends and breaks as spaces, entities decoded. */
 const stripHtml = (html?: string) =>
   html
@@ -43,7 +57,7 @@ const stripHtml = (html?: string) =>
             return Number.isNaN(code) || code < 0 || code > 0x10ffff ? entity : String.fromCodePoint(code);
           }
 
-          return ENTITIES[name.toLowerCase()] ?? entity;
+          return ENTITIES[name.toLowerCase()] ?? decodeNamedEntity(entity);
         })
         .replace(/\s+/g, ' ')
         .trim()
@@ -54,7 +68,7 @@ const sentence = (text: string) => (!text || /[.!?。！？]$/.test(text) ? text
 
 /** Whether a choice's text alone would lose what it shows: an image or math is left to name itself. */
 export const hasRichContent = (html?: string) =>
-  !!html && (!stripHtml(html) || /<(img|svg|math|audio|video|object|embed|iframe)\b|data-latex/i.test(html));
+  !!html && (!stripHtml(html) || /<(img|svg|math|mjx-[a-z]+|audio|video|object|embed|iframe)\b|data-latex|\\\(|\\\[|\$\$/i.test(html));
 
 /** Blank ids in reading order, from the {{n}} placeholders of the markup. */
 export const blankIds = (markup?: string) => [
