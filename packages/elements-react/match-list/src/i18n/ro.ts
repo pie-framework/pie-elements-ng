@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{filled} din {total} zone de plasare au o variantă de răspuns. {available} variante de răspuns disponibile. Folosiți TAB pentru a selecta o variantă de răspuns.',
   completeA11y: 'Răspunsul este complet. {total} din {total} zone de plasare au o variantă de răspuns.',
   deselectedA11y: 'Varianta de răspuns {choice} nu mai este selectată. Folosiți TAB pentru a selecta o variantă de răspuns.',
+  cancelledA11y: 'Varianta de răspuns {choice} nu mai este selectată. Folosiți TAB pentru a trece la o variantă de răspuns.',
 } satisfies MessageCatalog;

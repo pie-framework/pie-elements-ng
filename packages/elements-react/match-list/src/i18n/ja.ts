@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{total} 個のドロップ領域のうち {filled} 個に解答の選択肢があります。利用可能な解答の選択肢は {available} 個です。解答の選択肢を選ぶには TAB を使います。',
   completeA11y: '解答が完成しました。{total} 個のドロップ領域のうち {total} 個に解答の選択肢があります。',
   deselectedA11y: '解答の選択肢 {choice} の選択が解除されました。解答の選択肢を選ぶには TAB を使います。',
+  cancelledA11y: '解答の選択肢 {choice} の選択が解除されました。解答の選択肢に移動するには TAB を使います。',
 } satisfies MessageCatalog;

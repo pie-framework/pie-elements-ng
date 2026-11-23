@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{total} 个放置区域中有 {filled} 个已放置答案选项。有 {available} 个可用的答案选项。使用 TAB 键选择答案选项。',
   completeA11y: '答案已完成。{total} 个放置区域中有 {total} 个已放置答案选项。',
   deselectedA11y: '答案选项 {choice} 已不再处于选中状态。使用 TAB 键选择答案选项。',
+  cancelledA11y: '答案选项 {choice} 已不再处于选中状态。使用 TAB 键移至某个答案选项。',
 } satisfies MessageCatalog;

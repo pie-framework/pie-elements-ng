@@ -25,4 +25,5 @@ export default {
   remainingA11y: '놓기 영역 {total}개 중 {filled}개에 답안 선택지가 있습니다. 사용 가능한 답안 선택지 {available}개. 답안 선택지를 선택하려면 TAB을 사용하세요.',
   completeA11y: '답안이 완성되었습니다. 놓기 영역 {total}개 중 {total}개에 답안 선택지가 있습니다.',
   deselectedA11y: '답안 선택지 {choice}의 선택이 해제되었습니다. 답안 선택지를 선택하려면 TAB을 사용하세요.',
+  cancelledA11y: '답안 선택지 {choice}의 선택이 해제되었습니다. 답안 선택지로 이동하려면 TAB을 사용하세요.',
 } satisfies MessageCatalog;
