@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/placement-ordering",
-  "version": "15.1.0",
+  "version": "15.1.1",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -123,7 +123,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

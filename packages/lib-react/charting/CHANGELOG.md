@@ -1,5 +1,19 @@
 # @pie-lib/charting
 
+## 8.0.9
+
+### Patch Changes
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/shared-i18n@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.10
+  - @pie-element/shared-utils@0.1.8
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/plot@5.0.9
+  - @pie-lib/render-ui@8.0.9
+
 ## 8.0.8
 
 ### Patch Changes

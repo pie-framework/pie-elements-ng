@@ -1,5 +1,21 @@
 # @pie-element/ebsr
 
+## 15.0.9
+
+### Patch Changes
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`54504fc`](https://github.com/pie-framework/pie-elements-ng/commit/54504fcd9df2774ef8204734f4dc99209e83aaf5), [`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/multiple-choice@14.0.9
+  - @pie-element/shared-configure-events@0.1.4
+  - @pie-element/shared-controller-utils@0.1.6
+  - @pie-element/shared-i18n@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-player-events@0.2.3
+  - @pie-element/shared-types@0.2.5
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/render-ui@8.0.9
+
 ## 15.0.8
 
 ### Patch Changes
