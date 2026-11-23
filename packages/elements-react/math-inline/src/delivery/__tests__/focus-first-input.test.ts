@@ -68,8 +68,10 @@ describe('math-inline focusFirstInput', () => {
     expect(await result).toBe(true);
     expect(document.activeElement).toBe(field(el));
     expect((field(el) as HTMLElement & { position: number }).position).toBe(0);
-    // Focus is no context change: the keypad opens on a click or ArrowDown.
-    expect(el.querySelectorAll('button')).toHaveLength(0);
+    // The hook's focus is no context change (WCAG 3.2.1): the keypad that a learner's focus opens
+    // stays closed until a click or ArrowDown. The tooltip holding it mounts a render later.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(document.querySelector('[data-keypad]')).toBeNull();
   });
 
   it('focuses a mounted field at once', async () => {
