@@ -1,0 +1,13 @@
+# verdict	kind	mode [opts]	a	b, for latexEqual(a, b); written by latex-equal-verdicts.test.ts
+true	eq	literal {"literal":{"allowTrailingZeros":true}}	"1"	"1.0"
+true	eq/rev	literal {"literal":{"allowTrailingZeros":true}}	"1.0"	"1"
+true	eq	literal {"literal":{"allowTrailingZeros":true}}	"1"	"01"
+true	eq/rev	literal {"literal":{"allowTrailingZeros":true}}	"01"	"1"
+false	ne	literal {"literal":{"allowTrailingZeros":true}}	"1"	"1.01"
+false	ne/rev	literal {"literal":{"allowTrailingZeros":true}}	"1.01"	"1"
+true	cross	literal {"literal":{"allowTrailingZeros":true}}	"1.0"	"01"
+true	cross	literal {"literal":{"allowTrailingZeros":true}}	"01"	"1.0"
+true	eq	literal {"literal":{"allowTrailingZeros":false}}	"1"	"1"
+true	eq/rev	literal {"literal":{"allowTrailingZeros":false}}	"1"	"1"
+false	ne	literal {"literal":{"allowTrailingZeros":false}}	"1"	"1.0"
+false	ne/rev	literal {"literal":{"allowTrailingZeros":false}}	"1.0"	"1"

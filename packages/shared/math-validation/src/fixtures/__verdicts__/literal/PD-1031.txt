@@ -1,0 +1,3 @@
+# verdict	kind	mode [opts]	a	b, for latexEqual(a, b); written by latex-equal-verdicts.test.ts
+true	eq	literal	"1000{mL}"	"1000ml"
+true	eq/rev	literal	"1000ml"	"1000{mL}"

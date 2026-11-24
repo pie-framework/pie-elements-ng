@@ -1,0 +1,13 @@
+# verdict	kind	mode [opts]	a	b, for latexEqual(a, b); written by latex-equal-verdicts.test.ts
+false	ne	literal	"\\frac{5}{4}"	"1.25"
+false	ne/rev	literal	"1.25"	"\\frac{5}{4}"
+false	ne	literal	"\\frac{5}{4}"	"\\frac{10}{8}"
+false	ne/rev	literal	"\\frac{10}{8}"	"\\frac{5}{4}"
+false	ne	literal	"\\frac{10}{2}"	"5"
+false	ne/rev	literal	"5"	"\\frac{10}{2}"
+false	ne	literal	"\\frac{10}{2}"	"\\frac{20}{4}"
+false	ne/rev	literal	"\\frac{20}{4}"	"\\frac{10}{2}"
+false	ne	literal	"\\frac{2}{1}"	"2"
+false	ne/rev	literal	"2"	"\\frac{2}{1}"
+false	ne	literal	"\\frac{2}{1}"	"\\frac{4}{2}"
+false	ne/rev	literal	"\\frac{4}{2}"	"\\frac{2}{1}"
