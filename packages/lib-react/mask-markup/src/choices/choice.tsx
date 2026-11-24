@@ -11,9 +11,10 @@ import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const DRAG_TYPE = 'MaskBlank';
 
-const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
+const StyledChoice: any = styled('span')(({ theme, disabled, dragOverlay }) => ({
   border: `solid 0px ${theme.palette.primary.main}`,
-  margin: theme.spacing(0.5),
+  // The drag overlay is sized without this margin, so its copy takes none, or its text wraps.
+  margin: dragOverlay ? 0 : theme.spacing(0.5),
   transform: 'translate(0, 0)',
   display: 'inline-flex',
   ...(disabled && {}),
@@ -22,7 +23,13 @@ const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
 const StyledChip: any = styled(Chip)(({selected}) => ({
   // --pie-white stays white under a dark theme; white keeps the chip opaque when no theme is set.
   backgroundColor: color.v('pie')('background', color.defaults.WHITE),
-  border: selected ? `solid 2px ${color.buttonFocusOutline()}` : `1px solid ${color.text()}`,
+  // The selected ring's second pixel is an outline inside the border, so selecting keeps the chip's
+  // size, which a drag holds. An outline, unlike a box shadow, survives forced colours.
+  border: `1px solid ${selected ? color.buttonFocusOutline() : color.text()}`,
+  ...(selected && {
+    outline: `1px solid ${color.buttonFocusOutline()}`,
+    outlineOffset: '-2px',
+  }),
   opacity: selected ? 0.7 : 1,
   color: color.text(),
   alignItems: 'center',
@@ -68,7 +75,7 @@ const StyledChipLabel: any = styled('span')(() => ({
   },
 }));
 
-export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick }) {
+export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick, dragOverlay }) {
   const rootRef = useRef(null);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -90,19 +97,23 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
     onSelectClick?.({ choice, instanceId, fromChoice: true, type: DRAG_TYPE });
   };
 
+  // A drag holds the token at its size, rounded up: `offsetWidth` can round down and wrap its text.
+  const rect = isDragging ? rootRef.current?.getBoundingClientRect() : undefined;
+
   return (
     <StyledChoice
       ref={setNodeRef}
       style={
         isDragging
           ? {
-              width: rootRef.current?.offsetWidth || 90, // min-width of chip is 90px, so if we don't have the width, we can use 90px as a fallback
-              height: rootRef.current?.offsetHeight || 32, // min-height of chip is 32px, so if we don't have the height, we can use 32px as a fallback
+              width: rect?.width ? Math.ceil(rect.width) : 90, // min-width of chip is 90px, so if we don't have the width, we can use 90px as a fallback
+              height: rect?.height ? Math.ceil(rect.height) : 32, // min-height of chip is 32px, so if we don't have the height, we can use 32px as a fallback
             }
           : {}
       }
       disabled={disabled}
       selected={isSelected}
+      dragOverlay={dragOverlay}
       onClick={handleClick}
       {...listeners}
       {...attributes}
@@ -124,4 +135,6 @@ Choice.propTypes = {
   instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectedItem: PropTypes.object,
   onSelectClick: PropTypes.func,
+  // The copy dnd-kit's drag overlay draws under the pointer.
+  dragOverlay: PropTypes.bool,
 };
