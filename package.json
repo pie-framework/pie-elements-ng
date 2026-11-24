@@ -92,7 +92,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
-    "@biomejs/biome": "^2.6.7",
+    "@biomejs/biome": "^2.6.8",
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
     "@playwright/test": "^1.65.1",
@@ -117,7 +117,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "svelte": "^5.57.3",
-    "turbo": "^2.11.11",
+    "turbo": "^2.11.13",
     "typescript": "^5.9.3",
     "vite": "^8.3.8",
     "vitest": "^5.1.1"
