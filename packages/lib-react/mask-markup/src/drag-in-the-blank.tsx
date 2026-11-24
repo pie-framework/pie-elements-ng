@@ -125,6 +125,7 @@ export default class DragInTheBlank extends React.Component {
           disabled={activeDragItem.disabled}
           choice={activeDragItem.choice}
           instanceId={activeDragItem.instanceId}
+          dragOverlay
         />
       );
     }
