@@ -48,16 +48,25 @@ export default {
       ne: ['y>\\frac{1}{x}'],
     },
     {
-      // both sides multiplied or divided by an even power of a variable, which can't reverse the sign
+      // both sides divided or multiplied by x, which reverses the sign where x < 0
       label: '$target',
       target: 'y>x^2',
-      eq: ['\\frac{y}{x^2}>1', 'x^2y>x^4'],
       ne: ['\\frac{y}{x}>x', 'xy>x^3'],
     },
     {
+      // Dividing or multiplying by x^2 can't reverse the sign, but drops the line x = 0: there
+      // y>x^2 holds for every y > 0, while \frac{y}{x^2}>1 is undefined and x^2y>x^4 reads 0 > 0.
+      label: '$target',
+      target: 'y>x^2',
+      ne: ['\\frac{y}{x^2}>1', 'x^2y>x^4'],
+      knownIssue: 'PIE-1465',
+    },
+    {
+      // the same gap: at x = 0, y>2x+1 holds for every y > 1, while x^2y>x^2(2x+1) reads 0 > 0
       label: '$target',
       target: 'y>2x+1',
-      eq: ['x^2y>x^2(2x+1)'],
+      ne: ['x^2y>x^2(2x+1)'],
+      knownIssue: 'PIE-1465',
     },
     {
       // with the function in the target, the numeric check decides
