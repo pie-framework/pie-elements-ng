@@ -11,6 +11,7 @@ import ICADroppablePlaceholder from './ica-dp.js';
 import { useDraggableControl } from './draggable-control.js';
 import { useDropTarget } from './drop-target.js';
 import { createDragCollision } from './collision.js';
+import { motionSafeDropAnimation } from './drop-animation.js';
 
 export type {
   ContentNamer,
@@ -33,4 +34,5 @@ export {
   useDraggableControl,
   useDropTarget,
   createDragCollision,
+  motionSafeDropAnimation,
 };

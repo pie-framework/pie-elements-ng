@@ -8,7 +8,7 @@ import { DragOverlay } from '@dnd-kit/core';
 import {restrictToParentElement, restrictToWindowEdges} from '@dnd-kit/modifiers';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
-import { createDragCollision, DragProvider, uid } from '@pie-lib/drag';
+import { createDragCollision, DragProvider, motionSafeDropAnimation, uid } from '@pie-lib/drag';
 import { color, createUniqueId, Feedback as FeedbackImport, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -576,7 +576,7 @@ class CategorizeProvider extends React.Component {
     const { isValidDrop, selectedItem } = this.state;
     // Disable drop animation for valid drops to prevent visual snap-back
     // Keep default animation for invalid drops to show visual feedback
-    const dropAnimation = isValidDrop ? null : undefined;
+    const dropAnimation = motionSafeDropAnimation(isValidDrop ? null : undefined);
 
     return (
       <DragProvider
