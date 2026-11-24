@@ -62,27 +62,27 @@ function isSelected(region: Region): boolean {
     align-items: flex-start;
     gap: 2px;
     padding: 8px 10px;
-    border: 1.5px solid #cbd5e1;
+    border: 1.5px solid var(--pie-border-light, #cbd5e1);
     border-radius: 6px;
-    background: #ffffff;
+    background: var(--pie-background, #ffffff);
     cursor: pointer;
     text-align: left;
     font-size: 12px;
   }
   .region-cell:hover {
-    background: #f1f5f9;
+    background: var(--pie-background-dark, #f1f5f9);
   }
   .region-cell.selected {
-    border-color: #2563eb;
-    background: #eff6ff;
+    border-color: var(--pie-primary, #2563eb);
+    background: var(--pie-faded-primary, #eff6ff);
   }
   .cell-key {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
-    color: #64748b;
+    color: var(--pie-text, #64748b);
   }
   .cell-label {
     font-weight: 500;
-    color: #0f172a;
+    color: var(--pie-text, #0f172a);
   }
 </style>
