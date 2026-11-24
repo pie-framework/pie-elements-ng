@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{filled} de {total} áreas para soltar tienen una opción de respuesta. {available} opciones de respuesta disponibles. Usa TAB para seleccionar una opción de respuesta.',
   completeA11y: 'La respuesta está completa. {total} de {total} áreas para soltar tienen una opción de respuesta.',
   deselectedA11y: 'La opción de respuesta {choice} ya no está seleccionada. Usa TAB para seleccionar una opción de respuesta.',
+  cancelledA11y: 'La opción de respuesta {choice} ya no está seleccionada. Usa TAB para ir a una opción de respuesta.',
 } satisfies MessageCatalog;

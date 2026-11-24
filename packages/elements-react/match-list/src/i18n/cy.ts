@@ -25,4 +25,5 @@ export default {
   remainingA11y: 'Mae gan {filled} o {total} ardal gollwng opsiwn ateb. {available} opsiwn ateb ar gael. Defnyddiwch TAB i ddewis opsiwn ateb.',
   completeA11y: 'Mae\'r ateb yn gyflawn. Mae gan {total} o {total} ardal gollwng opsiwn ateb.',
   deselectedA11y: 'Nid yw\'r opsiwn ateb {choice} wedi\'i ddewis mwyach. Defnyddiwch TAB i ddewis opsiwn ateb.',
+  cancelledA11y: 'Nid yw\'r opsiwn ateb {choice} wedi\'i ddewis mwyach. Defnyddiwch TAB i symud at opsiwn ateb.',
 } satisfies MessageCatalog;
