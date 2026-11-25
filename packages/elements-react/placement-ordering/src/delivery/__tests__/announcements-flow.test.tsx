@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render } from '@testing-library/react';
 import PlacementOrderingComponent from '../placement-ordering';
 
@@ -43,6 +43,15 @@ const target = (index: number, id: string, value: string) => ({ id, type: 'targe
 const dragged = (data: object) => ({ id: 'tile', data: { current: data } });
 const over = (data: object) => ({ id: 'slot', data: { current: data } });
 
+// A drop or a cancel is announced once focus has settled on its tile, 300ms later.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 // A session holds one entry per sort position, empty ones included.
 const setup = (placed: (string | undefined)[] = [], props: object = {}) => {
   const onSessionChange = vi.fn();
@@ -50,7 +59,13 @@ const setup = (placed: (string | undefined)[] = [], props: object = {}) => {
   const view = render(
     <PlacementOrdering model={{ ...model, ...props }} session={{ value }} onSessionChange={onSessionChange} />,
   );
-  const status = () => view.container.querySelector('[aria-live="polite"]')?.textContent;
+  const status = () => {
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
+    return view.container.querySelector('[aria-live="assertive"]')?.textContent;
+  };
 
   return { ...view, onSessionChange, status };
 };
@@ -234,6 +249,35 @@ describe('PlacementOrdering screen reader announcements', () => {
     expect(message()).not.toBe(firstNode);
   });
 
+  it('says what a drop did only once focus has settled, so it is the last thing read', () => {
+    const { container, status } = setup(['c1']);
+    const active = dragged(choice('c2', 'Lemon'));
+
+    act(() => provider.props.onDragStart({ active }));
+    act(() => provider.props.onDragEnd({ active, over: over(target(1, 'c2', '')) }));
+
+    const region = () => container.querySelector('[aria-live="assertive"]')?.textContent;
+
+    expect(region()).toBe('');
+    act(() => {
+      vi.advanceTimersByTime(299);
+    });
+    expect(region()).toBe('');
+    expect(status()).toContain('Lemon');
+  });
+
+  it('still says what a drop did when a selection is made before focus has settled', () => {
+    const { container, status } = setup(['c1']);
+    const active = dragged(choice('c2', 'Lemon'));
+
+    act(() => provider.props.onDragStart({ active }));
+    act(() => provider.props.onDragEnd({ active, over: over(target(1, 'c2', '')) }));
+    // a click on another object, made straight away, is announced at once
+    fireEvent.click(container.querySelector('[data-tile-id$="choice-c3"]') as Element);
+
+    expect(status()).toContain('Lemon');
+  });
+
   it('announces an object let go where nothing takes it', () => {
     const { status, onSessionChange } = setup(['c1']);
     const active = { ...dragged(choice('c2', 'Lemon')), rect: { current: {} } };
@@ -249,7 +293,7 @@ describe('PlacementOrdering screen reader announcements', () => {
     const { container } = setup([], { config: { orientation: 'vertical', includeTargets: false } });
 
     // its live region only says where a move button put an object
-    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent('');
+    expect(container.querySelector('[aria-live="assertive"]')).toHaveTextContent('');
     expect(container.textContent).not.toContain('objects are on the sorted list');
     expect(provider.props.accessibility).toBeUndefined();
   });

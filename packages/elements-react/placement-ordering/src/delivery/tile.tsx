@@ -463,9 +463,13 @@ export const Tile = (props) => {
   // A tile with move buttons is reached through them, never itself: it takes the pointer drag only, and
   // not dnd-kit's own tab stop or keyboard pick-up, which a press of Space or Enter on a button would
   // otherwise bubble up into.
+  // dnd-kit's attributes also point the tile at its pick-up instructions and call it "draggable", which a
+  // screen reader reads after, or ahead of, what the spec has it say. The tile's label already says what to press.
+  const { 'aria-describedby': _instructions, 'aria-roledescription': _roleDescription, ...dragAttributes } = attributes;
+
   const dragProps = moveControls
     ? { onPointerDown: listeners?.onPointerDown, onTouchStart: listeners?.onTouchStart }
-    : { ...listeners, ...attributes, 'aria-roledescription': undefined };
+    : { ...listeners, ...dragAttributes };
 
   const contentStyle = moveControls ? { flex: 1, minWidth: 0, minHeight: 0, alignSelf: 'stretch' } : undefined;
 

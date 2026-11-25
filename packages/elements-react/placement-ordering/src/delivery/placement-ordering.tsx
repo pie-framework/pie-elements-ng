@@ -109,7 +109,7 @@ const releasedTileRect = (rect, pointer, activatorEvent) => {
   };
 };
 
-const getKeyboardDragOptions = (includeTargets, announcements, i18n) =>
+const getKeyboardDragOptions = (includeTargets, announcements) =>
   includeTargets
     ? {
         keyboardCoordinateGetter: closestDroppableKeyboardCoordinates,
@@ -118,19 +118,17 @@ const getKeyboardDragOptions = (includeTargets, announcements, i18n) =>
           cancel: ['Escape'],
           end: ['Space', 'Enter'],
         },
-        accessibility: {
-          announcements,
-          screenReaderInstructions: {
-            draggable: i18n.t('dragInstructions'),
-          },
-        },
+        // The tiles reference no instructions (see tile.tsx): their labels say what to press, as the spec has it,
+        // so dnd-kit's hidden instruction text is emptied rather than left to be found by a reading cursor.
+        accessibility: { announcements, screenReaderInstructions: { draggable: '' } },
       }
     : {};
 
 const log = debug('pie-elements:placement-ordering');
 
-// How long an announcement stays in the live region before it is cleared.
-const ANNOUNCEMENT_CLEAR_MS = 100;
+// How long after a drop or a cancel its result is announced: past the two animation frames `focusWhenCommitted`
+// waits before moving focus, and the screen reader's reading of the tile that takes it.
+const AFTER_FOCUS_MS = 300;
 
 const PlacementOrderingContainer: any = styled('div')({
   color: color.text(),
@@ -226,8 +224,6 @@ export class PlacementOrdering extends React.Component {
       draggedTile: null,
       // What the screen reader announces of the last change to the answer (spec rows 16 to 21).
       announcement: '',
-      // Bumped on every announcement, so one repeated is still a new node in the live region.
-      announcementId: 0,
     };
     this.lastDragEndAt = 0;
     // When the last placement was made, so the cancel it causes in a live keyboard drag is not announced.
@@ -359,6 +355,7 @@ export class PlacementOrdering extends React.Component {
 
     this.announce(
       movedMessage(i18n, ordering.tiles, source, to) ?? cancelledMessage(i18n, source, getCounts(ordering.tiles)),
+      { afterFocus: true },
     );
     const update = reducer({ type: 'move', from, to }, ordering);
     const sessionUpdate = Object.assign({}, session, {
@@ -402,7 +399,7 @@ export class PlacementOrdering extends React.Component {
   onRemoveChoice: any = (target, ordering) => {
     const { onSessionChange, session } = this.props;
     log('[onRemoveChoice]', target);
-    this.announce(movedMessage(this.getI18n(), ordering.tiles, target, { type: 'choice' }));
+    this.announce(movedMessage(this.getI18n(), ordering.tiles, target, { type: 'choice' }), { afterFocus: true });
     const update = reducer({ type: 'remove', target }, ordering);
     const sessionUpdate = Object.assign({}, session, {
       value: update.response,
@@ -474,7 +471,7 @@ export class PlacementOrdering extends React.Component {
         this.focusTile(this.getDestinationSlotId({ type: 'choice', id: draggedItem.id }));
       } else if (draggedItem) {
         // Dropped where nothing takes it, and nothing moved: the pick-up just ended
-        this.announce(cancelledMessage(this.getI18n(), draggedItem, getCounts(ordering.tiles)));
+        this.announce(cancelledMessage(this.getI18n(), draggedItem, getCounts(ordering.tiles)), { afterFocus: true });
       }
     }
 
@@ -507,7 +504,9 @@ export class PlacementOrdering extends React.Component {
     this.dragLive = false;
 
     if (selectedChoice && Date.now() - this.lastPlacementAt >= CLICK_AFTER_DRAG_GUARD_MS) {
-      this.announce(cancelledMessage(this.getI18n(), selectedChoice, getCounts(this.createOrdering().tiles)));
+      this.announce(cancelledMessage(this.getI18n(), selectedChoice, getCounts(this.createOrdering().tiles)), {
+        afterFocus: true,
+      });
     }
 
     this.setState({ draggedTile: null });
@@ -524,19 +523,32 @@ export class PlacementOrdering extends React.Component {
 
   getI18n: any = () => catalogs.forLocale(this.getLanguage());
 
-  announce: any = (message) => {
-    if (message) {
-      this.setState((state) => ({ announcement: message, announcementId: state.announcementId + 1 }));
+  announce: any = (message, { afterFocus = false } = {}) => {
+    if (!message) {
+      return;
+    }
 
-      // The region sits in the reading order, so the message is removed once it has been announced rather
-      // than left for a user to find later.
-      clearTimeout(this.announcementTimer);
-      this.announcementTimer = setTimeout(() => this.setState({ announcement: '' }), ANNOUNCEMENT_CLEAR_MS);
+    // A live region only announces a change, so the same message twice in a row differs by a trailing space.
+    const say = () =>
+      this.setState((state) => ({
+        announcement: state.announcement === message ? `${message}\u00a0` : message,
+      }));
+
+    if (afterFocus) {
+      // A newer result replaces one still waiting; an immediate message (a selection, a button move) leaves it,
+      // so a drop is never left unsaid by what is done right after it.
+      clearTimeout(this.announceTimer);
+      // A drop or a cancel moves focus to a tile (see `focusTile`), and the screen reader reads that tile as
+      // focus arrives. The result is said once focus has settled, so it is the last thing read and, the region
+      // being assertive, cuts that reading off instead of following it.
+      this.announceTimer = setTimeout(say, AFTER_FOCUS_MS);
+    } else {
+      say();
     }
   };
 
   componentWillUnmount() {
-    clearTimeout(this.announcementTimer);
+    clearTimeout(this.announceTimer);
   }
 
   // dnd-kit announces a keyboard drag through its own live region: what is selected as it is picked up,
@@ -754,7 +766,7 @@ export class PlacementOrdering extends React.Component {
       width: '100%',
     };
 
-    const keyboardDragOptions = getKeyboardDragOptions(includeTargets, this.announcements, i18n);
+    const keyboardDragOptions = getKeyboardDragOptions(includeTargets, this.announcements);
 
     // Without response areas each object has buttons to move it, unless the answer cannot be changed
     const moveProps = !includeTargets && !disabled && !showingCorrect ? { onMove: this.onMove } : {};
@@ -777,8 +789,8 @@ export class PlacementOrdering extends React.Component {
       >
         <PlacementOrderingContainer ref={this.containerRef} data-dragging={this.state.draggedTile ? '' : undefined}>
           {(includeTargets || moveProps.onMove) && (
-            <ScreenReaderText role="status" aria-live="polite" aria-atomic="true">
-              <span key={this.state.announcementId}>{this.state.announcement}</span>
+            <ScreenReaderText role="status" aria-live="assertive" aria-atomic="true">
+              {this.state.announcement}
             </ScreenReaderText>
           )}
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>

@@ -52,7 +52,7 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
 
     expect(text).toContain('2 de 5 objetos están en la lista ordenada.');
     expect(text).toContain('3 objetos sin ordenar');
-    expect(text).toContain('Posición 1:');
+    expect(text).not.toContain('Posición 1:');
     expect(text).not.toContain('unsorted');
     expect(
       [...container.querySelectorAll('[data-tile-id][aria-label]')].map((el) => el.getAttribute('aria-label')),
@@ -69,7 +69,10 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     expect(text).toContain('Source');
     expect(text).toContain('3 unsorted objects');
     expect(text).toContain('Target 2 sorted objects');
-    expect(text).toContain('Sort position 1:Antigone freely admits to Creon that she buried her brother.');
+    // The tile's own label already says what the spec's rows 3 and 6 ("object:", "Sort position [x]") said.
+    expect(text).toContain('Antigone freely admits to Creon that she buried her brother.');
+    expect(text).not.toContain('Sort position 1:');
+    expect(text).not.toMatch(/object:/i);
   });
 
   it('labels each tile on focus, and leaves the gaps of placed objects out', async () => {
@@ -85,6 +88,27 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     );
   });
 
+  it('still reads the sort position of each object of a view-only item, which has no tile label to say it', async () => {
+    const { container } = await renderItem('view', ['2', undefined, undefined, '3', undefined]);
+    const text = container.textContent ?? '';
+
+    expect(text).toContain('Sort position 1:Antigone freely admits to Creon that she buried her brother.');
+    expect(text).toContain('Sort position 4:Creon denies that others agree with Antigone');
+    expect(text).not.toContain('Sort position 2:');
+  });
+
+  it('leaves dnd-kit\'s pick-up instructions and "draggable" off the tiles, whose labels say what to press', async () => {
+    const { container } = await renderItem('gather', ['2', undefined, undefined, '3', undefined]);
+    const tiles = [...container.querySelectorAll('[data-tile-id]')];
+
+    expect(tiles.length).toBeGreaterThan(0);
+    tiles.forEach((tile) => {
+      expect(tile.hasAttribute('aria-describedby')).toBe(false);
+      expect(tile.hasAttribute('aria-roledescription')).toBe(false);
+    });
+    expect(container.ownerDocument.body.textContent).not.toContain('pick up this answer choice');
+  });
+
   it('does not tell a student of a view-only item to press keys', async () => {
     const { container } = await renderItem('view', ['2', undefined, undefined, undefined, undefined]);
     const text = container.textContent ?? '';
@@ -92,7 +116,7 @@ describe('PlacementOrdering announcements for the Antigone item', () => {
     expect(text).not.toContain('Build a sorted list');
     expect(text).not.toContain('Press ENTER');
     expect(text).toContain('1 of 5 objects are on the sorted list.');
-    expect(container.querySelector('[aria-live="polite"]')).not.toBeNull();
+    expect(container.querySelector('[role="status"][aria-live="assertive"]')).not.toBeNull();
     // tiles of a disabled item have no role, which a label needs
     expect(container.querySelectorAll('[data-tile-id][aria-label]')).toHaveLength(0);
   });
