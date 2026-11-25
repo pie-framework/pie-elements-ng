@@ -53,7 +53,7 @@ export const load: PageLoad = async ({ params }) => {
               tags: demo.tags || [],
             }));
           }
-        } catch (e) {
+        } catch {
           console.log(`[+page.ts] Could not load demos for ${elementName}`);
         }
       }

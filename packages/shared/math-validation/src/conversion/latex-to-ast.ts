@@ -622,7 +622,7 @@ export class LatexToAst {
         let rhs = this.statement_a({ parse_absolute_value: false });
 
         return ['|', lhs, rhs];
-      } catch (e2) {
+      } catch {
         throw e; // throw original error
       }
     }

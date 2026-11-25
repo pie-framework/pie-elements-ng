@@ -102,3 +102,52 @@ describe('Rubric ids', () => {
     expect(pageIds()).toEqual(before);
   });
 });
+
+// DNAATD-5648: the editor pairs samples with scores from the highest score down, so a
+// sampleAnswers list longer than points has its extra, empty slots at the low-score end.
+describe('Rubric sample answers', () => {
+  const rows = (sampleAnswers: (string | null)[]) => {
+    const { container } = render(<Rubric model={{}} value={{ ...value, sampleAnswers: sampleAnswers as string[] }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Show Rubric' }));
+    return [...container.querySelectorAll('li')].map((li) => li.textContent);
+  };
+
+  it('sit under the score the editor shows when the list has a leading empty slot', () => {
+    expect(rows([null, 'Score 0 sample', 'Score 1 sample', 'Score 2 sample'])).toEqual([
+      '2 PTSFully correct',
+      'Sample AnswerScore 2 sample',
+      '1 PTPartly correct',
+      'Sample AnswerScore 1 sample',
+      '0 PTSNothing correct',
+      'Sample AnswerScore 0 sample',
+    ]);
+  });
+
+  it('show a top-score sample stored in a four-slot list for three scores', () => {
+    expect(rows([null, null, null, 'Top sample'])).toEqual([
+      '2 PTSFully correct',
+      'Sample AnswerTop sample',
+      '1 PTPartly correct',
+      '0 PTSNothing correct',
+    ]);
+  });
+
+  it('keep a list that matches the scores as it is', () => {
+    expect(rows(['Zero', null, 'Two'])).toEqual([
+      '2 PTSFully correct',
+      'Sample AnswerTwo',
+      '1 PTPartly correct',
+      '0 PTSNothing correct',
+      'Sample AnswerZero',
+    ]);
+  });
+
+  it('start a shorter list at the lowest score', () => {
+    expect(rows(['Zero'])).toEqual([
+      '2 PTSFully correct',
+      '1 PTPartly correct',
+      '0 PTSNothing correct',
+      'Sample AnswerZero',
+    ]);
+  });
+});

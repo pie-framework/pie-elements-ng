@@ -144,6 +144,16 @@ describe('ImageContainer drop targets', () => {
       expect(target).toHaveAttribute('tabindex', '-1');
     }
   });
+
+  it('tint the target under the pointer translucently, so the image under it stays readable', () => {
+    renderImageContainer({ selectedResponse: { id: 'a2', value: 'Venus' } });
+    const target = screen.getByRole('button', { name: 'Response area 1 of 3' });
+
+    fireEvent.mouseEnter(target);
+
+    expect(target).toHaveClass('is-over');
+    expect(getComputedStyle(target).backgroundColor).toBe('rgba(224, 224, 224, 0.4)');
+  });
 });
 
 describe('ImageContainer image', () => {

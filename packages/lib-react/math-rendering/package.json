@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-rendering",
-  "version": "6.0.8",
+  "version": "6.0.9",
   "description": "math rendering utilities",
   "license": "MIT",
   "repository": {
@@ -29,7 +29,7 @@
     "dev": "bun x vite"
   },
   "devDependencies": {
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",

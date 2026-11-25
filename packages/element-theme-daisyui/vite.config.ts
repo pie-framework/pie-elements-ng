@@ -1,17 +1,17 @@
 import path from 'node:path';
 import { defineConfig } from 'vite';
-import { thirdPartyLicenses } from '../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../tools/vite/third-party-licenses.ts';
 
 export default defineConfig({
   plugins: [thirdPartyLicenses()],
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: path.resolve(import.meta.dirname, 'src/index.ts'),
       name: 'PieElementThemeDaisyUi',
       fileName: 'pie-element-theme-daisyui',
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
         '@pie-element/element-theme',
         '@pie-element/shared-theming',

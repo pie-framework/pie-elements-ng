@@ -65,3 +65,38 @@ describe('arrow keys after a math node', () => {
     expect(view.state.selection).not.toBeInstanceOf(NodeSelection);
   });
 });
+
+describe('Backspace after a math node', () => {
+  it('deletes the math node with the zero-width space after it', () => {
+    const view = mountAfterMath('ltr');
+    expect(press(view, 'Backspace')).toBe(true);
+    expect(view.state.doc.textContent).toBe('ab');
+    expect(view.state.doc.firstChild?.childCount).toBe(1);
+  });
+});
+
+describe('an empty line after a line with math', () => {
+  /** A paragraph holding a math node, then an empty paragraph with the caret in it. */
+  const mountEmptyLine = () => {
+    const doc = schema.node('doc', null, [
+      schema.node('paragraph', null, [schema.nodes.math.create(), schema.text(ZERO_WIDTH_SPACE)]),
+      schema.node('paragraph'),
+    ]);
+    const state = EditorState.create({ doc, plugins: [ZeroWidthSpaceHandlingPlugin] });
+    const mount = document.createElement('div');
+    document.body.append(mount);
+    const view = new EditorView(mount, {
+      state: state.apply(state.tr.setSelection(TextSelection.atEnd(doc))),
+    });
+    views.push(view);
+    return view;
+  };
+
+  it.each(['Backspace', 'ArrowLeft'])('leaves %s to the editor', (key) => {
+    const view = mountEmptyLine();
+    const before = view.state;
+    expect(press(view, key)).toBeFalsy();
+    expect(view.state.doc.eq(before.doc)).toBe(true);
+    expect(view.state.selection.eq(before.selection)).toBe(true);
+  });
+});

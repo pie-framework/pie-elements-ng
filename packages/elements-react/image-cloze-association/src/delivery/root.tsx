@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
-import { DragProvider } from '@pie-lib/drag';
+import { DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { color, createUniqueId, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
 
@@ -592,7 +592,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         </StyledUiLayout>
         {/* Disable drop animation for valid drops to prevent visual snap-back */}
         {/* Keep default animation for invalid drops to show visual feedback */}
-        <DragOverlay dropAnimation={isValidDrop ? null : undefined}>
+        <DragOverlay dropAnimation={motionSafeDropAnimation(isValidDrop ? null : undefined)}>
           {this.renderDragOverlay()}
         </DragOverlay>
       </DragProvider>

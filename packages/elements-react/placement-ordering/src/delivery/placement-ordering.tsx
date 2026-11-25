@@ -41,7 +41,7 @@ const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapR
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { createDragCollision, DragProvider } from '@pie-lib/drag';
+import { createDragCollision, DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
 import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 
@@ -837,7 +837,7 @@ export class PlacementOrdering extends React.Component {
                 interactive region: that region scrolls horizontally, so it would clip the tile at its
                 edge and scroll under the drag as the tile overflowed it. Dropped tiles reflow at once,
                 so there is no drop animation to slide the preview back from. */}
-            <DragOverlay style={{ pointerEvents: 'none' }} dropAnimation={null}>
+            <DragOverlay style={{ pointerEvents: 'none' }} dropAnimation={motionSafeDropAnimation(null)}>
               {this.state.draggedTile ? <DragPreview tile={this.state.draggedTile} /> : null}
             </DragOverlay>
           </UiLayout>

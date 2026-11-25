@@ -1,8 +1,7 @@
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
 
-const packagesRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../packages');
+const packagesRoot = resolve(import.meta.dirname, '../../packages');
 
 const CATALOG_INDEX = /\/(?:src|dist)\/i18n\/index\.(?:ts|js)$/;
 

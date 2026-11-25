@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{filled} av {total} släppytor har ett svarsalternativ. {available} tillgängliga svarsalternativ. Använd TAB för att välja ett svarsalternativ.',
   completeA11y: 'Svaret är komplett. {total} av {total} släppytor har ett svarsalternativ.',
   deselectedA11y: 'Svarsalternativet {choice} är inte längre valt. Använd TAB för att välja ett svarsalternativ.',
+  cancelledA11y: 'Svarsalternativet {choice} är inte längre valt. Använd TAB för att gå till ett svarsalternativ.',
 } satisfies MessageCatalog;

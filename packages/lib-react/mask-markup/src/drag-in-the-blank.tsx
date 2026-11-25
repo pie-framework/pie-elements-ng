@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { DragProvider } from '@pie-lib/drag';
+import { DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
 import { DragOverlay } from '@dnd-kit/core';
 import Choices from './choices/index.js';
 import Choice from './choices/choice.js';
@@ -125,6 +125,7 @@ export default class DragInTheBlank extends React.Component {
           disabled={activeDragItem.disabled}
           choice={activeDragItem.choice}
           instanceId={activeDragItem.instanceId}
+          dragOverlay
         />
       );
     }
@@ -349,7 +350,7 @@ export default class DragInTheBlank extends React.Component {
             onSelectClick={this.onItemClick}
             onPlacementClick={this.onPlacementClick}
           />
-          <DragOverlay style={{ pointerEvents: 'none' }} dropAnimation={this.state.dropAnimation}>
+          <DragOverlay style={{ pointerEvents: 'none' }} dropAnimation={motionSafeDropAnimation(this.state.dropAnimation)}>
             {this.renderDragOverlay()}
           </DragOverlay>
         </div>

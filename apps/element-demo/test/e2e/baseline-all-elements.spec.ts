@@ -502,32 +502,6 @@ async function loadAuthor(page: Page, element: string, demoId?: string) {
   await waitForAuthorShell(page);
 }
 
-async function assertAuthorVisible(page: Page, element: string) {
-  const authorView = page.locator('.author-view .configure-container').first();
-  await authorView.waitFor({ state: 'visible', timeout: 20_000 });
-  await page
-    .waitForFunction(
-      () => {
-        const node = document.querySelector('.author-view .configure-container');
-        if (!node) {
-          return false;
-        }
-        return node.childElementCount > 0 || (node.textContent || '').trim().length > 10;
-      },
-      undefined,
-      { timeout: 15_000 }
-    )
-    .catch(() => {
-      // Some configure components render minimal DOM wrappers.
-    });
-
-  const configureTag = `${element}-configure`;
-  const configure = page.locator(configureTag).first();
-  if (!(await configure.isVisible().catch(() => false))) {
-    throw new Error(`configure element not visible: ${configureTag}`);
-  }
-}
-
 async function assertAuthorAcceptsInput(page: Page, element: string) {
   if (NON_ACTIONABLE_AUTHOR_ELEMENTS.has(element)) {
     return;

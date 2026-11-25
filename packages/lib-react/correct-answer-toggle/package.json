@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/correct-answer-toggle",
-  "version": "5.0.8",
+  "version": "5.0.9",
   "description": "A react based toggle component",
   "license": "MIT",
   "repository": {
@@ -39,13 +39,13 @@
     "test": "bun x vitest run --root ../../.. ./"
   },
   "devDependencies": {
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/user-event": "^14.6.10"
+    "@testing-library/user-event": "^14.6.13"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/graphing",
-  "version": "11.0.8",
+  "version": "11.0.9",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -88,7 +88,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
@@ -96,7 +96,7 @@
     "@types/debug": "^4.1.12"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-iife.config.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run --root ../../.. ./"
@@ -110,7 +110,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

@@ -7,10 +7,10 @@ import { readdirSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
-import { noCdnHosts } from './vite.no-cdn';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { noCdnHosts } from './vite.no-cdn.ts';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 
-const require = createRequire(join(__dirname, 'package.json'));
+const require = createRequire(join(import.meta.dirname, 'package.json'));
 const packageDir = (name: string) => realpathSync(dirname(require.resolve(`${name}/package.json`)));
 
 const MATHJAX_DIR = packageDir('@mathjax/src');
@@ -28,10 +28,10 @@ const SRE_VARIABLES = join(
   'variables.js'
 );
 
-const PAGE_ENGINE = resolve(__dirname, 'src/engine/page.ts');
-const BUNDLED_ENGINE = resolve(__dirname, 'src/engine/bundled.ts');
-const BUNDLED_GLOBAL = resolve(__dirname, 'src/engine/bundled/global.ts');
-const NODE_GLOBAL = resolve(__dirname, 'src/engine/bundled/node-global.ts');
+const PAGE_ENGINE = resolve(import.meta.dirname, 'src/engine/page.ts');
+const BUNDLED_ENGINE = resolve(import.meta.dirname, 'src/engine/bundled.ts');
+const BUNDLED_GLOBAL = resolve(import.meta.dirname, 'src/engine/bundled/global.ts');
+const NODE_GLOBAL = resolve(import.meta.dirname, 'src/engine/bundled/node-global.ts');
 
 const COMPONENTS = join(MATHJAX_DIR, 'mjs', 'components');
 /** The one component module the engine imports: the menu reads `MathJax` from it. */
@@ -126,7 +126,7 @@ export default defineConfig({
     outDir: 'dist/browser',
     emptyOutDir: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
       fileName: 'index',
     },

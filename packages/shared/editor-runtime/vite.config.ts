@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 
 // One entry per module in pie.browserModules, each built from the package itself, so every
 // view exports exactly what its specifier does. Modules shared between specifiers
 // (@tiptap/pm/state and prosemirror-state, or StarterKit's extensions) land in common chunks
 // and load once per page.
-const { pie } = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+const { pie } = JSON.parse(readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf-8')) as {
   pie: { browserModules: Record<string, string> };
 };
 
@@ -22,15 +22,15 @@ export default defineConfig({
   },
   build: {
     emptyOutDir: true,
-    outDir: resolve(__dirname, 'dist/browser'),
+    outDir: resolve(import.meta.dirname, 'dist/browser'),
     sourcemap: true,
     // Library mode resolves lib.entry as file paths under the package root, so the specifiers
-    // go in as rollupOptions.input, which library mode takes as given and resolves like imports.
+    // go in as rolldownOptions.input, which library mode takes as given and resolves like imports.
     lib: {
       entry: input,
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       input,
       // Every module is bundled: the runtime imports nothing bare, React included.
       external: () => false,

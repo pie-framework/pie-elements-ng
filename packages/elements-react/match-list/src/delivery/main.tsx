@@ -7,6 +7,7 @@ import { restrictToWindowEdges  } from '@dnd-kit/modifiers';
 import { closestResponseArea } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
+import { motionSafeDropAnimation } from '@pie-lib/drag';
 import { color, createUniqueId, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -46,6 +47,7 @@ import { visuallyHidden } from './visually-hidden.js';
 import {
   applyPlacement,
   choiceLabel,
+  describeCancellation,
   describeDeselection,
   describeFocusTarget,
   describeIntro,
@@ -106,9 +108,6 @@ const InteractiveRegionContent: any = styled('div')({
   minWidth: 'min-content',
 });
 
-// How long a result message stays in the live region before it is cleared.
-const RESULT_MESSAGE_CLEAR_MS = 100;
-
 export class Main extends React.Component {
   static propTypes = {
     session: PropTypes.object.isRequired,
@@ -130,28 +129,29 @@ export class Main extends React.Component {
       showCorrectAnswer: false,
       draggingElement: null,
       selectedAnswer: null,
-      // What a placement just did, for the live region; dnd-kit's own region only knows the drag.
+      // Everything announced while selecting and placing. It is the only live region the element
+      // fills (dnd-kit's own is left empty): two regions compete in JAWS and cut each other off.
       resultMessage: '',
-      // Bumped on every result, so one repeated is still a new node in the live region.
-      resultId: 0,
     };
     this.lastDragEndAt = 0;
     this.endingDragForPlacement = false;
     this.pointerDrag = false;
+    // Whether focus has left the place the drag started from; until then dnd-kit's initial
+    // "over" event must not talk over the selection announcement (row 8).
+    this.movedSinceStart = false;
+    this.announceFlip = false;
   }
 
-  componentDidUpdate(_prevProps, prevState) {
-    // The region sits in the reading order, so a message is removed once it has been announced rather
-    // than left for a user to find later.
-    if (this.state.resultMessage && this.state.resultId !== prevState.resultId) {
-      clearTimeout(this.resultMessageTimer);
-      this.resultMessageTimer = setTimeout(() => this.setState({ resultMessage: '' }), RESULT_MESSAGE_CLEAR_MS);
+  // The same text twice in a row would not be read again, so every message alternates a trailing
+  // no-break space.
+  announce: any = (message) => {
+    if (!message) {
+      return;
     }
-  }
 
-  componentWillUnmount() {
-    clearTimeout(this.resultMessageTimer);
-  }
+    this.announceFlip = !this.announceFlip;
+    this.setState({ resultMessage: this.announceFlip ? message : `${message}\u00a0` });
+  };
 
   onRemoveAnswer(id) {
     const { session, onSessionChange } = this.props;
@@ -166,6 +166,7 @@ export class Main extends React.Component {
 
     // Compared by type, not instanceof: inside an iframe the event's constructor is another realm's.
     this.pointerDrag = /^(pointer|mouse|touch)/.test(event.activatorEvent?.type || '');
+    this.movedSinceStart = false;
 
     if (active?.data?.current) {
       let rect = null;
@@ -178,15 +179,13 @@ export class Main extends React.Component {
 
       this.setState({
         draggingElement: { ...active.data.current, rect },
-        resultMessage: '',
       });
       this.selectAnswer(active.data.current);
     }
   };
 
   onDragCancel: any = () => {
-    // A placement ended this drag itself, and has already said what it did.
-    this.setState(this.endingDragForPlacement ? { draggingElement: null } : { draggingElement: null, resultMessage: '' });
+    this.setState({ draggingElement: null });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
   };
@@ -228,7 +227,7 @@ export class Main extends React.Component {
       ? describePlacementResult(t, config, value, activeData, overData)
       : describeDeselection(t, config, activeData.id);
 
-    this.setState((state) => ({ resultMessage, resultId: state.resultId + 1 }));
+    this.announce(resultMessage);
   };
 
   onPlaceAnswer: any = (event) => {
@@ -305,23 +304,17 @@ export class Main extends React.Component {
   // Unconditionally selects (used by the drag-start mirror, and internally when
   // switching from one choice to another).
   selectAnswer: any = (data) => {
-    this.setState({ selectedAnswer: data, resultMessage: '' });
+    this.setState({ selectedAnswer: data });
   };
 
   // Click-to-select semantics: selecting the currently-selected answer again clears
   // the selection instead of re-selecting it.
   toggleAnswerSelection: any = (data) => {
     const { t, config } = this.getAnnouncementContext();
+    const deselecting = this.isSameAnswer(this.state.selectedAnswer, data);
 
-    this.setState((state) => {
-      const deselecting = this.isSameAnswer(state.selectedAnswer, data);
-
-      return {
-        selectedAnswer: deselecting ? null : data,
-        resultMessage: deselecting ? describeDeselection(t, config, data.id) : describeSelection(t, config, data.id),
-        resultId: state.resultId + 1,
-      };
-    });
+    this.setState({ selectedAnswer: deselecting ? null : data });
+    this.announce(deselecting ? describeDeselection(t, config, data.id) : describeSelection(t, config, data.id));
   };
 
   cancelSelection: any = () => {
@@ -420,11 +413,14 @@ export class Main extends React.Component {
     const dragData = (event) => event?.data?.current;
     const element = this;
 
-    // dnd-kit's own live region carries the drag as it unfolds; what a drop did is announced
-    // from `resultMessage`, which knows the session before and after.
+    // Every announcement goes through `element.announce` into the one live region, and dnd-kit's
+    // own region gets nothing. What a drop did is announced from `resultMessage`, which knows the
+    // session before and after.
     const announcements = {
       onDragStart({ active }) {
-        return describeSelection(t, announcementConfig, dragData(active)?.id);
+        element.announce(describeSelection(t, announcementConfig, dragData(active)?.id));
+
+        return undefined;
       },
 
       onDragOver({ active, over }) {
@@ -433,10 +429,25 @@ export class Main extends React.Component {
           return undefined;
         }
 
+        // dnd-kit reports where the dragged tile already is as soon as the drag starts. That is
+        // not focus arriving anywhere (row 12 is for coming back to the pool after leaving it), so
+        // it must not replace the selection announcement.
+        const origin = dragData(active)?.promptId == null ? 'choices-pool' : `drop-${dragData(active).promptId}`;
+
+        if (!element.movedSinceStart && String(over?.id) === origin) {
+          return undefined;
+        }
+
+        element.movedSinceStart = true;
+
         if (!over) {
-          return t('notOverResponseAreaA11y', {
-            choice: choiceLabel(t, announcementConfig, dragData(active)?.id),
-          });
+          element.announce(
+            t('notOverResponseAreaA11y', {
+              choice: choiceLabel(t, announcementConfig, dragData(active)?.id),
+            }),
+          );
+
+          return undefined;
         }
 
         // A droppable registered without data is still named by its id: "choices-pool" or "drop-{promptId}".
@@ -446,7 +457,9 @@ export class Main extends React.Component {
             ? { type: 'choices-pool' }
             : { type: 'drop-zone', promptId: String(over.id).replace(/^drop-/, '') });
 
-        return describeFocusTarget(t, announcementConfig, dragData(active), overData);
+        element.announce(describeFocusTarget(t, announcementConfig, dragData(active), overData));
+
+        return undefined;
       },
 
       onDragEnd() {
@@ -458,7 +471,14 @@ export class Main extends React.Component {
           return undefined;
         }
 
-        return describeDeselection(t, announcementConfig, dragData(active)?.id);
+        // "Use TAB" is keyboard wording; a pointer drag that is cancelled has no use for it.
+        if (element.pointerDrag) {
+          return undefined;
+        }
+
+        element.announce(describeCancellation(t, announcementConfig, dragData(active)?.id));
+
+        return undefined;
       },
     };
 
@@ -482,8 +502,8 @@ export class Main extends React.Component {
           <PreviewPrompt className="prompt" prompt={prompt} />
 
           {mode === 'gather' && <div style={visuallyHidden}>{describeIntro(t, announcementConfig, announcementValue)}</div>}
-          <div style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
-            <span key={this.state.resultId}>{this.state.resultMessage}</span>
+          <div style={visuallyHidden} role="status" aria-live="assertive" aria-atomic="true">
+            {this.state.resultMessage}
           </div>
 
           <CorrectAnswerToggle
@@ -526,7 +546,7 @@ export class Main extends React.Component {
             <Feedback correctness={model.correctness.correctness} feedback={model.feedback} />
           )}
         </MainContainer>
-        <DragOverlay>{this.renderDragOverlay()}</DragOverlay>
+        <DragOverlay dropAnimation={motionSafeDropAnimation()}>{this.renderDragOverlay()}</DragOverlay>
       </DndContext>
     );
   }

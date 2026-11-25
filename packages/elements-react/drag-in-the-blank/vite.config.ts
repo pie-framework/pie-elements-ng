@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses';
+import { thirdPartyLicenses } from '../../../tools/vite/third-party-licenses.ts';
 
-const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+const packageJson = JSON.parse(readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf-8')) as {
   name?: string;
   version?: string;
 };
@@ -14,7 +14,7 @@ export default defineConfig(({ mode, command }) => {
   if (mode === 'demo' && command === 'serve') {
     return {
       plugins: [react()],
-      root: resolve(__dirname, 'docs/demo'),
+      root: resolve(import.meta.dirname, 'docs/demo'),
     };
   }
 
@@ -28,15 +28,15 @@ export default defineConfig(({ mode, command }) => {
   build: {
     lib: {
       entry: {
-        'index': resolve(__dirname, 'src/index.ts'),
-        'controller/index': resolve(__dirname, 'src/controller/index.ts'),
-        'delivery/index': resolve(__dirname, 'src/delivery/index.ts'),
-        'author/index': resolve(__dirname, 'src/author/index.tsx'),
-        'runtime-support': resolve(__dirname, 'src/runtime-support.ts'),
+        'index': resolve(import.meta.dirname, 'src/index.ts'),
+        'controller/index': resolve(import.meta.dirname, 'src/controller/index.ts'),
+        'delivery/index': resolve(import.meta.dirname, 'src/delivery/index.ts'),
+        'author/index': resolve(import.meta.dirname, 'src/author/index.tsx'),
+        'runtime-support': resolve(import.meta.dirname, 'src/runtime-support.ts'),
       },
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => {
         return (
           /^react($|\/)/.test(id) ||

@@ -13,7 +13,7 @@ import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { mkBundleCacheKey } from '@pie-element/element-bundler';
 import { createOrJoinBuild, emitBuildEvent, getBuildSnapshot } from './build-state';
 import { createWorkspaceCacheSaltForDependencies } from '#lib/testing/workspace-fingerprint.ts';
-import { findWorkspaceRoot } from '../../../vite-plugin-workspace-resolver';
+import { findWorkspaceRoot } from '../../../../../../tools/vite/workspace-resolver.ts';
 
 const DEFAULT_INSTANCE_DIR = join(process.cwd(), '.cache', 'demo-bundler');
 const instanceDir = process.env.DEMO_BUNDLER_INSTANCE_DIR || DEFAULT_INSTANCE_DIR;

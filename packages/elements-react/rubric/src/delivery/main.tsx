@@ -37,6 +37,7 @@ const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapR
 import PropTypes from 'prop-types';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { catalogs } from '../i18n/index.js';
+import { alignSampleAnswers } from '../sample-answers.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -170,7 +171,9 @@ class Rubric extends React.Component {
 
     if (value && value.points) {
       const { extraCSSRules } = model || {};
-      const { points, sampleAnswers } = value;
+      const { points } = value;
+      // Pair each sample with its score the way the editor does (DNAATD-5648).
+      const sampleAnswers = alignSampleAnswers(points, value.sampleAnswers);
 
       const rubricList = (
         <List>

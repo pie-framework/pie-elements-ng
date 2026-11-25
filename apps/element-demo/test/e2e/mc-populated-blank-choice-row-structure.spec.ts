@@ -18,7 +18,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { deliveryContainer, switchRole, switchMode, waitForMathRendering } from './test-helpers';
+import { deliveryContainer, switchRole, waitForMathRendering } from './test-helpers';
 
 // ---------------------------------------------------------------------------
 // Helpers

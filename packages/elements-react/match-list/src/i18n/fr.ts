@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{filled} zones de dépôt sur {total} contiennent un choix de réponse. {available} choix de réponse disponibles. Utilisez TAB pour sélectionner un choix de réponse.',
   completeA11y: 'La réponse est complète. {total} zones de dépôt sur {total} contiennent un choix de réponse.',
   deselectedA11y: 'Le choix de réponse {choice} n\'est plus sélectionné. Utilisez TAB pour sélectionner un choix de réponse.',
+  cancelledA11y: 'Le choix de réponse {choice} n\'est plus sélectionné. Utilisez TAB pour accéder à un choix de réponse.',
 } satisfies MessageCatalog;

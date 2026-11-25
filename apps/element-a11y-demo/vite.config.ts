@@ -4,23 +4,18 @@ import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
-import { findWorkspaceRoot, workspaceResolver } from './src/vite-plugin-workspace-resolver';
+import { findWorkspaceRoot, workspaceResolver } from '../../tools/vite/workspace-resolver.ts';
 
 const workspaceRoot = findWorkspaceRoot(process.cwd());
 
 /**
  * Vite config for element demo app.
  *
- * Uses workspace resolver to handle @pie-element/* and @pie-lib/* imports.
- * Set resolveSources: true to use source files (enables HMR but may cause loops).
- * Set resolveSources: false to use dist files (prevents loops but no HMR for workspace packages).
+ * The workspace resolver points @pie-element/* and @pie-lib/* imports at package source.
  */
 export default defineConfig({
   plugins: [
-    workspaceResolver({
-      resolveSources: true, // Use source files for proper resolution
-      debug: false,
-    }),
+    workspaceResolver(),
     tailwindcss({ optimize: false }),
     // Add custom plugin BEFORE sveltekit to intercept and disable Svelte processing for pre-compiled files
     {
@@ -41,12 +36,14 @@ export default defineConfig({
       },
     },
     // Transform React TSX/JSX from workspace element packages (SvelteKit does not enable this by default).
-    react({
+    // SvelteKit serves its own HTML and never runs transformIndexHtml, so the plugin's preamble
+    // hooks are dropped: src/app.html injects the React Refresh preamble.
+    ...react({
       include: [
         /\/elements-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
         /\/lib-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
       ],
-    }),
+    }).map(({ transformIndexHtml: _preamble, ...plugin }) => plugin),
     sveltekit({
       preprocess: vitePreprocess(),
       adapter: adapter({
@@ -73,17 +70,8 @@ export default defineConfig({
     }),
   ],
 
-  // IMPORTANT: DO NOT add resolve.conditions with 'development'
-  // Even with watch.ignored, it still causes infinite HMR loops
-  // The loops happen because:
-  // 1. Vite resolves to source files in workspace packages
-  // 2. Changes in demo app trigger HMR
-  // 3. HMR reads workspace source files
-  // 4. This triggers file system events that cascade
-  // 5. Loop continues indefinitely
-  //
-  // Solution: Use built dist files (default condition) and ensure
-  // all dependencies are properly bundled or available
+  // Do not add resolve.conditions: ['development']: it caused infinite HMR loops, even with
+  // watch.ignored. workspaceResolver points workspace packages at their source instead.
 
   resolve: {
     // Keep a single ProseMirror instance across workspace packages.
@@ -127,7 +115,7 @@ export default defineConfig({
   },
 
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => {
         // Mark common dependencies that React and Svelte elements mark as external
         // These match the external configuration in element vite configs

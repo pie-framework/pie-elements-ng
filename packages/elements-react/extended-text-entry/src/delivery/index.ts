@@ -29,15 +29,14 @@ const log = debug('@pie-elements:extended-text-entry');
 // transaction and after the student pauses typing for the player's idle-save delay.
 const SESSION_NOTIFY_DELAY_MS = 1500;
 
-const domParser = typeof window !== undefined ? new DOMParser() : { parseFromString: (v) => v };
-
 export function textContent(value) {
   if (typeof value !== 'string') {
     return undefined;
   }
 
   try {
-    const document = domParser.parseFromString(value, 'text/html');
+    // Built here, not at module scope: this module is browser-only (it extends HTMLElement).
+    const document = new DOMParser().parseFromString(value, 'text/html');
     const textContent = document.body.textContent;
 
     return textContent;

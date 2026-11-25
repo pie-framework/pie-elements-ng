@@ -22,7 +22,6 @@ export interface ReactElementMatrixEntry {
   hasSession: boolean;
   hasPrint: boolean;
   packageDir: string;
-  iifeConfigPath: string;
 }
 
 function resolveDefaultWorkspaceRoot(): string {
@@ -46,9 +45,9 @@ export function loadReactElementMatrix(workspaceRoot: string = resolveDefaultWor
   for (const dirName of readdirSync(elementsDir)) {
     const packageDir = join(elementsDir, dirName);
     const packageJsonPath = join(packageDir, 'package.json');
-    const iifeConfigPath = join(packageDir, 'vite.config.iife.ts');
+    const iifeEntryPath = join(packageDir, 'src', 'index.iife.ts');
 
-    if (!existsSync(packageJsonPath) || !existsSync(iifeConfigPath)) {
+    if (!existsSync(packageJsonPath) || !existsSync(iifeEntryPath)) {
       continue;
     }
 
@@ -70,7 +69,6 @@ export function loadReactElementMatrix(workspaceRoot: string = resolveDefaultWor
       hasSession: metadata?.hasSession ?? true,
       hasPrint: metadata?.hasPrint ?? false,
       packageDir,
-      iifeConfigPath,
     });
   }
 

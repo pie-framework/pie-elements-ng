@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/delivery-events-svelte",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,6 +29,6 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^8.3.6"
+    "vite": "^8.3.8"
   }
 }
