@@ -12,6 +12,8 @@ import { useDraggableControl } from './draggable-control.js';
 import { useDropTarget } from './drop-target.js';
 import { createDragCollision } from './collision.js';
 import { motionSafeDropAnimation } from './drop-animation.js';
+import { ANNOUNCEMENT_CLEAR_MS, LiveAnnouncer, nextAnnouncement } from './live-announcer.js';
+import { DRAGGABLE_MARKER, draggableAttributes } from './draggable-attributes.js';
 
 export type {
   ContentNamer,
@@ -21,6 +23,8 @@ export type {
 } from './draggable-control.js';
 export type { DropTarget, DropTargetOptions, DropTargetProps } from './drop-target.js';
 export type { DragCollision, DragCollisionOptions, PointerCoordinates } from './collision.js';
+export type { Announcement, LiveAnnouncerProps } from './live-announcer.js';
+export type { MarkedDraggableAttributes } from './draggable-attributes.js';
 
 export {
   PlaceHolder,
@@ -35,4 +39,9 @@ export {
   useDropTarget,
   createDragCollision,
   motionSafeDropAnimation,
+  ANNOUNCEMENT_CLEAR_MS,
+  LiveAnnouncer,
+  nextAnnouncement,
+  DRAGGABLE_MARKER,
+  draggableAttributes,
 };

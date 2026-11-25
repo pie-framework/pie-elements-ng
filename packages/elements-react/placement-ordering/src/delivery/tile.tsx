@@ -10,7 +10,7 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
 
-import { PlaceHolder } from '@pie-lib/drag';
+import { PlaceHolder, draggableAttributes } from '@pie-lib/drag';
 import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
@@ -465,7 +465,7 @@ export const Tile = (props) => {
   // otherwise bubble up into.
   // dnd-kit's attributes also point the tile at its pick-up instructions and call it "draggable", which a
   // screen reader reads after, or ahead of, what the spec has it say. The tile's label already says what to press.
-  const { 'aria-describedby': _instructions, 'aria-roledescription': _roleDescription, ...dragAttributes } = attributes;
+  const { 'aria-describedby': _instructions, ...dragAttributes } = draggableAttributes(attributes);
 
   const dragProps = moveControls
     ? { onPointerDown: listeners?.onPointerDown, onTouchStart: listeners?.onTouchStart }

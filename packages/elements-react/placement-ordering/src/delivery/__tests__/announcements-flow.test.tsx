@@ -59,15 +59,27 @@ const setup = (placed: (string | undefined)[] = [], props: object = {}) => {
   const view = render(
     <PlacementOrdering model={{ ...model, ...props }} session={{ value }} onSessionChange={onSessionChange} />,
   );
+  // The element's own live region empties itself 100ms after each message, so what it said is read
+  // from the nodes added to it, not from what it still holds.
+  const region = view.container.querySelector('[aria-live="assertive"]') as HTMLElement;
+  const observer = new MutationObserver(() => {});
+  observer.observe(region, { childList: true });
+  const said = () =>
+    observer
+      .takeRecords()
+      .flatMap((record) => [...record.addedNodes])
+      .map((node) => node.textContent ?? '')
+      .filter(Boolean);
+  // The last message said once a held-back result has had time to land.
   const status = () => {
     act(() => {
       vi.advanceTimersByTime(300);
     });
 
-    return view.container.querySelector('[aria-live="assertive"]')?.textContent;
+    return said().at(-1) ?? region.textContent;
   };
 
-  return { ...view, onSessionChange, status };
+  return { ...view, onSessionChange, status, region };
 };
 
 describe('PlacementOrdering screen reader announcements', () => {
@@ -237,7 +249,7 @@ describe('PlacementOrdering screen reader announcements', () => {
       act(() => provider.props.onDragStart({ active }));
       act(() => provider.props.onDragCancel());
     };
-    const message = () => container.querySelector('[aria-live="polite"] > span');
+    const message = () => container.querySelector('[aria-live="assertive"] > span');
 
     cancel();
     const first = status();
@@ -276,6 +288,40 @@ describe('PlacementOrdering screen reader announcements', () => {
     fireEvent.click(container.querySelector('[data-tile-id$="choice-c3"]') as Element);
 
     expect(status()).toContain('Lemon');
+  });
+
+  it('empties its live region once a held-back result has been said', () => {
+    const { region } = setup(['c1']);
+    const active = dragged(choice('c2', 'Lemon'));
+
+    act(() => provider.props.onDragStart({ active }));
+    act(() => provider.props.onDragEnd({ active, over: over(target(1, 'c2', '')) }));
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(region.textContent).toContain('Placed object Lemon');
+
+    act(() => {
+      vi.advanceTimersByTime(99);
+    });
+    expect(region.textContent).toContain('Placed object Lemon');
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(region.textContent).toBe('');
+  });
+
+  it('empties its live region 100ms after a selection is said', () => {
+    const { container, region } = setup(['c1']);
+
+    fireEvent.click(container.querySelector('[data-tile-id$=":choice-c2"]') as HTMLElement);
+    expect(region.textContent).toBe('Selected object Lemon Use TAB to move to a sorted position.');
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(region.textContent).toBe('');
   });
 
   it('announces an object let go where nothing takes it', () => {

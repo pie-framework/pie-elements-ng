@@ -5,11 +5,11 @@ import type { Page, Locator } from '@playwright/test';
  */
 
 /**
- * Matches an element dnd-kit made draggable: it points `aria-describedby` at its drag instructions,
- * whose id starts with this prefix. The elements no longer set `aria-roledescription`, so this is the
- * one place the specs depend on dnd-kit's id.
+ * Matches an element dnd-kit made draggable. The elements spread dnd-kit's attributes through
+ * `draggableAttributes` from `@pie-lib/drag`, which drops the "draggable" role description (PIE-1547)
+ * and marks the element `data-dnd-draggable` instead.
  */
-export const DND_DRAGGABLE = '[aria-describedby^="DndDescribedBy"]';
+export const DND_DRAGGABLE = '[data-dnd-draggable]';
 
 /**
  * Wait for MathJax to finish rendering LaTeX content

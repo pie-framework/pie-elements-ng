@@ -83,8 +83,11 @@ describe('mark limit status', () => {
       {...props}
     />
   );
-  // @dnd-kit adds a status region of its own
-  const limitStatus = () => screen.getAllByRole('status').find((region) => !region.id.startsWith('DndLiveRegion'));
+  // The toolbar's drag provider adds two status regions of its own: dnd-kit's and the one it announces in
+  const limitStatus = () =>
+    screen
+      .getAllByRole('status')
+      .find((region) => !region.id.startsWith('DndLiveRegion') && !region.id.endsWith('-announcer'));
 
   it('tells the student once the current tool reaches its limit', () => {
     const { rerender } = render(graph(twoPoints.slice(0, 1), { markLimits: { point: 2 } }));

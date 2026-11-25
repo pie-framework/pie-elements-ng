@@ -1,9 +1,32 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, KeyboardSensor, PointerSensor, defaultAnnouncements, useSensor, useSensors } from '@dnd-kit/core';
 import { useUniqueId } from '@pie-lib/render-ui';
+import { LiveAnnouncer, nextAnnouncement } from './live-announcer.js';
+
+/**
+ * dnd-kit's announcement callbacks, each handing its message to `announce` and none to dnd-kit. dnd-kit
+ * changes its own live region only on a drag event, so it could never be emptied after a message; the
+ * provider's `LiveAnnouncer` says the same messages and empties itself.
+ */
+export const routeAnnouncements = (announcements, announce) => {
+  const route = (callback) => (event) => {
+    announce(callback?.(event));
+
+    return undefined;
+  };
+
+  return {
+    onDragStart: route(announcements.onDragStart),
+    // dnd-kit calls this one on every pointer move, and only when it is given
+    ...(announcements.onDragMove && { onDragMove: route(announcements.onDragMove) }),
+    onDragOver: route(announcements.onDragOver),
+    onDragEnd: route(announcements.onDragEnd),
+    onDragCancel: route(announcements.onDragCancel),
+  };
+};
 
 export function DragProvider({
   children,
@@ -18,6 +41,7 @@ export function DragProvider({
   accessibility,
 }) {
   const [activeId, setActiveId] = useState(null);
+  const [announcement, setAnnouncement] = useState();
   // dnd-kit numbers the drag instructions each draggable references from a counter that
   // restarts in every element bundle, so two element versions on a page would share the id.
   const dragInstructionsId = useUniqueId('drag-instructions');
@@ -31,6 +55,17 @@ export function DragProvider({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, keyboardSensorOptions),
+  );
+
+  const announce = useCallback((text) => {
+    if (text) {
+      setAnnouncement((previous) => nextAnnouncement(previous, text));
+    }
+  }, []);
+  const announcements = accessibility?.announcements ?? defaultAnnouncements;
+  const routedAccessibility = useMemo(
+    () => ({ ...accessibility, announcements: routeAnnouncements(announcements, announce) }),
+    [accessibility, announcements, announce],
   );
 
   const handleDragStart = (event) => {
@@ -64,9 +99,10 @@ export function DragProvider({
       collisionDetection={collisionDetection}
       modifiers={modifiers}
       autoScroll={autoScroll}
-      accessibility={accessibility}
+      accessibility={routedAccessibility}
     >
       {children}
+      <LiveAnnouncer id={`${dragInstructionsId}-announcer`} announcement={announcement} />
     </DndContext>
   );
 }
@@ -89,8 +125,9 @@ DragProvider.propTypes = {
     cancel: PropTypes.arrayOf(PropTypes.string),
     end: PropTypes.arrayOf(PropTypes.string),
   }),
-  // Passed straight through to dnd-kit's DndContext (screenReaderInstructions,
-  // announcements, container). Omit to keep dnd-kit's defaults.
+  // Passed through to dnd-kit's DndContext (screenReaderInstructions, announcements, container).
+  // The announcements, or dnd-kit's defaults when there are none, are said by the provider's own
+  // live region, which empties itself after each message; dnd-kit's region is left empty.
   accessibility: PropTypes.object,
 };
 
