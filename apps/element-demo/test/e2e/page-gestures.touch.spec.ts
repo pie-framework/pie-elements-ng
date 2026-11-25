@@ -223,7 +223,7 @@ const CASES: GestureCase[] = [
   },
   {
     element: 'drag-in-the-blank',
-    // A blank is a drop target and, once filled, a handle.
+    // A blank is a drop target and, once filled, a handle. Text tiles are named "Answer choice: ..." and drop the roledescription.
     handles: `${DRAGGABLE}, [role="button"], .MuiChip-root`,
     surfaces: [
       { name: 'text', locate: (root) => root.locator('p').first() },
@@ -234,7 +234,10 @@ const CASES: GestureCase[] = [
         zoomBlock: BLOCKS.dragBoard,
       },
     ],
-    handleDrag: choiceDragTo((root) => root.getByRole('button', { name: 'Blank 1', exact: true })),
+    handleDrag: choiceDragTo(
+      (root) => root.getByRole('button', { name: 'Blank 1 is empty', exact: true }),
+      `${DRAGGABLE}, [role="button"][aria-label^="Answer choice:"]`
+    ),
   },
   {
     element: 'venn-classification',

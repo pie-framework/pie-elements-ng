@@ -45,7 +45,7 @@ function mount(parent: HTMLElement, itemModel: object) {
   return el;
 }
 
-const blankLabel = (el: Element) => el.querySelector('[aria-label^="Blank"], [aria-label^="Espacio"]')?.getAttribute('aria-label');
+const blankLabel = (el: Element) => el.querySelector('[aria-label^="Blank"], [aria-label^="El espacio"]')?.getAttribute('aria-label');
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -57,7 +57,7 @@ describe('drag-in-the-blank interface locale', () => {
     const el = mount(player, { language: 'en_US' });
 
     await vi.waitFor(() => expect(el.textContent).toContain('Mostrar instrucciones para el maestro'));
-    await vi.waitFor(() => expect(blankLabel(el)).toBe('Espacio en blanco 1'));
+    await vi.waitFor(() => expect(blankLabel(el)).toBe('El espacio en blanco 1 está vacío'));
     expect(el.getAttribute('lang')).toBe('en-US');
   });
 
@@ -69,7 +69,7 @@ describe('drag-in-the-blank interface locale', () => {
     publish('es');
 
     await vi.waitFor(() => expect(el.textContent).toContain('Mostrar instrucciones para el maestro'));
-    await vi.waitFor(() => expect(blankLabel(el)).toBe('Espacio en blanco 1'));
+    await vi.waitFor(() => expect(blankLabel(el)).toBe('El espacio en blanco 1 está vacío'));
   });
 
   it('stamps no lang on an item that declares none', async () => {
@@ -85,7 +85,7 @@ describe('drag-in-the-blank interface locale', () => {
     const el = mount(document.body, { language: 'es_ES' });
 
     await vi.waitFor(() => expect(el.textContent).toContain('Mostrar instrucciones para el maestro'));
-    await vi.waitFor(() => expect(blankLabel(el)).toBe('Espacio en blanco 1'));
+    await vi.waitFor(() => expect(blankLabel(el)).toBe('El espacio en blanco 1 está vacío'));
     expect(el.getAttribute('lang')).toBe('es-ES');
   });
 });
