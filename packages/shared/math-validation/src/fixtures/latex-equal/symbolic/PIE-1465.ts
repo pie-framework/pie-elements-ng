@@ -1,8 +1,9 @@
 // Known issues from the PIE-1465 plan. Each entry states the correct verdict, in strict maths over
 // the real numbers, and runs as `it.fails` in the order written only (target, then answer); the
 // verdict snapshot records both orders. A fix that makes an entry pass turns it red: remove
-// `knownIssue`, and the pair joins the both-order checks. No input here may be slow; the time
-// limit applies to these too.
+// `knownIssue`, and the pair joins the both-order checks. No input here may be slow. `it.fails`
+// in latex-equal.test.ts swallows a time-limit failure too, so for these entries only
+// latex-equal-verdicts.test.ts enforces the 1 s limit.
 export default {
   mode: 'symbolic',
   tests: [

@@ -1,12 +1,13 @@
-import { globSync } from 'node:fs';
+import { existsSync, globSync } from 'node:fs';
 import { join } from 'node:path';
-import { latexEqual } from '../index.js';
 import {
   type FixtureData,
   type FixtureModule,
   fixtureFiles,
   LIMIT_MS,
   loadFixture,
+  timedLatexEqual,
+  timeText,
   toList,
 } from './latex-equal-fixtures.js';
 
@@ -18,10 +19,12 @@ import {
 // its list of score changes. Refresh the files with `vitest -u`.
 //
 // Each file is built here from its fixture, not collected from latex-equal.test.ts, so that a `-t`
-// filter under `-u` can't write a partial file. The time limit is checked on every call here
-// because, unlike in latex-equal.test.ts, nothing inverts it for the known issues.
+// filter under `-u` can't write a partial file. The CPU time limit is checked on every call here.
+// For known issues this is the only check: `it.fails` in latex-equal.test.ts swallows a
+// time-limit failure as well.
 
 const verdictsDir = join(import.meta.dirname, '../fixtures/__verdicts__');
+const PACKAGE_VERDICTS = 'packages/shared/math-validation/src/fixtures/__verdicts__';
 
 // For one fixture file; the slowest, symbolic/fractions-symbolic.ts, takes about 11 s.
 const FILE_TIMEOUT_MS = 120_000;
@@ -39,23 +42,17 @@ const verdicts = (fixture: FixtureModule) => {
     mode: FixtureData['mode'],
     opts: FixtureData['opts']
   ) => {
-    const call = [
+    const columns = [
       `${mode}${opts ? ` ${JSON.stringify(opts)}` : ''}`,
       JSON.stringify(a),
       JSON.stringify(b),
     ];
-    const started = performance.now();
-    let verdict: string;
-    try {
-      verdict = String(latexEqual(a, b, { mode, ...opts }));
-    } catch {
-      verdict = 'throw';
+    const call = timedLatexEqual(a, b, { mode, ...opts });
+    if (call.cpuMs >= LIMIT_MS) {
+      slow.push(`${kind} ${columns.join(' ')}: ${timeText(call)}`);
     }
-    const ms = performance.now() - started;
-    if (ms >= LIMIT_MS) {
-      slow.push(`${kind} ${call.join(' ')}: ${ms.toFixed(0)} ms`);
-    }
-    lines.push([verdict, kind, ...call].join('\t'));
+    const verdict = 'error' in call ? 'throw' : String(call.verdict);
+    lines.push([verdict, kind, ...columns].join('\t'));
   };
 
   for (const t of fixture.tests) {
@@ -90,11 +87,22 @@ describe('latexEqual verdict snapshot', () => {
     it(
       file,
       async () => {
+        const snapshot = file.replace(/\.ts$/, '.txt');
+        // Where vitest won't write a missing file (under CI, unless -u is given), it reports only
+        // "Snapshot … mismatched", so say which file is missing and how to make it.
+        if (
+          expect.getState().snapshotState.snapshotUpdateState === 'none' &&
+          !existsSync(join(verdictsDir, snapshot))
+        ) {
+          expect.fail(
+            `${PACKAGE_VERDICTS}/${snapshot} is missing. Run ` +
+              '`bun x vitest run packages/shared/math-validation -u` from the repository root ' +
+              'and commit the file.'
+          );
+        }
         const { text, slow } = verdicts(await loadFixture(file));
-        expect(slow, `latexEqual calls that took ${LIMIT_MS} ms or more`).toEqual([]);
-        await expect(text).toMatchFileSnapshot(
-          `../fixtures/__verdicts__/${file.replace(/\.ts$/, '.txt')}`
-        );
+        expect(slow, `latexEqual calls that took ${LIMIT_MS} ms of CPU time or more`).toEqual([]);
+        await expect(text).toMatchFileSnapshot(`../fixtures/__verdicts__/${snapshot}`);
       },
       FILE_TIMEOUT_MS
     );
