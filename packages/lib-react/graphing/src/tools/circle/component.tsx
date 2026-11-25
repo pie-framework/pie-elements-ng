@@ -285,7 +285,9 @@ const StyledBgCircle: any = styled(BgCircle)(() => ({
   '&.bgCircleBuilding': {
     stroke: color.defaults.BLACK,
     animation: `${opacityPulsate('0.3')} 2s ease-out infinite`,
-    opacity: 1,
+    // The pulse's peak, shown when reduced motion stops the pulse: a circle still being drawn stays
+    // fainter than a finished one. The endless pulse otherwise hides this value.
+    opacity: 0.3,
   },
 }));
 

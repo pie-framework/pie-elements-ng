@@ -492,7 +492,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
   .venn-author {
     padding: 24px;
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    color: #0f172a;
+    color: var(--pie-text, #0f172a);
     box-sizing: border-box;
     --vc-focus-ring: var(
       --pie-focus-outline,
@@ -523,16 +523,16 @@ function onSplitKeyDown(e: KeyboardEvent) {
     margin: 0;
     padding: 0;
     border: none;
-    border-left: 1px solid #cbd5e1;
-    border-right: 1px solid #cbd5e1;
+    border-left: 1px solid var(--pie-border-dark, #cbd5e1);
+    border-right: 1px solid var(--pie-border-dark, #cbd5e1);
     cursor: col-resize;
     touch-action: none;
-    background: #e2e8f0;
+    background: var(--pie-background-dark, #e2e8f0);
     align-self: stretch;
   }
   .split-gutter:hover,
   .split-gutter:focus-visible {
-    background: #cbd5e1;
+    background: var(--pie-border, #cbd5e1);
   }
   .split-gutter:focus-visible {
     outline: 2px solid var(--vc-focus-ring, #1565c0);
@@ -558,10 +558,10 @@ function onSplitKeyDown(e: KeyboardEvent) {
     }
   }
   .field-group {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--pie-border-light, #e2e8f0);
     border-radius: 8px;
     padding: 16px;
-    background: #ffffff;
+    background: var(--pie-background, #ffffff);
   }
   .field-header,
   .field-header-row {
@@ -571,14 +571,14 @@ function onSplitKeyDown(e: KeyboardEvent) {
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 12px;
-    color: #0f172a;
+    color: var(--pie-text, #0f172a);
   }
   .field-header-row {
     gap: 8px;
   }
   .btn-add {
-    background: #2563eb;
-    color: #ffffff;
+    background: var(--pie-primary, #2563eb);
+    color: var(--pie-background, #ffffff);
     border: none;
     padding: 6px 10px;
     border-radius: 6px;
@@ -586,25 +586,26 @@ function onSplitKeyDown(e: KeyboardEvent) {
     cursor: pointer;
   }
   .btn-add:hover {
-    background: #1d4ed8;
+    background: var(--pie-primary-dark, #1d4ed8);
   }
   .btn-ghost {
     background: transparent;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--pie-border-dark, #cbd5e1);
+    color: inherit;
     border-radius: 4px;
     padding: 2px 8px;
     cursor: pointer;
     font-size: 13px;
   }
   .btn-ghost:hover:not(:disabled) {
-    background: #f1f5f9;
+    background: var(--pie-background-dark, #f1f5f9);
   }
   .btn-ghost:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
   .btn-ghost.danger {
-    color: #bf0d00;
+    color: var(--pie-incorrect-icon, #bf0d00);
   }
   .circle-labels {
     display: flex;
@@ -625,7 +626,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
   .tile-inputs input,
   .override-row input {
     padding: 6px 8px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--pie-border-dark, #cbd5e1);
     border-radius: 4px;
     font-size: 13px;
     width: 100%;
@@ -640,10 +641,10 @@ function onSplitKeyDown(e: KeyboardEvent) {
     gap: 12px;
   }
   .tile-row {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--pie-border-light, #e2e8f0);
     border-radius: 6px;
     padding: 10px 12px;
-    background: #f8fafc;
+    background: var(--pie-secondary-background, #f8fafc);
   }
   .tile-row-header {
     display: flex;
@@ -661,7 +662,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
     flex-direction: column;
     gap: 2px;
     font-size: 12px;
-    color: #475569;
+    color: var(--pie-text, #475569);
   }
   .tile-inputs .tile-field-full {
     grid-column: 1 / -1;
@@ -676,7 +677,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
   .region-header {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--pie-text, #475569);
     margin-bottom: 6px;
   }
   .override-row {
@@ -690,21 +691,21 @@ function onSplitKeyDown(e: KeyboardEvent) {
   .override-key {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12px;
-    color: #64748b;
+    color: var(--pie-disabled-text, var(--pie-text, #64748b));
   }
   .hint {
     font-size: 12px;
-    color: #64748b;
+    color: var(--pie-disabled-text, var(--pie-text, #64748b));
     margin: 8px 0;
   }
   .preview-column {
     flex: 1 1 auto;
     min-width: 0;
     overflow: auto;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--pie-border-light, #e2e8f0);
     border-radius: 8px;
     padding: 16px;
-    background: #ffffff;
+    background: var(--pie-background, #ffffff);
   }
   .preview-diagram {
     margin: 12px 0 16px 0;
@@ -717,7 +718,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
   .preview-list-heading {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--pie-text, #475569);
     margin: 8px 0 6px 0;
   }
   .preview-diagram-placeholder {
@@ -730,13 +731,13 @@ function onSplitKeyDown(e: KeyboardEvent) {
   }
   .preview-note {
     font-size: 12px;
-    color: #64748b;
+    color: var(--pie-disabled-text, var(--pie-text, #64748b));
     margin-bottom: 12px;
   }
   .preview-summary {
     font-size: 13px;
     line-height: 1.5;
-    color: #334155;
+    color: var(--pie-text, #334155);
     margin-bottom: 10px;
   }
   .preview-list {
@@ -757,11 +758,11 @@ function onSplitKeyDown(e: KeyboardEvent) {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background: var(--pie-faded-primary, #eff6ff);
+    border: 1px solid var(--pie-primary-light, #bfdbfe);
     border-radius: 4px;
     padding: 2px 6px;
-    color: #1d4ed8;
+    color: var(--pie-text, #1d4ed8);
   }
   .preview-thumb {
     width: 22px;
@@ -770,9 +771,9 @@ function onSplitKeyDown(e: KeyboardEvent) {
     flex-shrink: 0;
   }
   .preview-arrow {
-    color: #94a3b8;
+    color: var(--pie-disabled-text, var(--pie-text, #94a3b8));
   }
   .preview-region {
-    color: #0f172a;
+    color: var(--pie-text, #0f172a);
   }
 </style>

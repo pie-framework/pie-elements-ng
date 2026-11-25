@@ -214,6 +214,10 @@ export const describeChoiceTile = (
 export const describeDeselection = (t: Translate, config: Config, answerId: string | number | undefined) =>
   t('deselectedA11y', { choice: choiceLabel(t, config, answerId) });
 
+/** Row 9: ESC cancelled the selection. Unlike row 18 it points back to the choices, not at selecting one. */
+export const describeCancellation = (t: Translate, config: Config, answerId: string | number | undefined) =>
+  t('cancelledA11y', { choice: choiceLabel(t, config, answerId) });
+
 /** Rows 10 to 12: the drop target that now has focus while an answer choice is selected. */
 export const describeFocusTarget = (
   t: Translate,

@@ -17,7 +17,7 @@ import {
   verifyAllowMultiplePlacements,
 } from '@pie-lib/categorize';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { DragProvider, uid } from '@pie-lib/drag';
+import { DragProvider, motionSafeDropAnimation, uid } from '@pie-lib/drag';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import Categories from './categories/index.js';
@@ -769,7 +769,7 @@ export class Design extends React.Component {
               <FeedbackConfig feedback={model.feedback} onChange={this.changeFeedback} toolbarOpts={toolbarOpts} />
             )}
           </layout.ConfigLayout>
-          <DragOverlay>
+          <DragOverlay dropAnimation={motionSafeDropAnimation()}>
             <DragPreviewWrapper>{this.renderDragOverlay()}</DragPreviewWrapper>
           </DragOverlay>
         </IdProvider>

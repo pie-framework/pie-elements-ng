@@ -104,10 +104,14 @@ const StyledChipLabel: any = styled('span')(() => ({
     color: 'transparent',
     opacity: 0,
   },
+  // The choice held over the blank, centred where it would land. The blank keeps its size meanwhile,
+  // so a longer choice ends in an ellipsis.
   '&.dragged': {
     position: 'absolute',
-    left: 16,
-    maxWidth: '60px',
+    left: 12,
+    right: 12,
+    textAlign: 'center',
+    textOverflow: 'ellipsis',
     top: '50%',
     transform: 'translateY(-50%)',
   },

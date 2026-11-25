@@ -27,6 +27,7 @@ vi.mock('@pie-lib/drag', () => ({
     return <div>{props.children}</div>;
   },
   createDragCollision: vi.fn(() => dragCollision),
+  motionSafeDropAnimation: (animation: unknown) => animation,
 }));
 
 vi.mock('@dnd-kit/core', () => ({

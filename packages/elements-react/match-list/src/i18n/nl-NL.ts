@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{filled} van {total} neerzetgebieden hebben een antwoordkeuze. {available} beschikbare antwoordkeuzes. Gebruik TAB om een antwoordkeuze te selecteren.',
   completeA11y: 'Antwoord is compleet. {total} van {total} neerzetgebieden hebben een antwoordkeuze.',
   deselectedA11y: 'Antwoordkeuze {choice} is niet meer geselecteerd. Gebruik TAB om een antwoordkeuze te selecteren.',
+  cancelledA11y: 'Antwoordkeuze {choice} is niet meer geselecteerd. Gebruik TAB om naar een antwoordkeuze te gaan.',
 } satisfies MessageCatalog;
