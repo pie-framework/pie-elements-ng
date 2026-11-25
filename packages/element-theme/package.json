@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-theme",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Generic web component theme wrapper for PIE element players",
   "type": "module",
   "main": "./dist/pie-element-theme.js",
@@ -24,8 +24,8 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^8.3.6",
-    "vitest": "^5.1.0"
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
   },
   "license": "MIT",
   "publishConfig": {

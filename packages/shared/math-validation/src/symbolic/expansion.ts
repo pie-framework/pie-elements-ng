@@ -1,6 +1,8 @@
 import type { MathNode } from 'mathjs';
 import { numeric } from '../mathjs.js';
-import { getVariables } from './utils.js';
+import { sort } from '../node-sort.js';
+import { haveSameZeros, type Polynomial, toPolynomial } from './polynomial.js';
+import { getVariables, haveProportionalValues } from './utils.js';
 
 // mathjs rationalize multiplies out powers and products of sums with simplify rules, and its time grows
 // steeply with the number of sums it multiplies and the terms that produces: (x+1)^7 takes 2.4 s,
@@ -201,3 +203,116 @@ export const hasVariableDenominator = (node: MathNode): boolean =>
 
     return false;
   }).length > 0;
+
+// the factors of a product, with each power's base standing for the power: x^2(x+2) gives x and x+2
+const factorsOf = (node: MathNode): MathNode[] => {
+  if (node.isParenthesisNode && node.content) {
+    return factorsOf(node.content);
+  }
+
+  if (node.isOperatorNode && node.args) {
+    const [first, second] = node.args;
+
+    if (node.fn === 'multiply') {
+      return node.args.flatMap(factorsOf);
+    }
+
+    if (node.fn === 'unaryMinus' && first) {
+      return factorsOf(first);
+    }
+
+    if (node.fn === 'pow' && first && second) {
+      const exponent = constantExponent(second);
+      if (exponent !== undefined && exponent > 0) {
+        return factorsOf(first);
+      }
+    }
+  }
+
+  return [node];
+};
+
+/**
+ * The distinct factors with a variable in the denominators of an expression, as in 1/x, (x+1)^(-2)
+ * or x^2(x+2) under a fraction bar, with each power's base standing for the power.
+ */
+export const denominatorFactors = (node: MathNode): MathNode[] => {
+  const factors = new Map<string, MathNode>();
+
+  node.traverse((n) => {
+    if (!n.isOperatorNode || !n.args) {
+      return;
+    }
+
+    const [first, second] = n.args;
+    let denominator: MathNode | undefined;
+
+    if (n.fn === 'divide') {
+      denominator = second;
+    } else if (n.fn === 'pow' && first && second) {
+      const exponent = constantExponent(second);
+      denominator = exponent !== undefined && exponent < 0 ? first : undefined;
+    }
+
+    for (const factor of denominator ? factorsOf(denominator) : []) {
+      if (getVariables(factor).length > 0) {
+        factors.set(sort(factor).toString(), factor);
+      }
+    }
+  });
+
+  return [...factors.values()];
+};
+
+const productOf = (factors: MathNode[]): MathNode =>
+  numeric.parse(factors.map((factor) => `(${factor.toString()})`).join(' * ') || '1');
+
+// the factors that are polynomials, and the others, such as \sqrt{x}, |x| or a fraction
+const splitPolynomials = (factors: MathNode[], variables: string[]) => {
+  const polynomials: Polynomial[] = [];
+  const others: MathNode[] = [];
+
+  for (const factor of factors) {
+    const polynomial = toPolynomial(factor, variables);
+
+    if (polynomial) {
+      polynomials.push(polynomial);
+    } else {
+      others.push(factor);
+    }
+  }
+
+  return { polynomials, others };
+};
+
+// whether the denominators of two expressions are zero at the same values. Values at sample points
+// can't see a single point such as x = 1, so a removable hole, as in (x^6-1)/(x-1) against
+// x^5+x^4+x^3+x^2+x+1, would match without this (PIE-1465).
+export const haveSameDenominatorZeros = (
+  a: MathNode,
+  b: MathNode,
+  variables: string[]
+): boolean => {
+  const first = denominatorFactors(a);
+  const second = denominatorFactors(b);
+
+  // the same factors, up to a constant. A fraction inside a denominator counts as a factor, so in
+  // (x+1)^8/(1/x) the factors 1/x and x cancel, and it matches x(x+1)^8 as in 1.4.3.
+  if (haveProportionalValues(productOf(first), productOf(second), variables)) {
+    return true;
+  }
+
+  // a factor can also be written out, as x^3+2x^2 is x^2(x+2) and x^2-2x+1 is (x-1)^2 (PIE-1540).
+  // Exact arithmetic then decides whether the polynomials are zero at the same values, and the other
+  // factors must still match. When it can't decide, the two stay apart.
+  const firstSplit = splitPolynomials(first, variables);
+  const secondSplit = splitPolynomials(second, variables);
+  const othersMatch =
+    firstSplit.others.length + secondSplit.others.length === 0 ||
+    haveProportionalValues(productOf(firstSplit.others), productOf(secondSplit.others), variables);
+
+  return (
+    othersMatch &&
+    haveSameZeros(firstSplit.polynomials, secondSplit.polynomials, variables) === true
+  );
+};

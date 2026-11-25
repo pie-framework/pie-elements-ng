@@ -7,6 +7,7 @@ import { uid } from '@pie-lib/drag';
 import Choice, { ChoiceType } from './choice.js';
 import DroppablePlaceholder from './droppable-placeholder.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
+import { catalogs } from '../../i18n/index.js';
 export { ChoiceType };
 
 const Wrapper: any = styled('div')({
@@ -38,6 +39,8 @@ export class Choices extends React.Component {
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
     uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    /** The locale the pool's default name follows. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -60,9 +63,14 @@ export class Choices extends React.Component {
       onSelectClick,
       onPlacementClick,
       uid: instanceId,
+      language,
     } = this.props;
     const hasLabel = !!model.choicesLabel && model.choicesLabel !== '';
     const labelId = hasLabel ? `categorize-${instanceId}-choices-label` : undefined;
+
+    // The pool is a tab stop while a choice is selected, so it always has a name: the authored
+    // choices label, else the catalog's.
+    const defaultName = hasLabel ? undefined : catalogs.forLocale(language).t('choicesListA11y');
 
     let style = {
       textAlign: 'center',
@@ -77,6 +85,7 @@ export class Choices extends React.Component {
         <DroppablePlaceholder
           id="choices-board"
           labelId={labelId}
+          ariaLabel={defaultName}
           onDropChoice={onDropChoice}
           onRemoveChoice={onRemoveChoice}
           disabled={disabled}

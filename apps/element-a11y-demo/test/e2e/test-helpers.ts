@@ -1,4 +1,4 @@
-import { type Page, type Locator, expect } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 
 /**
  * Helper utilities for element-demo browser tests

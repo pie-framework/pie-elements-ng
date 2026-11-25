@@ -9,4 +9,5 @@ export default {
     other: '已满',
   },
   responseArea: '作答区域 {index}/{total}',
+  choicesListA11y: '选项列表',
 } satisfies MessageCatalog;

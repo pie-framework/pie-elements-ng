@@ -21,6 +21,7 @@
       "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tools/vite/workspace-resolver.ts",
         "../../packages/**/docs.contract.json",
         "../../packages/**/README.md",
         "../../packages/**/src/controller/defaults.ts",

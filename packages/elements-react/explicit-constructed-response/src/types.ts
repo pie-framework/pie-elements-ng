@@ -105,6 +105,20 @@ export interface ExplicitConstructedResponseModel extends PieModel {
   ignoreSlashSpacing?: boolean;
   /** Indicates if responses match answers regardless of accents */
   ignoreAccents?: boolean;
+  /**
+   * Indicates if response areas accept Arabic spelling variants, each as its
+   * `foldLetterVariantsPerChoice` entry says; anything but `true` keeps every area strict and keeps
+   * the entries
+   * @default false
+   */
+  foldLetterVariantsEnabled?: boolean;
+  /**
+   * Per response area, whether a response that differs from the area's answers only in Arabic
+   * spelling variants matches: hamza and madda alef forms read as bare alef, tashkeel ignored, ه
+   * accepted for ة and ي for ى. An area folds only when `foldLetterVariantsEnabled` and its entry
+   * are both `true`.
+   */
+  foldLetterVariantsPerChoice?: boolean[];
   /** Indicates if Rubric is enabled */
   rubricEnabled?: boolean;
   /**
@@ -177,6 +191,8 @@ export interface ExplicitConstructedResponseConfiguration {
   ignoreSlashSpacing?: ConfigureProp;
   /** The settings panel control for `ignoreAccents` */
   ignoreAccents?: ConfigureProp;
+  /** The settings panel control for `foldLetterVariantsEnabled`; `settings: false` hides it and leaves the model values in force */
+  foldLetterVariants?: ConfigureProp;
   /** Maximum number of response areas */
   maxResponseAreas?: number;
   /** Maximum image width for input fields */

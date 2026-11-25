@@ -11,6 +11,7 @@ import debug from 'debug';
 
 import Main, { type AuthorConfiguration, type AuthorModel } from './main.js';
 import defaults from './defaults.js';
+import { alignSampleAnswers } from '../sample-answers.js';
 import type { RubricConfiguration, RubricModel } from '../types.js';
 
 type ModelInput = Partial<RubricModel> & Pick<Partial<AuthorModel>, 'errors'>;
@@ -54,7 +55,9 @@ export default class RubricElement extends HTMLElement {
     const { maxPoints, excludeZero } = validatedModel || {};
 
     validatedModel.points = validatedModel.points ? [...validatedModel.points] : [];
-    validatedModel.sampleAnswers = validatedModel.sampleAnswers ? [...validatedModel.sampleAnswers] : [];
+    // One sample slot per point level, so a missing list doesn't take the four-slot default and a
+    // longer stored list is saved back in the shape the player reads.
+    validatedModel.sampleAnswers = alignSampleAnswers(validatedModel.points, validatedModel.sampleAnswers);
 
     const howManyPointsShouldHave = excludeZero ? maxPoints : maxPoints + 1;
     const howManyPointsDoesItHave = validatedModel.points.length;

@@ -1,5 +1,41 @@
 # @pie-element/shared-controller-utils
 
+## 0.1.6
+
+### Patch Changes
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/shared-types@0.2.5
+
+## 0.1.5
+
+### Patch Changes
+
+- [#697](https://github.com/pie-framework/pie-elements-ng/pull/697) [`0a4b2fc`](https://github.com/pie-framework/pie-elements-ng/commit/0a4b2fc8b89bf4929e582824ad196a82561aa1f0) Thanks [@chillenious](https://github.com/chillenious)! - Authors can let a response accept Arabic spelling variants (hamza and madda alef forms, tashkeel, ه for ة, ي for ى): one switch in simple-cloze, a switch plus a per-area toggle in explicit-constructed-response. Off by default. Settings-panel toggles take optional help text.
+
+- [#662](https://github.com/pie-framework/pie-elements-ng/pull/662) [`37648bb`](https://github.com/pie-framework/pie-elements-ng/commit/37648bbd3f84acb84b61cc8df5cc32c41bd7f719) Thanks [@chillenious](https://github.com/chillenious)! - Where the content language names a region that writes a decimal comma (`es-ES`, `de-DE`), math-inline and math-templated read a number's one `,` or `{,}` as its decimal point and `;` as the list separator. A `.` is still a decimal point, and a number with two marks stays as typed. A language without a region, such as `es`, keeps the point, and so does an underscore code such as `es_ES`, which math scoring reads as its language alone. A `model.language` that names no language, `und` among them, gives way to `env.locale`.
+
+- [#552](https://github.com/pie-framework/pie-elements-ng/pull/552) [`b00321c`](https://github.com/pie-framework/pie-elements-ng/commit/b00321cc5bc48b72de24f6e5db52fb446a5e9e8d) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#559](https://github.com/pie-framework/pie-elements-ng/pull/559) [`efc633c`](https://github.com/pie-framework/pie-elements-ng/commit/efc633cb4a3b7870f2237d374d43bcd6d1b18d8c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.4 to 8.3.5
+
+- [#570](https://github.com/pie-framework/pie-elements-ng/pull/570) [`0585bc2`](https://github.com/pie-framework/pie-elements-ng/commit/0585bc20bf7669c380e6a30e6f8816152063d514) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vitest from 4.1.11 to 5.0.5
+
+- [#619](https://github.com/pie-framework/pie-elements-ng/pull/619) [`3d11aff`](https://github.com/pie-framework/pie-elements-ng/commit/3d11aff830da288278422259e30c26229c9d437d) Thanks [@chillenious](https://github.com/chillenious)! - feat(explicit-constructed-response): authorable answer-matching options (PIE-1477)
+
+- [#641](https://github.com/pie-framework/pie-elements-ng/pull/641) [`6b3a398`](https://github.com/pie-framework/pie-elements-ng/commit/6b3a3987fe0b11cc885d75168622ccbfa85d5e44) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the test-dependencies group across 1 directory with 2 updates
+
+- [#647](https://github.com/pie-framework/pie-elements-ng/pull/647) [`7d3a323`](https://github.com/pie-framework/pie-elements-ng/commit/7d3a32301eb3393937961919256da39e57e8104f) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.5 to 8.3.6
+
+- [#655](https://github.com/pie-framework/pie-elements-ng/pull/655) [`174a4b8`](https://github.com/pie-framework/pie-elements-ng/commit/174a4b8c7273efcf8da799eccc7cf8577bcf062e) Thanks [@chillenious](https://github.com/chillenious)! - build: ship third-party license notices in every bundling package
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#547](https://github.com/pie-framework/pie-elements-ng/pull/547) [`9072e7c`](https://github.com/pie-framework/pie-elements-ng/commit/9072e7cca26f08246c8f85984651f5b3cbad1a93) Thanks [@chillenious](https://github.com/chillenious)! - Typed responses compare through a shared normalizer: digits in any Unicode digit system match their ASCII form, `٫` and `٬` read as the content language's decimal and group marks, and bidi controls, tatweel and presentation forms no longer break a match. Simple-cloze and charting labels fold Turkish and Azerbaijani İ/ı correctly. ASCII responses score as before, except in Turkish and Azerbaijani content, where `I` folds to `ı` and so no longer matches `i`. `PieEnvironment` gains an optional `locale`, the item's content language, which an element's `model.language` overrides.
+- Updated dependencies [[`6ac2b66`](https://github.com/pie-framework/pie-elements-ng/commit/6ac2b6616b4c49333cf0aee02d08d89b453a73cd), [`5479c19`](https://github.com/pie-framework/pie-elements-ng/commit/5479c19523118e69286e8dc8d142eb183edbdf2b), [`2867c08`](https://github.com/pie-framework/pie-elements-ng/commit/2867c082419e42a211067959be12d8e310403e2e), [`d18d9e7`](https://github.com/pie-framework/pie-elements-ng/commit/d18d9e72bb88dc5911cbbd3dab7d314682536961), [`db48dfd`](https://github.com/pie-framework/pie-elements-ng/commit/db48dfd851ae4385d068a9f94cc092bdd05833d3), [`f6e8801`](https://github.com/pie-framework/pie-elements-ng/commit/f6e880189215966f224b93da5072cfa1e8d1b839), [`9072e7c`](https://github.com/pie-framework/pie-elements-ng/commit/9072e7cca26f08246c8f85984651f5b3cbad1a93)]:
+  - @pie-element/shared-types@0.2.4
+
 ## 0.1.4
 
 ### Patch Changes

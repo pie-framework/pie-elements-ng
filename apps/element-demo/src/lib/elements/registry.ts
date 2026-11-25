@@ -56,7 +56,7 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "hasPrint": false,
     "hasConfig": true,
     "hasSession": true,
-    "demoCount": 4
+    "demoCount": 5
   },
   {
     "name": "drawing-response",

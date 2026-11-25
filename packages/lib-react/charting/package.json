@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/charting",
-  "version": "8.0.7",
+  "version": "8.0.9",
   "description": "charting",
   "license": "MIT",
   "repository": {
@@ -35,7 +35,7 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
     "clsx": "^2.1.1",
-    "d3-time": "^3.1.0",
+    "d3-time": "^3.1.1",
     "d3-interpolate": "^3.0.2",
     "d3-shape": "^3.2.1"
   },
@@ -58,17 +58,17 @@
     "test": "bun x vitest run --root ../../.. ./"
   },
   "devDependencies": {
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/user-event": "^14.6.10"
+    "@testing-library/user-event": "^14.6.13"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

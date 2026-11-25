@@ -88,7 +88,7 @@ const parseValue = (latex: Latex): Rational | undefined => {
   let tree: unknown;
   try {
     tree = lta.convert(latex);
-  } catch (e) {
+  } catch {
     return undefined;
   }
   return isNode(tree, '-', 1) ? negate(unsigned(tree[1])) : unsigned(tree);
@@ -198,7 +198,7 @@ const arithmeticValue = (latex: Latex): Rational | undefined => {
   let tree: unknown;
   try {
     tree = arithmetic.convert(latex);
-  } catch (e) {
+  } catch {
     return undefined;
   }
   // Outside the try: a failure in the arithmetic itself, such as `**` lowered to `Math.pow` on a

@@ -1,5 +1,67 @@
 # @pie-element/graphing
 
+## 11.0.9
+
+### Patch Changes
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/shared-configure-events@0.1.4
+  - @pie-element/shared-controller-utils@0.1.6
+  - @pie-element/shared-i18n@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-math-rendering-mathjax@0.1.10
+  - @pie-element/shared-player-events@0.2.3
+  - @pie-element/shared-types@0.2.5
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/correct-answer-toggle@5.0.9
+  - @pie-lib/editable-html-tip-tap@3.1.4
+  - @pie-lib/graphing@5.0.9
+  - @pie-lib/graphing-utils@4.0.4
+  - @pie-lib/render-ui@8.0.9
+
+## 11.0.8
+
+### Patch Changes
+
+- [#649](https://github.com/pie-framework/pie-elements-ng/pull/649) [`17f33bf`](https://github.com/pie-framework/pie-elements-ng/commit/17f33bf1edeed6ff913e6feea4ff3bc56c3d4d48) Thanks [@chillenious](https://github.com/chillenious)! - Graphing's validation flags a correct answer or alternate holding more marks of a tool than its mark limit, which a student could never reproduce. The graph announces in a status line when the current tool's limit is reached, and a stored limit of 0 means no limit.
+
+- [#631](https://github.com/pie-framework/pie-elements-ng/pull/631) [`befc524`](https://github.com/pie-framework/pie-elements-ng/commit/befc524fe0dbf2625082cb13ed51a1fd2d104468) Thanks [@chillenious](https://github.com/chillenious)! - These elements' interface text follows the interface locale a player publishes, else the item's `language`, in fourteen languages, and an element stamps `lang` and `dir` only when the item declares a language. Text that rendered in English whatever the language now translates: match's empty-grid message, placement-ordering's drag instructions for screen readers, and drawing-response's error message. The alternates note shows in the interface locale unless the item carries an authored note; a stored copy of the default note counts as no note. drawing-response's color selects no longer set a translated color name, which no browser can paint, as the drawing color.
+
+- [#559](https://github.com/pie-framework/pie-elements-ng/pull/559) [`efc633c`](https://github.com/pie-framework/pie-elements-ng/commit/efc633cb4a3b7870f2237d374d43bcd6d1b18d8c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.4 to 8.3.5
+
+- [#566](https://github.com/pie-framework/pie-elements-ng/pull/566) [`a760d62`](https://github.com/pie-framework/pie-elements-ng/commit/a760d62cbe133327784d57dd1719292c44452f5e) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @vitejs/plugin-react from 6.1.1 to 6.1.2
+
+- [#615](https://github.com/pie-framework/pie-elements-ng/pull/615) [`ca4e017`](https://github.com/pie-framework/pie-elements-ng/commit/ca4e01737d08875caa6b334f0f596332a31be45e) Thanks [@chillenious](https://github.com/chillenious)! - chore: declare the MIT licence in every published manifest
+
+- [#620](https://github.com/pie-framework/pie-elements-ng/pull/620) [`d069ca3`](https://github.com/pie-framework/pie-elements-ng/commit/d069ca3bfe8cb5a72f720bd6d383238fc460f083) Thanks [@chillenious](https://github.com/chillenious)! - feat(graphing): per-tool mark limit and axes pinned to the edge (PIE-1481)
+
+- [#623](https://github.com/pie-framework/pie-elements-ng/pull/623) [`3bc27e5`](https://github.com/pie-framework/pie-elements-ng/commit/3bc27e5196a41947e1834268e4cce5063c990a7f) Thanks [@chillenious](https://github.com/chillenious)! - fix: keep answer keys out of gather-mode models (PIE-1488)
+
+- [#643](https://github.com/pie-framework/pie-elements-ng/pull/643) [`9db0a48`](https://github.com/pie-framework/pie-elements-ng/commit/9db0a48bd03a2d31bdb805d45258700317b6d8b7) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @vitejs/plugin-react from 6.1.2 to 6.2.1
+
+- [#647](https://github.com/pie-framework/pie-elements-ng/pull/647) [`7d3a323`](https://github.com/pie-framework/pie-elements-ng/commit/7d3a32301eb3393937961919256da39e57e8104f) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump vite from 8.3.5 to 8.3.6
+
+- [#656](https://github.com/pie-framework/pie-elements-ng/pull/656) [`ab1c731`](https://github.com/pie-framework/pie-elements-ng/commit/ab1c7310a6129afbbcfff49d9055ad726e2b9356) Thanks [@chillenious](https://github.com/chillenious)! - fix(packaging): ship the MIT LICENSE in every publishable package
+
+- [#684](https://github.com/pie-framework/pie-elements-ng/pull/684) [`e729ead`](https://github.com/pie-framework/pie-elements-ng/commit/e729eadca70c1057ca896f84e5033d72a1fbdcff) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump @vitejs/plugin-react from 6.2.1 to 6.3.0
+
+- [#655](https://github.com/pie-framework/pie-elements-ng/pull/655) [`38838ba`](https://github.com/pie-framework/pie-elements-ng/commit/38838bae2b474a1cb629b6d47022c4b64b740850) Thanks [@chillenious](https://github.com/chillenious)! - Ship the license and NOTICE texts of every bundled third-party package in `THIRD_PARTY_LICENSES.txt` files beside the build output that bundles it.
+- Updated dependencies [[`0a4b2fc`](https://github.com/pie-framework/pie-elements-ng/commit/0a4b2fc8b89bf4929e582824ad196a82561aa1f0), [`37648bb`](https://github.com/pie-framework/pie-elements-ng/commit/37648bbd3f84acb84b61cc8df5cc32c41bd7f719), [`7ef03df`](https://github.com/pie-framework/pie-elements-ng/commit/7ef03dff834d80f56305af5f8e09c153af32b62b), [`83ca35e`](https://github.com/pie-framework/pie-elements-ng/commit/83ca35e55d19a15920960c6cc3dd8eebbbd718d4), [`ef6f5d9`](https://github.com/pie-framework/pie-elements-ng/commit/ef6f5d9c3ae4733ff70e4f056f1b524e62553f87), [`c6d745b`](https://github.com/pie-framework/pie-elements-ng/commit/c6d745b2e3216502c4488bd1504771f04a095206), [`17f33bf`](https://github.com/pie-framework/pie-elements-ng/commit/17f33bf1edeed6ff913e6feea4ff3bc56c3d4d48), [`6cde23a`](https://github.com/pie-framework/pie-elements-ng/commit/6cde23a3a85ba83eb17c0ea4b7d8b710e884a192), [`dda73a6`](https://github.com/pie-framework/pie-elements-ng/commit/dda73a6124deccb371b9b93ab9c515495e1e7f35), [`c16bda2`](https://github.com/pie-framework/pie-elements-ng/commit/c16bda219ae96974e60e6e747809b1481c01bee8), [`c9ddebe`](https://github.com/pie-framework/pie-elements-ng/commit/c9ddebe12ab58d1d1c98a27f09aeca7005464253), [`b93d1e1`](https://github.com/pie-framework/pie-elements-ng/commit/b93d1e1d4d775938abc5d51df0529d6f7fd88aa3), [`8574fb0`](https://github.com/pie-framework/pie-elements-ng/commit/8574fb0be686830c9e67c15931dd114d349cd357), [`5be734a`](https://github.com/pie-framework/pie-elements-ng/commit/5be734ab5041b69fe3b2b0f984fcb7ea00ebb428), [`3d364e6`](https://github.com/pie-framework/pie-elements-ng/commit/3d364e651386bd5ec5c03c0cbac9800dbed51ea8), [`6ac2b66`](https://github.com/pie-framework/pie-elements-ng/commit/6ac2b6616b4c49333cf0aee02d08d89b453a73cd), [`5479c19`](https://github.com/pie-framework/pie-elements-ng/commit/5479c19523118e69286e8dc8d142eb183edbdf2b), [`2a1c76f`](https://github.com/pie-framework/pie-elements-ng/commit/2a1c76f514ca7f96448032b5a9a05a3363f7aab6), [`527e6f1`](https://github.com/pie-framework/pie-elements-ng/commit/527e6f1196ca82c9bb02d110bed54fb533a51eb6), [`b0cf3ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0cf3ee97bb6bce681b4aa080e5e613d49b0d9b5), [`2867c08`](https://github.com/pie-framework/pie-elements-ng/commit/2867c082419e42a211067959be12d8e310403e2e), [`56815e9`](https://github.com/pie-framework/pie-elements-ng/commit/56815e989a915ee488f53127558eb3c2f2cdff55), [`d72e661`](https://github.com/pie-framework/pie-elements-ng/commit/d72e6613edc3bccfa6a08fca9fa4e1131bed1c3d), [`85b7459`](https://github.com/pie-framework/pie-elements-ng/commit/85b7459adb3f4cd4a16dea431e125564836897de), [`d1b289a`](https://github.com/pie-framework/pie-elements-ng/commit/d1b289aab510f096acd4c4e72d6295e47e4ae6dd), [`dad2ab7`](https://github.com/pie-framework/pie-elements-ng/commit/dad2ab753822922fd39bcd1dccc0ec260666892f), [`8c2f4b2`](https://github.com/pie-framework/pie-elements-ng/commit/8c2f4b2d2dc6c0565da0d78b27d76d3c2091217f), [`c7c7bd4`](https://github.com/pie-framework/pie-elements-ng/commit/c7c7bd4b475feca995456ecb80ad3d1f4df80fc1), [`ba356b8`](https://github.com/pie-framework/pie-elements-ng/commit/ba356b834b71ac81b5d54d856f3af35b4c5dd3e9), [`1a8c0d5`](https://github.com/pie-framework/pie-elements-ng/commit/1a8c0d547e56ab4078f7a399c8667325d3db1dcd), [`23ff76a`](https://github.com/pie-framework/pie-elements-ng/commit/23ff76ae0604fe93b4b4f0f2929238a1d7d3774e), [`a9c801f`](https://github.com/pie-framework/pie-elements-ng/commit/a9c801f65bd099524f6f8da9612e334967e70b4b), [`d33d809`](https://github.com/pie-framework/pie-elements-ng/commit/d33d8092ba8e6cc0e7f7d475d2d32570f1b78b8c), [`ba9faca`](https://github.com/pie-framework/pie-elements-ng/commit/ba9facaa40cce2266b5357e137f83108101f346d), [`f953c48`](https://github.com/pie-framework/pie-elements-ng/commit/f953c485c93a9ecdedc7f2fa42a01b9a4af0b72f), [`1f9a93f`](https://github.com/pie-framework/pie-elements-ng/commit/1f9a93f3e43c01c1c30fc811152b87a601888fa3), [`811b988`](https://github.com/pie-framework/pie-elements-ng/commit/811b988459b787adc5efaf9fb020055e67c6dbad), [`fb2111d`](https://github.com/pie-framework/pie-elements-ng/commit/fb2111d2a7bed09f06dd7d0292752be85a1d2c76), [`5314efa`](https://github.com/pie-framework/pie-elements-ng/commit/5314efacd01cac72358aceaaf157ed60d7c511f0), [`37be6b8`](https://github.com/pie-framework/pie-elements-ng/commit/37be6b84f1a50dcf53f6df9dccce05fd58d54c60), [`d18d9e7`](https://github.com/pie-framework/pie-elements-ng/commit/d18d9e72bb88dc5911cbbd3dab7d314682536961), [`3317723`](https://github.com/pie-framework/pie-elements-ng/commit/33177237243a29f4bfb8956a9c4fdab336b4a353), [`2710c33`](https://github.com/pie-framework/pie-elements-ng/commit/2710c333b19028ff9e42caa8245b23f68e0529ce), [`db48dfd`](https://github.com/pie-framework/pie-elements-ng/commit/db48dfd851ae4385d068a9f94cc092bdd05833d3), [`f408704`](https://github.com/pie-framework/pie-elements-ng/commit/f40870446d77da573bc46584f5ffaf497d255688), [`f6e8801`](https://github.com/pie-framework/pie-elements-ng/commit/f6e880189215966f224b93da5072cfa1e8d1b839), [`e897594`](https://github.com/pie-framework/pie-elements-ng/commit/e89759405ee4a88a5727bd4049e933145f7cfac4), [`1f718fa`](https://github.com/pie-framework/pie-elements-ng/commit/1f718fa515ff1efb6f4fc6a920071b298cdf32f2), [`358b96e`](https://github.com/pie-framework/pie-elements-ng/commit/358b96e396a55e00376733625580295905295820), [`da63c87`](https://github.com/pie-framework/pie-elements-ng/commit/da63c8779b774fd3a78d390760f802cb9ed9db66), [`e95fa51`](https://github.com/pie-framework/pie-elements-ng/commit/e95fa5112d966076c0b41c69d64e7ac72c963dce), [`82a155d`](https://github.com/pie-framework/pie-elements-ng/commit/82a155d26339a2830b706e154cc11360955f8c77), [`4689dfa`](https://github.com/pie-framework/pie-elements-ng/commit/4689dfac1e9d83296c77ef001eabfac58ef62d16), [`1e9670e`](https://github.com/pie-framework/pie-elements-ng/commit/1e9670e69e6e171c102beaa1c0b84d7b9234d002), [`d895fde`](https://github.com/pie-framework/pie-elements-ng/commit/d895fdeb39499be8bfff64d7e6f26e647959e948), [`9072e7c`](https://github.com/pie-framework/pie-elements-ng/commit/9072e7cca26f08246c8f85984651f5b3cbad1a93), [`38838ba`](https://github.com/pie-framework/pie-elements-ng/commit/38838bae2b474a1cb629b6d47022c4b64b740850), [`0fcf803`](https://github.com/pie-framework/pie-elements-ng/commit/0fcf8036fc88c44d4cb7b38181e99f7e21e0d2a2), [`56eea8b`](https://github.com/pie-framework/pie-elements-ng/commit/56eea8b4f97b0063cf00f3ae455c2851016aac0a)]:
+  - @pie-element/shared-controller-utils@0.1.5
+  - @pie-lib/config-ui@14.0.8
+  - @pie-lib/editable-html-tip-tap@3.1.3
+  - @pie-lib/graphing@5.0.8
+  - @pie-element/shared-i18n@0.1.3
+  - @pie-lib/correct-answer-toggle@5.0.8
+  - @pie-lib/render-ui@8.0.8
+  - @pie-element/shared-math-rendering-mathjax@0.1.9
+  - @pie-element/shared-player-events@0.2.2
+  - @pie-element/shared-lodash@0.1.4
+  - @pie-element/shared-types@0.2.4
+  - @pie-element/shared-configure-events@0.1.3
+  - @pie-lib/graphing-utils@4.0.3
+
 ## 11.0.7
 
 ### Patch Changes

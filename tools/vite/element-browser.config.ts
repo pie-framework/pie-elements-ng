@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
@@ -10,7 +9,7 @@ import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
 const identity = readPackageIdentity(packageDir);
-const configDir = dirname(fileURLToPath(import.meta.url));
+const configDir = import.meta.dirname;
 const policyPath = resolve(configDir, 'browser-esm-policy.json');
 const browserEsmPolicy = JSON.parse(readFileSync(policyPath, 'utf-8')) as {
   allowedBareImports: string[];
@@ -78,7 +77,7 @@ export default defineConfig({
       entry: entries,
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) => allowedBareImports.has(id),
       plugins: [browserCjsRequireInteropPlugin()],
     },

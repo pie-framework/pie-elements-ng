@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-i18n",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Interface-string i18n engine for PIE elements: typed per-package catalogs, lazy locales, RFC 4647 resolution",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,10 +26,10 @@
     "@pie-players/pie-language-tags": "1.0.0-beta.9"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.4",
+    "@types/bun": "^1.4.5",
     "typescript": "^5.9.3",
-    "vite": "^8.3.6",
-    "vitest": "^5.1.0"
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
   },
   "publishConfig": {
     "access": "public"

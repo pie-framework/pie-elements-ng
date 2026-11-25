@@ -14,6 +14,7 @@ import { max } from '@pie-element/shared-lodash';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { color } from '@pie-lib/render-ui';
 import { stripHtmlTags, getAdjustedLength, decodeHTML } from './markupUtils.js';
+import { LetterVariantsAreaToggle } from './fold-letter-variants.js';
 
 const DesignContainer: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(0.5),
@@ -168,6 +169,9 @@ export class AlternateSection extends React.Component {
     value: PropTypes.string,
     maxLength: PropTypes.number,
     showMaxLength: PropTypes.bool,
+    showFoldLetterVariants: PropTypes.bool,
+    foldLetterVariants: PropTypes.bool,
+    foldLetterVariantsChanged: PropTypes.func,
     spellCheck: PropTypes.bool,
     pluginProps: PropTypes.object,
   };
@@ -266,7 +270,18 @@ export class AlternateSection extends React.Component {
   };
 
   render() {
-    const { selectChoices, maxLength, showMaxLength, value, spellCheck, errors, pluginProps } = this.props;
+    const {
+      selectChoices,
+      maxLength,
+      showMaxLength,
+      showFoldLetterVariants,
+      foldLetterVariants,
+      foldLetterVariantsChanged,
+      value,
+      spellCheck,
+      errors,
+      pluginProps,
+    } = this.props;
     const { choices } = this.state;
     const minLength = this.getChoicesMaxLength();
 
@@ -279,7 +294,8 @@ export class AlternateSection extends React.Component {
             displayEmpty
             onChange={this.handleSelect}
             value={value || ''}
-            readOnly={showMaxLength}
+            // Every area is listed while a per-area setting shows, so its section stays on its area.
+            readOnly={showMaxLength || showFoldLetterVariants}
             MenuProps={{
               transitionDuration: { enter: 225, exit: 195 },
             }}
@@ -307,6 +323,13 @@ export class AlternateSection extends React.Component {
                   }}
                   value={maxLength}
                   onChange={this.changeLength}
+                />
+              )}
+              {showFoldLetterVariants && (
+                <LetterVariantsAreaToggle
+                  checked={!!foldLetterVariants}
+                  responseAreaIndex={Number(this.props.responseAreaIndex ?? 0)}
+                  onChange={foldLetterVariantsChanged}
                 />
               )}
               <Button variant="contained" color="primary" onClick={this.onAddChoice}>

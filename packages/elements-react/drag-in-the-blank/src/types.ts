@@ -92,6 +92,10 @@ export interface DragInTheBlankModel extends PieModel {
   language?: string;
   /** Indicates font size adjustment factor */
   fontSizeFactor?: number;
+  /** Response area width in pixels, as `"480px"` or `480`; it grows for a wider choice, up to 374px */
+  emptyResponseAreaWidth?: string | number;
+  /** Response area height in pixels, as `"60px"` or `60`; it grows for a taller choice */
+  emptyResponseAreaHeight?: string | number;
   /** Indicates if the audio for the prompt should autoplay */
   autoplayAudioEnabled?: boolean;
   /** Set by the player when the host holds autoplay; it outranks `autoplayAudioEnabled` */

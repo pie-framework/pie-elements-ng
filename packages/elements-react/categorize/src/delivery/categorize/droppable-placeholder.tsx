@@ -18,6 +18,7 @@ const DroppablePlaceholder = ({
   minRowHeight,
   id,
   labelId,
+  ariaLabel,
   correct,
   selectedItem,
   onPlacementClick,
@@ -111,6 +112,7 @@ const DroppablePlaceholder = ({
       ref={setNodeRef}
       role="group"
       aria-labelledby={labelId}
+      aria-label={labelId ? undefined : ariaLabel}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}
@@ -149,6 +151,7 @@ DroppablePlaceholder.propTypes = {
   onDropChoice: PropTypes.func,
   id: PropTypes.string.isRequired,
   labelId: PropTypes.string,
+  ariaLabel: PropTypes.string,
   correct: PropTypes.bool,
   selectedItem: PropTypes.object,
   onPlacementClick: PropTypes.func,

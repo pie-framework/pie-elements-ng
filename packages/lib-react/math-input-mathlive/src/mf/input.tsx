@@ -94,6 +94,9 @@ export class Input extends React.Component {
     labelMathField(this.mathField, this.props.language, this.relabel);
     describeMathField(this.mathField, this.props.ariaDescribedBy);
     this.mathField.value = toMathLive(this.props.latex || '');
+    // MathLive fires `input` a tick after an edit. A re-render in that gap must see the mounted latex
+    // as already in the field, or it writes it back over the first key pressed (PIE-1509).
+    this.lastEmitted = this.props.latex;
 
     if (this.props.readOnly) {
       this.mathField.readOnly = true;

@@ -70,4 +70,40 @@ describe('math-inline keypad', () => {
 
     await waitFor(() => expect(document.querySelector('[data-keypad]')).not.toBeNull());
   });
+
+  it('opens when the answer field gets focus, as from Tab', async () => {
+    const { container } = render(item('gather'));
+
+    await waitFor(() => expect(container.querySelector('math-field')).not.toBeNull(), LOAD);
+    (container.querySelector('math-field') as HTMLElement).focus();
+
+    await waitFor(() => expect(document.querySelector('[data-keypad]')).not.toBeNull());
+  });
+
+  it('closes on Escape, and ArrowDown opens it again and moves into it', async () => {
+    const { container } = render(item('gather'));
+
+    await waitFor(() => expect(container.querySelector('math-field')).not.toBeNull(), LOAD);
+    const field = container.querySelector('math-field') as HTMLElement;
+    field.focus();
+    await waitFor(() => expect(document.querySelector('[data-keypad]')).not.toBeNull());
+
+    fireEvent.keyDown(field, { key: 'Escape' });
+    await waitFor(() => expect(document.querySelector('[data-keypad]')).toBeNull());
+
+    fireEvent.keyDown(field, { key: 'ArrowDown' });
+    await waitFor(() => expect(document.activeElement?.closest('[data-keypad]')).not.toBeNull());
+  });
+
+  it('moves into the keypad on ArrowDown once focus has opened it', async () => {
+    const { container } = render(item('gather'));
+
+    await waitFor(() => expect(container.querySelector('math-field')).not.toBeNull(), LOAD);
+    const field = container.querySelector('math-field') as HTMLElement;
+    field.focus();
+    await waitFor(() => expect(document.querySelector('[data-keypad]')).not.toBeNull());
+
+    fireEvent.keyDown(field, { key: 'ArrowDown' });
+    await waitFor(() => expect(document.activeElement?.closest('[data-keypad]')).not.toBeNull());
+  });
 });

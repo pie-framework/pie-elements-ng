@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { workspaceResolver } from '../src/vite-plugin-workspace-resolver';
+import { workspaceResolver } from '../../../tools/vite/workspace-resolver.ts';
 import type { ConfigEnv, UserConfig } from 'vite';
 
 describe('workspaceResolver', () => {

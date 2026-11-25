@@ -1,10 +1,9 @@
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { globSync } from 'glob';
 import { defineConfig } from 'vitest/config';
 
-const workspaceRoot = dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = import.meta.dirname;
 
 const hasTests = (dir: string, include: string) =>
   globSync(include, { cwd: join(workspaceRoot, dir), ignore: '**/node_modules/**' }).length > 0;

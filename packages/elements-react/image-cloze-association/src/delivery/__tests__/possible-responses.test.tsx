@@ -1,5 +1,6 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll, describe, it, expect, vi } from 'vitest';
+import { loadLocale } from '@pie-element/shared-i18n';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DndContext } from '@dnd-kit/core';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -7,6 +8,9 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import PossibleResponses from '../possible-responses';
 
 const theme = createTheme();
+
+// The components read their catalogs synchronously; the Spanish case needs them resident.
+beforeAll(() => loadLocale('es_ES'));
 
 const choices = [
   { id: 'a1', value: 'Mercury' },
@@ -26,6 +30,16 @@ const pool = () => screen.getByRole('group');
 const choice = (name: string) => screen.getByRole('button', { name });
 
 describe('PossibleResponses tab path', () => {
+  it('names the pool', () => {
+    renderPool({ selectedResponse: { id: 'a3', value: 'Earth', containerIndex: 0 } });
+    expect(screen.getByRole('group', { name: 'Choices list' })).toBe(pool());
+  });
+
+  it('names the pool in the item language', () => {
+    renderPool({ language: 'es_ES' });
+    expect(screen.getByRole('group', { name: 'Lista de opciones' })).toBe(pool());
+  });
+
   it('leaves the tab path to its choices while nothing is selected', () => {
     renderPool();
 

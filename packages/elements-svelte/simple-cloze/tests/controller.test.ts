@@ -313,6 +313,49 @@ describe('response normalization', () => {
   });
 });
 
+describe('Arabic spelling variants', () => {
+  const ARABIC = { ...QUESTION, correctAnswer: 'مدرسة', language: 'ar' };
+  const typed = (value: string) => ({ id: '1', element: TAG, value });
+
+  it('accepts a spelling variant only when the model turns folding on', async () => {
+    expect(getCorrectness(ARABIC, typed('مدرسه'))).toBe('incorrect');
+    expect(getCorrectness({ ...ARABIC, foldLetterVariants: true }, typed('مدرسه'))).toBe('correct');
+    expect((await outcome({ ...ARABIC, foldLetterVariants: true }, typed('مدرسه'))).score).toBe(1);
+  });
+
+  it('says in the trace when spelling variants are accepted', async () => {
+    const trace = async (foldLetterVariants: boolean) =>
+      (await outcome({ ...ARABIC, foldLetterVariants }, typed('مدرسه'))).traceLog;
+
+    expect(await trace(true)).toContain('Arabic spelling variants are accepted.');
+    expect(await trace(false)).not.toContain('Arabic spelling variants are accepted.');
+  });
+
+  it('folds the answer key too, so a key with tashkeel and hamza matches the bare spelling', () => {
+    const question = { ...ARABIC, correctAnswer: 'أَحْمَد', foldLetterVariants: true };
+
+    expect(getCorrectness(question, typed('احمد'))).toBe('correct');
+    expect(getCorrectness({ ...question, foldLetterVariants: false }, typed('احمد'))).toBe(
+      'incorrect'
+    );
+  });
+
+  it('stays strict when the field is absent, false or null', () => {
+    for (const foldLetterVariants of [undefined, false, null]) {
+      const question = { ...ARABIC, foldLetterVariants } as typeof ARABIC;
+      expect(getPartialScore(question, typed('مدرسه')), String(foldLetterVariants)).toBe(0);
+    }
+  });
+
+  it('reports the same correctness in evaluate mode as it scores', async () => {
+    const question = { ...ARABIC, foldLetterVariants: true };
+    const out = await model(question, typed('مدرسه'), { mode: 'evaluate' });
+
+    expect(out.correctness).toBe('correct');
+    expect(out).not.toHaveProperty('foldLetterVariants');
+  });
+});
+
 describe('every Unicode digit system', () => {
   it('scores whole, decimal and grouped numbers against their ASCII answer key', () => {
     const correctness = (correctAnswer: string, value: string, language?: string) =>

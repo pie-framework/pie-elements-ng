@@ -19,4 +19,5 @@ export default {
     other: 'Llawn',
   },
   responseArea: 'Man ymateb {index} o {total}',
+  choicesListA11y: 'Rhestr o ddewisiadau',
 } satisfies MessageCatalog;

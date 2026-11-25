@@ -43,6 +43,7 @@ function change(key: string, setting: Setting, value: unknown) {
       <legend class="pie-settings-group-name">{name}</legend>
       {#each entries as [key, setting] (key)}
         {#if setting.type === 'toggle'}
+          {@const helpId = setting.helperText ? `${uid}-${key}-help` : undefined}
           <label class="pie-settings-toggle">
             <span>{setting.label}</span>
             <input
@@ -50,9 +51,19 @@ function change(key: string, setting: Setting, value: unknown) {
               role="switch"
               checked={!!settingValue(key, setting)}
               disabled={setting.disabled}
+              aria-describedby={helpId}
               onchange={(e) => change(key, setting, (e.currentTarget as HTMLInputElement).checked)}
             />
           </label>
+          {#if setting.helperText}
+            <p id={helpId} class="pie-settings-help">
+              {#if typeof setting.helperText === 'string'}
+                {setting.helperText}
+              {:else}
+                {@render setting.helperText()}
+              {/if}
+            </p>
+          {/if}
         {:else if setting.type === 'radio'}
           <fieldset class="pie-settings-choice">
             <legend>{setting.label}</legend>
@@ -111,6 +122,11 @@ function change(key: string, setting: Setting, value: unknown) {
     gap: 12px;
   }
 
+  .pie-settings-help {
+    margin: -4px 0 0;
+    font-size: 0.875rem;
+  }
+
   .pie-settings-choice legend {
     margin-bottom: 4px;
   }
@@ -126,7 +142,8 @@ function change(key: string, setting: Setting, value: unknown) {
   }
 
   input:focus-visible {
-    outline: 2px solid var(--pie-focus-outline, #1a73e8);
+    outline: 2px solid
+      var(--pie-focus-keyboard-outline, var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))));
     outline-offset: 2px;
   }
 </style>

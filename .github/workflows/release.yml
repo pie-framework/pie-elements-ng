@@ -510,6 +510,17 @@ jobs:
         if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'oidc' && steps.gate.outputs.publish_run == 'true'
         run: node scripts/check-trusted-publishers.mjs
 
+      # The ledger check above reads committed state, so it passes while npm refuses a record
+      # that was revoked and re-created (the exchange 404s and npm publish shows only
+      # ENEEDAUTH). This asks npm the same question publish asks, for every package this run
+      # publishes, so a broken record stops the run once, up front, with the full list,
+      # instead of after the packages that sort before it have already published.
+      - name: Verify npm OIDC exchange for the packages to publish (oidc mode, publish runs only)
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'oidc' && steps.gate.outputs.publish_run == 'true'
+        run: node scripts/check-oidc-exchange.mjs
+        env:
+          RELEASE_PACKAGES: ${{ steps.snapshot_version.outputs.snapshot_packages || (github.event_name == 'workflow_dispatch' && inputs.release_packages) || '' }}
+
       # Publishes exactly the packages the version step versioned, by name. Selecting them by
       # "manifest differs from HEAD" would also publish the packages it only pinned. npm records
       # HEAD as each version's `gitHead`, which is what the next run measures from.

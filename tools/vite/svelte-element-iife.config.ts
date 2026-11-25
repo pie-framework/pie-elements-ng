@@ -2,7 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
-import { englishOnlyCatalogs } from './iife-english-only-catalogs';
+import { englishOnlyCatalogs } from './iife-english-only-catalogs.ts';
+import { iifeGlobalName } from './iife-global-name.ts';
 import { thirdPartyLicenses } from './third-party-licenses.ts';
 
 const packageDir = process.cwd();
@@ -16,13 +17,7 @@ const { name: packageName } = JSON.parse(
   readFileSync(resolve(packageDir, 'package.json'), 'utf-8')
 ) as { name: string };
 
-// @pie-element/mc-populated-blank -> McPopulatedBlankElement
-const globalName = `${packageName
-  .replace(/^@[^/]+\//, '')
-  .split(/[^a-zA-Z0-9]+/)
-  .filter(Boolean)
-  .map((segment) => segment[0].toUpperCase() + segment.slice(1))
-  .join('')}Element`;
+const globalName = iifeGlobalName(packageName);
 
 export default defineConfig({
   root: packageDir,
@@ -45,6 +40,9 @@ export default defineConfig({
       formats: ['iife'],
     },
     rolldownOptions: {
+      // IIFE output has no import.meta and Rolldown replaces it with {}. Its readers tolerate
+      // that: the MathJax adapter falls back to the configured asset root.
+      checks: { emptyImportMeta: false },
       external: () => false,
       output: {
         extend: true,

@@ -8,6 +8,7 @@ import { compareCompoundInequations } from './compare-compound-inequations.js';
 import {
   hasVariableDenominator,
   hasVariableExponentOfSum,
+  haveSameDenominatorZeros,
   isTooLargeToExpand,
 } from './expansion.js';
 import { areNumericallyEquivalent, getVariables } from './utils.js';
@@ -49,7 +50,7 @@ const evaluateNumber = (node: MathNode): number | undefined => {
   try {
     const value = numeric.evaluate(node.toString());
     return typeof value === 'number' ? value : undefined;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
@@ -162,7 +163,7 @@ const normalize = (
       if (!arg.isFunctionNode && !arg.isArrayNode && !containsInverseFlag && !pi) {
         try {
           arg = simplify(arg);
-        } catch (e) {
+        } catch {
           // ok;
         }
       }
@@ -186,7 +187,7 @@ const normalize = (
             } else {
               arg = rationalize(simplified, {}, true).expression;
             }
-          } catch (e) {
+          } catch {
             // ok;
           }
         }
@@ -222,7 +223,7 @@ const normalize = (
     // overcome TypeError
     try {
       r = simplify(r);
-    } catch (e) {}
+    } catch {}
   }
 
   log('[normalize] input: ', a.toString(), 'output: ', r.toString());
@@ -260,7 +261,7 @@ const constantValue = (node: any): number | undefined => {
 
     const value = +result;
     return Number.isFinite(value) ? value : undefined;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
@@ -378,16 +379,17 @@ export const isMathEqual = (a: any, b: any) => {
   }
 
   // not multiplied out, only their values can show that two expressions are equal, at points where
-  // both sides are defined or neither is
+  // both sides are defined or neither is. With a variable denominator, the denominators must also be
+  // zero at the same values, so a removable hole still keeps two forms apart (PIE-1540)
   if (
     expansion.skipped &&
-    [as, bs].every(
-      (node) =>
-        isPlainExpression(node) && !hasVariableDenominator(node) && !hasVariableExponentOfSum(node)
-    )
+    [as, bs].every((node) => isPlainExpression(node) && !hasVariableExponentOfSum(node))
   ) {
     const variables = [...new Set([...getVariables(as), ...getVariables(bs)])];
-    return areNumericallyEquivalent(as, bs, variables, undefined, { sameDomain: true });
+    return (
+      areNumericallyEquivalent(as, bs, variables, undefined, { sameDomain: true }) &&
+      haveSameDenominatorZeros(as, bs, variables)
+    );
   }
 
   return equality;

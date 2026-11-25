@@ -3,6 +3,8 @@ import { catalogs } from '../../i18n/index.js';
 import {
   applyPlacement,
   availableAnswers,
+  describeCancellation,
+  describeDeselection,
   describeIntro,
   describePlacementResult,
   describeSelection,
@@ -204,5 +206,16 @@ describe('describePlacementResult (spec rows 13 to 18)', () => {
 describe('availableAnswers', () => {
   it('lists the choices not placed in a current prompt, ignoring entries for removed prompts', () => {
     expect(availableAnswers(config, { 1: 'a', 99: 'b' }).map((a) => a.id)).toEqual(['b', 'c']);
+  });
+});
+
+describe('describeCancellation', () => {
+  it('sends the student back to the choices (row 9), where an unchanged drop sends them to select (row 18)', () => {
+    expect(describeCancellation(t, config, 'a')).toBe(
+      'Answer choice Alpha is no longer selected. Use TAB to move to an answer choice.',
+    );
+    expect(describeDeselection(t, config, 'a')).toBe(
+      'Answer choice Alpha is no longer selected. Use TAB to select an answer choice.',
+    );
   });
 });

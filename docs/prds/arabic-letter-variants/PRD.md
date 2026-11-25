@@ -1,6 +1,6 @@
 # Arabic letter-variant matching
 
-Status: **Proposal** · Impl. path: Extend `explicit-constructed-response`, `simple-cloze` · Follows Jira [PIE-1358](https://illuminate.atlassian.net/browse/PIE-1358), decision D9 on [PIE internationalization decisions and alternatives](https://illuminate.atlassian.net/wiki/spaces/CE/pages/19983991094/PIE+internationalization+decisions+and+alternatives)
+Status: **Accepted** · Impl. path: Extend `explicit-constructed-response`, `simple-cloze` · Follows Jira [PIE-1358](https://illuminate.atlassian.net/browse/PIE-1358), decision D9 on [PIE internationalization decisions and alternatives](https://illuminate.atlassian.net/wiki/spaces/CE/pages/19983991094/PIE+internationalization+decisions+and+alternatives)
 
 ## Context
 
@@ -49,3 +49,7 @@ The per-area toggle's accessible name carries the area number, "Accept Arabic sp
 ## Open questions
 
 - [ ] **Label and help-text wording.** "Accept Arabic Spelling Variants" and the help text need a check by an Arabic content lead. Authoring strings are not translated, so Arabic authors read them in English.
+
+## Status log
+
+- Accepted after review — implemented as proposed; the label and help-text wording stays open for an Arabic content lead.

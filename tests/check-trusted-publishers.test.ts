@@ -15,7 +15,7 @@ import {
 } from '../scripts/lib/trusted-publishers.mjs';
 
 const SLUG = 'pie-framework/pie-elements-ng';
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(import.meta.dirname, '..');
 
 const packages = [
   { name: '@pie-element/multiple-choice', workflow: 'release.yml' },

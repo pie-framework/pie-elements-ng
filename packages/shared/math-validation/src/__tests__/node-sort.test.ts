@@ -103,10 +103,6 @@ const fixtures: Fixture[] = [
   [['f (x) == 15', '15 == f (x)'], ' 15 ==f (x)'],
   [['abs(n) == 1989', '1989 == abs(n)'], ' 1989 == abs(n)'],
 ];
-const ff = [];
-
-// ["parenthesis", ["+"]];
-
 const lta = new LatexToAst();
 const atm = new AstToMathJs();
 
@@ -126,12 +122,78 @@ it.each`
   ${['*', ['+', ['*', 7, 9, ['/', 8, 6], '3'], 1], 7]}                                | ${['*', ['+', ['/', ['*', 8, 7, 9, '3'], 6], 1], 7]}
   ${['/', ['+', ['+', 'a', 'c']], ['*', ['+', 'b', 'd'], 'i'], '2']}                  | ${['/', ['+', 'a', 'c'], ['*', ['+', 'b', 'd'], 'i'], '2']}
   ${['/', ['+', ['+', 'a', 'c'], ['+', 'x', 'y']], ['*', ['+', 'b', 'd'], 'i'], '2']} | ${['/', ['+', 'a', 'c', 'x', 'y'], ['*', ['+', 'b', 'd'], 'i'], '2']}
+  ${['*', ['^', ['+', 'x', 1], 5], ['/', 1, 'x']]}                                    | ${['/', ['*', 1, ['^', ['+', 'x', 1], 5]], 'x']}
+  ${['*', 3, ['/', ['+', 'x', 1], 'y']]}                                              | ${['/', ['*', ['+', 'x', 1], 3], 'y']}
+  ${['*', ['/', 1, 'x'], ['/', 'a', 'y']]}                                            | ${['/', ['*', 1, 'a'], ['*', 'x', 'y']]}
+  ${['-', ['-', 'x']]}                                                                | ${['-', ['-', 'x']]}
+  ${['/', 'a', ['/', 'b', 'c']]}                                                      | ${['/', 'a', ['/', 'b', 'c']]}
+  ${['^', ['^', 3, 'x'], 2]}                                                          | ${['^', ['^', 3, 'x'], 2]}
 `('', ({ input, expected }) => {
   input = atm.convert(input);
   const result = flattenNode(input);
   const ex = atm.convert(expected);
 
   expect(result).toEqual(ex);
+});
+
+// literal mode with ignoreOrder only reorders: a product of several quotients keeps them, and a single
+// quotient still takes the factors beside it into its numerator (PIE-1541)
+it.each([
+  [
+    ['*', ['/', 1, 'x'], ['/', 'a', 'y']],
+    ['*', ['/', 1, 'x'], ['/', 'a', 'y']],
+  ],
+  [
+    ['*', ['/', 2, 3], ['/', 4, 5], 'x'],
+    ['*', ['/', 2, 3], ['/', 4, 5], 'x'],
+  ],
+  [
+    ['*', ['/', ['*', 'a', ['/', 'b', 'c']], 'd'], ['/', 'e', 'f']],
+    ['*', ['/', ['/', ['*', 'b', 'a'], 'c'], 'd'], ['/', 'e', 'f']],
+  ],
+  [
+    ['*', 2, ['/', 4, 5]],
+    ['/', ['*', 4, 2], 5],
+  ],
+  [
+    ['*', 7, 9, ['/', 8, 6], '3'],
+    ['/', ['*', 8, 7, 9, '3'], 6],
+  ],
+  [
+    ['*', ['^', ['+', 'x', 1], 5], ['/', 1, 'x']],
+    ['/', ['*', 1, ['^', ['+', 'x', 1], 5]], 'x'],
+  ],
+])('with keepQuotients, %j flattens to %j', (input, expected) => {
+  expect(flattenNode(atm.convert(input), { keepQuotients: true })).toEqual(atm.convert(expected));
+});
+
+// innermostFirst sorts what is inside a sum or product first, so a product of fractions, or of sums, is
+// ordered by their sorted forms however each is written (PIE-1541)
+describe('sort with keepQuotients and innermostFirst', () => {
+  const sorted = (latex: string) =>
+    s(atm.convert(lta.convert(latex)), { keepQuotients: true, innermostFirst: true });
+
+  it.each([
+    ['\\frac{zb}{2}\\cdot\\frac{c}{d}', '\\frac{bz}{2}\\cdot\\frac{c}{d}'],
+    ['\\frac{zb}{2}\\cdot\\frac{c}{d}', '\\frac{c}{d}\\cdot\\frac{bz}{2}'],
+    ['\\frac{1}{x}\\cdot\\frac{1}{y}\\cdot(x+1)', '(x+1)\\cdot\\frac{1}{y}\\cdot\\frac{1}{x}'],
+    ['(z+b)(w+c)', '(c+w)(b+z)'],
+    ['(z+b)(w+c)\\cdot\\frac{1}{x}', '\\frac{1}{x}\\cdot(c+w)(b+z)'],
+    [
+      '\\sin(x)\\cdot y\\cdot\\frac{1}{z}\\cdot\\frac{1}{w}',
+      '\\frac{1}{w}\\cdot y\\cdot\\frac{1}{z}\\cdot\\sin(x)',
+    ],
+  ])('%s sorts as %s', (a, b) => {
+    expect(sorted(a).equals(sorted(b))).toBe(true);
+  });
+
+  it.each([
+    ['\\frac{zb}{2}\\cdot\\frac{c}{d}', '\\frac{zc}{2}\\cdot\\frac{b}{d}'],
+    ['(x+1)\\cdot y', '\\frac{1}{x}\\cdot y'],
+    ['(z+b)(w+c)', '(z+c)(w+b)'],
+  ])('%s does not sort as %s', (a, b) => {
+    expect(sorted(a).equals(sorted(b))).toBe(false);
+  });
 });
 
 expect.extend({

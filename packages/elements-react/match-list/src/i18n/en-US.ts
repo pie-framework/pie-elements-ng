@@ -39,4 +39,5 @@ export default {
   remainingA11y: '{filled} of {total} drop areas have an answer choice. {available} available answer choices. Use TAB to select an answer choice.',
   completeA11y: 'Answer is complete. {total} of {total} drop areas have an answer choice.',
   deselectedA11y: 'Answer choice {choice} is no longer selected. Use TAB to select an answer choice.',
+  cancelledA11y: 'Answer choice {choice} is no longer selected. Use TAB to move to an answer choice.',
 };

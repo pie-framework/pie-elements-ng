@@ -19,10 +19,8 @@ import { assertTouchEnabled, touchTap, waitForSettled } from './touch-helpers';
  * - after Done, the editor holds one math node with exactly what was tapped. Done is covered by
  *   other keys once the field has content, so that is a `test.fixme` (see DONE_MECHANISM).
  *
- * The first key tapped after the toolbar opens is often lost, with a mouse as well (see
- * FIRST_KEY_MECHANISM), so it is a `test.fixme` of its own and the sequence starts from whatever the
- * first tap left. The demo session for this
- * element does not change while the editor is used (it stays `value: ""`, with typing through the
+ * The first key tapped after the toolbar opens is checked on its own (PIE-1509). The demo session for
+ * this element does not change while the editor is used (it stays `value: ""`, with typing through the
  * keyboard as well), so the editor's own math node is what the spec reads.
  *
  * `explicit-constructed-response` has no math toolbar in its delivery view, so it is not covered.
@@ -64,24 +62,13 @@ const DONE_MECHANISM =
   '(Playwright: another key "intercepts pointer events"). Look at the layout of ' +
   'math-toolbar/src/index.tsx and done-button.tsx.';
 
-const FIRST_KEY_MECHANISM =
-  'The first key tapped after Insert math opens the toolbar is lost in about two runs in three, ' +
-  'with a mouse click as well as a tap, and however long the toolbar has been open (1s and 2.5s ' +
-  'tried). The key does act - focus moves to it and back to the `math-field` - but the field ' +
-  'stays empty. Once, the field showed "1" and was emptied about 10ms later. Every key tapped ' +
-  'after it registers, and typing on the keyboard is unaffected. Not traced: look at how ' +
-  'math-toolbar/src/editor-and-pad.tsx `onClick` (`this.input.write`) and `onEditorChange` hand ' +
-  "the toolbar's `latex` back to the editor, and at the node view's own initial value in " +
-  'editable-html-tip-tap/src/extensions/math.tsx.';
-
 test.describe('math toolbar under touch', () => {
-  test.fixme('extended-text-entry: the first toolbar keypad tap registers', async ({
+  // MathLive reports a key a tick after it lands, and a re-render in that gap used to write the
+  // toolbar's empty starting latex back over it (PIE-1509).
+  test('extended-text-entry: the first toolbar keypad tap registers', async ({
     page,
   }, testInfo) => {
-    testInfo.annotations.push(
-      { type: 'fixme', description: FIRST_KEY_MECHANISM },
-      { type: 'issue', description: `${JIRA}PIE-1509` }
-    );
+    testInfo.annotations.push({ type: 'issue', description: `${JIRA}PIE-1509` });
     const { toolbar } = await openToolbar(page);
     const field = toolbar.locator('math-field').first();
 
@@ -92,12 +79,12 @@ test.describe('math toolbar under touch', () => {
     await expect.poll(() => shownText(field), { timeout: 3_000 }).toBe('1');
   });
 
-  // What works today: the keys after the first. The first is tapped and whatever it left in the
-  // field is the starting point, so the case above can be un-fixme'd without a gap.
+  // The keys after the first. The first is tapped and whatever it left in the field is the starting
+  // point, so this does not depend on the case above.
   test('extended-text-entry: each toolbar keypad tap after the first registers once', async ({
     page,
   }) => {
-    const { editor, toolbar } = await openToolbar(page);
+    const { toolbar } = await openToolbar(page);
     const field = toolbar.locator('math-field').first();
     const shown = () => shownText(field);
     const tap = (name: string) =>

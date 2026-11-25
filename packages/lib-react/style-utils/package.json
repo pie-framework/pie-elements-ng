@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/style-utils",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -27,7 +27,7 @@
     "dev": "bun x vite"
   },
   "devDependencies": {
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",

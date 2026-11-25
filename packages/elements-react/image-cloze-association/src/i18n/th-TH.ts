@@ -9,4 +9,5 @@ export default {
     other: 'เต็มแล้ว',
   },
   responseArea: 'พื้นที่คำตอบที่ {index} จาก {total}',
+  choicesListA11y: 'รายการตัวเลือก',
 } satisfies MessageCatalog;

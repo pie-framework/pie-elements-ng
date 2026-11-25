@@ -171,12 +171,16 @@ export const EnsureTextAfterMathPlugin = (mathNodeName) =>
     },
   });
 
+/**
+ * The position of the inline node (math, say) that only zero-width spaces separate from the caret,
+ * or -1 when there is none. The scan stays inside the caret's own line: in an empty line the first
+ * node before the caret is the line's own block, and taking it would swallow Backspace there, such
+ * as the one that takes an empty list item out of its list.
+ */
 const nodeBeforeZeroWidthSpace = (doc, from) => {
-  let i;
+  const lineStart = doc.resolve(from).start();
 
-  // finding if previous to the cursor there's a zero-width space
-  // and a non-text element, and deleting everything until the space
-  for (i = from; i > 0; i--) {
+  for (let i = from; i >= lineStart; i--) {
     const currentDoc = doc.nodeAt(i);
 
     if (currentDoc?.type?.name === 'text' && currentDoc.textContent !== '\u200b') {
@@ -184,11 +188,11 @@ const nodeBeforeZeroWidthSpace = (doc, from) => {
     }
 
     if (currentDoc && currentDoc?.type?.name !== 'text') {
-      break;
+      return currentDoc.isInline ? i : -1;
     }
   }
 
-  return i;
+  return -1;
 };
 
 /** The element holding the text at `pos`, whose direction decides which arrow key steps back there. */
@@ -504,8 +508,9 @@ export const MathNodeView = (props) => {
   // Only open the toolbar when this node is *explicitly* selected
   // via a NodeSelection — not when it's merely included in a broader
   // TextSelection or AllSelection (e.g. click-drag across math, or Cmd+A).
+  // A read-only editor (view and evaluate modes) still selects the node on click, but never edits it.
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || !editor.isEditable) return;
 
     const { selection } = editor.state;
     const isNodeSelected = selection.node?.type?.name === 'math';
@@ -705,15 +710,14 @@ export const MathNodeView = (props) => {
 
   return (
     <NodeViewWrapper
-      className={`math-node-${timestamp.current}`}
+      className={`math-node math-node-${timestamp.current}`}
       style={{
         display: 'inline-flex',
-        cursor: 'pointer',
         margin: '0 4px',
       }}
       data-selected={selected}
     >
-      <div ref={nodeRef} onClick={() => setShowToolbar(true)} contentEditable={false}>
+      <div ref={nodeRef} onClick={() => editor.isEditable && setShowToolbar(true)} contentEditable={false}>
         <MathPreview latex={latex} />
       </div>
       {showToolbar &&

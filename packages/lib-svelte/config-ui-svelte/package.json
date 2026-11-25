@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/config-ui-svelte",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Authoring layout and settings panel for Svelte 5 PIE author elements, after @pie-lib/config-ui",
   "type": "module",
@@ -25,6 +25,6 @@
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "svelte": "^5.57.3",
     "typescript": "^5.9.3",
-    "vite": "^8.3.6"
+    "vite": "^8.3.8"
   }
 }

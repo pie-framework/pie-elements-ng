@@ -9,4 +9,5 @@ export default {
     other: '가득 참',
   },
   responseArea: '응답 영역 {total}개 중 {index}번째',
+  choicesListA11y: '선택지 목록',
 } satisfies MessageCatalog;

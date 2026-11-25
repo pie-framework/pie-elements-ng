@@ -615,7 +615,7 @@ function handleDoneClick() {
   .pie-editable-html {
     position: relative;
     padding: 0px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--pie-border-dark, #ccc);
     border-radius: 4px;
     cursor: text;
     background-color: var(--pie-background, rgba(255, 255, 255, 0));
@@ -650,7 +650,11 @@ function handleDoneClick() {
     z-index: 20;
     cursor: pointer;
     justify-content: space-between;
-    background: var(--editable-html-toolbar-bg, #efefef);
+    /* render-ui's color.editorToolbar(): #efefef over white, darkening with a dark background. */
+    background: var(
+      --editable-html-toolbar-bg,
+      color-mix(in srgb, rgb(127 127 127) 12.5%, var(--pie-background, #ffffff))
+    );
     min-width: 280px;
     margin: 5px 0 0 0;
     padding: 2px;
@@ -689,15 +693,14 @@ function handleDoneClick() {
     -webkit-appearance: none;
     -moz-appearance: none;
 
-    /* Core button styling - matching React MenuBar exactly */
-    color: grey !important;
+    /* 80% --pie-text holds 3:1 on the toolbar fill in every pie-players scheme; --pie-disabled does not. */
+    color: color-mix(in srgb, var(--pie-text, black) 80%, var(--pie-background, #ffffff)) !important;
     display: inline-flex !important;
     padding: 2px !important;
     background: none !important;
     border: 0 !important;
     border-width: 0 !important;
     border-style: none !important;
-    outline: none !important;
     box-shadow: none !important;
     cursor: pointer !important;
     align-items: center !important;
@@ -711,12 +714,19 @@ function handleDoneClick() {
     text-transform: none !important;
   }
 
+  /* The reset's colour is !important, so a plain hover colour never applies. */
   .pie-editable-html :global(.pie-toolbar-btn:hover:not(:disabled)) {
-    color: black;
+    color: var(--pie-text, black) !important;
   }
 
-  .pie-editable-html :global(.pie-toolbar-btn:focus) {
-    outline: 2px solid #666;
+  .pie-editable-html :global(.toolbar button.pie-toolbar-btn:focus-visible) {
+    outline: 2px solid
+      var(--pie-focus-keyboard-outline, var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))));
+    outline-offset: 2px;
+  }
+
+  .pie-editable-html :global(.toolbar button.pie-toolbar-btn:disabled) {
+    color: var(--pie-disabled, grey) !important;
   }
 
   .pie-editable-html :global(.pie-toolbar-btn:disabled) {
@@ -724,13 +734,9 @@ function handleDoneClick() {
     cursor: not-allowed;
   }
 
-  .pie-editable-html :global(.pie-toolbar-btn:disabled:hover) {
-    color: grey;
-  }
-
   .pie-editable-html :global(.pie-toolbar-btn.active) {
     background: var(--pie-primary, #3f51b5);
-    color: var(--pie-white, #ffffff);
+    color: var(--pie-background, #ffffff);
   }
 
   .pie-editable-html :global(.pie-toolbar-btn svg) {
@@ -743,7 +749,7 @@ function handleDoneClick() {
     vertical-align: top;
     width: 28px;
     height: 28px;
-    color: var(--editable-html-toolbar-check, #00bb00);
+    color: var(--editable-html-toolbar-check, var(--pie-correct-icon, #00bb00));
     padding: 4px;
     display: inline-flex;
     align-items: center;
@@ -754,7 +760,11 @@ function handleDoneClick() {
   }
 
   .pie-editable-html :global(.done-btn:hover) {
-    background-color: rgba(0, 187, 0, 0.08);
+    background-color: color-mix(
+      in srgb,
+      var(--editable-html-toolbar-check, var(--pie-correct-icon, #00bb00)) 8%,
+      transparent
+    );
     border-radius: 4px;
   }
 
@@ -777,7 +787,7 @@ function handleDoneClick() {
     position: absolute;
     top: 100%;
     left: 0;
-    background: var(--pie-white, #ffffff);
+    background: var(--pie-background, #ffffff);
     display: flex;
     flex-direction: row;
     padding: 2px;
@@ -802,13 +812,12 @@ function handleDoneClick() {
   }
 
   .pie-editable-html :global(.align-menu-btn:hover) {
-    color: var(--pie-black, #000000);
-    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--pie-text, #000000);
+    background-color: var(--pie-background-dark, rgba(0, 0, 0, 0.04));
   }
 
   /* ProseMirror editor styles */
   .pie-editable-html :global(.ProseMirror) {
-    outline: none !important;
     min-height: 100px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
@@ -868,17 +877,17 @@ function handleDoneClick() {
   }
 
   .pie-editable-html :global(.ProseMirror code) {
-    background-color: rgba(88, 5, 255, 0.05);
+    background-color: var(--pie-secondary-background, rgba(88, 5, 255, 0.05));
     border-radius: 0.4rem;
-    color: #2e2b29;
+    color: var(--pie-text, #2e2b29);
     font-size: 0.85rem;
     padding: 0.25em 0.3em;
   }
 
   .pie-editable-html :global(.ProseMirror pre) {
-    background: #2e2b29;
+    background: var(--pie-text, #2e2b29);
     border-radius: 0.5rem;
-    color: #fff;
+    color: var(--pie-background, #fff);
     font-family: 'JetBrainsMono', monospace;
     margin: 1.5rem 0;
     padding: 0.75rem 1rem;
@@ -892,14 +901,14 @@ function handleDoneClick() {
   }
 
   .pie-editable-html :global(.ProseMirror blockquote) {
-    border-left: 3px solid rgba(61, 37, 20, 0.12);
+    border-left: 3px solid var(--pie-border-light, rgba(61, 37, 20, 0.12));
     margin: 1.5rem 0;
     padding-left: 1rem;
   }
 
   .pie-editable-html :global(.ProseMirror hr) {
     border: none;
-    border-top: 1px solid rgba(61, 37, 20, 0.08);
+    border-top: 1px solid var(--pie-border-light, rgba(61, 37, 20, 0.08));
     margin: 2rem 0;
   }
 
@@ -919,7 +928,7 @@ function handleDoneClick() {
   }
 
   .pie-editable-html :global(.ProseMirror table:not([border="1"]) tr) {
-    border-top: 1px solid #dfe2e5;
+    border-top: 1px solid var(--pie-border-light, #dfe2e5);
   }
 
   .pie-editable-html :global(.ProseMirror td),
@@ -932,32 +941,35 @@ function handleDoneClick() {
 
   .pie-editable-html :global(.ProseMirror table:not([border="1"]) td),
   .pie-editable-html :global(.ProseMirror table:not([border="1"]) th) {
-    border: 1px solid #dfe2e5;
+    border: 1px solid var(--pie-border-light, #dfe2e5);
   }
 
   .pie-editable-html :global(.ProseMirror table[border="1"]) {
-    border: 2px solid var(--pie-black, #000000);
+    border: 2px solid var(--pie-text, #000000);
   }
 
   .pie-editable-html :global(.ProseMirror table[border="1"] td),
   .pie-editable-html :global(.ProseMirror table[border="1"] th) {
-    border: 1px solid var(--pie-black, #000000);
+    border: 1px solid var(--pie-text, #000000);
   }
 
   .pie-editable-html :global(.ProseMirror .selectedCell) {
-    background-color: rgba(200, 200, 255, 0.4);
+    /* The literal's 40% alpha: most schemes set --pie-focus-checked to a solid accent. */
+    background-color: color-mix(in srgb, var(--pie-focus-checked, rgb(200, 200, 255)) 40%, transparent);
   }
 
   /* Placeholder */
   .pie-editable-html :global(.ProseMirror p.is-editor-empty:first-child::before) {
     content: attr(data-placeholder);
     float: left;
-    color: #adb5bd;
+    color: var(--pie-disabled-text, var(--pie-text, #adb5bd));
     pointer-events: none;
     height: 0;
   }
 
-  .pie-editable-html :global(.ProseMirror:focus) {
-    outline: none;
+  .pie-editable-html :global(.ProseMirror:focus-visible) {
+    outline: 2px solid
+      var(--pie-focus-keyboard-outline, var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))));
+    outline-offset: 2px;
   }
 </style>

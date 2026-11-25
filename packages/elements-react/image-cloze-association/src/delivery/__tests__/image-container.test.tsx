@@ -144,6 +144,16 @@ describe('ImageContainer drop targets', () => {
       expect(target).toHaveAttribute('tabindex', '-1');
     }
   });
+
+  it('tint the target under the pointer translucently, so the image under it stays readable', () => {
+    renderImageContainer({ selectedResponse: { id: 'a2', value: 'Venus' } });
+    const target = screen.getByRole('button', { name: 'Response area 1 of 3' });
+
+    fireEvent.mouseEnter(target);
+
+    expect(target).toHaveClass('is-over');
+    expect(getComputedStyle(target).backgroundColor).toBe('rgba(224, 224, 224, 0.4)');
+  });
 });
 
 describe('ImageContainer image', () => {
@@ -151,6 +161,14 @@ describe('ImageContainer image', () => {
     renderImageContainer();
 
     expect(screen.getByRole('img', { name: 'Image with 3 response areas' })).toHaveAttribute('src', 'planets.png');
+  });
+
+  it('uses the alt text from the model image when present', () => {
+    renderImageContainer({
+      image: { src: 'planets.png', width: 400, height: 300, alt: 'Number line labeled 8, 9, 10.' },
+    });
+
+    expect(screen.getByRole('img', { name: 'Number line labeled 8, 9, 10.' })).toHaveAttribute('src', 'planets.png');
   });
 
   it('describes the image in the item language', () => {
