@@ -83,7 +83,11 @@ describe('sanitizeModelHtml', () => {
       '<iframe src="data:text/html,<script>alert(1)</script>"></iframe>',
       'iframe[src]',
     ],
-    ['an object javascript: data', '<object data="javascript:alert(1)"></object>', 'object[data]'],
+    [
+      'an object javascript: data',
+      '<object data="javascript:alert(1)"></object>',
+      'object, img[src]',
+    ],
     [
       'an SVG animate',
       '<svg><a><animate attributeName="href" values="javascript:alert(1)"/></a></svg>',
@@ -126,13 +130,111 @@ describe('sanitizeModelHtml', () => {
     expect(iframe?.hasAttribute('allowfullscreen')).toBe(true);
   });
 
-  it('keeps an item-bank SVG image embedded as an object', () => {
-    const html =
-      '<object data="https://itembank.example.com/imagebank/1" type="image/svg+xml" width="600"></object>';
-    const object = parse(sanitizeModelHtml(html)).querySelector('object');
+  it.each([
+    [
+      'a SoundCloud player',
+      'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1',
+    ],
+    ['a Drive preview', 'https://drive.google.com/file/d/abc/preview'],
+    ['a PhET simulation', 'https://phet.colorado.edu/sims/html/a/latest/a_en.html'],
+  ])('keeps %s frame', (_, src) => {
+    const out = parse(sanitizeModelHtml(`<iframe src="${src}"></iframe>`));
 
-    expect(object?.getAttribute('data')).toBe('https://itembank.example.com/imagebank/1');
-    expect(object?.getAttribute('type')).toBe('image/svg+xml');
+    expect(out.querySelector('iframe')?.getAttribute('src')).toBe(src);
+  });
+
+  it('loads a protocol-relative frame over https', () => {
+    const out = parse(
+      sanitizeModelHtml('<iframe src="//content.jwplatform.com/players/abc.html"></iframe>')
+    );
+
+    expect(out.querySelector('iframe')?.getAttribute('src')).toBe(
+      'https://content.jwplatform.com/players/abc.html'
+    );
+  });
+
+  it.each([
+    ['from an unlisted origin', 'https://collector.example/abc'],
+    [
+      'on a listed origin outside its embed path',
+      'https://www.youtube.com/redirect?q=https://collector.example',
+    ],
+    ['whose path climbs out of the embed path', 'https://www.youtube.com/embed/../redirect'],
+    ['on a path sharing the prefix without the segment', 'https://www.youtube.com/embedx/abc'],
+    ['on a listed host over http', 'http://www.youtube.com/embed/abc'],
+    ['on a listed host on another port', 'https://www.youtube.com:8443/embed/abc'],
+    ['with credentials', 'https://user:pass@www.youtube.com/embed/abc'],
+    ['on a host page path', '/embed/abc'],
+    ['with no source', ''],
+  ])('removes a frame %s', (_, src) => {
+    const out = parse(sanitizeModelHtml(`<p>a</p><iframe src="${src}"></iframe>`));
+
+    expect(out.querySelector('iframe')).toBeNull();
+    expect(out.querySelector('p')?.textContent).toBe('a');
+  });
+
+  it('removes an editor placeholder frame', () => {
+    const html =
+      '<iframe data-type="video" data-editing="false" frameborder="0" allowfullscreen=""></iframe>';
+
+    expect(parse(sanitizeModelHtml(html)).querySelector('iframe')).toBeNull();
+  });
+
+  it('keeps a link from navigating a kept frame', () => {
+    const html =
+      '<iframe name="player" src="https://player.vimeo.com/video/1"></iframe>' +
+      '<a href="https://collector.example" target="player">x</a>';
+
+    expect(parse(sanitizeModelHtml(html)).querySelector('iframe')?.hasAttribute('name')).toBe(
+      false
+    );
+  });
+
+  it('renders an item-bank SVG object as an image', () => {
+    const html =
+      '<object data="https://itembank.example.com/imagebank/1" type="image/svg+xml" width="600" height="400" alt="A clock"></object>';
+    const out = parse(sanitizeModelHtml(html));
+    const img = out.querySelector('img');
+
+    expect(out.querySelector('object')).toBeNull();
+    expect(img?.getAttribute('src')).toBe('https://itembank.example.com/imagebank/1');
+    expect(img?.getAttribute('width')).toBe('600');
+    expect(img?.getAttribute('height')).toBe('400');
+    expect(img?.getAttribute('alt')).toBe('A clock');
+  });
+
+  it('shows the prompt a self-closing object swallowed, after its image', () => {
+    const html =
+      '<div><p><object data="imagebank/1" type="image/svg+xml"/></p></div>' +
+      '<div><p>What time does the clock show?</p></div>';
+    const sanitized = sanitizeModelHtml(html);
+
+    expect(sanitized).not.toContain('<object');
+    expect(sanitized.indexOf('<img src="imagebank/1"')).toBeGreaterThan(-1);
+    expect(sanitized.indexOf('What time does the clock show?')).toBeGreaterThan(
+      sanitized.indexOf('<img')
+    );
+  });
+
+  it('removes an object that holds no image and keeps its fallback', () => {
+    const out = parse(
+      sanitizeModelHtml(
+        '<object data="https://example.com/a.html" type="text/html"><p>fallback</p></object>'
+      )
+    );
+
+    expect(out.querySelector('object')).toBeNull();
+    expect(out.querySelector('img')).toBeNull();
+    expect(out.querySelector('p')?.textContent).toBe('fallback');
+  });
+
+  it('sanitizes the content a converted object held', () => {
+    const out = parse(
+      sanitizeModelHtml('<object data="a.svg"><img src="x" onerror="alert(1)"></object>')
+    );
+
+    expect(out.querySelector('[onerror]')).toBeNull();
+    expect(out.querySelectorAll('img')).toHaveLength(2);
   });
 
   it('keeps MathML semantics, annotations and prescripts', () => {

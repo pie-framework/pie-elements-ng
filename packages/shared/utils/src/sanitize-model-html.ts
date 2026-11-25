@@ -5,10 +5,10 @@
  * Players pass models to elements verbatim and sanitize only the item's own markup, so every
  * element sink that writes model HTML into the DOM runs it through `sanitizeModelHtml` first.
  *
- * The forbid-lists are pie-players' `sanitize-forbidden-lists.ts` without `<iframe>` and
- * `<object>`: production prompts embed videos and simulations in `<iframe>` and item-bank SVG
- * images in `<object>`. DOMPurify's URI check confines both to http(s) and relative URLs, and
- * `srcdoc`, `classid` and `codebase` are not allowed attributes.
+ * The forbid-lists are pie-players' `sanitize-forbidden-lists.ts` without `<iframe>`: production
+ * prompts embed videos, audio and simulations in frames, so an `<iframe>` whose `src` is one of
+ * `FRAME_SOURCES` stays and any other is removed. `srcdoc` is not an allowed attribute. An
+ * `<object>` holding an image becomes an `<img>`; any other `<object>` is removed.
  * https://github.com/pie-framework/pie-players/blob/develop/packages/players-shared/src/security/sanitize-forbidden-lists.ts
  */
 
@@ -57,7 +57,6 @@ export const MODEL_HTML_FORBIDDEN_ATTRS = [
 // sanitizer keeps the same MathML.
 const EXTRA_TAGS = new Set([
   'iframe',
-  'object',
   'mstack',
   'mlongdiv',
   'msgroup',
@@ -82,8 +81,6 @@ const EXTRA_ATTRS = [
   'allowfullscreen',
   'frameborder',
   'scrolling',
-  // <object data>, validated as a URI.
-  'data',
   // Elementary math and `<mspace linebreak>`.
   'stackalign',
   'charalign',
@@ -98,6 +95,86 @@ const EXTRA_ATTRS = [
   'mslinethickness',
   'linebreak',
 ];
+
+// The embed endpoints a frame may load: an https origin and a path matched on segment boundaries,
+// which keeps a provider's redirect and page paths out. They are the endpoints production item and
+// passage prompts embed (November 2026). A frame from anywhere else is a document its author
+// controls inside the item, free to imitate the host or request the permissions `allow` delegates.
+const FRAME_SOURCES = [
+  'https://www.youtube.com/embed',
+  'https://youtube.com/embed',
+  'https://www.youtube-nocookie.com/embed',
+  'https://player.vimeo.com/video',
+  'https://w.soundcloud.com/player',
+  'https://content.jwplatform.com/players',
+  'https://cdnapisec.kaltura.com/p',
+  'https://embed.ted.com/talks',
+  'https://www.khanacademy.org/embed_video',
+  'https://www.history.com/embed',
+  'https://edpuzzle.com/embed',
+  'https://giphy.com/embed',
+  'https://vocaroo.com/embed',
+  'https://drive.google.com/file',
+  'https://docs.google.com/document',
+  'https://www.google.com/maps/embed',
+  'https://phet.colorado.edu/sims',
+  'https://www.desmos.com/calculator',
+  'https://sampleitems.smarterbalanced.org/item',
+].map((source) => new URL(source));
+
+// Resolves a relative `src` to an origin no source has, and a protocol-relative one to https.
+const FRAME_BASE = 'https://invalid.invalid/';
+
+function allowedFrameSrc(src: string | null): string | null {
+  if (!src) return null;
+  let url: URL;
+  try {
+    url = new URL(src, FRAME_BASE);
+  } catch {
+    return null;
+  }
+  if (url.username || url.password) return null;
+  const allowed = FRAME_SOURCES.some(
+    (source) =>
+      url.origin === source.origin &&
+      (url.pathname === source.pathname || url.pathname.startsWith(`${source.pathname}/`))
+  );
+  return allowed ? url.href : null;
+}
+
+function keepAllowedFrame(node: Element) {
+  if (node.nodeName !== 'IFRAME') return;
+  const src = allowedFrameSrc(node.getAttribute('src'));
+  if (src === null) {
+    node.remove();
+    return;
+  }
+  node.setAttribute('src', src);
+  // A link whose `target` names the frame would navigate it anywhere.
+  node.removeAttribute('name');
+}
+
+// Production prompts use `<object>` only for item-bank SVG images, mostly written self-closing.
+// HTML ignores the slash, so the object holds the rest of the prompt as fallback content, hidden
+// once the image loads. The image becomes an `<img>` followed by that content, both sanitized
+// after it. DOMPurify removes the emptied object, and keeps the content of any other.
+const IMAGE_TYPE = /^\s*image\b/i;
+const IMAGE_OBJECT_ATTRS = ['alt', 'width', 'height', 'title', 'class', 'style'];
+
+function objectToImage(node: Node) {
+  if (node.nodeName !== 'OBJECT') return;
+  const object = node as Element;
+  const data = object.getAttribute('data');
+  const type = object.getAttribute('type');
+  if (!data || (type !== null && !IMAGE_TYPE.test(type))) return;
+  const img = object.ownerDocument.createElement('img');
+  img.setAttribute('src', data);
+  for (const name of IMAGE_OBJECT_ATTRS) {
+    const value = object.getAttribute(name);
+    if (value !== null) img.setAttribute(name, value);
+  }
+  object.after(img, ...object.childNodes);
+}
 
 // The one inline handler authored content relies on: Star's listening prompts play an `<audio>`
 // that has no controls from an image link. Such a link keeps the audio's id in `PLAY_AUDIO_ATTR`
@@ -138,6 +215,7 @@ let purifier: typeof DOMPurify | null = null;
 function getPurifier(): typeof DOMPurify {
   if (purifier) return purifier;
   purifier = DOMPurify(window);
+  purifier.addHook('beforeSanitizeElements', objectToImage);
   purifier.addHook('beforeSanitizeAttributes', (node) => {
     if (node.nodeName !== 'A') return;
     const id = PLAY_AUDIO_HANDLER.exec(node.getAttribute('onclick') ?? '')?.[2];
@@ -149,6 +227,7 @@ function getPurifier(): typeof DOMPurify {
       playListenerInstalled = true;
     }
   });
+  purifier.addHook('afterSanitizeAttributes', keepAllowedFrame);
   purifier.addHook('afterSanitizeAttributes', markAuthoredColors);
   return purifier;
 }
@@ -161,8 +240,9 @@ const cache = new Map<string, string>();
 let cachedChars = 0;
 
 /**
- * Returns `html` with scripts, event handlers, `javascript:` URLs and the forbidden tags and
- * attributes removed. A link that only plays an `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
+ * Returns `html` with scripts, event handlers, `javascript:` URLs, frames from outside
+ * `FRAME_SOURCES` and the forbidden tags and attributes removed. A link that only plays an
+ * `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
  * Elements with an authored color carry the markers a color scheme overrides them by; see
  * `markAuthoredColors`.
  * Returns an empty string where there is no DOM to sanitize against.
