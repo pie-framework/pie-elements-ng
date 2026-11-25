@@ -74,7 +74,8 @@ test.describe('drag-in-the-blank: the drag preview', () => {
   // A response area shows the choice held over it where the choice would land.
   test('previews a choice held over a response area in full, where it lands', async ({ page }) => {
     const text = CHOICES[0];
-    const area = root.locator('[aria-label="Blank 1"]');
+    // The blank is named by what it holds: empty while the choice is held over it, then the choice.
+    const area = root.locator('[aria-label="Blank 1 is empty"], [aria-label^="Blank 1 contains"]');
 
     /** The box of the text in `selector`, from the area's left edge, and whether it is cut off. */
     const textIn = (selector: string) =>
