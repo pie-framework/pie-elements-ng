@@ -32,6 +32,20 @@ describe('DragInTheBlank screen reader announcements', () => {
     expect(screen.getByRole('button', { name: 'Answer choice: alpha' })).toBeInTheDocument();
   });
 
+  it('keeps MathJax out of the hidden text, whose math is in words already', () => {
+    render(<DragInTheBlank {...props} onChange={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Answer choice: alpha' }));
+
+    for (const text of [
+      'Selected answer choice alpha. Use TAB to choose a blank.',
+      '2 available answer choices.',
+      'End of available answer choices. Use TAB to move to an answer choice.',
+    ]) {
+      expect(screen.getByText(text)).toHaveClass('mathjax_ignore');
+    }
+    expect(screen.getByText(/^This question has 2 blanks/)).toHaveClass('mathjax_ignore');
+  });
+
   it('stays quiet about what to do once the item is disabled', () => {
     const { container } = render(<DragInTheBlank {...props} disabled onChange={vi.fn()} />);
 

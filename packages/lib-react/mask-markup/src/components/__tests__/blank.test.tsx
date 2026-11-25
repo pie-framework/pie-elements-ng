@@ -1,11 +1,18 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { act, render, screen, fireEvent, within } from '@testing-library/react';
 import { DndContext, useDraggable } from '@dnd-kit/core';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-// MathJax loads off a CDN and has no bearing on the blank's semantics.
-vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
+// MathJax loads off a CDN; what the blank needs of it is whether it has rendered, and TeX as MathML once it has.
+const math = vi.hoisted(() => ({ ready: true, rendered: () => Promise.resolve() }));
+
+vi.mock('@pie-element/shared-math-rendering-mathjax', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  renderMath: () => math.rendered(),
+  latexToMml: (latex: string) =>
+    math.ready && latex === 'c^2' ? '<math><msup><mi>c</mi><mn>2</mn></msup></math>' : null,
+}));
 
 const { default: Blank } = await import('../blank');
 
@@ -72,8 +79,45 @@ describe('Blank', () => {
     expect(tile).toHaveAttribute('aria-describedby');
   });
 
-  it('leaves an answer with an image or math to name itself, under the blank\'s plain name', () => {
-    renderBlank({ choice: { id: 'c1', value: '<img src="a.png" alt="a planet">' } });
+  it('names an answer that is an image by its alt text, and one with math by its spoken math', () => {
+    const { rerender } = renderBlank({ choice: { id: 'c1', value: '<img src="a.png" alt="a planet">' } });
+
+    expect(screen.getByRole('group', { name: 'Blank 2 contains the answer choice a planet end of answer choice' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Answer choice: a planet in blank 2' })).toBeInTheDocument();
+
+    rerender(tree({ choice: { id: 'c2', value: '\\(c^2\\)' } }));
+
+    expect(screen.getByRole('group', { name: 'Blank 2 contains the answer choice c squared end of answer choice' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Answer choice: c squared in blank 2' })).toBeInTheDocument();
+  });
+
+  it('leaves math to name itself until it has rendered, and names it then', async () => {
+    let render!: () => void;
+    math.ready = false;
+    math.rendered = () =>
+      new Promise<void>((resolve) => {
+        render = resolve;
+      });
+
+    try {
+      // Not the HTML the test above spoke, which is kept once spoken.
+      renderBlank({ choice: { id: 'c2', value: '<span>\\(c^2\\)</span>' } });
+
+      expect(screen.getByRole('group', { name: 'Blank 2' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^Answer choice:/ })).not.toBeInTheDocument();
+
+      math.ready = true;
+      await act(async () => render());
+
+      expect(screen.getByRole('button', { name: 'Answer choice: c squared in blank 2' })).toBeInTheDocument();
+    } finally {
+      math.ready = true;
+      math.rendered = () => Promise.resolve();
+    }
+  });
+
+  it('leaves an image without alt text to name itself, under the blank\'s plain name', () => {
+    renderBlank({ choice: { id: 'c1', value: '<img src="a.png">' } });
 
     expect(screen.getByRole('group', { name: 'Blank 2' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Answer choice:/ })).not.toBeInTheDocument();

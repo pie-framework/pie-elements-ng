@@ -88,10 +88,17 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
   });
 
   useEffect(() => {
-    renderMath(rootRef.current);
+    let mounted = true;
+
+    // Math is spoken once the math renderer has started, so the tile is named again when its math has rendered.
+    Promise.resolve(renderMath(rootRef.current)).then(() => mounted && relabel());
+
+    return () => {
+      mounted = false;
+    };
   }, [choice.value]);
 
-  // dnd-kit calls the focused tile "draggable"; it is an answer choice.
+  // dnd-kit calls the focused tile "draggable"; it is an answer choice, named with its math spoken.
   const tileName = describeChoiceTile(translatorFor(language, relabel), choice);
   const tileA11y = tileName && !disabled ? { 'aria-label': tileName, 'aria-roledescription': undefined } : {};
 

@@ -1,6 +1,7 @@
 // The screen-reader wording for drag-in-the-blank, built from the markup, choices and session value
 // alone so the components stay free of it. Row numbers refer to the PIE-1022 announcement spec.
 
+import { speakChoice } from './choice-speech.js';
 import { catalogs } from './i18n/index.js';
 
 type Translate = ReturnType<typeof catalogs.forLocale>['t'];
@@ -27,43 +28,18 @@ export interface DragData {
   toChoiceBoard?: boolean;
 }
 
-const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
-
-// The browser knows every named entity (eacute, rsquo, minus, ...); parsing one decodes it without running anything.
-const decodeNamedEntity = (entity: string) => {
-  if (typeof DOMParser === 'undefined') {
-    return entity;
-  }
-
-  return new DOMParser().parseFromString(entity, 'text/html').documentElement.textContent ?? entity;
-};
-
-/** The text a choice reads as: tags gone, block ends and breaks as spaces, entities decoded. */
-const stripHtml = (html?: string) =>
-  html
-    ? html
-        .replace(/<\/(p|div|li|tr|h[1-6])>|<br\s*\/?>/gi, ' ')
-        .replace(/<[^>]*>/g, '')
-        .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, name: string) => {
-          if (name[0] === '#') {
-            const code = name[1].toLowerCase() === 'x' ? parseInt(name.slice(2), 16) : parseInt(name.slice(1), 10);
-
-            // fromCodePoint throws outside the Unicode range; such an entity is left as written
-            return Number.isNaN(code) || code < 0 || code > 0x10ffff ? entity : String.fromCodePoint(code);
-          }
-
-          return ENTITIES[name.toLowerCase()] ?? decodeNamedEntity(entity);
-        })
-        .replace(/\s+/g, ' ')
-        .trim()
-    : '';
-
 /** Ends a fragment with a full stop so it can be read before the next sentence. */
 const sentence = (text: string) => (!text || /[.!?。！？]$/.test(text) ? text : `${text}.`);
 
-/** Whether a choice's text alone would lose what it shows: an image or math is left to name itself. */
-export const hasRichContent = (html?: string) =>
-  !!html && (!stripHtml(html) || /<(img|svg|math|mjx-[a-z]+|audio|video|object|embed|iframe)\b|data-latex|\\\(|\\\[|\$\$/i.test(html));
+/**
+ * A choice's words for a tile or blank name, or undefined when the name is better left to the content:
+ * nothing to say (an image without alt text), or math the renderer cannot speak yet.
+ */
+const nameText = (choice?: { value?: string }) => {
+  const { text, complete } = speakChoice(choice?.value);
+
+  return complete && text ? text : undefined;
+};
 
 /** Blank ids in reading order, from the {{n}} placeholders of the markup. */
 export const blankIds = (markup?: string) => [
@@ -75,11 +51,12 @@ const numberOf = (id: string | number | undefined) => Number(id) + 1;
 
 const choiceOf = (config: Config, choiceId: string | undefined) => config.choices.find((c) => c.id === choiceId);
 
-// A choice with no text (an image, say) is named by its position among the choices, not its opaque id.
+// A choice is said as its tile names it, math spoken; one with nothing to say (an image without alt
+// text) is named by its position among the choices, not its opaque id.
 const choiceLabel = (t: Translate, config: Config, choiceId: string | undefined) => {
   const position = config.choices.findIndex((c) => c.id === choiceId) + 1;
 
-  return stripHtml(choiceOf(config, choiceId)?.value) || t('answerA11y', { id: position || String(choiceId) });
+  return speakChoice(choiceOf(config, choiceId)?.value).text || t('answerA11y', { id: position || String(choiceId) });
 };
 
 // Only the current blanks' entries count as filled: a restored session can still hold ones for blanks since removed.
@@ -183,9 +160,9 @@ export const describeBlank = (t: Translate, id: string | number, choice?: { valu
     return t('blankEmptyA11y', { number });
   }
 
-  return hasRichContent(choice.value)
-    ? undefined
-    : t('blankFilledA11y', { number, choice: stripHtml(choice.value) });
+  const text = nameText(choice);
+
+  return text === undefined ? undefined : t('blankFilledA11y', { number, choice: text });
 };
 
 /** Rows 6 and 7: the name of a choice tile, in the pool or in a blank. Undefined when it names itself. */
@@ -194,11 +171,11 @@ export const describeChoiceTile = (
   choice: { id: string; value?: string },
   blankId?: string | number,
 ) => {
-  if (hasRichContent(choice.value)) {
+  const text = nameText(choice);
+
+  if (text === undefined) {
     return undefined;
   }
-
-  const text = stripHtml(choice.value);
 
   return blankId === undefined || blankId === null
     ? t('answerChoiceA11y', { choice: text })

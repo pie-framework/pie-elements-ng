@@ -102,10 +102,11 @@ describe('drag-in-the-blank announcements', () => {
     );
   });
 
-  it('leaves an entity outside the Unicode range as written instead of throwing', () => {
+  it('reads an entity outside the Unicode range as the tile shows it, instead of throwing', () => {
     const choice = { id: 'x', value: 'A &#x110000; B &#99999999; C &#65;' };
 
-    expect(describeChoiceTile(t, choice)).toBe('Answer choice: A &#x110000; B &#99999999; C A');
+    // The browser draws such an entity as the replacement character, and so the name has it too.
+    expect(describeChoiceTile(t, choice)).toBe('Answer choice: A \ufffd B \ufffd C A');
   });
 
   it('decodes any named entity, not just the common ones', () => {
@@ -114,7 +115,7 @@ describe('drag-in-the-blank announcements', () => {
     expect(describeChoiceTile(t, choice)).toBe('Answer choice: café it’s 5 − 3');
   });
 
-  it('leaves math in any delimiter to name itself', () => {
+  it('leaves math in any delimiter to name itself while the math renderer cannot speak it', () => {
     for (const value of ['\\(a^2\\)', '\\[\\pi r^2\\]', '$$x+1$$', '<mjx-container>a</mjx-container>']) {
       expect(describeChoiceTile(t, { id: 'm', value })).toBeUndefined();
     }

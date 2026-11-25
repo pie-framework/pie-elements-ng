@@ -6,7 +6,7 @@ import { findKey } from '@pie-element/shared-lodash';
 import Choice from './choice.js';
 import { DragDroppablePlaceholder } from '@pie-lib/drag';
 import { describeAvailableChoices, translatorFor } from '../announcements.js';
-import { visuallyHidden } from '../visually-hidden.js';
+import { MATHJAX_IGNORE, visuallyHidden } from '../visually-hidden.js';
 
 export default class Choices extends React.Component {
   static propTypes = {
@@ -84,7 +84,11 @@ export default class Choices extends React.Component {
 
     return (
       <div style={elementStyle} onClick={this.handlePoolClick}>
-        {available && <div style={visuallyHidden}>{available.count}</div>}
+        {available && (
+          <div className={MATHJAX_IGNORE} style={visuallyHidden}>
+            {available.count}
+          </div>
+        )}
         <DragDroppablePlaceholder disabled={disabled} instanceId={instanceId}>
           {filteredChoices.map((c, index) => (
             <Choice
@@ -98,7 +102,11 @@ export default class Choices extends React.Component {
             />
           ))}
         </DragDroppablePlaceholder>
-        {available && <div style={visuallyHidden}>{available.end}</div>}
+        {available && (
+          <div className={MATHJAX_IGNORE} style={visuallyHidden}>
+            {available.end}
+          </div>
+        )}
       </div>
     );
   }

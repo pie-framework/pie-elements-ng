@@ -10,7 +10,7 @@ import Blank from './components/blank.js';
 import { withMask } from './with-mask.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import { blanksFirst } from './collision-detection.js';
-import { visuallyHidden } from './visually-hidden.js';
+import { MATHJAX_IGNORE, visuallyHidden } from './visually-hidden.js';
 import {
   applyPlacement,
   describeDeselection,
@@ -436,8 +436,13 @@ export default class DragInTheBlank extends React.Component {
         accessibility={{ announcements, screenReaderInstructions: { draggable: t('dragInstructionsA11y') } }}
       >
         <div ref={(ref) => (this.rootRef = ref)} style={style}>
-          {!disabled && <div style={visuallyHidden}>{describeIntro(t, announcementConfig, announcementValue)}</div>}
-          <div style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
+          {/* What these say has its math in words already, so MathJax is kept out of them. */}
+          {!disabled && (
+            <div className={MATHJAX_IGNORE} style={visuallyHidden}>
+              {describeIntro(t, announcementConfig, announcementValue)}
+            </div>
+          )}
+          <div className={MATHJAX_IGNORE} style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
             {this.state.resultMessage}
           </div>
           <Choices

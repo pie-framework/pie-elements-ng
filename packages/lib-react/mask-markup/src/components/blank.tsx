@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useEffect, useReducer, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
 import { describeBlank, describeChoiceTile, translatorFor } from '../announcements.js';
+import { speakChoice } from '../choice-speech.js';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { grey } from '@mui/material/colors';
 
@@ -397,6 +398,30 @@ function DragDropBlank({
     },
   });
 
+  // The placed tile, to wait on its math: until the math renderer has started, math cannot be spoken, so
+  // the tile and the blank keep their plain names and are named again once the math has rendered.
+  const tileRef = useRef(null);
+  const setTileRef = useCallback(
+    (node) => {
+      tileRef.current = node;
+      setDragNodeRef(node);
+    },
+    [setDragNodeRef],
+  );
+  const awaitsSpeech = !!choice && !speakChoice(choice.value).complete;
+
+  useEffect(() => {
+    if (!awaitsSpeech || !tileRef.current) return undefined;
+
+    let mounted = true;
+
+    Promise.resolve(renderMath(tileRef.current)).then(() => mounted && relabel());
+
+    return () => {
+      mounted = false;
+    };
+  }, [awaitsSpeech, choice?.value]);
+
   // Setup droppable functionality
   const {
     setNodeRef: setDropNodeRef,
@@ -459,7 +484,8 @@ function DragDropBlank({
   };
 
   const t = translatorFor(language, relabel);
-  // A blank holding an image or math has no text to read, so it keeps its plain name and the content speaks.
+  // A blank says what it holds, an image by its alt text and math spoken; until there are words for it
+  // (math not rendered yet, an image without alt text) it keeps its plain name and the content speaks.
   const blankName = describeBlank(t, id, choice) ?? t('blank', { index: Number(id) + 1 });
   // dnd-kit calls the focused tile "draggable"; it is an answer choice in a blank.
   const tileName = isInnerDraggable ? describeChoiceTile(t, choice, id) : undefined;
@@ -489,7 +515,7 @@ function DragDropBlank({
       showsPointerCursor={hasSelection && !disabled}
     >
       <StyledDragHandle
-        ref={setDragNodeRef}
+        ref={setTileRef}
         {...(isInnerDraggable ? { ...dragAttributes, ...tileA11y } : {})}
         {...dragListeners}
       >

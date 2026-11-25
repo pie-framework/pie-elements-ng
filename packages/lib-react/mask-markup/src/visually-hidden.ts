@@ -10,3 +10,9 @@ export const visuallyHidden = {
   whiteSpace: 'nowrap',
   border: 0,
 } as const;
+
+/**
+ * The class MathJax leaves alone (its default `ignoreHtmlClass`). Hidden text that already says math in
+ * words carries it, so a typeset of the element around it does not turn that text into unnamed math.
+ */
+export const MATHJAX_IGNORE = 'mathjax_ignore';
