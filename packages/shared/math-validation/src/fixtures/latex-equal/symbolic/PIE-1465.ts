@@ -37,5 +37,7 @@ export default {
     },
     // both leave out x = 0, so they describe the same region
     { target: '\\frac{y}{x^2}>1', eq: ['x^2y>x^4'], knownIssue: 'PIE-1465' },
+    // both match -99 ≤  9-12r ≤  45 and mean -3 ≤ r ≤ 9, but don't match each other in either order
+    { target: '-108/-12≥ -12r/-12 ≥  36/-12', eq: ['9 ≥ r ≥  -3'], knownIssue: 'PIE-1465' },
   ],
 };

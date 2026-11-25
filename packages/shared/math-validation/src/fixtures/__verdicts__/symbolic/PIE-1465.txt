@@ -43,3 +43,5 @@ false	eq	symbolic	"57.06 - 24.74 ≤ 24.74 - 24.74 + 1.54b ≤ 171.02- 24.74"	"3
 false	eq/rev	symbolic	"32.32 ≤1.54b ≤146.28"	"57.06 - 24.74 ≤ 24.74 - 24.74 + 1.54b ≤ 171.02- 24.74"
 false	eq	symbolic	"\\frac{y}{x^2}>1"	"x^2y>x^4"
 false	eq/rev	symbolic	"x^2y>x^4"	"\\frac{y}{x^2}>1"
+false	eq	symbolic	"-108/-12≥ -12r/-12 ≥  36/-12"	"9 ≥ r ≥  -3"
+false	eq/rev	symbolic	"9 ≥ r ≥  -3"	"-108/-12≥ -12r/-12 ≥  36/-12"
