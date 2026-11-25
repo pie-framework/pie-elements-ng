@@ -6,9 +6,10 @@
  * element sink that writes model HTML into the DOM runs it through `sanitizeModelHtml` first.
  *
  * The forbid-lists are pie-players' `sanitize-forbidden-lists.ts` without `<iframe>`: production
- * prompts embed videos, audio and simulations in frames, so an `<iframe>` whose `src` is one of
- * `FRAME_SOURCES` stays and any other is removed. `srcdoc` is not an allowed attribute. An
- * `<object>` holding an image becomes an `<img>`; any other `<object>` is removed.
+ * prompts embed videos, audio and simulations in frames. A frame loads from an https origin other
+ * than the document's, inside the sandbox and permissions of `FRAME_SANDBOX` and `FRAME_ALLOW`;
+ * `srcdoc` is not an allowed attribute. An `<object>` holding an image becomes an `<img>`; any
+ * other `<object>` is removed.
  * https://github.com/pie-framework/pie-players/blob/develop/packages/players-shared/src/security/sanitize-forbidden-lists.ts
  */
 
@@ -77,8 +78,6 @@ const EXTRA_ATTRS = [
   // <img alignment>, written by the image editors and read by PreviewPrompt.
   'alignment',
   'target',
-  'allow',
-  'allowfullscreen',
   'frameborder',
   'scrolling',
   // Elementary math and `<mspace linebreak>`.
@@ -96,83 +95,63 @@ const EXTRA_ATTRS = [
   'linebreak',
 ];
 
-// The embed endpoints a frame may load: an https origin and a path matched on segment boundaries,
-// which keeps a provider's redirect and page paths out. They are the endpoints production item and
-// passage prompts embed (November 2026). A frame from anywhere else is a document its author
-// controls inside the item, free to imitate the host or request the permissions `allow` delegates.
-const FRAME_SOURCES = [
-  'https://www.youtube.com/embed',
-  'https://youtube.com/embed',
-  'https://www.youtube-nocookie.com/embed',
-  'https://player.vimeo.com/video',
-  'https://w.soundcloud.com/player',
-  'https://content.jwplatform.com/players',
-  'https://cdnapisec.kaltura.com/p',
-  'https://embed.ted.com/talks',
-  'https://www.khanacademy.org/embed_video',
-  'https://www.history.com/embed',
-  'https://edpuzzle.com/embed',
-  'https://giphy.com/embed',
-  'https://vocaroo.com/embed',
-  'https://drive.google.com/file',
-  'https://docs.google.com/document',
-  'https://www.google.com/maps/embed',
-  'https://phet.colorado.edu/sims',
-  'https://www.desmos.com/calculator',
-  'https://sampleitems.smarterbalanced.org/item',
-].map((source) => new URL(source));
+// Every frame runs in the same sandbox and permissions, whatever it loads: its own scripts and
+// storage, sandboxed popups and form posts, fullscreen, picture-in-picture and protected media. It
+// cannot navigate the host page, open dialogs, download, autoplay or reach the device. Which
+// origins a frame may load is the host's call, made in its CSP `frame-src`.
+const FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation';
+const FRAME_ALLOW = 'encrypted-media; fullscreen; picture-in-picture';
 
-// Resolves a relative `src` to an origin no source has, and a protocol-relative one to https.
-const FRAME_BASE = 'https://invalid.invalid/';
+// Resolves a protocol-relative `src` to https and a relative one to an origin no frame may load.
+const NO_ORIGIN = 'https://invalid.invalid';
 
-function allowedFrameSrc(src: string | null): string | null {
+// A same-origin frame with `allow-same-origin` and `allow-scripts` can lift its own sandbox, and a
+// relative `src` is same-origin.
+function frameSrc(src: string | null): string | null {
   if (!src) return null;
   let url: URL;
   try {
-    url = new URL(src, FRAME_BASE);
+    url = new URL(src, `${NO_ORIGIN}/`);
   } catch {
     return null;
   }
-  if (url.username || url.password) return null;
-  const allowed = FRAME_SOURCES.some(
-    (source) =>
-      url.origin === source.origin &&
-      (url.pathname === source.pathname || url.pathname.startsWith(`${source.pathname}/`))
-  );
-  return allowed ? url.href : null;
+  if (url.protocol !== 'https:') return null;
+  if (url.origin === NO_ORIGIN || url.origin === window.location.origin) return null;
+  return url.href;
 }
 
-function keepAllowedFrame(node: Element) {
+function containFrame(node: Element) {
   if (node.nodeName !== 'IFRAME') return;
-  const src = allowedFrameSrc(node.getAttribute('src'));
+  const src = frameSrc(node.getAttribute('src'));
   if (src === null) {
     node.remove();
     return;
   }
   node.setAttribute('src', src);
-  // A link whose `target` names the frame would navigate it anywhere.
+  node.setAttribute('sandbox', FRAME_SANDBOX);
+  node.setAttribute('allow', FRAME_ALLOW);
+  // A link whose `target` names the frame would navigate it to any URL.
   node.removeAttribute('name');
 }
 
 // Production prompts use `<object>` only for item-bank SVG images, mostly written self-closing.
 // HTML ignores the slash, so the object holds the rest of the prompt as fallback content, hidden
-// once the image loads. The image becomes an `<img>` followed by that content, both sanitized
-// after it. DOMPurify removes the emptied object, and keeps the content of any other.
-const IMAGE_TYPE = /^\s*image\b/i;
-const IMAGE_OBJECT_ATTRS = ['alt', 'width', 'height', 'title', 'class', 'style'];
+// once the image loads. An object that declares an image type, or none, becomes an `<img>` with its
+// attributes, followed by that content; both are sanitized after it. DOMPurify removes the emptied
+// object, and keeps the content of any other.
+const IMAGE_TYPE = /^\s*image\//i;
 
 function objectToImage(node: Node) {
   if (node.nodeName !== 'OBJECT') return;
   const object = node as Element;
   const data = object.getAttribute('data');
   const type = object.getAttribute('type');
-  if (!data || (type !== null && !IMAGE_TYPE.test(type))) return;
+  if (!data || (type && !IMAGE_TYPE.test(type))) return;
   const img = object.ownerDocument.createElement('img');
-  img.setAttribute('src', data);
-  for (const name of IMAGE_OBJECT_ATTRS) {
-    const value = object.getAttribute(name);
-    if (value !== null) img.setAttribute(name, value);
+  for (const { name, value } of object.attributes) {
+    if (name !== 'data' && name !== 'type') img.setAttribute(name, value);
   }
+  img.setAttribute('src', data);
   object.after(img, ...object.childNodes);
 }
 
@@ -227,7 +206,7 @@ function getPurifier(): typeof DOMPurify {
       playListenerInstalled = true;
     }
   });
-  purifier.addHook('afterSanitizeAttributes', keepAllowedFrame);
+  purifier.addHook('afterSanitizeAttributes', containFrame);
   purifier.addHook('afterSanitizeAttributes', markAuthoredColors);
   return purifier;
 }
@@ -240,8 +219,8 @@ const cache = new Map<string, string>();
 let cachedChars = 0;
 
 /**
- * Returns `html` with scripts, event handlers, `javascript:` URLs, frames from outside
- * `FRAME_SOURCES` and the forbidden tags and attributes removed. A link that only plays an
+ * Returns `html` with scripts, event handlers, `javascript:` URLs and the forbidden tags and
+ * attributes removed, and frames contained by `FRAME_SANDBOX` and `FRAME_ALLOW`. A link that only plays an
  * `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
  * Elements with an authored color carry the markers a color scheme overrides them by; see
  * `markAuthoredColors`.
