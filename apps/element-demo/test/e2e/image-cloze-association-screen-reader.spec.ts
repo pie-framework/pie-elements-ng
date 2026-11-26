@@ -19,7 +19,9 @@ const dragRegion = (page: Page) => page.locator('[id^="DndLiveRegion"]').first()
 const resultRegion = (page: Page) => deliveryContainer(page).locator('[role="status"]').first();
 
 const areasHolding = async (page: Page): Promise<number[]> =>
-  ((await getSessionState(page))?.answers ?? []).map((a: { containerIndex: number }) => a.containerIndex);
+  ((await getSessionState(page))?.answers ?? []).map(
+    (a: { containerIndex: number }) => a.containerIndex
+  );
 
 /** The keyboard sensor listens for keys from the task after a pick-up, so each key waits a moment. */
 async function pressInTurn(page: Page, keys: string[]) {
@@ -31,7 +33,9 @@ async function pressInTurn(page: Page, keys: string[]) {
 
 /** Focuses the choice named `text`, in the pool or in a drop area. */
 const choice = (page: Page, text: string) =>
-  deliveryContainer(page).getByRole('button', { name: new RegExp(`^Answer choice: ${text}( in drop area .*)?$`) }).first();
+  deliveryContainer(page)
+    .getByRole('button', { name: new RegExp(`^Answer choice: ${text}( in drop area .*)?$`) })
+    .first();
 
 /** What the learner hears for the focused element: its name, and the instruction read after it. */
 const focusedName = (page: Page) =>
@@ -43,7 +47,9 @@ const focusedName = (page: Page) =>
 test.describe('image-cloze-association: screen reader announcements', () => {
   test.beforeEach(async ({ page }) => {
     await openDeliverRoute(page, 'image-cloze-association', 'venn');
-    await expect(deliveryContainer(page).getByRole('button', { name: ANY_CHOICE }).first()).toBeVisible();
+    await expect(
+      deliveryContainer(page).getByRole('button', { name: ANY_CHOICE }).first()
+    ).toBeVisible();
   });
 
   test('the intro reads rows 1 to 4 after the prompt', async ({ page }) => {
@@ -52,14 +58,14 @@ test.describe('image-cloze-association: screen reader announcements', () => {
       .allTextContents();
 
     expect(paragraphs[0]).toMatch(
-      /^The image shows .*\. It has 3 drop areas, which can each hold up to \d+ answer choices\. There are 4 answer choices, which cannot be reused\.$/,
+      /^The image shows .*\. It has 3 drop areas, which can each hold up to \d+ answer choices\. There are 4 answer choices, which cannot be reused\.$/
     );
     expect(paragraphs[1]).toBe(
-      'Use TAB to move between answer choices and drop areas, ENTER to select/drop, and ESC to cancel.',
+      'Use TAB to move between answer choices and drop areas, ENTER to select/drop, and ESC to cancel.'
     );
     expect(paragraphs.slice(2, 5).every((p) => /^Drop area .+ is empty\.$/.test(p))).toBe(true);
     expect(paragraphs[5]).toMatch(
-      /^4 available answer choices\. (Answer choice: .+ ){4}End of available answer choices\. Use TAB to move to an answer choice\.$/,
+      /^4 available answer choices\. (Answer choice: .+ ){4}End of available answer choices\. Use TAB to move to an answer choice\.$/
     );
   });
 
@@ -75,15 +81,17 @@ test.describe('image-cloze-association: screen reader announcements', () => {
 
     await page.keyboard.press('Enter');
     await expect(dragRegion(page)).toHaveText(
-      'Selected answer choice grass. Use TAB to move to a drop area.',
+      'Selected answer choice grass. Use TAB to move to a drop area.'
     );
   });
 
-  test('rows 9 and 11: the areas and the pool are read while a choice is carried', async ({ page }) => {
+  test('rows 9 and 11: the areas and the pool are read while a choice is carried', async ({
+    page,
+  }) => {
     await choice(page, 'grass').focus();
     await pressInTurn(page, ['Enter', 'Tab']);
     await expect(dragRegion(page)).toHaveText(
-      /^Selected drop area .+\. Press ENTER to move selected answer choice grass here or TAB to move to a different drop area\.$/,
+      /^Selected drop area .+\. Press ENTER to move selected answer choice grass here or TAB to move to a different drop area\.$/
     );
 
     // Tab on, past the areas, to the pool.
@@ -91,7 +99,7 @@ test.describe('image-cloze-association: screen reader announcements', () => {
       await pressInTurn(page, ['Tab']);
     }
     await expect(dragRegion(page)).toHaveText(
-      'Press ENTER to leave selected answer choice grass unplaced or TAB to move to a drop area.',
+      'Press ENTER to leave selected answer choice grass unplaced or TAB to move to a drop area.'
     );
   });
 
@@ -99,7 +107,7 @@ test.describe('image-cloze-association: screen reader announcements', () => {
     await choice(page, 'stripes').focus();
     await pressInTurn(page, ['Enter', 'Escape']);
     await expect(dragRegion(page)).toHaveText(
-      'Answer choice stripes is no longer selected. Use TAB to move to an answer choice.',
+      'Answer choice stripes is no longer selected. Use TAB to move to an answer choice.'
     );
     expect(await areasHolding(page)).toEqual([]);
   });
@@ -117,13 +125,18 @@ test.describe('image-cloze-association: screen reader announcements', () => {
     // Row 6: a placed tile is named with its area.
     const placedGrass = choice(page, 'grass');
     await placedGrass.focus();
-    await expect(placedGrass).toHaveAttribute('aria-label', /^Answer choice: grass in drop area .+$/);
+    await expect(placedGrass).toHaveAttribute(
+      'aria-label',
+      /^Answer choice: grass in drop area .+$/
+    );
 
     // Row 13: carried on to another area.
     await pressInTurn(page, ['Enter', 'Tab', 'Enter']);
     await expect.poll(async () => (await areasHolding(page))[0]).not.toBe(first);
     await expect(async () => {
-      expect(await focusedName(page)).toMatch(/^Moved answer choice grass from .+ drop area to .+ drop area\./);
+      expect(await focusedName(page)).toMatch(
+        /^Moved answer choice grass from .+ drop area to .+ drop area\./
+      );
     }).toPass({ timeout: 3000 });
 
     // Row 10, then row 14: carried to the pool.
@@ -135,7 +148,7 @@ test.describe('image-cloze-association: screen reader announcements', () => {
       if (text?.startsWith('Press ENTER to remove')) break;
     }
     await expect(dragRegion(page)).toHaveText(
-      /^Press ENTER to remove selected answer choice grass from .+ drop area or TAB to move to a drop area\.$/,
+      /^Press ENTER to remove selected answer choice grass from .+ drop area or TAB to move to a drop area\.$/
     );
     await pressInTurn(page, ['Enter']);
     await expect.poll(() => areasHolding(page)).toEqual([]);
@@ -144,7 +157,9 @@ test.describe('image-cloze-association: screen reader announcements', () => {
     }).toPass({ timeout: 3000 });
   });
 
-  test('row 12: a full area refuses the drop, says why on screen and to a screen reader', async ({ page }) => {
+  test('row 12: a full area refuses the drop, says why on screen and to a screen reader', async ({
+    page,
+  }) => {
     const sentence =
       /You’ve reached the limit of \d+ responses per area\. To add another response, one must first be removed\./;
     const root = deliveryContainer(page);
@@ -153,7 +168,10 @@ test.describe('image-cloze-association: screen reader announcements', () => {
     for (const text of ['grass', 'wild']) {
       await choice(page, text).click();
       // Empty, the area is a button; once it holds a choice it is a group.
-      await root.getByRole('button', { name: BOTH, exact: true }).or(root.getByRole('group', { name: BOTH, exact: true })).click();
+      await root
+        .getByRole('button', { name: BOTH, exact: true })
+        .or(root.getByRole('group', { name: BOTH, exact: true }))
+        .click();
       await page.waitForTimeout(300);
     }
     await expect.poll(() => areasHolding(page)).toHaveLength(2);
@@ -181,9 +199,15 @@ test.describe('image-cloze-association: screen reader announcements', () => {
     await pressInTurn(page, ['Enter', 'Tab', 'Enter']);
     await page.waitForTimeout(1200);
 
-    const heard = [await resultRegion(page).textContent(), await dragRegion(page).textContent(), await focusedName(page)];
+    const heard = [
+      await resultRegion(page).textContent(),
+      await dragRegion(page).textContent(),
+      await focusedName(page),
+    ];
     for (const text of heard) {
-      expect(text ?? '').not.toMatch(/\d+ of \d+ (drop|response) areas|complete|incomplete|filled/i);
+      expect(text ?? '').not.toMatch(
+        /\d+ of \d+ (drop|response) areas|complete|incomplete|filled/i
+      );
     }
   });
 });
