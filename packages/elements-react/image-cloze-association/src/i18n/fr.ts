@@ -63,4 +63,9 @@ export default {
   replacedA11y: 'Pour lui faire de la place, le choix de réponse {removed} a été retiré.',
   movedA11y: 'Choix de réponse {choice} déplacé de la zone de dépôt {from} vers la zone de dépôt {to}.',
   removedA11y: 'Choix de réponse {choice} retiré de la zone de dépôt {label}.',
+  reachedLimitA11y: {
+    one: "Tu as atteint la limite de {count} réponse par zone. Pour ajouter une autre réponse, il faut d’abord en retirer une.",
+    many: "Tu as atteint la limite de {count} réponses par zone. Pour ajouter une autre réponse, il faut d’abord en retirer une.",
+    other: "Tu as atteint la limite de {count} réponses par zone. Pour ajouter une autre réponse, il faut d’abord en retirer une.",
+  },
 } satisfies MessageCatalog;

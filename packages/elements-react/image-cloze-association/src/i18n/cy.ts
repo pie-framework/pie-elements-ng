@@ -78,4 +78,12 @@ export default {
   replacedA11y: 'I wneud lle iddo, tynnwyd yr opsiwn ateb {removed}.',
   movedA11y: 'Symudwyd yr opsiwn ateb {choice} o ardal gollwng {from} i ardal gollwng {to}.',
   removedA11y: 'Tynnwyd yr opsiwn ateb {choice} o ardal gollwng {label}.',
+  reachedLimitA11y: {
+    zero: "Rydych chi wedi cyrraedd y terfyn o {count} ymateb i bob ardal. I ychwanegu ymateb arall, rhaid tynnu un yn gyntaf.",
+    one: "Rydych chi wedi cyrraedd y terfyn o {count} ymateb i bob ardal. I ychwanegu ymateb arall, rhaid tynnu un yn gyntaf.",
+    two: "Rydych chi wedi cyrraedd y terfyn o {count} ymateb i bob ardal. I ychwanegu ymateb arall, rhaid tynnu un yn gyntaf.",
+    few: "Rydych chi wedi cyrraedd y terfyn o {count} ymateb i bob ardal. I ychwanegu ymateb arall, rhaid tynnu un yn gyntaf.",
+    many: "Rydych chi wedi cyrraedd y terfyn o {count} ymateb i bob ardal. I ychwanegu ymateb arall, rhaid tynnu un yn gyntaf.",
+    other: "Rydych chi wedi cyrraedd y terfyn o {count} ymateb i bob ardal. I ychwanegu ymateb arall, rhaid tynnu un yn gyntaf.",
+  },
 } satisfies MessageCatalog;

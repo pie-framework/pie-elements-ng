@@ -58,4 +58,8 @@ export default {
   replacedA11y: 'Om ruimte te maken is antwoordkeuze {removed} verwijderd.',
   movedA11y: 'Antwoordkeuze {choice} verplaatst van neerzetgebied {from} naar neerzetgebied {to}.',
   removedA11y: 'Antwoordkeuze {choice} verwijderd uit neerzetgebied {label}.',
+  reachedLimitA11y: {
+    one: "Je hebt het maximum van {count} antwoord per vak bereikt. Haal eerst een antwoord weg om een ander antwoord toe te voegen.",
+    other: "Je hebt het maximum van {count} antwoorden per vak bereikt. Haal eerst een antwoord weg om een ander antwoord toe te voegen.",
+  },
 } satisfies MessageCatalog;

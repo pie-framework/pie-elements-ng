@@ -104,11 +104,13 @@ describe('image-cloze-association interface locale', () => {
 });
 
 describe('image-cloze-association limit warning', () => {
-  // The warning shows for a limit above one, where it has always read as a one-word notice.
+  // The warning shows the sentence a screen reader speaks, in full, for any limit.
   it('selects its form by the limit', async () => {
     await loadLocale('es');
-    expect(catalogs.forLocale('en-US').plural('reachedLimit', { count: 2 })).toBe('Full');
-    expect(catalogs.forLocale('es').plural('reachedLimit', { count: 3 })).toBe('Lleno');
-    expect(catalogs.forLocale('es').plural('reachedLimit', { count: 1 })).toContain('Has alcanzado el límite de 1 respuesta');
+    expect(catalogs.forLocale('en-US').plural('reachedLimitA11y', { count: 2 })).toBe(
+      'You’ve reached the limit of 2 responses per area. To add another response, one must first be removed.',
+    );
+    expect(catalogs.forLocale('es').plural('reachedLimitA11y', { count: 3 })).toContain('3');
+    expect(catalogs.forLocale('es').plural('reachedLimitA11y', { count: 1 })).toContain('Has alcanzado el límite de 1 respuesta');
   });
 });

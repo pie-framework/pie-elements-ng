@@ -58,4 +58,8 @@ export default {
   replacedA11y: 'För att göra plats togs svarsalternativet {removed} bort.',
   movedA11y: 'Flyttade svarsalternativet {choice} från släppyta {from} till släppyta {to}.',
   removedA11y: 'Tog bort svarsalternativet {choice} från släppyta {label}.',
+  reachedLimitA11y: {
+    one: "Du har nått gränsen på {count} svar per område. Om du vill lägga till ett svar måste du först ta bort ett.",
+    other: "Du har nått gränsen på {count} svar per område. Om du vill lägga till ett svar måste du först ta bort ett.",
+  },
 } satisfies MessageCatalog;

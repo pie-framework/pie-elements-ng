@@ -53,4 +53,7 @@ export default {
   replacedA11y: '자리를 만들기 위해 답안 선택지 {removed}이(가) 제거되었습니다.',
   movedA11y: '답안 선택지 {choice}을(를) 놓기 영역 {from}에서 놓기 영역 {to}(으)로 옮겼습니다.',
   removedA11y: '답안 선택지 {choice}을(를) 놓기 영역 {label}에서 제거했습니다.',
+  reachedLimitA11y: {
+    other: "영역당 최대 {count}개의 답변에 도달했습니다. 다른 답변을 추가하려면 먼저 하나를 제거해야 합니다.",
+  },
 } satisfies MessageCatalog;

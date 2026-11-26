@@ -63,4 +63,9 @@ export default {
   replacedA11y: 'Para abrir espaço, a opção de resposta {removed} foi removida.',
   movedA11y: 'Opção de resposta {choice} movida da área de soltar {from} para a área de soltar {to}.',
   removedA11y: 'Opção de resposta {choice} removida da área de soltar {label}.',
+  reachedLimitA11y: {
+    one: "Você atingiu o limite de {count} resposta por área. Para adicionar outra resposta, é preciso remover uma primeiro.",
+    many: "Você atingiu o limite de {count} respostas por área. Para adicionar outra resposta, é preciso remover uma primeiro.",
+    other: "Você atingiu o limite de {count} respostas por área. Para adicionar outra resposta, é preciso remover uma primeiro.",
+  },
 } satisfies MessageCatalog;

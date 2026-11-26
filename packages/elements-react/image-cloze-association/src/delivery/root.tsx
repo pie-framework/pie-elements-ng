@@ -215,7 +215,7 @@ export class ImageClozeAssociationComponent extends React.Component {
     // the selection.
     const text =
       result === Placement.AREA_FULL
-        ? i18n.plural('reachedLimit', { count: maxResponsePerZone })
+        ? i18n.plural('reachedLimitA11y', { count: maxResponsePerZone })
         : result === Placement.PLACED || selected.containerIndex === target
           ? message
           : describeDeselection(i18n, config, selected);
@@ -657,7 +657,8 @@ export class ImageClozeAssociationComponent extends React.Component {
       });
     }
 
-    const warningMessage = catalogs.forLocale(language).plural('reachedLimit', { count: maxResponsePerZone });
+    // The sentence the screen reader speaks for a refused drop, so the page shows what is said.
+    const warningMessage = catalogs.forLocale(language).plural('reachedLimitA11y', { count: maxResponsePerZone });
 
     let answersToShow =
       responseCorrect !== undefined ? getAnswersCorrectness(answers, validation, duplicateResponses) : answers;

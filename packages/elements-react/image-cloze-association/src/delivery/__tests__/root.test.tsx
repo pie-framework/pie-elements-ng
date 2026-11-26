@@ -168,7 +168,7 @@ describe('ImageClozeAssociationComponent math choices', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Answer choice: C' }));
     fireEvent.click(screen.getByRole('group', { name: 'Response area 1 of 1' }));
-    await waitFor(() => expect(region.textContent).toBe('Full'));
+    await waitFor(() => expect(region.textContent).toBe('You’ve reached the limit of 2 responses per area. To add another response, one must first be removed.'));
   });
 
   it('renames a tile when the interface language changes', () => {

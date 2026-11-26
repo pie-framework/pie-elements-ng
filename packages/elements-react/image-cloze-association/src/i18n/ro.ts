@@ -63,4 +63,9 @@ export default {
   replacedA11y: 'Pentru a face loc, varianta de răspuns {removed} a fost eliminată.',
   movedA11y: 'Varianta de răspuns {choice} a fost mutată din zona de plasare {from} în zona de plasare {to}.',
   removedA11y: 'Varianta de răspuns {choice} a fost eliminată din zona de plasare {label}.',
+  reachedLimitA11y: {
+    one: "Ai atins limita de {count} răspuns pe zonă. Pentru a adăuga un alt răspuns, trebuie mai întâi să elimini unul.",
+    few: "Ai atins limita de {count} răspunsuri pe zonă. Pentru a adăuga un alt răspuns, trebuie mai întâi să elimini unul.",
+    other: "Ai atins limita de {count} de răspunsuri pe zonă. Pentru a adăuga un alt răspuns, trebuie mai întâi să elimini unul.",
+  },
 } satisfies MessageCatalog;

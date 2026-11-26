@@ -53,4 +53,7 @@ export default {
   replacedA11y: '場所を空けるため、解答の選択肢 {removed} が取り除かれました。',
   movedA11y: '解答の選択肢 {choice} をドロップ領域 {from} からドロップ領域 {to} に移動しました。',
   removedA11y: '解答の選択肢 {choice} をドロップ領域 {label} から取り除きました。',
+  reachedLimitA11y: {
+    other: "エリアごとの上限の{count}件の回答に達しました。別の回答を追加するには、先に1つ削除する必要があります。",
+  },
 } satisfies MessageCatalog;

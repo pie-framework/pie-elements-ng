@@ -86,4 +86,9 @@ export default {
   replacedA11y: 'To make room for it, answer choice {removed} was removed.',
   movedA11y: 'Moved answer choice {choice} from {from} drop area to {to} drop area.',
   removedA11y: 'Removed answer choice {choice} from {label} drop area.',
+  /** Row 12: a drop that a full area refused, said in full; the area's own short warning stays as it was. */
+  reachedLimitA11y: {
+    one: "You’ve reached the limit of {count} response per area. To add another response, one must first be removed.",
+    other: "You’ve reached the limit of {count} responses per area. To add another response, one must first be removed.",
+  },
 };

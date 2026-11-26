@@ -415,3 +415,208 @@ describe('every locale carries every announcement string', () => {
     }
   });
 });
+
+// Gaps filled: single-area wording, the edges of rows 1, 3, 4, 8 and 12 to 15, and fallbacks.
+describe('single-area item wording', () => {
+  const one = config({ containers: [{ index: 0, ariaLabel: 'the beach' }], maxResponsePerZone: 1, possibleResponses: ['sun', 'moon'], duplicateResponses: false });
+
+  it('row 1: one area holding one choice has neither "each" nor "up to"', () => {
+    const [structure] = describeIntro(i18n, one, [], [{ value: 'sun' }, { value: 'moon' }]);
+
+    expect(structure).toBe(
+      'The image shows a beach. It has 1 drop area, which can hold 1 answer choice. There are 2 answer choices, which cannot be reused.',
+    );
+  });
+
+  it('row 7: "drop area" without "a"', () => {
+    expect(describeSelection(i18n, one, choice('sun'))).toBe('Selected answer choice sun. Use TAB to move to drop area.');
+  });
+
+  it('row 9: ends with ESC to cancel', () => {
+    expect(describeFocusTarget(i18n, one, choice('sun'), 0)).toMatch(/here or ESC to cancel\.$/);
+  });
+
+  it('row 10: ends with ESC to cancel', () => {
+    expect(describeFocusTarget(i18n, one, choice('sun', 0), undefined)).toBe(
+      'Press ENTER to remove selected answer choice sun from the beach drop area or ESC to cancel.',
+    );
+  });
+
+  it('row 11: "move to drop area" without "a"', () => {
+    expect(describeFocusTarget(i18n, one, choice('sun'), undefined)).toMatch(/TAB to move to drop area\.$/);
+  });
+
+  it('row 3: a one-answer area that holds a choice reads on one line', () => {
+    const paragraphs = describeIntro(i18n, one, [choice('sun', 0)], [{ value: 'moon' }]);
+
+    expect(paragraphs[2]).toBe('Drop area the beach contains answer choice sun.');
+  });
+});
+
+describe('row 1 edges', () => {
+  it('"each" appears for several areas holding up to several choices; "up to" for capacity above 1 only', () => {
+    const many = config({ containers: [{ index: 0 }, { index: 1 }], maxResponsePerZone: 1 });
+    const [structure] = describeIntro(i18n, many, [], []);
+
+    expect(structure).toContain('2 drop areas, which can each hold 1 answer choice.');
+    expect(structure).not.toContain('up to');
+  });
+
+  it('says "The image." when there is no alt text', () => {
+    const [structure] = describeIntro(i18n, config({ alt: undefined }), [], []);
+
+    expect(structure.startsWith('The image. It has 1 drop area')).toBe(true);
+    expect(describeIntro(i18n, config({ alt: '   ' }), [], [])[0].startsWith('The image. ')).toBe(true);
+  });
+
+  it('reusable choices use the "can be reused" form, singular and plural', () => {
+    expect(describeIntro(i18n, config({ duplicateResponses: true, possibleResponses: ['a'] }), [], [])[0]).toContain(
+      'There is 1 answer choice, which can be reused.',
+    );
+    expect(describeIntro(i18n, config({ duplicateResponses: true, possibleResponses: ['a', 'b'] }), [], [])[0]).toContain(
+      'There are 2 answer choices, which can be reused.',
+    );
+  });
+
+  it('does not double a full stop that ends the alt text', () => {
+    expect(describeIntro(i18n, config({ alt: 'a beach!' }), [], [])[0].startsWith('The image shows a beach. It has')).toBe(true);
+  });
+});
+
+describe('row 3 edges', () => {
+  const venn = config({
+    containers: [
+      { index: 0, ariaLabel: 'zebras only' },
+      { index: 1, ariaLabel: 'both zebras and horses' },
+      { index: 2, ariaLabel: 'horses only' },
+    ],
+    maxResponsePerZone: 4,
+    possibleResponses: ['grass', 'wild', 'pets', 'stripes'],
+    duplicateResponses: false,
+  });
+
+  it('a multi-choice area with a single choice still uses the list form', () => {
+    const paragraphs = describeIntro(i18n, venn, [choice('pets', 2)], [{ value: 'grass' }]);
+
+    expect(paragraphs[4]).toBe(
+      'Drop area horses only contains the following: answer choice pets End of answer choices in drop area.',
+    );
+  });
+
+  it('an area with no answers reads as empty, even when capacity is above one', () => {
+    expect(describeIntro(i18n, venn, [], [])[2]).toBe('Drop area zebras only is empty.');
+  });
+
+  it('keeps the order of the areas, not of the answers', () => {
+    const paragraphs = describeIntro(i18n, venn, [choice('pets', 2), choice('grass', 0)], []);
+
+    expect(paragraphs.slice(2, 5).map((p) => p.split(' ').slice(0, 4).join(' '))).toEqual([
+      'Drop area zebras only',
+      'Drop area both zebras',
+      'Drop area horses only',
+    ]);
+  });
+});
+
+describe('row 4 edges', () => {
+  it('one available choice: count, text, TAB hint, no "Answer choice:" prefix, no "End of"', () => {
+    const text = describeAvailable(i18n, config(), [{ value: 'star' }]);
+
+    expect(text).toBe('1 available answer choice. star Use TAB to move to answer choice.');
+    expect(text).not.toContain('End of available');
+  });
+
+  it('strips markup from the choices it reads', () => {
+    expect(describeAvailable(i18n, config(), [{ value: '<p>one</p>' }, { value: '<p><b>two</b></p>' }])).toContain(
+      'Answer choice: one Answer choice: two End of available answer choices.',
+    );
+  });
+});
+
+describe('rows 5 and 6 fallbacks', () => {
+  it('names a choice with no text or alt by its place among the model choices', () => {
+    const cfg = config({ possibleResponses: ['<img alt="" src="a.png"/>', '<img alt="" src="b.png"/>'] });
+
+    expect(describeChoiceTile(i18n, cfg, choice('<img alt="" src="b.png"/>'))).toBe('Answer choice: number 2');
+    expect(describeChoiceTile(i18n, cfg, choice('<img alt="" src="b.png"/>', 0))).toBe(
+      'Answer choice: number 2 in drop area a box for flamingos',
+    );
+  });
+
+  it('reads the alt text of an image choice', () => {
+    expect(describeChoiceTile(i18n, config(), choice('<img alt="Saturn" src="s.png"/>'))).toBe('Answer choice: Saturn');
+  });
+});
+
+describe('rows 8 and 15', () => {
+  it('read the same sentence, for a choice from the pool or from an area', () => {
+    const cfg = config({ maxResponsePerZone: 1 });
+    const expected = 'Answer choice 10 is no longer selected. Use TAB to move to an answer choice.';
+
+    expect(describeDeselection(i18n, cfg, choice('10'))).toBe(expected);
+    expect(describeDeselection(i18n, cfg, choice('10', 0))).toBe(expected);
+    expect(describePlacementResult(i18n, cfg, [], choice('10'), undefined)).toBe(expected);
+  });
+});
+
+describe('rows 12 to 14 edges', () => {
+  const cfg = config({
+    containers: [{ index: 0, ariaLabel: 'box A' }, { index: 1, ariaLabel: 'box B' }],
+    maxResponsePerZone: 1,
+  });
+
+  it('row 12: placing onto an empty area never says "To make room"', () => {
+    expect(describePlacementResult(i18n, cfg, [choice('x', 1)], choice('y'), 0)).not.toContain('make room');
+  });
+
+  it('row 12: placing onto an occupied one-answer area names the choice that was removed', () => {
+    expect(describePlacementResult(i18n, cfg, [choice('x', 0)], choice('y'), 0)).toBe(
+      'Placed answer choice y in box A drop area. To make room for it, answer choice x was removed.',
+    );
+  });
+
+  it('row 13: moving onto an empty area says only the move', () => {
+    expect(describePlacementResult(i18n, cfg, [choice('x', 0)], choice('x', 0), 1)).toBe(
+      'Moved answer choice x from box A drop area to box B drop area.',
+    );
+  });
+
+  it('row 14: removal names the area the choice left', () => {
+    expect(describePlacementResult(i18n, cfg, [choice('x', 1)], choice('x', 1), undefined)).toBe(
+      'Removed answer choice x from box B drop area.',
+    );
+  });
+
+  it('row 12: a multi-choice area full of answers reads like a plain placement (the refusal is announced elsewhere)', () => {
+    const many = config({ containers: [{ index: 0, ariaLabel: 'both' }], maxResponsePerZone: 2 });
+
+    expect(describePlacementResult(i18n, many, [choice('a', 0), choice('b', 0)], choice('c'), 0)).toBe(
+      'Placed answer choice c in both drop area.',
+    );
+  });
+});
+
+describe('not over a drop area', () => {
+  it('has a string that names the choice', () => {
+    expect(i18n.t('notOverDropAreaA11y', { choice: 'star' })).toBe('star is not over a drop area.');
+  });
+});
+
+describe('full area warning', () => {
+  it('reads in full for a screen reader, singular and plural', () => {
+    expect(i18n.plural('reachedLimitA11y', { count: 1 })).toBe(
+      'You’ve reached the limit of 1 response per area. To add another response, one must first be removed.',
+    );
+    expect(i18n.plural('reachedLimitA11y', { count: 4 })).toBe(
+      'You’ve reached the limit of 4 responses per area. To add another response, one must first be removed.',
+    );
+  });
+});
+
+describe('the spec asks for no progress counts', () => {
+  it('the intro never says how many areas are filled or whether the answer is complete', () => {
+    for (const paragraph of describeIntro(i18n, config(), [choice('flamingo', 0)], [])) {
+      expect(paragraph).not.toMatch(/\d+ of \d+ (drop|response) areas|complete|incomplete|filled/i);
+    }
+  });
+});

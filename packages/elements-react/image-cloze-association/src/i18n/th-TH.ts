@@ -53,4 +53,7 @@ export default {
   replacedA11y: 'เพื่อเว้นที่ว่าง จึงนำตัวเลือกคำตอบ {removed} ออก',
   movedA11y: 'ย้ายตัวเลือกคำตอบ {choice} จากพื้นที่วาง {from} ไปยังพื้นที่วาง {to}',
   removedA11y: 'นำตัวเลือกคำตอบ {choice} ออกจากพื้นที่วาง {label}',
+  reachedLimitA11y: {
+    other: "ถึงขีดจำกัด {count} คำตอบต่อพื้นที่แล้ว หากต้องการเพิ่มคำตอบอื่น ต้องลบคำตอบหนึ่งออกก่อน",
+  },
 } satisfies MessageCatalog;

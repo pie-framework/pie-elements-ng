@@ -4,7 +4,10 @@
       "id": "default",
       "title": "Default Demo",
       "description": "Basic image cloze association configuration",
-      "tags": ["image-cloze-association", "default"],
+      "tags": [
+        "image-cloze-association",
+        "default"
+      ],
       "model": {
         "id": "1",
         "element": "image-cloze-association",
@@ -79,6 +82,294 @@
       },
       "session": {
         "id": "1",
+        "element": "image-cloze-association"
+      }
+    },
+    {
+      "id": "number-line",
+      "title": "Number line (one choice per area)",
+      "description": "Number line with five drop areas holding one answer choice each and a single star that is not reusable. Exercises the screen reader announcements for several single-answer areas.",
+      "tags": [
+        "image-cloze-association",
+        "screen-reader",
+        "a11y"
+      ],
+      "model": {
+        "element": "image-cloze-association",
+        "id": "52284b06-0d2c-4b00-bc85-30155abcb8af",
+        "teacherInstructions": "",
+        "rationale": "",
+        "prompt": "<p><audio controls=\"\" controlslist=\"nodownload\" id=\"51eef0be-a6d5-4211-8397-015769b0e7a7.mp3\"><source src=\"https://assets.star.pie-api.com/assets/04cf24ec-0a0c-4ce6-95fb-50c36f329789/audio/mpeg/b997b61b-49e0-4829-920c-5f1516d733c2\" type=\"audio/mpeg\">Your browser does not support the audio element.</audio></p>\n\n<p>Move the star to locate the number ten.</p>\n",
+        "showDashedBorder": false,
+        "duplicate_responses": false,
+        "max_response_per_zone": 1,
+        "shuffle": false,
+        "partialScoring": false,
+        "answerChoiceTransparency": true,
+        "responseAreaFill": "rgba(255, 255, 255, 0)",
+        "uiStyle": {
+          "possibilityListPosition": "left"
+        },
+        "image": {
+          "width": 530,
+          "height": 187,
+          "src": "https://assets.star.pie-api.com/assets/04cf24ec-0a0c-4ce6-95fb-50c36f329789/image/svg xml/eb651cae-1d0f-428d-aa79-f844f01acd58",
+          "alt": "Number line labeled 8, 9, 10, 11, 12."
+        },
+        "response_containers": [
+          {
+            "y": 45,
+            "x": 15.6,
+            "width": "12.75%",
+            "height": "37%",
+            "aria_label": "a box for 8",
+            "pointer": "undefined"
+          },
+          {
+            "y": 44.3,
+            "x": 29.5,
+            "width": "12.75%",
+            "height": "37%",
+            "aria_label": "a box for 9",
+            "pointer": "none"
+          },
+          {
+            "y": 45,
+            "x": 43.45,
+            "width": "12.75%",
+            "height": "37%",
+            "aria_label": "a box for 10",
+            "pointer": "none"
+          },
+          {
+            "y": 45,
+            "x": 57.2,
+            "width": "12.75%",
+            "height": "37%",
+            "aria_label": "a box for 11",
+            "pointer": "none"
+          },
+          {
+            "y": 45,
+            "x": 71.2,
+            "width": "12.75%",
+            "height": "37%",
+            "aria_label": "a box for 12",
+            "pointer": "none"
+          }
+        ],
+        "possible_responses": [
+          "<img alt=\"star\" class=\"lrn-image-non-responsive\" height=\"52\" src=\"https://assets.star.pie-api.com/assets/04cf24ec-0a0c-4ce6-95fb-50c36f329789/image/svg xml/12ea85a6-3ac8-4b17-8e78-7473937a852b\" width=\"50\">"
+        ],
+        "validation": {
+          "scoring_type": "exactMatch",
+          "valid_response": {
+            "score": 1,
+            "value": [
+              {
+                "images": []
+              },
+              {
+                "images": []
+              },
+              {
+                "images": [
+                  "<img alt=\"star\" class=\"lrn-image-non-responsive\" height=\"52\" src=\"https://assets.star.pie-api.com/assets/04cf24ec-0a0c-4ce6-95fb-50c36f329789/image/svg xml/12ea85a6-3ac8-4b17-8e78-7473937a852b\" width=\"50\">"
+                ]
+              },
+              {
+                "images": []
+              },
+              {
+                "images": []
+              }
+            ]
+          },
+          "alt_responses": []
+        },
+        "fontSizeFactor": 1.3,
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": false
+      },
+      "session": {
+        "id": "2",
+        "element": "image-cloze-association"
+      }
+    },
+    {
+      "id": "number-line-blanks",
+      "title": "Number line with blanks (four choices)",
+      "description": "Number line with two blank drop areas holding one answer choice each and four choices that are not reusable. Exercises placing a choice on an occupied area, which removes the choice that was there.",
+      "tags": [
+        "image-cloze-association",
+        "screen-reader",
+        "a11y"
+      ],
+      "model": {
+        "element": "image-cloze-association",
+        "id": "0dcbd636-ae8e-42d1-bf9d-4e51abd2121b",
+        "teacherInstructions": "<div></div>",
+        "rationale": "",
+        "prompt": "<p><audio controls=\"\" controlslist=\"nodownload\" id=\"58329dae-f429-4987-b77a-51c688c5995b.mp3\"><source src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/audio/mpeg/cd3da712-2119-429c-948d-700f2e855790\" type=\"audio/mpeg\">Your browser does not support the audio element.</audio></p><p>Move a number to each box to complete the number line.&nbsp;&nbsp;</p>",
+        "showDashedBorder": true,
+        "duplicate_responses": false,
+        "max_response_per_zone": 1,
+        "shuffle": false,
+        "partialScoring": false,
+        "answerChoiceTransparency": false,
+        "responseAreaFill": "rgba(255, 255, 255, 1)",
+        "uiStyle": {
+          "possibilityListPosition": "bottom"
+        },
+        "image": {
+          "width": 530,
+          "height": 200,
+          "src": "https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/b5388bdd-f99f-4d92-a308-158420204604",
+          "alt": "Number line labeled blank, blank, 12, 13."
+        },
+        "response_containers": [
+          {
+            "y": 42,
+            "x": 7,
+            "width": "19%",
+            "height": "50%",
+            "aria_label": "box for the first blank",
+            "pointer": "undefined"
+          },
+          {
+            "y": 42,
+            "x": 29,
+            "aria_label": "box for the second blank",
+            "width": "19%",
+            "height": "50%",
+            "pointer": "none"
+          }
+        ],
+        "possible_responses": [
+          "<img alt=\"1\" class=\"lrn-image-non-responsive\" height=\"75\" src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/c0423847-3f9d-4015-bbea-0171b793ed92\" width=\"75\">",
+          "<img alt=\"10\" class=\"lrn-image-non-responsive\" height=\"75\" src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/95eabbf7-cd49-44dc-82c0-1baafaba0ee3\" width=\"75\">",
+          "<img alt=\"11\" class=\"lrn-image-non-responsive\" height=\"75\" src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/73a282bf-b9c7-4bba-b845-035fbc7f9dca\" width=\"75\">",
+          "<img alt=\"0\" class=\"lrn-image-non-responsive\" height=\"75\" src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/5e65d0e6-3a18-4d8a-81ab-7c6bbee1ac12\" width=\"75\">"
+        ],
+        "validation": {
+          "scoring_type": "exactMatch",
+          "valid_response": {
+            "score": 1,
+            "value": [
+              {
+                "images": [
+                  "<img alt=\"10\" class=\"lrn-image-non-responsive\" height=\"75\" src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/95eabbf7-cd49-44dc-82c0-1baafaba0ee3\" width=\"75\">"
+                ]
+              },
+              {
+                "images": [
+                  "<img alt=\"11\" class=\"lrn-image-non-responsive\" height=\"75\" src=\"https://assets.star.pie-api.com/assets/dfe87dec-a52a-443b-92eb-fbea512707b0/image/svg xml/73a282bf-b9c7-4bba-b845-035fbc7f9dca\" width=\"75\">"
+                ]
+              }
+            ]
+          },
+          "alt_responses": []
+        },
+        "fontSizeFactor": 1.3,
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": false,
+        "rationaleEnabled": true,
+        "studentInstructionsEnabled": true,
+        "teacherInstructionsEnabled": true
+      },
+      "session": {
+        "id": "3",
+        "element": "image-cloze-association"
+      }
+    },
+    {
+      "id": "venn",
+      "title": "Venn diagram (several choices per area)",
+      "description": "Three drop areas that each hold up to two answer choices, and four choices that are not reusable. Exercises the multi-choice drop area wording and the full-area warning.",
+      "tags": [
+        "image-cloze-association",
+        "screen-reader",
+        "a11y"
+      ],
+      "model": {
+        "element": "image-cloze-association",
+        "id": "venn-1",
+        "prompt": "<p>Sort each word. Move a word into the zebras circle, the horses circle, or the middle if it fits both.</p>",
+        "duplicate_responses": false,
+        "max_response_per_zone": 2,
+        "shuffle": false,
+        "partialScoring": false,
+        "responseAreaFill": "rgba(255, 255, 255, 0.9)",
+        "uiStyle": {
+          "possibilityListPosition": "bottom"
+        },
+        "image": {
+          "width": 465,
+          "height": 313,
+          "scale": false,
+          "src": "/image-cloze-association/tire-pieces-graph.svg",
+          "alt": "VENN DIAGRAM labeled Zebras, both, Horses"
+        },
+        "response_containers": [
+          {
+            "x": 2,
+            "y": 20,
+            "width": "28%",
+            "height": "30%",
+            "aria_label": "zebras only",
+            "pointer": "none"
+          },
+          {
+            "x": 36,
+            "y": 20,
+            "width": "28%",
+            "height": "30%",
+            "aria_label": "both zebras and horses",
+            "pointer": "none"
+          },
+          {
+            "x": 70,
+            "y": 20,
+            "width": "28%",
+            "height": "30%",
+            "aria_label": "horses only",
+            "pointer": "none"
+          }
+        ],
+        "possible_responses": [
+          "<p>grass</p>",
+          "<p>wild</p>",
+          "<p>pets</p>",
+          "<p>stripes</p>"
+        ],
+        "validation": {
+          "scoring_type": "exactMatch",
+          "valid_response": {
+            "score": 1,
+            "value": [
+              {
+                "images": [
+                  "<p>stripes</p>"
+                ]
+              },
+              {
+                "images": [
+                  "<p>grass</p>",
+                  "<p>wild</p>"
+                ]
+              },
+              {
+                "images": [
+                  "<p>pets</p>"
+                ]
+              }
+            ]
+          },
+          "alt_responses": []
+        }
+      },
+      "session": {
+        "id": "4",
         "element": "image-cloze-association"
       }
     }

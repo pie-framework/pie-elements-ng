@@ -53,4 +53,7 @@ export default {
   replacedA11y: '为腾出位置，已移除答案选项 {removed}。',
   movedA11y: '已将答案选项 {choice} 从放置区域 {from} 移至放置区域 {to}。',
   removedA11y: '已将答案选项 {choice} 从放置区域 {label} 中移除。',
+  reachedLimitA11y: {
+    other: "已达到每个区域 {count} 个答案的上限。若要添加其他答案，必须先移除一个答案。",
+  },
 } satisfies MessageCatalog;
