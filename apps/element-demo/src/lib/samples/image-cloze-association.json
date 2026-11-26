@@ -4,10 +4,7 @@
       "id": "default",
       "title": "Default Demo",
       "description": "Basic image cloze association configuration",
-      "tags": [
-        "image-cloze-association",
-        "default"
-      ],
+      "tags": ["image-cloze-association", "default"],
       "model": {
         "id": "1",
         "element": "image-cloze-association",
@@ -89,11 +86,7 @@
       "id": "number-line",
       "title": "Number line (one choice per area)",
       "description": "Number line with five drop areas holding one answer choice each and a single star that is not reusable. Exercises the screen reader announcements for several single-answer areas.",
-      "tags": [
-        "image-cloze-association",
-        "screen-reader",
-        "a11y"
-      ],
+      "tags": ["image-cloze-association", "screen-reader", "a11y"],
       "model": {
         "element": "image-cloze-association",
         "id": "52284b06-0d2c-4b00-bc85-30155abcb8af",
@@ -200,11 +193,7 @@
       "id": "number-line-blanks",
       "title": "Number line with blanks (four choices)",
       "description": "Number line with two blank drop areas holding one answer choice each and four choices that are not reusable. Exercises placing a choice on an occupied area, which removes the choice that was there.",
-      "tags": [
-        "image-cloze-association",
-        "screen-reader",
-        "a11y"
-      ],
+      "tags": ["image-cloze-association", "screen-reader", "a11y"],
       "model": {
         "element": "image-cloze-association",
         "id": "0dcbd636-ae8e-42d1-bf9d-4e51abd2121b",
@@ -286,11 +275,7 @@
       "id": "venn",
       "title": "Venn diagram (several choices per area)",
       "description": "Three drop areas that each hold up to two answer choices, and four choices that are not reusable. Exercises the multi-choice drop area wording and the full-area warning.",
-      "tags": [
-        "image-cloze-association",
-        "screen-reader",
-        "a11y"
-      ],
+      "tags": ["image-cloze-association", "screen-reader", "a11y"],
       "model": {
         "element": "image-cloze-association",
         "id": "venn-1",
@@ -336,32 +321,20 @@
             "pointer": "none"
           }
         ],
-        "possible_responses": [
-          "<p>grass</p>",
-          "<p>wild</p>",
-          "<p>pets</p>",
-          "<p>stripes</p>"
-        ],
+        "possible_responses": ["<p>grass</p>", "<p>wild</p>", "<p>pets</p>", "<p>stripes</p>"],
         "validation": {
           "scoring_type": "exactMatch",
           "valid_response": {
             "score": 1,
             "value": [
               {
-                "images": [
-                  "<p>stripes</p>"
-                ]
+                "images": ["<p>stripes</p>"]
               },
               {
-                "images": [
-                  "<p>grass</p>",
-                  "<p>wild</p>"
-                ]
+                "images": ["<p>grass</p>", "<p>wild</p>"]
               },
               {
-                "images": [
-                  "<p>pets</p>"
-                ]
+                "images": ["<p>pets</p>"]
               }
             ]
           },
