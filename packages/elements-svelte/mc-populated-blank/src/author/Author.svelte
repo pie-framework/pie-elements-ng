@@ -27,10 +27,10 @@ let {
     max-width: 56rem;
     margin: 24px auto;
     padding: 20px;
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--pie-border-light, #cbd5e1);
     border-radius: 8px;
-    background: #f8fafc;
-    color: #334155;
+    background: var(--pie-background, #f8fafc);
+    color: var(--pie-text, #334155);
   }
 
   .title {

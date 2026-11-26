@@ -1,6 +1,6 @@
 {
   "name": "@pie-framework/math-validation",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Decides whether two LaTeX math expressions are equal, literally or symbolically",
   "type": "module",
   "main": "./dist/index.js",
@@ -31,7 +31,7 @@
     "@types/debug": "^4.1.12",
     "typescript": "^5.9.3",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "publishConfig": {
     "access": "public"

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/image-cloze-association",
-  "version": "11.0.8",
+  "version": "11.0.9",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -96,10 +96,10 @@
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/dom": "^10.4.2",
     "@types/debug": "^4.1.12",
     "@types/humps": "^2.0.6"
@@ -119,7 +119,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

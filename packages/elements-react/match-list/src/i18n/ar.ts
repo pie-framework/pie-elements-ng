@@ -25,4 +25,5 @@ export default {
   remainingA11y: '{filled} من {total} مناطق إفلات تحتوي على خيار إجابة. {available} من خيارات الإجابة المتاحة. استخدم TAB لتحديد خيار إجابة.',
   completeA11y: 'الإجابة مكتملة. {total} من {total} مناطق إفلات تحتوي على خيار إجابة.',
   deselectedA11y: 'لم يعد خيار الإجابة {choice} محددًا. استخدم TAB لتحديد خيار إجابة.',
+  cancelledA11y: 'لم يعد خيار الإجابة {choice} محددًا. استخدم TAB للانتقال إلى خيار إجابة.',
 } satisfies MessageCatalog;

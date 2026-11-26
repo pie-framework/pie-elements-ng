@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/match",
-  "version": "13.0.8",
+  "version": "13.0.9",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -96,12 +96,12 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/debug": "^4.1.12",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/user-event": "^14.6.10"
+    "@testing-library/user-event": "^14.6.13"
   },
   "scripts": {
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-iife.config.ts && bun x tsc --emitDeclarationOnly && bun ../../../tools/schemas/build.ts",
@@ -118,7 +118,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

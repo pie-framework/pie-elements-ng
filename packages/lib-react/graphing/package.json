@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/graphing",
-  "version": "5.0.8",
+  "version": "5.0.9",
   "description": "Graphing components",
   "license": "MIT",
   "repository": {
@@ -70,10 +70,10 @@
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/dom": "^10.4.2"
   },
   "peerDependencies": {

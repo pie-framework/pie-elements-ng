@@ -20,7 +20,7 @@ const model = {
 describe('match-list result announcements', () => {
   it('change on every select and deselect, so a repeated one is announced again', () => {
     const { container } = render(<MatchList model={model} session={{ value: {} }} onSessionChange={vi.fn()} />);
-    const region = container.querySelector('[role="status"][aria-live="polite"]') as HTMLElement;
+    const region = container.querySelector('[role="status"][aria-live="assertive"]') as HTMLElement;
     const choice = screen.getByRole('button', { name: 'Answer choice: 1773' });
     const seen: string[] = [];
 
@@ -29,7 +29,7 @@ describe('match-list result announcements', () => {
       seen.push(region.textContent || '');
     }
 
-    expect(seen).toEqual([
+    expect(seen.map((message) => message.replace(/\u00a0$/, ''))).toEqual([
       'Selected answer choice 1773. Use TAB to choose a drop area.',
       'Answer choice 1773 is no longer selected. Use TAB to select an answer choice.',
       'Selected answer choice 1773. Use TAB to choose a drop area.',

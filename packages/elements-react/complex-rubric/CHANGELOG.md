@@ -1,5 +1,21 @@
 # @pie-element/complex-rubric
 
+## 8.0.9
+
+### Patch Changes
+
+- [#718](https://github.com/pie-framework/pie-elements-ng/pull/718) [`32d8334`](https://github.com/pie-framework/pie-elements-ng/commit/32d83340a0939d588bea7ab6297964ac68665821) Thanks [@chillenious](https://github.com/chillenious)! - chore: bump Kit, DaisyUI and Vite, share the IIFE and resolver configs, fix the dev:demo port lock
+- Updated dependencies [[`ff6f7fb`](https://github.com/pie-framework/pie-elements-ng/commit/ff6f7fbe8af21a0273f73be652fbaac72929fe8e), [`5d5d6ab`](https://github.com/pie-framework/pie-elements-ng/commit/5d5d6abcdf7d12a03700d47d6744b404bd6187d3)]:
+  - @pie-element/rubric@9.0.9
+  - @pie-element/multi-trait-rubric@9.0.9
+  - @pie-element/shared-configure-events@0.1.4
+  - @pie-element/shared-lodash@0.1.5
+  - @pie-element/shared-player-events@0.2.3
+  - @pie-element/shared-types@0.2.5
+  - @pie-lib/config-ui@14.0.9
+  - @pie-lib/render-ui@8.0.9
+  - @pie-lib/rubric@3.0.9
+
 ## 8.0.8
 
 ### Patch Changes

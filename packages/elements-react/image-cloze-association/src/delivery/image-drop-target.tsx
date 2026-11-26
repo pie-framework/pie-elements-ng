@@ -24,9 +24,10 @@ const ResponseContainer: any = styled('div')(() => ({
   '&.dashed': {
     border: `2px dashed ${color.text()}`,
   },
+  // Translucent, so writing in the image under the area stays readable: black on white keeps 6:1.
   '&.is-over': {
     border: '1px solid rgb(158, 158, 158)',
-    backgroundColor: 'rgb(224, 224, 224)',
+    backgroundColor: 'rgba(224, 224, 224, 0.4)',
   },
 }));
 

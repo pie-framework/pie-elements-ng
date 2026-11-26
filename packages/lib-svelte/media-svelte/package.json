@@ -30,11 +30,11 @@
     "@pie-element/shared-i18n": "workspace:*",
     "@pie-element/shared-types": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "dompurify": "^3.4.17",
+    "dompurify": "^3.4.18",
     "svelte": "^5.57.3",
     "typescript": "^5.9.3",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "license": "MIT",
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",

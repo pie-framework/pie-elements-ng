@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-theme-daisyui",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "DaisyUI-powered web component theme wrapper for PIE players",
   "type": "module",
   "main": "./dist/pie-element-theme-daisyui.js",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "typescript": "^5.9.3",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "license": "MIT",
   "publishConfig": {

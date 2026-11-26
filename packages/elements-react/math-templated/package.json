@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/math-templated",
-  "version": "8.0.8",
+  "version": "8.0.9",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -104,17 +104,17 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "mathlive": "0.110.0",
+    "mathlive": "0.111.4",
     "vite": "^8.3.8",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/debug": "^4.1.12",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "happy-dom": "^21.0.4",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
@@ -132,7 +132,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

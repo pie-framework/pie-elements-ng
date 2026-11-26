@@ -437,4 +437,79 @@ describe('EditableHtml styles', () => {
       expect(getComputedStyle(button).paddingTop).toBe('4px');
     }
   });
+
+  // happy-dom computes no outline, so this reads the rules; a browser draws them.
+  it('removes no outline, and rings keyboard focus from the focus tokens', () => {
+    const css = compiledCss().replace(/\/\*[\s\S]*?\*\//g, '');
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selector, body]) => ({
+      selector: selector.trim(),
+      body: body.replace(/\s+/g, ' '),
+    }));
+    const ring =
+      'outline: 2px solid var(--pie-focus-keyboard-outline, var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))));';
+
+    expect(rules.filter(({ body }) => /outline:\s*(none|0)\b/.test(body))).toEqual([]);
+    for (const focused of [
+      '.toolbar button.pie-toolbar-btn:focus-visible',
+      '.ProseMirror:focus-visible',
+    ]) {
+      const rule = rules.find(({ selector }) => selector.endsWith(focused));
+      expect(rule?.body).toContain(ring);
+      expect(rule?.body).toContain('outline-offset: 2px;');
+    }
+  });
+
+  // pie-players' built-in --pie-text and --pie-background pairs, and the editor with no theme.
+  const schemes = [
+    ['no theme', '#000000', '#ffffff'],
+    ['dark base', '#ffffff', '#000000'],
+    ['black-on-white', '#000000', '#ffffff'],
+    ['white-on-black', '#ffffff', '#000000'],
+    ['rose-on-green', '#3d0022', '#ccffcc'],
+    ['yellow-on-blue', '#ffff00', '#000066'],
+    ['black-on-rose', '#000000', '#ffccdd'],
+    ['light-gray-on-dark-gray', '#e0e0e0', '#333333'],
+    ['grey-on-light-grey', '#4a4a4a', '#ebebeb'],
+    ['purple-on-light-green', '#8e2464', '#cce8d4'],
+    ['black-on-violet', '#000000', '#d4a9de'],
+    ['yellow-on-navy', '#ffff55', '#33508a'],
+  ] as const;
+
+  it('keeps enabled toolbar icons at 3:1 or more on the toolbar fill under every scheme', () => {
+    const css = compiledCss().replace(/\/\*[\s\S]*?\*\//g, '');
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+    const body = (selector: string) =>
+      rules.find(([, list]) => list.trim().endsWith(selector))?.[2].replace(/\s+/g, ' ') ?? '';
+    // The share of the first colour in a property's `color-mix(in srgb, <colour> N%, ...)`.
+    const share = (rule: string, property: string) =>
+      Number(
+        new RegExp(`${property}: [^;]*color-mix\\(in srgb, [^;]*?\\) ([\\d.]+)%`).exec(rule)?.[1]
+      ) / 100;
+    const rgb = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+    const mix = (a: number[], b: number[], p: number) => a.map((c, i) => c * p + b[i] * (1 - p));
+    const luminance = (c: number[]) =>
+      c
+        .map((v) => v / 255)
+        .map((s) => (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4))
+        .reduce((sum, s, i) => sum + s * [0.2126, 0.7152, 0.0722][i], 0);
+    const contrast = (a: number[], b: number[]) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+
+    const button = body('.toolbar button.pie-toolbar-btn');
+    expect(button).toContain('var(--pie-text, black)');
+    expect(button).not.toContain('--pie-disabled');
+    expect(body('.toolbar button.pie-toolbar-btn:disabled')).toContain(
+      'color: var(--pie-disabled, grey) !important;'
+    );
+
+    const [fillShare, iconShare] = [share(body('.toolbar'), 'background'), share(button, 'color')];
+    expect([fillShare, iconShare]).toEqual([0.125, 0.8]);
+    const failing = schemes.filter(([, text, background]) => {
+      const fill = mix([127, 127, 127], rgb(background), fillShare);
+      return contrast(mix(rgb(text), rgb(background), iconShare), fill) < 3;
+    });
+    expect(failing.map(([name]) => name)).toEqual([]);
+  });
 });

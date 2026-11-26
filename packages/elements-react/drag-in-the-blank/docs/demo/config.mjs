@@ -144,5 +144,40 @@ export default {
       },
       session: { value: {} },
     },
+    {
+      // Star item 734a0ccc-a6ff-4016-b8dd-c094156965c5, without its star-hosted audio.
+      id: 'story-events-in-order',
+      title: 'Story Events in Order',
+      description: 'Sentence choices ordered into wide response areas, with the text scaled up',
+      tags: ['ordering', 'text', 'font-size', 'table'],
+      model: {
+        id: '5',
+        element: 'drag-in-the-blank',
+        prompt:
+          '<table class="table table-no-border" role="presentation"><tbody><tr><td width="80%"><p>Put the events in order as they happen in the story.&nbsp;</p><p><strong>Game Time&nbsp;</strong><br>The alarm sounds.&nbsp;<br>Mona springs out of bed and gets dressed.&nbsp;<br>She eats waffles, grabs her ball, and rushes out the door.&nbsp;<br>At the baseball field, she meets her team.&nbsp;<br>They stretch and practice.&nbsp;<br>Time to play ball!</p></td></tr></tbody></table>',
+        markup:
+          '<table class="table table-bordered"><thead><tr><th class="text-center" scope="col" style="white-space: nowrap; width: 150px; "><span style="color:#000000;">First to Last&nbsp;</span></th></tr></thead><tbody><tr><td style="white-space: nowrap; width: 400px; text-align: center;">{{0}}</td></tr><tr><td style="white-space: nowrap; width: 400px; text-align: center;">{{1}}</td></tr><tr><td style="white-space: nowrap; width: 400px; text-align: center;">{{2}}</td></tr><tr><td style="white-space: nowrap; width: 400px; text-align: center;">{{3}}</td></tr></tbody></table><p>&nbsp;</p>',
+        choices: [
+          { id: '0', value: 'Mona practices for the game.' },
+          { id: '1', value: 'Mona wakes up.' },
+          { id: '2', value: 'Mona goes to the field.' },
+          { id: '3', value: 'Mona eats her breakfast.' },
+        ],
+        correctResponse: {
+          '0': '1',
+          '1': '3',
+          '2': '2',
+          '3': '0',
+        },
+        choicesPosition: 'below',
+        duplicates: false,
+        lockChoiceOrder: true,
+        partialScoring: false,
+        emptyResponseAreaHeight: '60px',
+        emptyResponseAreaWidth: '480px',
+        fontSizeFactor: 1.3,
+      },
+      session: { value: {} },
+    },
   ],
 };
