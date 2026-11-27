@@ -330,32 +330,15 @@ export default class DragInTheBlank extends React.Component {
     this.placeSelectedItem(targetId);
   };
 
-  getPositionDirection: any = (choicePosition) => {
-    let flexDirection;
-    let justifyContent;
-    let alignItems;
+  getPositionDirection: any = (choicePosition) =>
+    choicePosition === 'left' || choicePosition === 'right'
+      ? { flexDirection: 'row', alignItems: 'center' }
+      : { flexDirection: 'column' };
 
-    switch (choicePosition) {
-      case 'left':
-        flexDirection = 'row';
-        alignItems = 'center';
-        break;
-      case 'right':
-        flexDirection = 'row-reverse';
-        justifyContent = 'flex-end';
-        alignItems = 'center';
-        break;
-      case 'below':
-        flexDirection = 'column-reverse';
-        break;
-      default:
-        // above
-        flexDirection = 'column';
-        break;
-    }
-
-    return { flexDirection, justifyContent, alignItems };
-  };
+  // The choices come first in the DOM only when they show first, above or left of the markup,
+  // rather than being moved after it by a reversed flex direction: the tab path, the reading order
+  // and text-to-speech follow the DOM, so they then follow what is on screen.
+  showsChoicesFirst: any = (choicePosition) => choicePosition === 'above' || choicePosition === 'left';
 
   render() {
     const {
@@ -421,13 +404,17 @@ export default class DragInTheBlank extends React.Component {
         return describeFocusTarget(t, announcementConfig, selected, overData);
       },
 
+      // What the drop did is said in the element's own region. dnd-kit's region is emptied instead of
+      // left alone (`undefined`): it changes only when a drag event writes to it, so the selection it
+      // still held would be the same text next time and a new selection of that choice would go unsaid.
       onDragEnd() {
-        return undefined;
+        return '';
       },
 
       onDragCancel({ active }) {
+        // A click placement ended the drag and says what it did; dnd-kit's region is emptied, as at a drop.
         if (element.endingDragForPlacement) {
-          return undefined;
+          return '';
         }
 
         return describeDeselection(t, announcementConfig, dragData(active)?.choice?.id);
@@ -436,6 +423,22 @@ export default class DragInTheBlank extends React.Component {
 
     const choicePosition = choicesPosition || 'below';
     const style = { display: 'flex', minWidth: '100px', ...this.getPositionDirection(choicePosition) };
+    const choicesPool = (
+      <Choices
+        choicePosition={choicePosition}
+        choices={choices}
+        value={value}
+        duplicates={duplicates}
+        disabled={disabled}
+        instanceId={instanceId}
+        selectedItem={this.state.selectedItem}
+        onSelectClick={this.onItemClick}
+        onPlacementClick={this.onPlacementClick}
+        markup={markup}
+        language={language}
+      />
+    );
+    const choicesFirst = this.showsChoicesFirst(choicePosition);
 
     return (
       <DragProvider
@@ -460,20 +463,7 @@ export default class DragInTheBlank extends React.Component {
           )}
           <LiveAnnouncer politeness="polite" announcement={this.state.announcement} />
           <div ref={this.setDndAnnouncer} className={MATHJAX_IGNORE} style={visuallyHidden} />
-
-          <Choices
-            choicePosition={choicePosition}
-            choices={choices}
-            value={value}
-            duplicates={duplicates}
-            disabled={disabled}
-            instanceId={instanceId}
-            selectedItem={this.state.selectedItem}
-            onSelectClick={this.onItemClick}
-            onPlacementClick={this.onPlacementClick}
-            markup={markup}
-            language={language}
-          />
+          {choicesFirst && choicesPool}
           <Masked
             elementType="drag-in-the-blank"
             markup={markup}
@@ -495,6 +485,7 @@ export default class DragInTheBlank extends React.Component {
             onSelectClick={this.onItemClick}
             onPlacementClick={this.onPlacementClick}
           />
+          {!choicesFirst && choicesPool}
           <DragOverlay style={{ pointerEvents: 'none' }} dropAnimation={motionSafeDropAnimation(this.state.dropAnimation)}>
             {this.renderDragOverlay()}
           </DragOverlay>

@@ -37,6 +37,36 @@ describe('Mask blank spacing', () => {
     }
   });
 
+  it('sets blanks written with nothing between them one narrow gap apart', () => {
+    const { container } = renderMarkup('<div style="min-width: 530px">{{0}}{{1}}{{2}}</div>');
+
+    const blanks = [...container.querySelectorAll('[data-testid="blank"]')];
+    expect(blanks).toHaveLength(3);
+    const before = blanks[0].previousSibling as HTMLElement;
+    const after = blanks[2].nextSibling as HTMLElement;
+    expect(isSpacer(before)).toBe(true);
+    expect(isSpacer(after)).toBe(true);
+    for (const [left, right] of [
+      [blanks[0], blanks[1]],
+      [blanks[1], blanks[2]],
+    ]) {
+      const gap = left.nextSibling as HTMLElement;
+      expect(isSpacer(gap)).toBe(true);
+      expect(gap.nextSibling).toBe(right);
+      // Not the spacer that separates the run from what is around it.
+      expect(gap.className).not.toBe(before.className);
+    }
+  });
+
+  it('keeps the spacers between blanks a space separates', () => {
+    const { container } = renderMarkup('<p>{{0}} {{1}}</p>');
+
+    for (const blank of container.querySelectorAll('[data-testid="blank"]')) {
+      expect(isSpacer(blank.previousSibling)).toBe(true);
+      expect(isSpacer(blank.nextSibling)).toBe(true);
+    }
+  });
+
   it('adds no spacing around inline markup', () => {
     const { container } = renderMarkup('<p>It <b>was</b> the {{0}} of times<sup>1</sup>.</p>');
 

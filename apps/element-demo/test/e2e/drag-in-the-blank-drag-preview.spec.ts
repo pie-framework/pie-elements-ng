@@ -10,9 +10,18 @@ const CHOICES = [
   'Mona eats her breakfast.',
 ];
 
-type Copy = { overlay: boolean; width: number; height: number; textHeight: number };
+type Copy = {
+  overlay: boolean;
+  inBlank: boolean;
+  width: number;
+  height: number;
+  textHeight: number;
+};
 
-/** Every chip showing `text`: its size, its text's height, and whether it is the drag overlay's copy. */
+/**
+ * Every chip showing `text`: its size, its text's height, and whether it is the drag overlay's copy
+ * or a response area's preview of the choice held over it.
+ */
 const copiesOf = (root: Locator, text: string): Promise<Copy[]> =>
   root.evaluate(
     (node, text) =>
@@ -24,6 +33,13 @@ const copiesOf = (root: Locator, text: string): Promise<Copy[]> =>
           return {
             // dnd-kit's overlay wrapper is fixed-position.
             overlay: chip.closest('[style*="position: fixed"]') !== null,
+            // A response area is a button while empty and a group once it holds a choice. A choice tile,
+            // in the pool or in a response area, is a button named "Answer choice: …", or one dnd-kit
+            // describes as draggable while it has no name of its own (math not rendered yet, say).
+            inBlank:
+              chip.closest(
+                ':is([role="button"], [role="group"]):not([aria-roledescription]):not([aria-label^="Answer choice:"])'
+              ) !== null,
             width: box.width,
             height: box.height,
             textHeight: label.getBoundingClientRect().height,
@@ -58,7 +74,7 @@ test.describe('drag-in-the-blank: the drag preview', () => {
 
       const copies = await copiesOf(root, text);
       const preview = copies.find((copy) => copy.overlay);
-      const source = copies.find((copy) => !copy.overlay);
+      const source = copies.find((copy) => !copy.overlay && !copy.inBlank);
       await page.mouse.up();
       if (!preview || !source) {
         throw new Error('The drag shows no overlay copy beside the held token');
