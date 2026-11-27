@@ -58,6 +58,80 @@ describe('speakChoice', () => {
     // Unfinished speech is not kept, so the same choice is spoken once the renderer has started.
     expect(speakChoice('<b>\\(c^2\\)</b>')).toEqual({ text: 'c squared', complete: true });
   });
+
+  it('reads a title the HTML starts with, but no stylesheet or meta', () => {
+    expect(speakChoice('<style>b { color: red }</style><b>Jupiter</b>').text).toBe('Jupiter');
+    expect(speakChoice('<meta charset="utf-8">Mars').text).toBe('Mars');
+    expect(speakChoice('<title>Planet</title> Venus').text).toBe('Planet Venus');
+  });
+});
+
+// Outside a browser there is no DOMParser: the tags are taken out of the HTML as text.
+describe('speakChoice without a DOMParser', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reads the text between the tags, each tag a space', () => {
+    vi.stubGlobal('DOMParser', undefined);
+
+    expect(speakChoice('<p>Tom<br>and <b>Jerry</b></p><p>run</p>')).toEqual({ text: 'Tom and Jerry run', complete: true });
+    expect(speakChoice('<b>\\(c^2\\)</b>')).toEqual({ text: '\\(c^2\\)', complete: false });
+  });
+
+  it('takes a < to open a tag that the next > closes, and keeps a < no > closes', () => {
+    vi.stubGlobal('DOMParser', undefined);
+
+    expect(speakChoice('a<b<c>d').text).toBe('a d');
+    expect(speakChoice('2 < 3 <i>x</i>').text).toBe('2 x');
+    expect(speakChoice('<p>x</p> 1 < 2').text).toBe('x 1 < 2');
+    expect(speakChoice('a <b').text).toBe('a <b');
+  });
+
+  it('takes time in step with the length of the HTML, however many < it holds', () => {
+    vi.stubGlobal('DOMParser', undefined);
+    const opens = '<'.repeat(50_000);
+    const unclosed = '<a'.repeat(25_000);
+    const start = performance.now();
+
+    expect(speakChoice(opens).text).toBe(opens);
+    expect(speakChoice(unclosed).text).toBe(unclosed);
+    expect(speakChoice(`${opens}>x`).text).toBe('x');
+    // The old regular expression took seconds here, its time growing with the square of the length.
+    expect(performance.now() - start).toBeLessThan(500);
+  });
+});
+
+// MathJax reads \$ as $ and \\ as \ in what it typesets, and it typesets a choice only when the choice holds
+// math: TeX (a \$ counts), MathML or a LaTeX span. Elsewhere the text stays as written.
+describe('speakChoice and escapes with the default delimiters', () => {
+  it('reads an escaped dollar as the dollar sign MathJax shows', () => {
+    expect(speakChoice('\\$5 and \\$6')).toEqual({ text: '$5 and $6', complete: true });
+  });
+
+  it('reads escapes beside math, where an escaped backslash opens no math', () => {
+    expect(speakChoice('\\$5 or \\(c^2\\)')).toEqual({ text: '$5 or c squared', complete: true });
+    expect(speakChoice('$$x+1$$ costs \\$5').text).toBe('x plus 1 costs $5');
+    expect(speakChoice('\\\\(c^2\\)').text).toBe('\\(c^2\\)');
+  });
+
+  it('reads an escaped backslash as one only in a choice the math renderer typesets', () => {
+    expect(speakChoice('back\\\\slash')).toEqual({ text: 'back\\\\slash', complete: true });
+    expect(speakChoice('back\\\\slash costs \\$5').text).toBe('back\\slash costs $5');
+    expect(speakChoice('a\\\\b or \\(c^2\\)').text).toBe('a\\b or c squared');
+    expect(speakChoice('a\\\\b or <math><mi>y</mi></math>').text).toBe('a\\b or y');
+  });
+
+  it('leaves escapes MathJax is told to leave alone as written', () => {
+    expect(speakChoice('<span class="mathjax_ignore">\\$5</span> or \\$6').text).toBe('\\$5 or $6');
+  });
+
+  it('names the tile and announces the choice by what MathJax shows', () => {
+    const config = { markup: '{{0}}', choices: [{ id: 'd', value: '\\$5 and \\$6' }] };
+
+    expect(describeChoiceTile(t, config.choices[0])).toBe('Answer choice: $5 and $6');
+    expect(describeSelection(t, config, 'd')).toBe('Selected answer choice $5 and $6. Use TAB to choose a blank.');
+  });
 });
 
 // The legacy page opt-in that has the math renderer typeset $…$ as well, as pie-players reads it.
@@ -89,6 +163,13 @@ describe('speakChoice and single dollars', () => {
     page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
 
     expect(speakChoice('\\$5 or $c^2$')).toEqual({ text: '$5 or c squared', complete: true });
+  });
+
+  it('reads an escaped backslash as one only in a choice the math renderer typesets', () => {
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+
+    expect(speakChoice('back\\\\slash').text).toBe('back\\\\slash');
+    expect(speakChoice('back\\\\slash costs $5').text).toBe('back\\slash costs $5');
   });
 
   it('reads the opt-in on each call, so speech kept from before it does not answer after it', () => {
