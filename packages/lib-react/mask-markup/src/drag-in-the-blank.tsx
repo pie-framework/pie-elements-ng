@@ -10,6 +10,17 @@ import Blank from './components/blank.js';
 import { withMask } from './with-mask.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import { blanksFirst } from './collision-detection.js';
+import { MATHJAX_IGNORE, visuallyHidden } from './visually-hidden.js';
+import {
+  applyPlacement,
+  describeDeselection,
+  describeFocusTarget,
+  describeIntro,
+  describeNotOverBlank,
+  describePlacementResult,
+  describeSelection,
+  translatorFor,
+} from './announcements.js';
 
 // A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
 // the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
@@ -77,8 +88,15 @@ export default class DragInTheBlank extends React.Component {
       activeDragItem: null,
       dropAnimation: undefined,
       selectedItem: null,
+      // What a placement just did, for the live region; dnd-kit's own region only knows the drag.
+      resultMessage: '',
+      // Where dnd-kit renders its live region and drag instructions, once it is in the document.
+      dndAnnouncer: null,
     };
     this.lastDragEndAt = 0;
+    this.endingDragForPlacement = false;
+    this.pointerDrag = false;
+    this.awaitingFirstOver = false;
   }
 
   static propTypes = {
@@ -106,11 +124,15 @@ export default class DragInTheBlank extends React.Component {
   handleDragStart: any = (event) => {
     const { active } = event;
 
+    // Compared by type, not instanceof: inside an iframe the event's constructor is another realm's.
+    this.pointerDrag = /^(pointer|mouse|touch)/.test(event.activatorEvent?.type || '');
+
     if (active?.data?.current) {
       this.setState({
         activeDragItem: active.data.current,
         dropAnimation: undefined, // default during drag
         selectedItem: active.data.current,
+        resultMessage: '',
       });
     }
   };
@@ -125,6 +147,7 @@ export default class DragInTheBlank extends React.Component {
           disabled={activeDragItem.disabled}
           choice={activeDragItem.choice}
           instanceId={activeDragItem.instanceId}
+          language={this.props.language}
           dragOverlay
         />
       );
@@ -144,25 +167,43 @@ export default class DragInTheBlank extends React.Component {
 
     if (!onChange) return;
 
-    if (targetId === undefined) {
-      if (!draggedItem.fromChoice && draggedItem.id) {
-        const newValue = { ...value };
-        delete newValue[draggedItem.id];
-        onChange(newValue);
-      }
-      return;
-    }
+    const next = applyPlacement(value, draggedItem, targetId);
 
-    if (draggedItem.fromChoice === true) {
-      const newValue = { ...value };
-      newValue[targetId] = draggedItem.choice.id;
-      onChange(newValue);
-    } else if (draggedItem.id && draggedItem.id !== targetId) {
-      const newValue = { ...value };
-      newValue[targetId] = draggedItem.choice.id;
-      delete newValue[draggedItem.id];
-      onChange(newValue);
+    // A drop that changes nothing is not a change to report.
+    if (next !== value) {
+      onChange(next);
     }
+  };
+
+  // dnd-kit's announcements name math in words as well, and it would render them beside the element's
+  // content, which the element typesets as a whole: on a page that typesets $…$, a choice's $ would
+  // turn the announcement into math. Rendered in here instead, they are out of MathJax's reach.
+  setDndAnnouncer: any = (node) => {
+    if (node && node !== this.state.dndAnnouncer) {
+      this.setState({ dndAnnouncer: node });
+    }
+  };
+
+  // The i18n view, and the model's slice the announcements are built from.
+  getAnnouncementContext: any = () => {
+    const { markup, duplicates, choices, value, language } = this.props;
+
+    return {
+      t: translatorFor(language, () => this.forceUpdate()),
+      config: { markup, duplicates, choices: choices || [] },
+      value: value || {},
+    };
+  };
+
+  // Describes the placement against the session as it is *before* the placement is applied.
+  announceResult: any = (draggedItem, targetId, committed = true) => {
+    const { t, config, value } = this.getAnnouncementContext();
+
+    this.setState({
+      resultMessage: committed
+        ? describePlacementResult(t, config, value, draggedItem, targetId)
+        : describeDeselection(t, config, draggedItem.choice?.id),
+    });
   };
 
   handleDragEnd: any = (event) => {
@@ -183,15 +224,26 @@ export default class DragInTheBlank extends React.Component {
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
 
-    if (!isValidDrop) return;
+    if (!draggedData) return;
+
+    if (!isValidDrop) {
+      this.announceResult(draggedData, undefined, false);
+      return;
+    }
 
     const targetId = dropData.toChoiceBoard === true ? undefined : dropData.id;
 
+    this.announceResult(draggedData, targetId);
     this.commitPlacement(draggedData, targetId);
   };
 
   onDragCancel: any = () => {
-    this.setState({ activeDragItem: null, dropAnimation: undefined });
+    // A placement ended this drag itself, and has already said what it did.
+    this.setState(
+      this.endingDragForPlacement
+        ? { activeDragItem: null, dropAnimation: undefined }
+        : { activeDragItem: null, dropAnimation: undefined, resultMessage: '' },
+    );
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
   };
@@ -204,9 +256,18 @@ export default class DragInTheBlank extends React.Component {
   // Click-to-select semantics: selecting the currently-selected item again clears the
   // selection instead of re-selecting it.
   toggleItemSelection: any = (data) => {
-    this.setState((state) => ({
-      selectedItem: this.isSameItem(state.selectedItem, data) ? null : data,
-    }));
+    const { t, config } = this.getAnnouncementContext();
+
+    this.setState((state) => {
+      const deselecting = this.isSameItem(state.selectedItem, data);
+
+      return {
+        selectedItem: deselecting ? null : data,
+        resultMessage: deselecting
+          ? describeDeselection(t, config, data.choice?.id)
+          : describeSelection(t, config, data.choice?.id),
+      };
+    });
   };
 
   cancelSelection: any = () => {
@@ -227,7 +288,15 @@ export default class DragInTheBlank extends React.Component {
   endAnyLiveKeyboardDrag: any = () => {
     if (!this.state.activeDragItem) return;
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    // dnd-kit's cancel handler runs onDragCancel and its announcement synchronously (it only awaits
+    // for a drop with `cancelDrop`), so the flag is still up when they read it.
+    this.endingDragForPlacement = true;
+
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    } finally {
+      this.endingDragForPlacement = false;
+    }
   };
 
   placeSelectedItem: any = (targetId) => {
@@ -235,6 +304,7 @@ export default class DragInTheBlank extends React.Component {
 
     if (!selectedItem) return;
 
+    this.announceResult(selectedItem, targetId);
     this.commitPlacement(selectedItem, targetId);
     this.cancelSelection();
     this.endAnyLiveKeyboardDrag();
@@ -288,6 +358,68 @@ export default class DragInTheBlank extends React.Component {
       language,
     } = this.props;
 
+    const { t, config: announcementConfig, value: announcementValue } = this.getAnnouncementContext();
+    const dragData = (event) => event?.data?.current;
+    const element = this;
+
+    // dnd-kit's own live region carries the drag as it unfolds; what a drop did is announced
+    // from `resultMessage`, which knows the session before and after.
+    const announcements = {
+      onDragStart({ active }) {
+        // dnd-kit's first over event reports where the choice was lifted from, which is not a move
+        // and would replace the selection announcement within milliseconds.
+        element.awaitingFirstOver = true;
+
+        return describeSelection(t, announcementConfig, dragData(active)?.choice?.id);
+      },
+
+      onDragOver({ active, over }) {
+        // The "press ENTER / TAB" wording is for the keyboard; a pointer drag has no use for it.
+        if (element.pointerDrag) {
+          return undefined;
+        }
+
+        const selected = dragData(active);
+        const first = element.awaitingFirstOver;
+
+        element.awaitingFirstOver = false;
+
+        if (!over) {
+          return describeNotOverBlank(t, announcementConfig, selected?.choice?.id);
+        }
+
+        const overData = dragData(over);
+
+        // A choice lifted from the pool is first reported over the pool; row 12 is for Tab reaching it.
+        if (first && selected?.fromChoice && overData?.toChoiceBoard) {
+          return undefined;
+        }
+
+        // A filled blank is its own drop target when picked up; it is where the choice already sits.
+        if (!selected || !overData || (!overData.toChoiceBoard && selected.fromChoice === false && String(overData.id) === String(selected.id))) {
+          return undefined;
+        }
+
+        return describeFocusTarget(t, announcementConfig, selected, overData);
+      },
+
+      // What the drop did is said in the element's own region. dnd-kit's region is emptied instead of
+      // left alone (`undefined`): it changes only when a drag event writes to it, so the selection it
+      // still held would be the same text next time and a new selection of that choice would go unsaid.
+      onDragEnd() {
+        return '';
+      },
+
+      onDragCancel({ active }) {
+        // A click placement ended the drag and says what it did; dnd-kit's region is emptied, as at a drop.
+        if (element.endingDragForPlacement) {
+          return '';
+        }
+
+        return describeDeselection(t, announcementConfig, dragData(active)?.choice?.id);
+      },
+    };
+
     const choicePosition = choicesPosition || 'below';
     const style = { display: 'flex', minWidth: '100px', ...this.getPositionDirection(choicePosition) };
     const choicesPool = (
@@ -301,6 +433,8 @@ export default class DragInTheBlank extends React.Component {
         selectedItem={this.state.selectedItem}
         onSelectClick={this.onItemClick}
         onPlacementClick={this.onPlacementClick}
+        markup={markup}
+        language={language}
       />
     );
     const choicesFirst = this.showsChoicesFirst(choicePosition);
@@ -313,8 +447,23 @@ export default class DragInTheBlank extends React.Component {
         collisionDetection={blanksFirst}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
+        accessibility={{
+          announcements,
+          container: this.state.dndAnnouncer || undefined,
+          screenReaderInstructions: { draggable: t('dragInstructionsA11y') },
+        }}
       >
         <div ref={(ref) => (this.rootRef = ref)} style={style}>
+          {/* What these say has its math in words already, so MathJax is kept out of them. */}
+          {!disabled && (
+            <div className={MATHJAX_IGNORE} style={visuallyHidden}>
+              {describeIntro(t, announcementConfig, announcementValue)}
+            </div>
+          )}
+          <div className={MATHJAX_IGNORE} style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
+            {this.state.resultMessage}
+          </div>
+          <div ref={this.setDndAnnouncer} className={MATHJAX_IGNORE} style={visuallyHidden} />
           {choicesFirst && choicesPool}
           <Masked
             elementType="drag-in-the-blank"

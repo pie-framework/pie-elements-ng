@@ -48,11 +48,13 @@ const CHOICE_DROP_ELEMENTS = new Set([
  * named by `aria-label` (image-cloze-association's response areas while nothing is selected).
  */
 async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
-  const CHOICE = '[aria-roledescription="draggable"][aria-disabled="false"]';
+  // drag-in-the-blank names its text tiles "Answer choice: ..." and drops the draggable roledescription
+  const CHOICE =
+    '[aria-roledescription="draggable"][aria-disabled="false"], [role="button"][aria-label^="Answer choice:"][aria-disabled="false"]';
   const choice = root.locator(CHOICE).first();
   const dropZone = root
     .locator(
-      '[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"], [role="group"][aria-labelledby], [role="group"][aria-label]'
+      '[role="button"]:not([aria-roledescription]):not([aria-label^="Answer choice:"]), [role="group"][tabindex="0"], [role="group"][aria-labelledby], [role="group"][aria-label]'
     )
     .filter({ hasNot: page.locator(CHOICE) })
     .first();

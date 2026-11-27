@@ -33,8 +33,13 @@ const copiesOf = (root: Locator, text: string): Promise<Copy[]> =>
           return {
             // dnd-kit's overlay wrapper is fixed-position.
             overlay: chip.closest('[style*="position: fixed"]') !== null,
-            // A response area is a button, unlike a choice, which dnd-kit describes as draggable.
-            inBlank: chip.closest('[role="button"]:not([aria-roledescription])') !== null,
+            // A response area is a button while empty and a group once it holds a choice. A choice tile,
+            // in the pool or in a response area, is a button named "Answer choice: …", or one dnd-kit
+            // describes as draggable while it has no name of its own (math not rendered yet, say).
+            inBlank:
+              chip.closest(
+                ':is([role="button"], [role="group"]):not([aria-roledescription]):not([aria-label^="Answer choice:"])'
+              ) !== null,
             width: box.width,
             height: box.height,
             textHeight: label.getBoundingClientRect().height,
@@ -85,7 +90,8 @@ test.describe('drag-in-the-blank: the drag preview', () => {
   // A response area shows the choice held over it where the choice would land.
   test('previews a choice held over a response area in full, where it lands', async ({ page }) => {
     const text = CHOICES[0];
-    const area = root.locator('[aria-label="Blank 1"]');
+    // The blank is named by what it holds: empty while the choice is held over it, then the choice.
+    const area = root.locator('[aria-label="Blank 1 is empty"], [aria-label^="Blank 1 contains"]');
 
     /** The box of the text in `selector`, from the area's left edge, and whether it is cut off. */
     const textIn = (selector: string) =>
