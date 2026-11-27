@@ -47,6 +47,8 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     touchAction: 'none',
     backgroundColor: color.surface(),
   },
+  // No `touch-action`: categorize's choices set their own, so on the pool around them a swipe
+  // scrolls the page and a pinch zooms it.
   '&.categorizeBoard': {
     padding: theme.spacing(0.5),
     display: 'flex',
@@ -55,7 +57,6 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     minHeight: '100px',
     justifyContent: 'center',
     overflow: 'hidden',
-    touchAction: 'none',
     backgroundColor: color.surface(),
   },
   '&.verticalPool': {

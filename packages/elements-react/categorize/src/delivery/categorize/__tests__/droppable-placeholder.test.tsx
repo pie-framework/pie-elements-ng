@@ -92,6 +92,17 @@ describe('DroppablePlaceholder', () => {
       renderPlaceholder({ choiceBoard: true, correct: false });
       expect(screen.getByTestId('placeholder').getAttribute('style')).toBeNull();
     });
+
+    // A drop zone never starts a drag, so it sets no `touch-action`; the choices inside claim their
+    // own touches (choice.test.tsx). PlaceHolder is mocked here; @pie-lib/drag's placeholder tests
+    // cover the pool's board.
+    it.each([
+      ['a category', {}],
+      ['the choices pool', { choiceBoard: true }],
+    ])('sets no touch-action of its own on %s', (_name, extras) => {
+      const { container } = renderPlaceholder(extras);
+      expect((container.firstChild as HTMLElement).style.touchAction).toBe('');
+    });
   });
 
   describe('minRowHeight', () => {

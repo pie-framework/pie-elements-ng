@@ -180,10 +180,14 @@ const DraggableChoice = ({
     onSelectClick?.(dragData);
   };
 
+  // dnd-kit's PointerSensor needs `touch-action: none` on what a finger picks up, or the browser
+  // claims the touch as a page pan and cancels the drag. The choice carries it, not the categories
+  // or the pool around it, which never start a drag (see droppable-placeholder.tsx), so nothing
+  // else supplies it. A disabled choice never drags and leaves the page its gestures.
   return (
     <div
       ref={setNodeRef}
-      style={{ margin: '4px', ...extraStyle }}
+      style={{ margin: '4px', ...(!disabled && { touchAction: 'none' }), ...extraStyle }}
       onClick={handleClick}
       {...listeners}
       {...attributes}

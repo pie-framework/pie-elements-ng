@@ -12,7 +12,6 @@ export { ChoiceType };
 
 const Wrapper: any = styled('div')({
   flex: 1,
-  touchAction: 'none',
 });
 
 const LabelHolder: any = styled('div')(({ theme }) => ({
@@ -31,10 +30,9 @@ export class Choices extends React.Component {
       choicesLabel: PropTypes.string,
     }),
     disabled: PropTypes.bool,
-    choicePosition: PropTypes.string,
     onDropChoice: PropTypes.func,
     onRemoveChoice: PropTypes.func,
-    correct: PropTypes.boolean,
+    correct: PropTypes.bool,
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
@@ -57,7 +55,6 @@ export class Choices extends React.Component {
       disabled,
       onDropChoice,
       onRemoveChoice,
-      choicePosition,
       correct,
       selectedItem,
       onSelectClick,
@@ -72,14 +69,6 @@ export class Choices extends React.Component {
     // choices label, else the catalog's.
     const defaultName = hasLabel ? undefined : catalogs.forLocale(language).t('choicesListA11y');
 
-    let style = {
-      textAlign: 'center',
-    };
-
-    if (choicePosition === 'left') {
-      style.direction = 'rtl';
-    }
-
     return (
       <Wrapper>
         <DroppablePlaceholder
@@ -89,7 +78,6 @@ export class Choices extends React.Component {
           onDropChoice={onDropChoice}
           onRemoveChoice={onRemoveChoice}
           disabled={disabled}
-          style={{ background: 'none' }}
           choiceBoard={true}
           correct={correct}
           selectedItem={selectedItem}
