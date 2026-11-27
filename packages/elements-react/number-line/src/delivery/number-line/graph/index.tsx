@@ -117,6 +117,25 @@ export class NumberLineGraph extends React.Component {
     rect.on('click', this.onRectClick.bind(this));
   }
 
+  /**
+   * A touch that starts on a point or a line's body is its drag's, whichever way the finger moves
+   * first: cancelling `touchstart` keeps the browser from scrolling or zooming for it, which would
+   * end the drag with `pointercancel`. `touch-action` cannot claim it, since Chrome ignores it on
+   * elements inside an svg (PIE-1104). React's own touchstart listener is passive, so this one is
+   * native. Only enabled handles carry `data-drag-handle`.
+   */
+  claimHandleTouch = (event) => {
+    if (event.target instanceof Element && event.target.closest('[data-drag-handle]')) {
+      event.preventDefault();
+    }
+  };
+
+  setSvg = (svg) => {
+    this.svg?.removeEventListener('touchstart', this.claimHandleTouch);
+    this.svg = svg;
+    svg?.addEventListener('touchstart', this.claimHandleTouch, { passive: false });
+  };
+
   addElement(x) {
     const snapFn = this.snapValueFn();
     const v = snapFn(x);
@@ -217,12 +236,14 @@ export class NumberLineGraph extends React.Component {
         <GraphContext.Provider value={{ xScale: this.xScaleFn(), snapValue: this.snapValueFn() }}>
           <DndContext id={this.dragInstructionsId}>
             <div style={{ display: 'inline-block' }}>
-              {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
-                  and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
+              {/* Off its handles the line leaves a touch to the page: a swipe scrolls it, a pinch zooms it.
+                  The handles claim their own touches (see claimHandleTouch). `manipulation` only drops
+                  double-tap zoom, so two quick taps on the line place points instead of zooming. */}
               <svg
+                ref={this.setSvg}
                 width={width}
                 height={fraction ? height + 20 : height}
-                style={{ touchAction: 'none' }}
+                style={{ touchAction: 'manipulation' }}
                 // a group, because an img would hide the draggable points inside it
                 role="group"
                 aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}

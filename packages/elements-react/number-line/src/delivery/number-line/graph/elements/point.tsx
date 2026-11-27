@@ -77,6 +77,7 @@ export class Point extends React.Component {
     onDrag: PropTypes.func,
     onDragStop: PropTypes.func,
     onDragStart: PropTypes.func,
+    onDragCancel: PropTypes.func,
   };
 
   static contextType = GraphContext;
@@ -85,6 +86,7 @@ export class Point extends React.Component {
     const {
       onDragStop,
       onDragStart,
+      onDragCancel,
       onDrag: onDragCallback,
       onClick,
       onMove,
@@ -155,6 +157,12 @@ export class Point extends React.Component {
       onMove(newPosition);
     };
 
+    // A cancel (Escape, or the system took the touch) also ends the drag, and moves nothing.
+    const handleDragCancel = () => {
+      onDragStop?.();
+      onDragCancel?.();
+    };
+
     const id = `point-${position}-${y}`;
 
     return (
@@ -167,6 +175,7 @@ export class Point extends React.Component {
         onDragStart={handleDragStart}
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         {({
           setNodeRef,
@@ -178,6 +187,8 @@ export class Point extends React.Component {
         }) => (
           <g
             ref={setNodeRef}
+            // the graph keeps a touch that starts here from scrolling or zooming the page
+            data-drag-handle={disabled ? undefined : ''}
             onMouseDown={onMouseDown}
             // axis="x": only horizontal translate
             transform={`translate(${translateX}, 0)`}

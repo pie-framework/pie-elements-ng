@@ -16,6 +16,7 @@ import { useDraggable, useDndMonitor } from '@dnd-kit/core';
  *  - onDragStart?: () => void
  *  - onDragMove?: (deltaX: number) => void      // snapped + clamped
  *  - onDragEnd?: (deltaX: number) => void       // snapped + clamped
+ *  - onDragCancel?: () => void                  // the drag ended without a drop: Escape, or the system took the touch
  *  - children: ({ setNodeRef, attributes, listeners, translateX, isDragging, onMouseDown }) => ReactNode
  */
 export function Draggable({
@@ -27,6 +28,7 @@ export function Draggable({
   onDragStart,
   onDragMove,
   onDragEnd,
+  onDragCancel,
   children,
 }) {
   // Callers build `id` from position, and the points inside lines and rays all sit at y=0 of
@@ -94,6 +96,11 @@ export function Draggable({
       if (event.active.id !== draggableId || disabled) return;
       const deltaX = event.delta.x || 0;
       onDragEnd?.(snapClampDeltaX(deltaX));
+    },
+    // dnd-kit drops its transform on a cancel; callers that drew from the drag position must too.
+    onDragCancel(event) {
+      if (event.active.id !== draggableId) return;
+      onDragCancel?.();
     },
   });
 

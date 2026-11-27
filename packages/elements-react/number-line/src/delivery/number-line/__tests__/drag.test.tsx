@@ -19,9 +19,10 @@ const graphProps = {
 const pointHandles = (container: HTMLElement) =>
   [...container.querySelectorAll('g[aria-roledescription]')].filter((g) => g.querySelector(':scope > circle'));
 
-// dnd-kit's keyboard sensor: Space picks up, each arrow moves 25px, Space drops.
+// dnd-kit's keyboard sensor: Space picks up, each arrow moves 25px, Space drops and Escape cancels,
+// as its pointer sensor cancels on `pointercancel`.
 // It only starts listening for the arrows on the timeout after the pick-up.
-const keyboardDrag = async (handle: Element, presses: number) => {
+const keyboardDrag = async (handle: Element, presses: number, end: 'Space' | 'Escape' = 'Space') => {
   await act(async () => {
     fireEvent.keyDown(handle, { code: 'Space' });
     await new Promise((resolve) => setTimeout(resolve));
@@ -32,9 +33,15 @@ const keyboardDrag = async (handle: Element, presses: number) => {
     });
   }
   await act(async () => {
-    fireEvent.keyDown(document, { code: 'Space' });
+    fireEvent.keyDown(document, { code: end });
   });
 };
+
+/** Where the element's line starts, and where the point that should start it sits. */
+const lineStartAndPoint = (container: HTMLElement, handle: Element) => ({
+  lineStart: container.querySelector('line.line-handle')?.getAttribute('x1'),
+  point: handle.querySelector(':scope > circle')?.getAttribute('cx'),
+});
 
 describe('number line dragging', () => {
   it('moves only the dragged endpoint when another line has an endpoint at the same value', async () => {
@@ -76,5 +83,43 @@ describe('number line dragging', () => {
     expect(onMoveElement).toHaveBeenCalledTimes(1);
     expect(onMoveElement.mock.calls[0][0]).toBe(1);
     expect(onMoveElement.mock.calls[0][2]).toBe(4);
+  });
+
+  // The ray and the line draw from the drag position while a drag is live; a cancel must drop it,
+  // or the line stays at the dragged value while its point goes back.
+  it('draws a ray from its point again when a drag of the point is cancelled', async () => {
+    const onMoveElement = vi.fn();
+    const { container } = render(
+      <NumberLineGraph
+        {...graphProps}
+        onMoveElement={onMoveElement}
+        elements={[{ type: 'ray', direction: 'positive', pointType: 'full', position: 3 }]}
+      />,
+    );
+    const handle = pointHandles(container)[0];
+    const before = lineStartAndPoint(container, handle);
+
+    await keyboardDrag(handle, 3, 'Escape');
+
+    expect(onMoveElement).not.toHaveBeenCalled();
+    expect(lineStartAndPoint(container, handle)).toEqual(before);
+  });
+
+  it('draws a line from its endpoint again when a drag of the endpoint is cancelled', async () => {
+    const onMoveElement = vi.fn();
+    const { container } = render(
+      <NumberLineGraph
+        {...graphProps}
+        onMoveElement={onMoveElement}
+        elements={[{ type: 'line', leftPoint: 'full', rightPoint: 'full', position: { left: 1, right: 6 } }]}
+      />,
+    );
+    const handle = pointHandles(container)[0];
+    const before = lineStartAndPoint(container, handle);
+
+    await keyboardDrag(handle, 3, 'Escape');
+
+    expect(onMoveElement).not.toHaveBeenCalled();
+    expect(lineStartAndPoint(container, handle)).toEqual(before);
   });
 });
