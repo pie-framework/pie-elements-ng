@@ -41,6 +41,9 @@ import { catalogs } from '../i18n/index.js';
 import Choice from './choice.js';
 import { reachedMaxSelections } from './utils.js';
 
+// The keys that change a choice: Space and Enter, and the arrows that move a radio group's check.
+const SELECTING_KEYS = new Set([' ', 'Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+
 const MainContainer: any = styled(Box)({
   color: color.text(),
   backgroundColor: color.background(),
@@ -174,6 +177,8 @@ export class MultipleChoice extends React.Component {
     this.groupName = `mc-group-${Math.random().toString(36).slice(2, 10)}`;
     // The delivery element finds the container by its class, which authored CSS may also target.
     this.mainContainerId = createUniqueId('main-container');
+    // How the last choice change was made, reported as the session's `selector`.
+    this.selector = 'Mouse';
   }
 
   /** Re-renders once the item language's catalog lands, where no element preloaded it. */
@@ -200,7 +205,20 @@ export class MultipleChoice extends React.Component {
       }
     }
 
-    onChoiceChanged({ value, selected: checked, selector: 'Mouse' });
+    onChoiceChanged({ value, selected: checked, selector: this.selector });
+  };
+
+  // A change follows the key or the pointer press that made it, so the group notes which came
+  // last (PIE-1628). It listens in the capture phase, ahead of the choice's own Enter handler,
+  // which fires the change while the keydown is still on its way down.
+  noteKeyboard: any = (event) => {
+    if (SELECTING_KEYS.has(event.key)) {
+      this.selector = 'Keyboard';
+    }
+  };
+
+  notePointer: any = () => {
+    this.selector = 'Mouse';
   };
 
   onToggle: any = () => {
@@ -415,7 +433,11 @@ export class MultipleChoice extends React.Component {
           language={language}
         />
 
-        <StyledFieldset role={choiceMode === 'radio' ? 'radiogroup' : 'group'}>
+        <StyledFieldset
+          role={choiceMode === 'radio' ? 'radiogroup' : 'group'}
+          onKeyDownCapture={this.noteKeyboard}
+          onPointerDownCapture={this.notePointer}
+        >
           <AnswerChoicesLegend className="pie-sr-only">
             {partLabel ? i18n.t('partAnswerChoicesA11y', { partLabel }) : i18n.t('answerChoicesA11y')}
           </AnswerChoicesLegend>
