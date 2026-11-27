@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The math renderer converts TeX only once it has started; `ready` stands for that.
 const math = vi.hoisted(() => ({ ready: true }));
@@ -57,6 +57,68 @@ describe('speakChoice', () => {
 
     // Unfinished speech is not kept, so the same choice is spoken once the renderer has started.
     expect(speakChoice('<b>\\(c^2\\)</b>')).toEqual({ text: 'c squared', complete: true });
+  });
+});
+
+// The legacy page opt-in that has the math renderer typeset $…$ as well, as pie-players reads it.
+const PAGE_OPTIONS = '@pie-lib/math-rendering@2';
+const page = globalThis as Record<string, unknown>;
+
+describe('speakChoice and single dollars', () => {
+  afterEach(() => {
+    delete page[PAGE_OPTIONS];
+  });
+
+  it('leaves $…$ as text by default, as the math renderer does', () => {
+    expect(speakChoice('$c^2$')).toEqual({ text: '$c^2$', complete: true });
+
+    page[PAGE_OPTIONS] = { opts: { assetRoot: '/npm' } };
+    expect(speakChoice('Costs $x+1$')).toEqual({ text: 'Costs $x+1$', complete: true });
+  });
+
+  it('speaks $…$ as math once the page has the math renderer typeset it', () => {
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+
+    expect(speakChoice('$c^2$')).toEqual({ text: 'c squared', complete: true });
+    expect(speakChoice('<p>Half is $\\frac{1}{2}$.</p>').text).toBe('Half is 1 over 2.');
+    // The other delimiters keep working, and $$…$$ is still display math, not two empty $…$.
+    expect(speakChoice('$$x+1$$ or \\(\\pi r^2\\)').text).toBe('x plus 1 or pi r squared');
+  });
+
+  it('reads an escaped dollar as a dollar sign, as MathJax shows it, not as the start of math', () => {
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+
+    expect(speakChoice('\\$5 or $c^2$')).toEqual({ text: '$5 or c squared', complete: true });
+  });
+
+  it('reads the opt-in on each call, so speech kept from before it does not answer after it', () => {
+    expect(speakChoice('<i>$c^2$</i>').text).toBe('$c^2$');
+
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+    expect(speakChoice('<i>$c^2$</i>').text).toBe('c squared');
+
+    delete page[PAGE_OPTIONS];
+    expect(speakChoice('<i>$c^2$</i>').text).toBe('$c^2$');
+  });
+
+  it('keeps unspoken $…$ math as its TeX until the renderer can speak it', () => {
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+    math.ready = false;
+
+    try {
+      expect(speakChoice('<b>$c^2$</b>')).toEqual({ text: 'c^2', complete: false });
+    } finally {
+      math.ready = true;
+    }
+  });
+
+  it('names the tile by its spoken math', () => {
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+
+    expect(describeChoiceTile(t, { id: 'c', value: '$c^2$' })).toBe('Answer choice: c squared');
+    expect(describeSelection(t, { markup: '{{0}}', choices: [{ id: 'c', value: '$c^2$' }] }, 'c')).toBe(
+      'Selected answer choice c squared. Use TAB to choose a blank.',
+    );
   });
 });
 

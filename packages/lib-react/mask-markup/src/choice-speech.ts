@@ -4,9 +4,43 @@
 
 import { latexToMml, speakMathml } from '@pie-element/shared-math-rendering-mathjax';
 
-/** The TeX MathJax typesets in delivery, with its default delimiters: \(…\), \[…\] and $$…$$. */
-const TEX = /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$/g;
-const HAS_TEX = /\\\(|\\\[|\$\$/;
+/** The TeX MathJax finds in text, and what tells that a text has some. */
+interface Dialect {
+  /**
+   * Its groups, in order: the TeX of \(…\), of \[…\], of $$…$$, then, where the dialect has them, of
+   * $…$ and the character a \$ or \\ escape stands for.
+   */
+  tex: RegExp;
+  groups: number;
+  hasTex: RegExp;
+}
+
+/** MathJax's default delimiters, which delivery typesets with: \(…\), \[…\] and $$…$$. */
+const DEFAULT_TEX: Dialect = {
+  tex: /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$/g,
+  groups: 3,
+  hasTex: /\\\(|\\\[|\$\$/,
+};
+
+/**
+ * Those and $…$, as MathJax typesets them on a page that opts in to single dollars: $$ opens display
+ * math before $ opens inline math, and an escaped \$ or \\ is that character, so it opens nothing.
+ */
+const SINGLE_DOLLAR_TEX: Dialect = {
+  tex: /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\$((?:\\[\s\S]|[^\\$])+?)\$|\\([\\$])/g,
+  groups: 5,
+  hasTex: /\\\(|\\\[|\$/,
+};
+
+// The legacy renderer's page options, which the math renderer and pie-players read the opt-in from.
+const PAGE_OPTIONS_KEY = '@pie-lib/math-rendering@2';
+
+/** Whether the page has the math renderer typeset $…$ too. Read on each call, as the renderer reads it then. */
+const pageUsesSingleDollar = (): boolean => {
+  const page = globalThis as { [PAGE_OPTIONS_KEY]?: { opts?: { useSingleDollar?: unknown } } };
+
+  return Boolean(page[PAGE_OPTIONS_KEY]?.opts?.useSingleDollar);
+};
 
 /** Elements whose end separates the words either side of it. */
 const BREAKS = new Set(['br', 'p', 'div', 'li', 'tr', 'td', 'th', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
@@ -28,11 +62,25 @@ const speakLatex = (latex: string, display: boolean): string | undefined => {
   return (math && speakMathml(math)) || undefined;
 };
 
-const speakNode = (node: Node, state: { complete: boolean }): string => {
+interface SpeechState {
+  complete: boolean;
+  dialect: Dialect;
+}
+
+const speakNode = (node: Node, state: SpeechState): string => {
   if (node.nodeType === Node.TEXT_NODE) {
-    return (node.textContent ?? '').replace(TEX, (_source, inline?: string, display?: string, dollars?: string) => {
-      const latex = (inline ?? display ?? dollars ?? '').trim();
-      const speech = speakLatex(latex, inline === undefined);
+    const { tex, groups } = state.dialect;
+
+    return (node.textContent ?? '').replace(tex, (_source, ...rest) => {
+      // After its groups, a replacer is passed the offset and the whole string.
+      const [inline, display, dollars, single, escaped] = rest.slice(0, groups) as (string | undefined)[];
+
+      if (escaped !== undefined) {
+        return escaped;
+      }
+
+      const latex = (inline ?? display ?? dollars ?? single ?? '').trim();
+      const speech = speakLatex(latex, display !== undefined || dollars !== undefined);
 
       if (speech === undefined) {
         state.complete = false;
@@ -72,7 +120,10 @@ const speakNode = (node: Node, state: { complete: boolean }): string => {
   if (element.hasAttribute('data-latex')) {
     const raw = element.getAttribute('data-raw') || element.textContent || '';
 
-    return speakNode(element.ownerDocument.createTextNode(HAS_TEX.test(raw) ? raw : `\\(${raw}\\)`), state);
+    return speakNode(
+      element.ownerDocument.createTextNode(state.dialect.hasTex.test(raw) ? raw : `\\(${raw}\\)`),
+      state,
+    );
   }
 
   if (element.classList.contains('mathjax_ignore')) {
@@ -85,7 +136,8 @@ const speakNode = (node: Node, state: { complete: boolean }): string => {
 };
 
 // Every tile and blank works its name out on each render, so finished speech is kept, by the HTML it was
-// made from. Unfinished speech is not kept: it changes once the math renderer has started.
+// made from and whether $…$ was math. Unfinished speech is not kept: it changes once the math renderer
+// has started.
 const spoken = new Map<string, ChoiceSpeech>();
 const MAX_SPOKEN = 500;
 
@@ -95,20 +147,24 @@ export const speakChoice = (html?: string): ChoiceSpeech => {
     return { text: '', complete: true };
   }
 
+  const singleDollar = pageUsesSingleDollar();
+  const dialect = singleDollar ? SINGLE_DOLLAR_TEX : DEFAULT_TEX;
+
   // Outside a browser there is no math renderer either; the tags go and any TeX counts as unspoken.
   if (typeof DOMParser === 'undefined') {
     const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
-    return { text, complete: !HAS_TEX.test(html) };
+    return { text, complete: !dialect.hasTex.test(html) };
   }
 
-  const known = spoken.get(html);
+  const key = `${singleDollar ? '$' : '-'}${html}`;
+  const known = spoken.get(key);
 
   if (known) {
     return known;
   }
 
-  const state = { complete: true };
+  const state: SpeechState = { complete: true, dialect };
   // Math and images are spoken with a space either side, which a full stop or comma after them does not need.
   const text = speakNode(parse(html), state)
     .replace(/\s+/g, ' ')
@@ -121,7 +177,7 @@ export const speakChoice = (html?: string): ChoiceSpeech => {
       spoken.clear();
     }
 
-    spoken.set(html, speech);
+    spoken.set(key, speech);
   }
 
   return speech;
