@@ -8,7 +8,7 @@ import {
   TWO_POINTS,
   tapGraph,
 } from './graph-helpers';
-import { assertTouchEnabled, touchDragBy } from './touch-helpers';
+import { assertTouchEnabled, centerOf, touchDragBy, touchDragCancelled } from './touch-helpers';
 
 /**
  * Can a finger actually operate the graph-style elements?
@@ -115,4 +115,42 @@ test.describe('graph elements under touch', () => {
       );
     });
   }
+
+  // A ray draws its line from the drag position while a drag is live. When the system cancels the
+  // touch (an edge swipe, a palm), the point goes back, and the line must go back with it.
+  test('number-line [demo=inequality-rays]: a drag the system cancels leaves the ray as it was', async ({
+    page,
+  }) => {
+    const root = await openForTouch(page, { element: 'number-line', demoId: 'inequality-rays' });
+    await tapGraph(page, root, CENTER);
+    await expect.poll(() => firstDragHandle(root), { timeout: 10_000 }).not.toBeNull();
+    const handle = (await firstDragHandle(root)) as Locator;
+
+    /** How far each ray's line ends from the point that should end it, in px. */
+    const rayGaps = () =>
+      handle.evaluate((circle) =>
+        [...(circle.ownerSVGElement?.querySelectorAll('line.line-handle') ?? [])].map((line) => {
+          const point = line.parentElement?.querySelector(
+            ':scope > g[aria-roledescription] > circle'
+          );
+          // A point follows a drag through its group's translate.
+          const group = point?.parentElement as unknown as SVGGraphicsElement;
+          const shift = group.transform.baseVal.consolidate()?.matrix.e ?? 0;
+          const x = Number(point?.getAttribute('cx')) + shift;
+          return Math.min(
+            Math.abs(Number(line.getAttribute('x1')) - x),
+            Math.abs(Number(line.getAttribute('x2')) - x)
+          );
+        })
+      );
+    expect(await rayGaps()).toEqual([0]);
+
+    const before = await sessionSignature(page);
+    const from = await centerOf(handle);
+    await touchDragCancelled(page, from, { x: from.x + 160, y: from.y });
+
+    await page.waitForTimeout(300);
+    expect(await sessionSignature(page)).toBe(before);
+    expect(await rayGaps()).toEqual([0]);
+  });
 });

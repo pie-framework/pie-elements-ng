@@ -85,13 +85,6 @@ const BLOCKS = {
       'graph, so a touch anywhere on it neither scrolls nor zooms the page, not only on a handle.',
     ticket: 'PIE-1420',
   },
-  numberLine: {
-    cause:
-      'number-line sets `touch-action: none` on its outer `<svg>` ' +
-      '(elements-react/number-line/src/delivery/number-line/graph/index.tsx), because Chrome ' +
-      'ignores it on inner SVG shapes (PIE-1104), so the whole line blocks scrolling and zooming.',
-    ticket: 'PIE-1421',
-  },
   dragBoard: {
     cause:
       "`@pie-lib/drag`'s choices board (lib-react/drag/src/placeholder.tsx, its `board` and " +
@@ -160,11 +153,12 @@ const CASES: GestureCase[] = [
     surfaces: [
       graphSurface({
         prefer: { fx: 0.5, fy: 0.2 },
-        scrollBlock: BLOCKS.numberLine,
-        zoomBlock: BLOCKS.numberLine,
       }),
     ],
-    handleDrag: graphHandleDrag({ seedTaps: CENTER, delta: { x: 120 } }),
+    // The points only move along x, but a finger on one keeps it whichever way it starts: this
+    // drag starts steeper than 45 degrees, where a vertical pan would win if the point did not
+    // claim its touch.
+    handleDrag: graphHandleDrag({ seedTaps: CENTER, delta: { x: 120, y: 160 } }),
   },
   {
     element: 'charting',

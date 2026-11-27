@@ -101,6 +101,11 @@ export class Line extends React.Component {
     }
   }
 
+  // A cancelled endpoint drag moves nothing, so the line is drawn from its position again.
+  resetDrag = () => {
+    this.setState({ left: null, right: null });
+  };
+
   onMove(side, d) {
     const { position: p } = this.props;
     const newPosition = { left: p.left, right: p.right };
@@ -205,6 +210,8 @@ export class Line extends React.Component {
                 className="line-handle"
                 x1={xScale(left)}
                 x2={xScale(right)}
+                // the graph keeps a touch that starts here from scrolling or zooming the page
+                data-drag-handle={disabled ? undefined : ''}
                 onClick={onLineClick}
                 // this is your "handle": only dragging when grabbing this line
                 {...listeners}
@@ -218,6 +225,7 @@ export class Line extends React.Component {
                 }}
                 position={position.left}
                 onDrag={onDragLeft}
+                onDragCancel={this.resetDrag}
                 onMove={onMoveLeft}
                 onClick={onRectClick}
               />
@@ -230,6 +238,7 @@ export class Line extends React.Component {
                 }}
                 position={position.right}
                 onDrag={onDragRight}
+                onDragCancel={this.resetDrag}
                 onMove={onMoveRight}
                 onClick={onRectClick}
               />
