@@ -7,29 +7,33 @@ import { latexToMml, speakMathml } from '@pie-element/shared-math-rendering-math
 /** The TeX MathJax finds in text, and what tells that a text has some. */
 interface Dialect {
   /**
-   * Its groups, in order: the TeX of \(…\), of \[…\], of $$…$$, then, where the dialect has them, of
-   * $…$ and the character a \$ or \\ escape stands for.
+   * Its groups, in order: the TeX of \(…\), of \[…\], of $$…$$, the character a \$ or \\ escape stands
+   * for, then, where the dialect has it, the TeX of $…$. An escape is that character, so it opens nothing.
    */
   tex: RegExp;
   groups: number;
   hasTex: RegExp;
+  /** The text the math renderer typesets an element for (`TEX_MARKERS` in the math renderer's tex-dialect). */
+  typesets: RegExp;
 }
 
 /** MathJax's default delimiters, which delivery typesets with: \(…\), \[…\] and $$…$$. */
 const DEFAULT_TEX: Dialect = {
-  tex: /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$/g,
-  groups: 3,
+  tex: /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\([\\$])/g,
+  groups: 4,
   hasTex: /\\\(|\\\[|\$\$/,
+  typesets: /\\\(|\\\[|\$\$|\\\$|\\begin\{|\\(?:eq)?ref\{/,
 };
 
 /**
  * Those and $…$, as MathJax typesets them on a page that opts in to single dollars: $$ opens display
- * math before $ opens inline math, and an escaped \$ or \\ is that character, so it opens nothing.
+ * math before $ opens inline math.
  */
 const SINGLE_DOLLAR_TEX: Dialect = {
-  tex: /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\$((?:\\[\s\S]|[^\\$])+?)\$|\\([\\$])/g,
+  tex: /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\([\\$])|\$((?:\\[\s\S]|[^\\$])+?)\$/g,
   groups: 5,
   hasTex: /\\\(|\\\[|\$/,
+  typesets: /\\\(|\\\[|\$|\\begin\{|\\(?:eq)?ref\{/,
 };
 
 // The legacy renderer's page options, which the math renderer and pie-players read the opt-in from.
@@ -62,21 +66,32 @@ const speakLatex = (latex: string, display: boolean): string | undefined => {
   return (math && speakMathml(math)) || undefined;
 };
 
+/**
+ * Whether the math renderer typesets a choice, which it does only for one with math in it: TeX in its text,
+ * MathML, or a LaTeX span. MathJax reads the escapes in text only where it typesets. A typeset of the whole
+ * element, while some of its text still holds TeX, reaches a choice without math as well; that cannot be told
+ * from the choice.
+ */
+const typesets = (root: Element, dialect: Dialect): boolean =>
+  dialect.typesets.test(root.textContent ?? '') ||
+  Array.from(root.querySelectorAll('math, [data-latex]')).some((element) => !element.closest('mjx-container'));
+
 interface SpeechState {
   complete: boolean;
   dialect: Dialect;
+  typeset: boolean;
 }
 
 const speakNode = (node: Node, state: SpeechState): string => {
   if (node.nodeType === Node.TEXT_NODE) {
     const { tex, groups } = state.dialect;
 
-    return (node.textContent ?? '').replace(tex, (_source, ...rest) => {
+    return (node.textContent ?? '').replace(tex, (source, ...rest) => {
       // After its groups, a replacer is passed the offset and the whole string.
-      const [inline, display, dollars, single, escaped] = rest.slice(0, groups) as (string | undefined)[];
+      const [inline, display, dollars, escaped, single] = rest.slice(0, groups) as (string | undefined)[];
 
       if (escaped !== undefined) {
-        return escaped;
+        return state.typeset ? escaped : source;
       }
 
       const latex = (inline ?? display ?? dollars ?? single ?? '').trim();
@@ -164,9 +179,10 @@ export const speakChoice = (html?: string): ChoiceSpeech => {
     return known;
   }
 
-  const state: SpeechState = { complete: true, dialect };
+  const body = parse(html);
+  const state: SpeechState = { complete: true, dialect, typeset: typesets(body, dialect) };
   // Math and images are spoken with a space either side, which a full stop or comma after them does not need.
-  const text = speakNode(parse(html), state)
+  const text = speakNode(body, state)
     .replace(/\s+/g, ' ')
     .replace(/ ([.,;:!?])/g, '$1')
     .trim();

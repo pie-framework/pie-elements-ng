@@ -60,6 +60,38 @@ describe('speakChoice', () => {
   });
 });
 
+// MathJax reads \$ as $ and \\ as \ in what it typesets, and it typesets a choice only when the choice holds
+// math: TeX (a \$ counts), MathML or a LaTeX span. Elsewhere the text stays as written.
+describe('speakChoice and escapes with the default delimiters', () => {
+  it('reads an escaped dollar as the dollar sign MathJax shows', () => {
+    expect(speakChoice('\\$5 and \\$6')).toEqual({ text: '$5 and $6', complete: true });
+  });
+
+  it('reads escapes beside math, where an escaped backslash opens no math', () => {
+    expect(speakChoice('\\$5 or \\(c^2\\)')).toEqual({ text: '$5 or c squared', complete: true });
+    expect(speakChoice('$$x+1$$ costs \\$5').text).toBe('x plus 1 costs $5');
+    expect(speakChoice('\\\\(c^2\\)').text).toBe('\\(c^2\\)');
+  });
+
+  it('reads an escaped backslash as one only in a choice the math renderer typesets', () => {
+    expect(speakChoice('back\\\\slash')).toEqual({ text: 'back\\\\slash', complete: true });
+    expect(speakChoice('back\\\\slash costs \\$5').text).toBe('back\\slash costs $5');
+    expect(speakChoice('a\\\\b or \\(c^2\\)').text).toBe('a\\b or c squared');
+    expect(speakChoice('a\\\\b or <math><mi>y</mi></math>').text).toBe('a\\b or y');
+  });
+
+  it('leaves escapes MathJax is told to leave alone as written', () => {
+    expect(speakChoice('<span class="mathjax_ignore">\\$5</span> or \\$6').text).toBe('\\$5 or $6');
+  });
+
+  it('names the tile and announces the choice by what MathJax shows', () => {
+    const config = { markup: '{{0}}', choices: [{ id: 'd', value: '\\$5 and \\$6' }] };
+
+    expect(describeChoiceTile(t, config.choices[0])).toBe('Answer choice: $5 and $6');
+    expect(describeSelection(t, config, 'd')).toBe('Selected answer choice $5 and $6. Use TAB to choose a blank.');
+  });
+});
+
 // The legacy page opt-in that has the math renderer typeset $…$ as well, as pie-players reads it.
 const PAGE_OPTIONS = '@pie-lib/math-rendering@2';
 const page = globalThis as Record<string, unknown>;
@@ -89,6 +121,13 @@ describe('speakChoice and single dollars', () => {
     page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
 
     expect(speakChoice('\\$5 or $c^2$')).toEqual({ text: '$5 or c squared', complete: true });
+  });
+
+  it('reads an escaped backslash as one only in a choice the math renderer typesets', () => {
+    page[PAGE_OPTIONS] = { opts: { useSingleDollar: true } };
+
+    expect(speakChoice('back\\\\slash').text).toBe('back\\\\slash');
+    expect(speakChoice('back\\\\slash costs $5').text).toBe('back\\slash costs $5');
   });
 
   it('reads the opt-in on each call, so speech kept from before it does not answer after it', () => {
