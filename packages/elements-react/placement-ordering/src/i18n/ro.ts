@@ -1,7 +1,6 @@
 import type { MessageCatalog } from '@pie-element/shared-i18n';
 
 export default {
-  dragInstructions: 'Apasă Spațiu sau Enter pentru a prelua această variantă de răspuns. După ce ai preluat-o, folosește Tab sau Shift+Tab pentru a trece prin zonele de răspuns sau tastele săgeți pentru a o muta liber. Apasă Spațiu sau Enter pentru a o plasa sau Escape pentru a anula.',
   commonCorrectAnswerWithAlternates: 'Notă: Răspunsul afișat mai sus este cel mai frecvent răspuns corect pentru acest item. Sunt definite și unul sau mai multe răspunsuri corecte suplimentare, care vor fi de asemenea recunoscute drept corecte.',
   readingInstructions: 'Construiește o listă sortată mutând fiecare obiect în poziția corectă. Folosește Tab pentru a te deplasa între obiecte și zonele de plasare, Enter pentru a selecta sau a plasa și Esc pentru a anula.',
   objectsAreOnSortedList: {
@@ -19,7 +18,6 @@ export default {
     few: '{count} obiecte sortate',
     other: '{count} de obiecte sortate',
   },
-  unsortedObjectPrefix: 'obiect:',
   sortedObjectPrefix: 'Poziția {position}:',
   endOfUnsorted: 'Sfârșitul obiectelor nesortate',
   endOfSorted: 'Sfârșitul obiectelor sortate.',

@@ -1,7 +1,6 @@
 import type { MessageCatalog } from '@pie-element/shared-i18n';
 
 export default {
-  dragInstructions: 'اضغط على المسافة أو Enter لالتقاط خيار الإجابة هذا. بعد التقاطه، استخدم Tab أو Shift+Tab للتنقل بين مناطق الإجابة، أو استخدم مفاتيح الأسهم لتحريكه بحرية. اضغط على المسافة أو Enter لإفلاته، أو Escape للإلغاء.',
   commonCorrectAnswerWithAlternates: 'ملاحظة: الإجابة المعروضة أعلاه هي الإجابة الصحيحة الأكثر شيوعًا لهذا السؤال. توجد أيضًا إجابة صحيحة إضافية واحدة أو أكثر، وستُعدّ صحيحة كذلك.',
   readingInstructions: 'أنشئ قائمة مرتبة بنقل كل عنصر إلى الموضع الصحيح. استخدم Tab للتنقل بين العناصر ومناطق الإفلات، وEnter للتحديد أو الإفلات، وEsc للإلغاء.',
   objectsAreOnSortedList: {
@@ -28,7 +27,6 @@ export default {
     many: '{count} عنصرًا مرتبًا',
     other: '{count} عنصر مرتب',
   },
-  unsortedObjectPrefix: 'العنصر:',
   sortedObjectPrefix: 'الموضع {position}:',
   endOfUnsorted: 'نهاية العناصر غير المرتبة',
   endOfSorted: 'نهاية العناصر المرتبة.',

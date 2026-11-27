@@ -132,7 +132,7 @@ describe('PlacementOrdering without response areas: move buttons', () => {
     fireEvent.click(tile(container, 'a')!.querySelector('[data-move="earlier"]')!);
 
     await waitFor(() =>
-      expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent('Moved A to position 3 of 5.'),
+      expect(container.querySelector('[aria-live="assertive"]')).toHaveTextContent('Moved A to position 3 of 5.'),
     );
   });
 
