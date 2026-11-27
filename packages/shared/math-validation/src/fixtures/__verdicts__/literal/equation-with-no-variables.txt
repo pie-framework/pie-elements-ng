@@ -1,0 +1,13 @@
+# verdict	kind	mode [opts]	a	b, for latexEqual(a, b); written by latex-equal-verdicts.test.ts
+false	ne	literal	"2+2=4"	"1"
+false	ne/rev	literal	"1"	"2+2=4"
+false	ne	literal	"2+2=4"	"2=2"
+false	ne/rev	literal	"2=2"	"2+2=4"
+true	eq	literal	"4=4"	"4=4"
+true	eq/rev	literal	"4=4"	"4=4"
+false	ne	literal	"4=4"	"1"
+false	ne/rev	literal	"1"	"4=4"
+false	ne	literal	"1=1"	"1"
+false	ne/rev	literal	"1"	"1=1"
+false	ne	literal	"1=1"	"2=2"
+false	ne/rev	literal	"2=2"	"1=1"

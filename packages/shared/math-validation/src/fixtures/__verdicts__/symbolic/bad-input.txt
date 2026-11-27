@@ -1,0 +1,3 @@
+# verdict	kind	mode [opts]	a	b, for latexEqual(a, b); written by latex-equal-verdicts.test.ts
+false	ne	symbolic	"1 + 1"	"abcdefghijklmnopqrstuvwxyz 1 2 abcdeghijk ab cd ef bq arub oin tsn arstoin a8 asin aosin cvbkyu isn"
+false	ne/rev	symbolic	"abcdefghijklmnopqrstuvwxyz 1 2 abcdeghijk ab cd ef bq arub oin tsn arstoin a8 asin aosin cvbkyu isn"	"1 + 1"

@@ -1,35 +1,19 @@
-import { globSync } from 'node:fs';
-import { join } from 'node:path';
-import { latexEqual } from '../index.js';
-import type { Opts } from '../options.js';
+import {
+  type FixtureData,
+  type FixtureModule,
+  fixtureFiles,
+  LIMIT_MS,
+  loadFixture,
+  timedLatexEqual,
+  timeText,
+  toList,
+} from './latex-equal-fixtures.js';
 
-type FixtureData = {
-  target: string;
-  mode?: 'symbolic' | 'literal';
-  skip?: boolean;
-  only?: boolean;
-  label?: string;
-  opts?: Omit<Opts, 'mode'>;
-  eq: string | string[];
-  ne: string | string[];
-};
-
-type FixtureModule = {
-  mode?: 'symbolic' | 'literal';
-  only?: boolean;
-  skip?: boolean;
-  tests: FixtureData[];
-};
-
-// Listed at run time: an `import.meta.glob` list is fixed when the file is transformed, and
-// vitest's transform cache then keeps serving it after a fixture file is added.
-// Narrow the run with vitest's own filters, for example `vitest -t PD-303`.
-const fixturesDir = join(import.meta.dirname, '../fixtures/latex-equal');
-const fixtureFiles = globSync('**/*.ts', { cwd: fixturesDir }).sort();
-
+// Narrow the run with vitest's own filters, for example `vitest -t PD-303`, `-t PIE-1465` for the
+// known issues, or `-t '(rev)'` for the swapped order.
 const testData = await Promise.all(
   fixtureFiles.map(async (f) => ({
-    data: ((await import(join(fixturesDir, f))) as { default: FixtureModule }).default,
+    data: await loadFixture(f),
     filename: `src/fixtures/latex-equal/${f}`,
   }))
 );
@@ -48,10 +32,8 @@ const onlyTest = (root: FixtureModule, test: FixtureData) => {
 };
 
 const getLabel = (t: FixtureData) => {
-  if (t.label) {
-    return t.label.replace(/\$target/, t.target);
-  }
-  return t.target;
+  const label = t.label ? t.label.replace(/\$target/, t.target) : t.target;
+  return t.knownIssue ? `${label} (known issue ${t.knownIssue})` : label;
 };
 
 const optsLabel = (mode, o) => {
@@ -71,11 +53,24 @@ const optsLabel = (mode, o) => {
     .join(',')})`;
 };
 
+// Every pair runs as latexEqual(target, answer) and, marked (rev), as latexEqual(answer, target),
+// the order the elements score in. A call fails at LIMIT_MS of CPU time (latex-equal-fixtures.ts
+// says why CPU time).
+//
+// A known issue runs as `it.fails` in the written order only, and the verdict snapshot
+// (latex-equal-verdicts.test.ts) records both orders. Once a fix makes it pass, `it.fails` turns
+// red; the fix removes `knownIssue`, and the pair then runs in both orders like the others.
+// `it.fails` passes on any failure, so two changes stay green here: a fix that turns a throw into
+// the wrong verdict, and a known issue that goes over the time limit. The snapshot test covers
+// both; for known issues it is the only place the time limit is enforced.
+//
+// Each call is timed rather than given a per-test timeout: `it.fails` would invert the timeout
+// too, and a timeout doesn't say which call was slow.
 testData.forEach((d) => {
   describe(d.filename, () => {
     d.data.tests.forEach((t) => {
-      const eq = t.eq ? (Array.isArray(t.eq) ? t.eq : [t.eq]) : [];
-      const ne = t.ne ? (Array.isArray(t.ne) ? t.ne : [t.ne]) : [];
+      const eq = toList(t.eq);
+      const ne = toList(t.ne);
       // An entry without pairs is a placeholder; vitest rejects the empty suite it would make.
       if (eq.length + ne.length === 0) {
         return;
@@ -84,30 +79,35 @@ testData.forEach((d) => {
       const only = onlyTest(d.data, t);
       const dfn = skip ? describe.skip : only ? describe.only : describe;
 
-      const label = getLabel(t);
       const mode = t.mode || d.data.mode;
+      const opts = { mode, ...t.opts };
+      const l = optsLabel(mode, t.opts);
+      const test = t.knownIssue ? it.fails : it;
 
-      dfn(`[${mode}] ${label}`, () => {
-        const l = optsLabel(mode, t.opts);
-        eq.forEach((y) => {
-          it(`== ${y} ${l}`, () => {
-            const l = latexEqual(t.target, y, {
-              mode,
-              ...t.opts,
-            });
-            expect(l).toEqual(true);
-          });
-        });
-
-        ne.forEach((y) => {
-          it(`!= ${y} ${l}`, () => {
-            const l = latexEqual(t.target, y, {
-              mode,
-              ...t.opts,
-            });
-            expect(l).toEqual(false);
-          });
-        });
+      dfn(`[${mode}] ${getLabel(t)}`, () => {
+        for (const [answers, want, sign] of [
+          [eq, true, '=='],
+          [ne, false, '!='],
+        ] as const) {
+          for (const y of answers) {
+            const orders: [string, string, string][] = [[t.target, y, '']];
+            if (!t.knownIssue) {
+              orders.push([y, t.target, '(rev)']);
+            }
+            for (const [a, b, tag] of orders) {
+              test([sign, y, l, tag].filter(Boolean).join(' '), () => {
+                const call = timedLatexEqual(a, b, opts);
+                if ('error' in call) {
+                  throw call.error;
+                }
+                expect(call.verdict).toBe(want);
+                expect(call.cpuMs, `latexEqual(${a}, ${b}) took ${timeText(call)}`).toBeLessThan(
+                  LIMIT_MS
+                );
+              });
+            }
+          }
+        }
       });
     });
   });
