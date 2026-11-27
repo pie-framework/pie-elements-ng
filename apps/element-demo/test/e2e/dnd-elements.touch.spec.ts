@@ -7,6 +7,7 @@ import {
   switchTab,
   updateModelInSource,
   waitForMathRendering,
+  DND_DRAGGABLE,
 } from './test-helpers';
 import {
   assertTouchEnabled,
@@ -104,13 +105,8 @@ function forDefect(item: DndCase, key: TestKey) {
   return { run: defect ? test.fixme : test, annotate };
 }
 
-const DRAGGABLE = '[aria-roledescription="draggable"][aria-disabled="false"]';
-const DITB_TILE = '[role="button"][aria-label^="Answer choice:"][aria-disabled="false"]';
-const DITB_BLANK =
-  '[role="button"]:not([aria-roledescription]):not([aria-label^="Answer choice:"])';
-// placement-ordering tiles carry no role description (PIE-835); see dnd-release-outside.spec.ts.
-const PLACEMENT_TILE = '[data-tile-id][role="button"][aria-disabled="false"]';
-const ICA_AREA = ':is([role="button"], [role="group"])[aria-label]:not([aria-roledescription])';
+const DRAGGABLE = `${DND_DRAGGABLE}[aria-disabled="false"]`;
+const ICA_AREA = `:is([role="button"], [role="group"])[aria-label]:not(${DND_DRAGGABLE})`;
 
 const CASES: DndCase[] = [
   {
@@ -166,7 +162,7 @@ const CASES: DndCase[] = [
       });
       await expect(page).toHaveURL(/layout=page/);
     },
-    choices: (root) => root.locator(PLACEMENT_TILE),
+    choices: (root) => root.locator(DRAGGABLE),
     target: (root) => root.locator('[data-tile-id$=":target-0"]'),
     otherTarget: (root) => root.locator('[data-tile-id$=":target-1"]'),
     autoscroll: true,
@@ -183,10 +179,9 @@ const CASES: DndCase[] = [
   },
   {
     element: 'drag-in-the-blank',
-    // Text tiles are named "Answer choice: ..." and drop the draggable roledescription; image and math tiles keep it.
-    choices: (root) => root.locator(`${DRAGGABLE}, ${DITB_TILE}`),
-    target: (root) => root.locator(DITB_BLANK).first(),
-    otherTarget: (root) => root.locator(DITB_BLANK).nth(1),
+    choices: (root) => root.locator(DRAGGABLE),
+    target: (root) => root.locator(`[role="button"]:not(${DND_DRAGGABLE})`).first(),
+    otherTarget: (root) => root.locator(`[role="button"]:not(${DND_DRAGGABLE})`).nth(1),
     autoscroll: true,
     placed: (session) => Object.keys((session?.value ?? {}) as object).length,
   },

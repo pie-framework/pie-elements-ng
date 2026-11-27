@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
+import { draggableAttributes } from '@pie-lib/drag';
 import { color, hasTextAlternative } from '@pie-lib/render-ui';
 
 import EvaluationIcon from './evaluation-icon.js';
@@ -189,7 +190,7 @@ const PossibleResponse = ({
       onClick={handleClick}
       aria-label={label}
       {...listeners}
-      {...attributes}
+      {...draggableAttributes(attributes)}
     >
       <StyledSpan html={data.value} className={promptClassNames} />
       <EvaluationIcon isCorrect={data.isCorrect} containerStyle={evaluationStyle} />

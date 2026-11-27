@@ -33,7 +33,8 @@ vi.mock('@dnd-kit/core', () => ({
   })),
 }));
 
-vi.mock('@pie-lib/drag', () => ({
+vi.mock('@pie-lib/drag', async (importOriginal) => ({
+  draggableAttributes: (await importOriginal<typeof import('@pie-lib/drag')>()).draggableAttributes,
   uid: {
     withUid: vi.fn((a) => a),
   },

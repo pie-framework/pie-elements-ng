@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
+import { DragProvider, LiveAnnouncer, motionSafeDropAnimation, nextAnnouncement } from '@pie-lib/drag';
 import { DragOverlay } from '@dnd-kit/core';
 import Choices from './choices/index.js';
 import Choice from './choices/choice.js';
@@ -88,8 +88,9 @@ export default class DragInTheBlank extends React.Component {
       activeDragItem: null,
       dropAnimation: undefined,
       selectedItem: null,
-      // What a placement just did, for the live region; dnd-kit's own region only knows the drag.
-      resultMessage: '',
+      // What a placement just did, as `{ id, text }`, for the element's live region, which empties itself
+      // shortly after each message; the drag provider's region says the drag as it unfolds.
+      announcement: undefined,
       // Where dnd-kit renders its live region and drag instructions, once it is in the document.
       dndAnnouncer: null,
     };
@@ -132,7 +133,7 @@ export default class DragInTheBlank extends React.Component {
         activeDragItem: active.data.current,
         dropAnimation: undefined, // default during drag
         selectedItem: active.data.current,
-        resultMessage: '',
+        announcement: undefined,
       });
     }
   };
@@ -199,11 +200,11 @@ export default class DragInTheBlank extends React.Component {
   announceResult: any = (draggedItem, targetId, committed = true) => {
     const { t, config, value } = this.getAnnouncementContext();
 
-    this.setState({
-      resultMessage: committed
-        ? describePlacementResult(t, config, value, draggedItem, targetId)
-        : describeDeselection(t, config, draggedItem.choice?.id),
-    });
+    const message = committed
+      ? describePlacementResult(t, config, value, draggedItem, targetId)
+      : describeDeselection(t, config, draggedItem.choice?.id);
+
+    this.setState({ announcement: nextAnnouncement(message) });
   };
 
   handleDragEnd: any = (event) => {
@@ -242,7 +243,7 @@ export default class DragInTheBlank extends React.Component {
     this.setState(
       this.endingDragForPlacement
         ? { activeDragItem: null, dropAnimation: undefined }
-        : { activeDragItem: null, dropAnimation: undefined, resultMessage: '' },
+        : { activeDragItem: null, dropAnimation: undefined, announcement: undefined },
     );
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
@@ -263,9 +264,9 @@ export default class DragInTheBlank extends React.Component {
 
       return {
         selectedItem: deselecting ? null : data,
-        resultMessage: deselecting
-          ? describeDeselection(t, config, data.choice?.id)
-          : describeSelection(t, config, data.choice?.id),
+        announcement: nextAnnouncement(
+          deselecting ? describeDeselection(t, config, data.choice?.id) : describeSelection(t, config, data.choice?.id),
+        ),
       };
     });
   };
@@ -362,8 +363,8 @@ export default class DragInTheBlank extends React.Component {
     const dragData = (event) => event?.data?.current;
     const element = this;
 
-    // dnd-kit's own live region carries the drag as it unfolds; what a drop did is announced
-    // from `resultMessage`, which knows the session before and after.
+    // The drag provider's live region carries the drag as it unfolds; what a drop did is announced
+    // by `announceResult`, which knows the session before and after.
     const announcements = {
       onDragStart({ active }) {
         // dnd-kit's first over event reports where the choice was lifted from, which is not a move
@@ -460,9 +461,7 @@ export default class DragInTheBlank extends React.Component {
               {describeIntro(t, announcementConfig, announcementValue)}
             </div>
           )}
-          <div className={MATHJAX_IGNORE} style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
-            {this.state.resultMessage}
-          </div>
+          <LiveAnnouncer politeness="polite" announcement={this.state.announcement} />
           <div ref={this.setDndAnnouncer} className={MATHJAX_IGNORE} style={visuallyHidden} />
           {choicesFirst && choicesPool}
           <Masked

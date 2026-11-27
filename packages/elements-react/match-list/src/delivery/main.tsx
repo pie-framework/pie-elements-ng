@@ -7,7 +7,7 @@ import { restrictToWindowEdges  } from '@dnd-kit/modifiers';
 import { closestResponseArea } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { motionSafeDropAnimation } from '@pie-lib/drag';
+import { LiveAnnouncer, motionSafeDropAnimation, nextAnnouncement } from '@pie-lib/drag';
 import { color, createUniqueId, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -129,9 +129,10 @@ export class Main extends React.Component {
       showCorrectAnswer: false,
       draggingElement: null,
       selectedAnswer: null,
-      // Everything announced while selecting and placing. It is the only live region the element
-      // fills (dnd-kit's own is left empty): two regions compete in JAWS and cut each other off.
-      resultMessage: '',
+      // Everything announced while selecting and placing, as `{ id, text }`. It is the only live region
+      // the element fills (dnd-kit's own is left empty): two regions compete in JAWS and cut each other
+      // off. The region empties itself shortly after each message.
+      announcement: undefined,
     };
     this.lastDragEndAt = 0;
     this.endingDragForPlacement = false;
@@ -139,18 +140,15 @@ export class Main extends React.Component {
     // Whether focus has left the place the drag started from; until then dnd-kit's initial
     // "over" event must not talk over the selection announcement (row 8).
     this.movedSinceStart = false;
-    this.announceFlip = false;
   }
 
-  // The same text twice in a row would not be read again, so every message alternates a trailing
-  // no-break space.
+  // Each message is a new announcement, so the same text twice in a row is read twice.
   announce: any = (message) => {
     if (!message) {
       return;
     }
 
-    this.announceFlip = !this.announceFlip;
-    this.setState({ resultMessage: this.announceFlip ? message : `${message}\u00a0` });
+    this.setState({ announcement: nextAnnouncement(message) });
   };
 
   onRemoveAnswer(id) {
@@ -414,7 +412,7 @@ export class Main extends React.Component {
     const element = this;
 
     // Every announcement goes through `element.announce` into the one live region, and dnd-kit's
-    // own region gets nothing. What a drop did is announced from `resultMessage`, which knows the
+    // own region gets nothing. What a drop did is announced by `announceResult`, which knows the
     // session before and after.
     const announcements = {
       onDragStart({ active }) {
@@ -502,9 +500,7 @@ export class Main extends React.Component {
           <PreviewPrompt className="prompt" prompt={prompt} />
 
           {mode === 'gather' && <div style={visuallyHidden}>{describeIntro(t, announcementConfig, announcementValue)}</div>}
-          <div style={visuallyHidden} role="status" aria-live="assertive" aria-atomic="true">
-            {this.state.resultMessage}
-          </div>
+          <LiveAnnouncer announcement={this.state.announcement} />
 
           <CorrectAnswerToggle
             show={mode === 'evaluate'}

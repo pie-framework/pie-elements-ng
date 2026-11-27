@@ -16,6 +16,7 @@ import {
   waitForElementReady,
   mountedElement,
   mountedElementSelector,
+  DND_DRAGGABLE,
 } from './test-helpers';
 
 type CheckName =
@@ -537,11 +538,11 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       const root = await getDeliveryContainer(page);
       const dragged = await dragAnyCandidateToTarget(page, root, {
         // The choices are dnd-kit draggables (a DIV with
-        // aria-roledescription="draggable"; no `draggable` attribute, and the
+        // the DndDescribedBy aria-describedby; no `draggable` attribute, and the
         // styled-components class names are hashes), and the category drop
         // zones carry data-category-id.
         sourceSelectors: [
-          '[aria-roledescription="draggable"]',
+          DND_DRAGGABLE,
           '[draggable="true"]',
           '[data-draggable="true"]',
           '[class*="choice"]',
@@ -673,9 +674,8 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
-      // A tile dnd-kit can drag is a button with its `aria-disabled` (no role description, PIE-835). An item
-      // without response areas has none: its objects are moved, and dragged, by their buttons
-      let draggables = root.locator('[data-tile-id][role="button"][aria-disabled="false"]');
+      // An item without response areas has no draggable role: its objects are moved, and dragged, by their buttons
+      let draggables = root.locator(`[role="button"]${DND_DRAGGABLE}`);
       let moveButtons = false;
       if ((await draggables.count()) < 2) {
         draggables = root.locator('button[data-move]');
@@ -804,7 +804,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
         // hashes, so class-substring selectors match nothing.
         sourceSelectors: [
           '[data-tile-id*=":choice-"]',
-          '[aria-roledescription="draggable"]',
+          DND_DRAGGABLE,
           '[draggable="true"]',
           '[data-draggable="true"]',
         ],

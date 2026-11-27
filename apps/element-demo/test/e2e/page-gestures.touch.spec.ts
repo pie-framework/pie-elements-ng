@@ -8,7 +8,12 @@ import {
   TWO_POINTS,
   tapGraph,
 } from './graph-helpers';
-import { deliveryContainer, getSessionState, openDeliverRoute } from './test-helpers';
+import {
+  deliveryContainer,
+  getSessionState,
+  openDeliverRoute,
+  DND_DRAGGABLE,
+} from './test-helpers';
 import { assertTouchEnabled, touchDrag, touchPinch } from './touch-helpers';
 
 /**
@@ -35,7 +40,7 @@ import { assertTouchEnabled, touchDrag, touchPinch } from './touch-helpers';
  * differently and still needs a device.
  */
 
-const DRAGGABLE = '[aria-roledescription="draggable"]';
+const DRAGGABLE = DND_DRAGGABLE;
 
 type Point = { x: number; y: number };
 

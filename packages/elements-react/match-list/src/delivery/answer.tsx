@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
-import { PlaceHolder } from '@pie-lib/drag';
+import { PlaceHolder, draggableAttributes } from '@pie-lib/drag';
 import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
@@ -202,9 +202,9 @@ function DragAndDropAnswer(props) {
     ariaLabel,
   } = props;
 
-  // dnd-kit announces a tile as a "draggable" button; the match-list spec reads it as the answer
-  // choice itself, so the tile is named after the choice and drops the role description.
-  const tileA11y = ariaLabel ? { 'aria-label': ariaLabel, 'aria-roledescription': undefined } : {};
+  // The match-list spec reads a tile as the answer choice itself, so it is named after the choice.
+  // dnd-kit's "draggable" role description is dropped where its attributes are spread.
+  const tileA11y = ariaLabel ? { 'aria-label': ariaLabel } : {};
 
   const dragId = buildDragId({ type, id, promptId });
   // droppable only if promptId exists
@@ -360,7 +360,7 @@ function DragAndDropAnswer(props) {
         <div
           ref={setDragRef}
           {...listeners}
-          {...(draggable && !disabled ? { ...attributes, ...tileA11y } : {})}
+          {...(draggable && !disabled ? { ...draggableAttributes(attributes), ...tileA11y } : {})}
           data-tile-id={`${instanceId}:${dragId}`}
           style={{ transform: transformStyle, transition }}
         >
@@ -384,7 +384,7 @@ function DragAndDropAnswer(props) {
     <div
       ref={setDragRef}
       {...listeners}
-      {...attributes}
+      {...draggableAttributes(attributes)}
       {...tileA11y}
       data-tile-id={`${instanceId}:${dragId}`}
       onClick={handleChoiceClick}

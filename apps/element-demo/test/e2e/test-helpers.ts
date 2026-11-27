@@ -5,6 +5,13 @@ import type { Page, Locator } from '@playwright/test';
  */
 
 /**
+ * Matches an element dnd-kit made draggable. The elements spread dnd-kit's attributes through
+ * `draggableAttributes` from `@pie-lib/drag`, which drops the "draggable" role description (PIE-1547)
+ * and marks the element `data-dnd-draggable` instead.
+ */
+export const DND_DRAGGABLE = '[data-dnd-draggable]';
+
+/**
  * Wait for MathJax to finish rendering LaTeX content
  */
 export async function waitForMathRendering(page: Page, timeout = 5000) {

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
-import { uid } from '@pie-lib/drag';
+import { draggableAttributes, uid } from '@pie-lib/drag';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { color } from '@pie-lib/render-ui';
@@ -186,7 +186,7 @@ const DraggableChoice = ({
       style={{ margin: '4px', ...extraStyle }}
       onClick={handleClick}
       {...listeners}
-      {...attributes}
+      {...draggableAttributes(attributes)}
     >
       <Layout
         id={id}

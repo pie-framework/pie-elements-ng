@@ -41,11 +41,11 @@ const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapR
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { createDragCollision, DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
+import { createDragCollision, DragProvider, LiveAnnouncer, motionSafeDropAnimation, nextAnnouncement } from '@pie-lib/drag';
 import { authoredOrDefault } from '@pie-element/shared-i18n';
 import { catalogs } from '../i18n/index.js';
 
-import { HorizontalTiler, ScreenReaderText, VerticalTiler } from './tiler.js';
+import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import {
   cancelledMessage,
   focusLabel,
@@ -222,8 +222,9 @@ export class PlacementOrdering extends React.Component {
       selectedChoice: null,
       // The drag data of the tile being dragged, which the drag overlay draws.
       draggedTile: null,
-      // What the screen reader announces of the last change to the answer (spec rows 16 to 21).
-      announcement: '',
+      // What the screen reader announces of the last change to the answer (spec rows 16 to 21), as
+      // `{ id, text }`; the live region empties itself shortly after each one.
+      announcement: undefined,
     };
     this.lastDragEndAt = 0;
     // When the last placement was made, so the cancel it causes in a live keyboard drag is not announced.
@@ -528,11 +529,9 @@ export class PlacementOrdering extends React.Component {
       return;
     }
 
-    // A live region only announces a change, so the same message twice in a row differs by a trailing space.
-    const say = () =>
-      this.setState((state) => ({
-        announcement: state.announcement === message ? `${message}\u00a0` : message,
-      }));
+    // Each message is a new announcement, so the same one twice in a row is said twice. The region clears
+    // itself a moment after it is said, which for a held-back result is after the delay below.
+    const say = () => this.setState({ announcement: nextAnnouncement(message) });
 
     if (afterFocus) {
       // A newer result replaces one still waiting; an immediate message (a selection, a button move) leaves it,
@@ -789,9 +788,7 @@ export class PlacementOrdering extends React.Component {
       >
         <PlacementOrderingContainer ref={this.containerRef} data-dragging={this.state.draggedTile ? '' : undefined}>
           {(includeTargets || moveProps.onMove) && (
-            <ScreenReaderText role="status" aria-live="assertive" aria-atomic="true">
-              {this.state.announcement}
-            </ScreenReaderText>
+            <LiveAnnouncer announcement={this.state.announcement} />
           )}
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (

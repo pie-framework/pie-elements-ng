@@ -3,6 +3,7 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDraggable } from '@dnd-kit/core';
+import { draggableAttributes } from '@pie-lib/drag';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
@@ -100,7 +101,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
 
   // dnd-kit calls the focused tile "draggable"; it is an answer choice, named with its math spoken.
   const tileName = describeChoiceTile(translatorFor(language, relabel), choice);
-  const tileA11y = tileName && !disabled ? { 'aria-label': tileName, 'aria-roledescription': undefined } : {};
+  const tileA11y = tileName && !disabled ? { 'aria-label': tileName } : {};
 
   const isSelected = !!selectedItem && selectedItem.fromChoice === true && selectedItem.choice.id === choice.id;
 
@@ -130,7 +131,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
       dragOverlay={dragOverlay}
       onClick={handleClick}
       {...listeners}
-      {...attributes}
+      {...draggableAttributes(attributes)}
       {...tileA11y}
     >
       <StyledChip

@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { draggableAttributes } from '@pie-lib/drag';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
@@ -489,7 +490,7 @@ function DragDropBlank({
   const blankName = describeBlank(t, id, choice) ?? t('blank', { index: Number(id) + 1 });
   // dnd-kit calls the focused tile "draggable"; it is an answer choice in a blank.
   const tileName = isInnerDraggable ? describeChoiceTile(t, choice, id) : undefined;
-  const tileA11y = tileName ? { 'aria-label': tileName, 'aria-roledescription': undefined } : {};
+  const tileA11y = tileName ? { 'aria-label': tileName } : {};
 
   const hasSelection = !!selectedItem;
   // While a drag is live, dnd-kit's `isOver` is the only authority on which blank will receive the
@@ -516,7 +517,7 @@ function DragDropBlank({
     >
       <StyledDragHandle
         ref={setTileRef}
-        {...(isInnerDraggable ? { ...dragAttributes, ...tileA11y } : {})}
+        {...(isInnerDraggable ? { ...draggableAttributes(dragAttributes), ...tileA11y } : {})}
         {...dragListeners}
       >
         <BlankContent
