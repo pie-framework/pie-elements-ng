@@ -24,6 +24,10 @@ export class Category extends React.Component {
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    getChoiceLabel: PropTypes.func,
+    getTargetLabel: PropTypes.func,
+    shouldFocus: PropTypes.func,
+    onChoiceBlur: PropTypes.func,
   };
 
   static defaultProps = {};
@@ -42,6 +46,10 @@ export class Category extends React.Component {
       selectedItem,
       onSelectClick,
       onPlacementClick,
+      getChoiceLabel,
+      getTargetLabel,
+      shouldFocus,
+      onChoiceBlur,
     } = this.props;
 
     return (
@@ -56,6 +64,7 @@ export class Category extends React.Component {
           minRowHeight={minRowHeight}
           selectedItem={selectedItem}
           onPlacementClick={onPlacementClick}
+          getTargetLabel={getTargetLabel}
         >
           {choices.map((c, index) => (
             <Choice
@@ -66,6 +75,9 @@ export class Category extends React.Component {
               categoryId={id}
               selectedItem={selectedItem}
               onSelectClick={onSelectClick}
+              getChoiceLabel={getChoiceLabel}
+              shouldFocus={shouldFocus}
+              onChoiceBlur={onChoiceBlur}
               {...c}
             />
           ))}

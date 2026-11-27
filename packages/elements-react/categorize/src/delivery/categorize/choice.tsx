@@ -121,6 +121,9 @@ const DraggableChoice = ({
   choiceIndex,
   selectedItem,
   onSelectClick,
+  getChoiceLabel,
+  shouldFocus,
+  onChoiceBlur,
 }) => {
   // Generate unique draggable ID for each instance
   // If in choices board (categoryId is undefined), use 'board' suffix
@@ -156,6 +159,19 @@ const DraggableChoice = ({
     selectedItem.categoryId === categoryId &&
     selectedItem.choiceIndex === choiceIndex;
 
+  // Not memoized: the name follows the item's language, its categories' labels and what a drop just did.
+  const label = getChoiceLabel?.({ id, value: content, categoryId });
+
+  // After a keyboard drop the choice lands in a new element, so focus would otherwise fall to the page.
+  const nodeRef = React.useRef(null);
+  const wantsFocus = !!shouldFocus?.({ id, categoryId });
+
+  React.useEffect(() => {
+    if (wantsFocus) {
+      nodeRef.current?.focus();
+    }
+  }, [wantsFocus]);
+
   const handleClick = (e) => {
     if (disabled) return;
 
@@ -182,11 +198,18 @@ const DraggableChoice = ({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        nodeRef.current = node;
+        setNodeRef(node);
+      }}
       style={{ margin: '4px', ...extraStyle }}
       onClick={handleClick}
+      onBlur={() => onChoiceBlur?.({ id, categoryId })}
       {...listeners}
       {...attributes}
+      // The name says what the tile is, so dnd-kit's "draggable" would only get in its way.
+      aria-label={label}
+      aria-roledescription={label ? undefined : attributes['aria-roledescription']}
     >
       <Layout
         id={id}
@@ -208,6 +231,12 @@ DraggableChoice.propTypes = {
   onRemoveChoice: PropTypes.func,
   selectedItem: PropTypes.object,
   onSelectClick: PropTypes.func,
+  /** Names a tile for a screen reader, from `{ id, value, categoryId }`; undefined leaves it to its content. */
+  getChoiceLabel: PropTypes.func,
+  /** Whether this tile is the one a keyboard drop just landed on, which takes focus. */
+  shouldFocus: PropTypes.func,
+  /** Told when this tile loses focus, from `{ id, categoryId }`, so the drop's result leaves its name. */
+  onChoiceBlur: PropTypes.func,
 };
 
 export default uid.withUid(DraggableChoice);

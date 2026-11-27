@@ -148,6 +148,45 @@ describe('DroppablePlaceholder', () => {
       expect(screen.queryByRole('button', { name: /Rational/ })).not.toBeInTheDocument();
     });
 
+    describe('its name while a choice is selected', () => {
+      const getTargetLabel = vi.fn((selected: any, id: string) => `ENTER moves ${selected.id} to ${id}`);
+      const renderLabelled = (extras: any) =>
+        render(
+          <ThemeProvider theme={theme}>
+            <div id="cat-1-label">Rational</div>
+            <DroppablePlaceholder id="cat-1" labelId="cat-1-label" getTargetLabel={getTargetLabel} {...extras}>
+              <span>choice</span>
+            </DroppablePlaceholder>
+          </ThemeProvider>,
+        );
+
+      it('says what ENTER does here, in place of its label', () => {
+        renderLabelled({ selectedItem: selection });
+
+        expect(screen.getByRole('group', { name: 'ENTER moves c1 to cat-1' })).toBeInTheDocument();
+        expect(getTargetLabel).toHaveBeenCalledWith(selection, 'cat-1');
+      });
+
+      it('keeps its label with nothing selected', () => {
+        renderLabelled({ selectedItem: null });
+
+        expect(screen.getByRole('group', { name: 'Rational' })).toBeInTheDocument();
+      });
+
+      it('keeps its label while disabled', () => {
+        renderLabelled({ selectedItem: selection, disabled: true });
+
+        expect(screen.getByRole('group', { name: 'Rational' })).toBeInTheDocument();
+      });
+
+      it('keeps its label during a live drag, which dnd-kit announces itself', () => {
+        droppable.active = { id: 'choice-c1-board' };
+        renderLabelled({ selectedItem: selection });
+
+        expect(screen.getByRole('group', { name: 'Rational' })).toBeInTheDocument();
+      });
+    });
+
     it('places the current selection into this target on click', () => {
       const onPlacementClick = vi.fn();
       const { container } = renderPlaceholder({ id: 'cat-1', selectedItem: selection, onPlacementClick });

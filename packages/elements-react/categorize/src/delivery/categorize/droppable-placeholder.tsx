@@ -22,6 +22,7 @@ const DroppablePlaceholder = ({
   correct,
   selectedItem,
   onPlacementClick,
+  getTargetLabel,
 }) => {
   const theme = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -57,6 +58,11 @@ const DroppablePlaceholder = ({
   // node, so the target is a group named by its label: a button would nest those choices,
   // and a button's children are presentational to assistive technology.
   const isNativeTabStop = !disabled && hasSelection;
+
+  // A screen reader's browse mode turns ENTER into a click, so a learner there selects by click and then
+  // tabs onto this target for real: its name then says what ENTER does here, as dnd-kit's region says it
+  // for a keyboard drag (which is why a live drag leaves the name alone).
+  const targetLabel = isNativeTabStop && !isDragLive ? getTargetLabel?.(selectedItem, id) : undefined;
 
   const handleClick = () => {
     if (disabled || !selectedItem) return;
@@ -111,8 +117,8 @@ const DroppablePlaceholder = ({
     <div
       ref={setNodeRef}
       role="group"
-      aria-labelledby={labelId}
-      aria-label={labelId ? undefined : ariaLabel}
+      aria-labelledby={targetLabel ? undefined : labelId}
+      aria-label={targetLabel ?? (labelId ? undefined : ariaLabel)}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}
@@ -155,6 +161,8 @@ DroppablePlaceholder.propTypes = {
   correct: PropTypes.bool,
   selectedItem: PropTypes.object,
   onPlacementClick: PropTypes.func,
+  /** Names the target while a choice is selected, from `(selectedItem, id)`; undefined keeps its label. */
+  getTargetLabel: PropTypes.func,
 };
 
 export default DroppablePlaceholder;

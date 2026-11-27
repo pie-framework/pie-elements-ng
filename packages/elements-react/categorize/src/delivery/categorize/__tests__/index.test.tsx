@@ -487,6 +487,148 @@ describe('categorize', () => {
     });
   });
 
+  describe('provider screen reader announcements', () => {
+    const makeNamedProvider = () => {
+      const instance: any = new (CategorizeProvider as any)({
+        ...defaultProps,
+        model: {
+          categories: [
+            { id: 'cat-1', label: 'Yes' },
+            { id: 'cat-2', label: 'No' },
+          ],
+          categoriesPerRow: 2,
+          maxChoicesPerCategory: 2,
+          choices: [
+            { id: 'c1', content: 'lists specifics', categoryCount: 1 },
+            { id: 'c2', content: 'explains ideas', categoryCount: 1 },
+          ],
+        },
+        onAnswersChange: vi.fn(),
+        onShowCorrectToggle: vi.fn(),
+      });
+
+      instance.setState = (s: any) => Object.assign(instance.state, typeof s === 'function' ? s(instance.state) : s);
+
+      return instance;
+    };
+
+    const fromPool = { id: 'c1', categoryId: undefined, choiceIndex: undefined, value: 'lists specifics' };
+    const placed = { id: 'c2', categoryId: 'cat-1', choiceIndex: 0, value: 'explains ideas' };
+    const escape = () => ({ key: 'Escape', preventDefault: vi.fn(), stopPropagation: vi.fn() });
+
+    // Two live regions compete in JAWS, so dnd-kit's own is left empty, as in match-list.
+    it("says a keyboard drag in the element's one live region, leaving dnd-kit's empty", () => {
+      const provider = makeNamedProvider();
+      const active = { data: { current: fromPool } };
+
+      provider.onDragStart({ active, activatorEvent: { type: 'keydown' } });
+      const { announcements } = provider.render().props.accessibility;
+
+      expect(announcements.onDragStart({ active })).toBeUndefined();
+      expect(provider.state.resultMessage).toBe('Selected answer choice lists specifics. Use TAB to move to a drop area.');
+
+      expect(announcements.onDragOver({ active, over: { id: 'cat-2' } })).toBeUndefined();
+      expect(provider.state.resultMessage).toMatch(/^Selected drop area for category No\./);
+
+      expect(announcements.onDragCancel({ active })).toBeUndefined();
+      expect(provider.state.resultMessage).toBe(
+        'Answer choice lists specifics is no longer selected. Use TAB to move to an answer choice.',
+      );
+    });
+
+    it('says nothing in words for a pointer drag', () => {
+      const provider = makeNamedProvider();
+      const active = { data: { current: fromPool } };
+
+      provider.onDragStart({ active, activatorEvent: { type: 'pointerdown' } });
+      const { announcements } = provider.render().props.accessibility;
+
+      announcements.onDragStart({ active });
+      announcements.onDragOver({ active, over: { id: 'cat-2' } });
+
+      expect(provider.state.resultMessage).toBe('');
+    });
+
+    // dnd-kit would put focus back on the tile the drag started from, which a reusable choice leaves in the
+    // pool: the learner would hear that tile, not the tile that landed and carries the result.
+    it('leaves focus after a drop to the element, not to dnd-kit', () => {
+      expect(makeNamedProvider().render().props.accessibility.restoreFocus).toBe(false);
+    });
+
+    it("keeps a keyboard drop's result in the landed tile's name until focus leaves that tile", () => {
+      const provider = makeNamedProvider();
+      const landed = { id: 'c1', value: 'lists specifics', categoryId: 'cat-1' };
+
+      provider.setResultNote({ id: 'c1', categoryId: 'cat-1', message: 'Placed answer choice lists specifics.' });
+      expect(provider.getChoiceLabel(landed)).toBe(
+        'Placed answer choice lists specifics. Answer choice: lists specifics in category Yes',
+      );
+      expect(provider.shouldFocus(landed)).toBe(true);
+
+      // Another tile losing focus leaves it alone.
+      provider.onChoiceBlur({ id: 'c2', categoryId: 'cat-1' });
+      expect(provider.getChoiceLabel(landed)).toMatch(/^Placed/);
+
+      provider.onChoiceBlur({ id: 'c1', categoryId: 'cat-1' });
+      expect(provider.getChoiceLabel(landed)).toBe('Answer choice: lists specifics in category Yes');
+      expect(provider.shouldFocus(landed)).toBe(false);
+    });
+
+    it('names a category and the pool by what ENTER does there (rows 9 to 11)', () => {
+      const provider = makeNamedProvider();
+
+      expect(provider.getTargetLabel(fromPool, 'cat-2')).toBe(
+        'Selected drop area for category No. Press ENTER to move selected answer choice lists specifics here or TAB to move to a different drop area.',
+      );
+      expect(provider.getTargetLabel(placed, 'choices-board')).toBe(
+        'Press ENTER to remove selected answer choice explains ideas from drop area for category Yes or TAB to move to a category drop area.',
+      );
+      expect(provider.getTargetLabel(fromPool, 'choices-board')).toBe(
+        'Press ENTER to leave selected answer choice lists specifics unplaced or TAB to move to a category drop area.',
+      );
+      expect(provider.getTargetLabel(null, 'cat-2')).toBeUndefined();
+    });
+
+    it('ends the selection on ESC and says so (rows 8 and 15)', () => {
+      const provider = makeNamedProvider();
+      const event = escape();
+
+      provider.onItemClick(fromPool);
+      provider.onRegionKeyDown(event);
+
+      expect(provider.state.selectedItem).toBeNull();
+      expect(provider.state.resultMessage).toBe(
+        'Answer choice lists specifics is no longer selected. Use TAB to move to an answer choice.',
+      );
+      expect(event.stopPropagation).toHaveBeenCalled();
+    });
+
+    it('leaves ESC alone with nothing selected, and during a live drag, which dnd-kit cancels', () => {
+      const provider = makeNamedProvider();
+      const idle = escape();
+
+      provider.onRegionKeyDown(idle);
+      expect(idle.stopPropagation).not.toHaveBeenCalled();
+
+      provider.onDragStart({ active: { data: { current: fromPool } }, activatorEvent: { type: 'keydown' } });
+      const live = escape();
+
+      provider.onRegionKeyDown(live);
+      expect(live.stopPropagation).not.toHaveBeenCalled();
+      expect(provider.state.selectedItem).toEqual(fromPool);
+    });
+
+    it('ignores other keys', () => {
+      const provider = makeNamedProvider();
+      const enter = { ...escape(), key: 'Enter' };
+
+      provider.onItemClick(fromPool);
+      provider.onRegionKeyDown(enter);
+
+      expect(provider.state.selectedItem).toEqual(fromPool);
+    });
+  });
+
   describe('provider DragProvider wiring', () => {
     const renderProvider = () =>
       render(

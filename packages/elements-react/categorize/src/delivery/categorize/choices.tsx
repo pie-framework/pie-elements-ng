@@ -38,6 +38,10 @@ export class Choices extends React.Component {
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    getChoiceLabel: PropTypes.func,
+    getTargetLabel: PropTypes.func,
+    shouldFocus: PropTypes.func,
+    onChoiceBlur: PropTypes.func,
     uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     /** The locale the pool's default name follows. */
     language: PropTypes.string,
@@ -62,6 +66,10 @@ export class Choices extends React.Component {
       selectedItem,
       onSelectClick,
       onPlacementClick,
+      getChoiceLabel,
+      getTargetLabel,
+      shouldFocus,
+      onChoiceBlur,
       uid: instanceId,
       language,
     } = this.props;
@@ -94,6 +102,7 @@ export class Choices extends React.Component {
           correct={correct}
           selectedItem={selectedItem}
           onPlacementClick={onPlacementClick}
+          getTargetLabel={getTargetLabel}
         >
           {hasLabel && <LabelHolder id={labelId} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(model.choicesLabel) }} />}
           {choices.map((c, index) => {
@@ -106,6 +115,9 @@ export class Choices extends React.Component {
                 extraStyle={{ maxWidth: `${95 / model.categoriesPerRow}%` }}
                 selectedItem={selectedItem}
                 onSelectClick={onSelectClick}
+                getChoiceLabel={getChoiceLabel}
+                shouldFocus={shouldFocus}
+                onChoiceBlur={onChoiceBlur}
                 {...c}
               />
             );

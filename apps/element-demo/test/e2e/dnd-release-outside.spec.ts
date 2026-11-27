@@ -16,6 +16,9 @@ type Input = 'mouse' | 'touch';
 
 const INPUTS: Input[] = ['mouse', 'touch'];
 const DRAGGABLE = '[aria-roledescription="draggable"]';
+// categorize names its tiles itself ("Answer choice: …", and after a keyboard drop what the drop did), and a
+// named tile drops dnd-kit's role description, so its tiles are found as the buttons the drag instructions describe.
+const CATEGORIZE_CHOICE = '[role="button"][aria-describedby]';
 
 async function boxOf(locator: Locator): Promise<Box> {
   await locator.waitFor({ state: 'visible' });
@@ -99,14 +102,14 @@ test.describe('categorize: releasing a choice outside the element', () => {
   async function open(page: Page, demoId?: string) {
     await openDeliverRoute(page, 'categorize', demoId);
     const root = deliveryContainer(page);
-    await expect(root.locator(DRAGGABLE).first()).toBeVisible();
+    await expect(root.locator(CATEGORIZE_CHOICE).first()).toBeVisible();
     await waitForMathRendering(page);
     return root;
   }
 
   const category = (root: Locator, name: string | RegExp) =>
     root.getByRole('group', { name, exact: true });
-  const choiceIn = (group: Locator) => group.locator(DRAGGABLE).first();
+  const choiceIn = (group: Locator) => group.locator(CATEGORIZE_CHOICE).first();
 
   /** Drags the pool's first choice into `target` with the mouse and returns its id. */
   async function placeFirstChoice(page: Page, pool: Locator, target: Locator): Promise<string> {
@@ -227,12 +230,13 @@ test.describe('categorize: releasing a choice outside the element', () => {
     const root = await open(page);
     // Placed by click rather than by drag: a click just after a drag is ignored.
     await choiceIn(category(root, 'Equations')).click();
-    await category(root, 'True').click();
+    // With a choice selected, a category is named by what ENTER does there (row 9).
+    await root.getByRole('group', { name: /^Selected drop area for category True\. / }).click();
     await expect.poll(() => placements(page)).toEqual({ 0: ['0'] });
     const tabStops = root.locator('[tabindex="0"]');
     const targets = root.getByRole('group');
-    const choices = root.locator(DRAGGABLE);
-    const poolChoices = category(root, 'Equations').locator(DRAGGABLE);
+    const choices = root.locator(CATEGORIZE_CHOICE);
+    const poolChoices = category(root, 'Equations').locator(CATEGORIZE_CHOICE);
 
     // Nothing selected: every choice, placed or in the pool, and no category or pool.
     await expect(tabStops).toHaveCount(await choices.count());
@@ -253,7 +257,9 @@ test.describe('categorize: releasing a choice outside the element', () => {
       'Firefox starts Tab from the clicked MathJax glyph, which it cannot resolve, so focus restarts at the top of the page; a keyboard selection is unaffected'
     );
     await page.keyboard.press('Tab');
-    await expect(category(root, 'True')).toBeFocused();
+    await expect(
+      root.getByRole('group', { name: /^Selected drop area for category True\. / })
+    ).toBeFocused();
   });
 
   for (const [position, poolFirst] of [
@@ -286,17 +292,16 @@ test.describe('categorize: releasing a choice outside the element', () => {
       expect(shown[position]).toBe(true);
 
       await choiceIn(category(root, 'Equations')).click();
+      // While a choice is selected each stop is named by what ENTER does there (rows 9 and 11).
       const names = await root
         .locator('[tabindex="0"]')
-        .evaluateAll((stops) =>
-          stops.map((stop) =>
-            (stop.getRootNode() as Document)
-              .getElementById(stop.getAttribute('aria-labelledby') ?? '')
-              ?.textContent?.trim()
-          )
-        );
-      expect(names).toEqual(
-        poolFirst ? ['Equations', 'True', 'False'] : ['True', 'False', 'Equations']
+        .evaluateAll((stops) => stops.map((stop) => stop.getAttribute('aria-label') ?? ''));
+      const stopOf = (name: string) =>
+        /^Press ENTER to leave selected answer choice /.test(name)
+          ? 'pool'
+          : (/^Selected drop area for category (.+?)\. Press ENTER/.exec(name)?.[1] ?? name);
+      expect(names.map(stopOf)).toEqual(
+        poolFirst ? ['pool', 'True', 'False'] : ['True', 'False', 'pool']
       );
     });
   }

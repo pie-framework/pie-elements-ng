@@ -25,6 +25,10 @@ export class Categories extends React.Component {
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    getChoiceLabel: PropTypes.func,
+    getTargetLabel: PropTypes.func,
+    shouldFocus: PropTypes.func,
+    onChoiceBlur: PropTypes.func,
     uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   };
 
@@ -45,6 +49,10 @@ export class Categories extends React.Component {
       selectedItem,
       onSelectClick,
       onPlacementClick,
+      getChoiceLabel,
+      getTargetLabel,
+      shouldFocus,
+      onChoiceBlur,
       uid: instanceId,
     } = this.props;
     const { categoriesPerRow, minRowHeight } = model;
@@ -110,6 +118,10 @@ export class Categories extends React.Component {
                     selectedItem={selectedItem}
                     onSelectClick={onSelectClick}
                     onPlacementClick={onPlacementClick}
+                    getTargetLabel={getTargetLabel}
+                    getChoiceLabel={getChoiceLabel}
+                    shouldFocus={shouldFocus}
+                    onChoiceBlur={onChoiceBlur}
                     {...c}
                   />
                 </StyledCategoryWrapper>

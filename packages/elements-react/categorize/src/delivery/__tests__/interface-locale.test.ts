@@ -116,6 +116,27 @@ describe('categorize interface locale', () => {
   });
 });
 
+describe('categorize screen reader text', () => {
+  // The announcements are chrome, so they follow the declared language when no player answers.
+  it("reads the intro and names a choice in the item's declared language", async () => {
+    const el = document.createElement('test-categorize-locale') as Host;
+    document.body.appendChild(el);
+    el.model = await buildModel(
+      question({ language: 'es_ES', teacherInstructionsEnabled: false }) as CategorizeModel,
+      { answers: [] },
+      { mode: 'gather', role: 'student' } as PieEnvironment,
+      vi.fn(),
+    );
+    el.session = { answers: [] };
+
+    await vi.waitFor(() =>
+      expect(el.textContent).toContain('Usa TAB para moverte entre las opciones de respuesta y las categorías'),
+    );
+    expect(el.querySelector('[aria-label^="Opción de respuesta"]')).not.toBeNull();
+    expect(el.textContent).not.toContain('Use TAB to move between answer choices');
+  });
+});
+
 describe('categorize stored notes', () => {
   it('treat the English default as absent', async () => {
     const { el } = await mount({ note: ENGLISH_NOTE }, 'es');
