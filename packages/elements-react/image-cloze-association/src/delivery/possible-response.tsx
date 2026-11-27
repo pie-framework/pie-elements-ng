@@ -1,11 +1,11 @@
 // @ts-nocheck
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
-import { color, hasTextAlternative } from '@pie-lib/render-ui';
+import { color } from '@pie-lib/render-ui';
 
 import EvaluationIcon from './evaluation-icon.js';
 import StaticHTMLSpan from './static-html-span.js';
@@ -77,10 +77,8 @@ const PossibleResponse = ({
   onPlacementClick,
 }) => {
   const rootRef = useRef(null);
-  const label = useMemo(
-    () => (hasTextAlternative(data.value) ? undefined : getChoiceLabel?.(data.value)),
-    [data.value, getChoiceLabel],
-  );
+  // Not memoized: the name follows the item's language and its drop areas' labels, which the tile cannot see change.
+  const label = getChoiceLabel?.(data.value, data.containerIndex);
   const longPressTimer = useRef(null);
 
   // While a choice is selected the tab path runs through the response areas and the pool, the
@@ -187,9 +185,11 @@ const PossibleResponse = ({
         setNodeRef(ref);
       }}
       onClick={handleClick}
-      aria-label={label}
       {...listeners}
       {...attributes}
+      // The name says what the tile is, so dnd-kit's "draggable" would only get in its way.
+      aria-label={label}
+      aria-roledescription={label ? undefined : attributes['aria-roledescription']}
     >
       <StyledSpan html={data.value} className={promptClassNames} />
       <EvaluationIcon isCorrect={data.isCorrect} containerStyle={evaluationStyle} />

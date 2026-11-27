@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
 import { DragProvider, motionSafeDropAnimation } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { color, createUniqueId, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
+import { color, createUniqueId, hasTextAlternative, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -47,6 +47,27 @@ import PossibleResponses from './possible-responses.js';
 import { getUnansweredAnswers, getAnswersCorrectness } from './utils-correctness.js';
 import PossibleResponse from './possible-response.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+import {
+  choiceText,
+  hasRichContent,
+  plainText,
+  describeChoiceTile,
+  describeDeselection,
+  describeFocusTarget,
+  describeIntro,
+  describePlacementResult,
+  describeSelection,
+} from './announcements.js';
+import { visuallyHidden } from './visually-hidden.js';
+
+// What a drop came to: it took effect, nothing moved, or a full area refused it.
+// How long a drop's result waits for the screen reader to finish reading the tile that takes focus.
+const RESULT_DELAY_MS = 700;
+
+// How long the result stays in the name of the tile it was spoken for.
+const RESULT_NOTE_MS = 4000;
+
+const Placement = { PLACED: 'placed', UNCHANGED: 'unchanged', AREA_FULL: 'area-full' } as const;
 
 const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
 
@@ -119,10 +140,106 @@ export class ImageClozeAssociationComponent extends React.Component {
       selectedResponse: null,
     };
     this.lastDragEndAt = 0;
+    this.endingDragForPlacement = false;
+    // Whether the drag in progress was started from the keyboard, which is the one announced in words for it.
+    this.keyboardDrag = false;
+    this.awaitingFirstOver = false;
+    this.announceTimer = undefined;
+    // Whether a dnd-kit drag is live, which announces the selection through its own region.
+    this.dragLive = false;
+    this.state.resultMessage = '';
+    this.state.resultNote = null;
+    this.noteTimer = undefined;
   }
+
+  // The i18n view and the model's slice the announcements are built from.
+  getAnnouncementContext: any = () => {
+    const { model } = this.props;
+    const { image, possibleResponses = [], duplicateResponses } = model;
+
+    return {
+      i18n: catalogs.forLocale(this.props.language ?? model.language),
+      config: {
+        alt: image?.alt,
+        containers: this.state.responseContainers,
+        possibleResponses,
+        maxResponsePerZone: this.state.maxResponsePerZone,
+        duplicateResponses,
+      },
+    };
+  };
+
+  // A live region only announces a change, so the same message twice in a row differs by a trailing space.
+  announce: any = (message, delay = 0) => {
+    clearTimeout(this.announceTimer);
+
+    const show = () =>
+      this.setState((state) => ({
+        resultMessage: state.resultMessage === message ? `${message}\u00a0` : message,
+      }));
+
+    if (delay) {
+      this.announceTimer = setTimeout(show, delay);
+    } else {
+      show();
+    }
+  };
+
+  componentWillUnmount() {
+    clearTimeout(this.announceTimer);
+    clearTimeout(this.noteTimer);
+  }
+
+  // The result of a keyboard drop is read as part of the name of the tile that takes focus: a screen reader
+  // reads a newly focused element for sure, but drops a live region that updates while it does.
+  setResultNote: any = (note) => {
+    clearTimeout(this.noteTimer);
+    this.setState({ resultNote: note });
+
+    if (note) {
+      this.noteTimer = setTimeout(() => this.setState({ resultNote: null }), RESULT_NOTE_MS);
+    }
+  };
+
+  // Applies the drop and announces what it did. The wording is read against the answers as they are
+  // before the drop; `apply` says whether the drop took effect, so a refusal is never announced as a
+  // placement, whichever rule refused it. `viaTile` is for a keyboard drop, which hands focus to a tile.
+  announceResult: any = (selected, target, apply, viaTile = false) => {
+    const { i18n, config } = this.getAnnouncementContext();
+    const { answers, maxResponsePerZone } = this.state;
+    const message = describePlacementResult(i18n, config, answers, selected, target);
+    const result = apply();
+
+    // A full area shows its warning; that is what the learner needs to hear. Any other drop that did not
+    // take effect, like a drop back where the choice already was, changes nothing and reads as the end of
+    // the selection.
+    const text =
+      result === Placement.AREA_FULL
+        ? i18n.plural('reachedLimitA11y', { count: maxResponsePerZone })
+        : result === Placement.PLACED || selected.containerIndex === target
+          ? message
+          : describeDeselection(i18n, config, selected);
+
+    if (viaTile && result !== Placement.AREA_FULL) {
+      this.setResultNote({ value: selected.value, containerIndex: target, message: text });
+
+      return;
+    }
+
+    // After a drop focus goes back to a tile, which a screen reader then reads; said at once, the result
+    // would be talked over, so it follows that.
+    this.announce(text, RESULT_DELAY_MS);
+  };
 
   onDragStart: any = (event) => {
     const { active } = event;
+
+    // dnd-kit announces a drag to every sensor, in words for a keyboard: a pointer or touch drag is not spoken to.
+    this.keyboardDrag = event?.activatorEvent?.type === 'keydown';
+    this.dragLive = !!active?.data?.current;
+    // dnd-kit reports where the drag starts as the first "over"; that is not a move the learner made.
+    this.awaitingFirstOver = true;
+    this.setResultNote(null);
 
     if (active?.data?.current) {
       this.setState({
@@ -137,6 +254,10 @@ export class ImageClozeAssociationComponent extends React.Component {
     const { active, over } = event;
     const { model } = this.props;
     const { duplicateResponses } = model || {};
+
+    this.dragLive = false;
+
+    const viaTile = this.keyboardDrag;
 
     // Check if drop is valid
     const draggedItem = active?.data?.current;
@@ -158,27 +279,38 @@ export class ImageClozeAssociationComponent extends React.Component {
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
 
-    if (!over || !active) {
-      return;
-    }
-
     if (!draggedItem) {
       return;
     }
 
+    if (!over || !active) {
+      this.announceResult(draggedItem, draggedItem.containerIndex, () => Placement.UNCHANGED, viaTile);
+      return;
+    }
+
     if (over.id === 'ica-board') {
-      if (draggedItem.containerIndex !== undefined) {
-        this.handleOnAnswerRemove(draggedItem);
-      }
+      this.announceResult(draggedItem, undefined, () => {
+        if (draggedItem.containerIndex !== undefined) {
+          this.handleOnAnswerRemove(draggedItem);
+        }
+
+        return Placement.PLACED;
+      }, viaTile);
       return;
     }
 
     if (responseArea) {
-      this.handleOnAnswerSelect(draggedItem, responseArea.containerIndex);
+      this.announceResult(
+        draggedItem,
+        responseArea.containerIndex,
+        () => this.handleOnAnswerSelect(draggedItem, responseArea.containerIndex),
+        viaTile,
+      );
     }
   };
 
   onDragCancel: any = () => {
+    this.dragLive = false;
     this.setState({ draggingElement: { id: '', value: '' } });
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
@@ -189,6 +321,16 @@ export class ImageClozeAssociationComponent extends React.Component {
   // Click-to-select semantics: selecting the currently-selected response again clears
   // the selection instead of re-selecting it.
   toggleResponseSelection: any = (data) => {
+    const { i18n, config } = this.getAnnouncementContext();
+    const deselecting = this.isSameResponse(this.state.selectedResponse, data);
+
+    this.setResultNote(null);
+
+    // A keyboard drag announces its own selection; saying it here too would read it twice.
+    if (!this.dragLive) {
+      this.announce(deselecting ? describeDeselection(i18n, config, data) : describeSelection(i18n, config, data));
+    }
+
     this.setState((state) => ({
       selectedResponse: this.isSameResponse(state.selectedResponse, data) ? null : data,
     }));
@@ -215,7 +357,14 @@ export class ImageClozeAssociationComponent extends React.Component {
       return;
     }
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    // dnd-kit runs its cancel announcement synchronously, so the flag is still up when it reads it.
+    this.endingDragForPlacement = true;
+
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    } finally {
+      this.endingDragForPlacement = false;
+    }
   };
 
   placeSelectedResponse: any = (containerIndex) => {
@@ -225,14 +374,18 @@ export class ImageClozeAssociationComponent extends React.Component {
       return;
     }
 
-    if (containerIndex === undefined) {
-      // Placing into the pool = removing it from wherever it currently is
-      if (selectedResponse.containerIndex !== undefined) {
-        this.handleOnAnswerRemove(selectedResponse);
+    this.announceResult(selectedResponse, containerIndex, () => {
+      if (containerIndex === undefined) {
+        // Placing into the pool = removing it from wherever it currently is
+        if (selectedResponse.containerIndex !== undefined) {
+          this.handleOnAnswerRemove(selectedResponse);
+        }
+
+        return Placement.PLACED;
       }
-    } else {
-      this.handleOnAnswerSelect(selectedResponse, containerIndex);
-    }
+
+      return this.handleOnAnswerSelect(selectedResponse, containerIndex);
+    }, this.dragLive);
 
     this.cancelSelection();
     this.endAnyLiveKeyboardDrag();
@@ -266,18 +419,40 @@ export class ImageClozeAssociationComponent extends React.Component {
     this.placeSelectedResponse(containerIndex);
   };
 
-  // Names a choice by its position among the model's choices, which holds in the pool and in an area.
-  getChoiceLabel: any = (value) => {
+  // Names a tile for a screen reader. A choice with no text of its own is named by its position among
+  // the model's choices, which holds in the pool and in an area.
+  getChoiceLabel: any = (value, containerIndex) => {
+    const label = this.getTileName(value, containerIndex);
+    const note = this.state.resultNote;
+
+    // The tile a keyboard drop just landed on carries what the drop did, which is what is read as it takes focus.
+    if (note && note.value === value && note.containerIndex === containerIndex) {
+      const { i18n, config } = this.getAnnouncementContext();
+
+      return `${note.message} ${label ?? describeChoiceTile(i18n, config, { value, containerIndex })}`;
+    }
+
+    return label;
+  };
+
+  getTileName: any = (value, containerIndex) => {
     const { model } = this.props;
     const { possibleResponses = [] } = model;
+    const { i18n, config } = this.getAnnouncementContext();
+
+    // Math and the like are named by their own content: stripped to text they would be read wrongly.
+    if (hasTextAlternative(value) && !hasRichContent(value) && plainText(value)) {
+      return describeChoiceTile(i18n, config, { value, containerIndex });
+    }
+
+    // Left to its content, which names the tile.
+    if (hasTextAlternative(value)) {
+      return undefined;
+    }
+
     const index = possibleResponses.indexOf(value);
 
-    return index === -1
-      ? undefined
-      : catalogs.forLocale(this.props.language ?? model.language).t('answerChoice', {
-          index: index + 1,
-          total: possibleResponses.length,
-        });
+    return index === -1 ? undefined : i18n.t('answerChoice', { index: index + 1, total: possibleResponses.length });
   };
 
   renderDragOverlay: any = () => {
@@ -335,7 +510,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         answersInThisContainer.shift(); // FIFO
       } else {
         this.setState({ maxResponsePerZoneWarning: true });
-        return;
+        return Placement.AREA_FULL;
       }
 
       // if duplicates are not allowed, make sure to put the shifted value back in possible responses
@@ -389,6 +564,8 @@ export class ImageClozeAssociationComponent extends React.Component {
         duplicateResponses ? possibleResponses : this.filterPossibleAnswers(possibleResponses, answer),
     });
     updateAnswer(answersToStore);
+
+    return Placement.PLACED;
   };
 
   handleOnAnswerRemove: any = (answer) => {
@@ -480,7 +657,8 @@ export class ImageClozeAssociationComponent extends React.Component {
       });
     }
 
-    const warningMessage = catalogs.forLocale(language).plural('reachedLimit', { count: maxResponsePerZone });
+    // The sentence the screen reader speaks for a refused drop, so the page shows what is said.
+    const warningMessage = catalogs.forLocale(language).plural('reachedLimitA11y', { count: maxResponsePerZone });
 
     let answersToShow =
       responseCorrect !== undefined ? getAnswersCorrectness(answers, validation, duplicateResponses) : answers;
@@ -546,8 +724,62 @@ export class ImageClozeAssociationComponent extends React.Component {
       ];
     };
 
+    const { i18n, config: announcementConfig } = this.getAnnouncementContext();
+    const dragData = (event) => event?.data?.current;
+    const element = this;
+    const introParagraphs =
+      mode === 'gather' && !disabled
+        ? describeIntro(i18n, announcementConfig, answers, possibleResponses)
+        : [];
+
+    // dnd-kit's own live region carries the keyboard drag as it unfolds; what a drop did is announced
+    // from `resultMessage`, which knows the answers before the drop.
+    const announcements = {
+      onDragStart({ active }) {
+        return !element.keyboardDrag || !dragData(active) ? undefined : describeSelection(i18n, announcementConfig, dragData(active));
+      },
+
+      onDragOver({ active, over }) {
+        // The "press ENTER / TAB" wording is for the keyboard; a pointer drag has no use for it.
+        if (!element.keyboardDrag || !dragData(active)) {
+          return undefined;
+        }
+
+        const first = element.awaitingFirstOver;
+
+        element.awaitingFirstOver = false;
+
+        if (!over) {
+          return i18n.t('notOverDropAreaA11y', { choice: choiceText(i18n, announcementConfig, dragData(active).value) });
+        }
+
+        const target = over.id === 'ica-board' ? undefined : dragData(over)?.containerIndex;
+        // Where the choice already is, reported as the drag begins: the selection was just announced, and
+        // saying where the choice sits would only talk over it. Moving there later is announced.
+        if (first && target === dragData(active).containerIndex) {
+          return undefined;
+        }
+
+        return describeFocusTarget(i18n, announcementConfig, dragData(active), target);
+      },
+
+      onDragEnd() {
+        return undefined;
+      },
+
+      onDragCancel({ active }) {
+        return element.endingDragForPlacement || !dragData(active)
+          ? undefined
+          : describeDeselection(i18n, announcementConfig, dragData(active));
+      },
+    };
+
     return (
       <DragProvider
+        accessibility={{
+          announcements,
+          screenReaderInstructions: { draggable: i18n.t('dragInstructionsA11y') },
+        }}
         onDragStart={this.onDragStart}
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
@@ -571,6 +803,15 @@ export class ImageClozeAssociationComponent extends React.Component {
           />
 
           <PreviewPrompt prompt={stimulus} />
+
+          {introParagraphs.map((text, i) => (
+            <div key={i} style={visuallyHidden}>
+              {text}
+            </div>
+          ))}
+          <div style={visuallyHidden} role="status" aria-live="assertive" aria-atomic="true">
+            {this.state.resultMessage}
+          </div>
 
           <CorrectAnswerToggle
             show={showToggle}

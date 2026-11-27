@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 
 import ImageDropTarget from './image-drop-target.js';
 import { catalogs } from '../i18n/index.js';
+import { areaLabel } from './announcements.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   margin: theme.spacing(2),
@@ -72,13 +73,7 @@ class ImageContainer extends Component {
               draggingElement={draggingElement}
               getChoiceLabel={getChoiceLabel}
               index={r.index}
-              label={
-                r.ariaLabel?.trim() ||
-                i18n.t('responseArea', {
-                  index: i + 1,
-                  total: responseContainers.length,
-                })
-              }
+              label={areaLabel(i18n, responseContainers, r.index ?? i)}
               onDrop={(item) => onAnswerSelect(item, r.index)}
               onDragAnswerBegin={onDragAnswerBegin}
               onDragAnswerEnd={onDragAnswerEnd}
