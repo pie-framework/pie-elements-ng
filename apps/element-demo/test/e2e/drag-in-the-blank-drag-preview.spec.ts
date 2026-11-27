@@ -33,8 +33,13 @@ const copiesOf = (root: Locator, text: string): Promise<Copy[]> =>
           return {
             // dnd-kit's overlay wrapper is fixed-position.
             overlay: chip.closest('[style*="position: fixed"]') !== null,
-            // A response area is a button, unlike a choice, which dnd-kit describes as draggable.
-            inBlank: chip.closest('[role="button"]:not([aria-roledescription])') !== null,
+            // A response area is a button while empty and a group once it holds a choice. A choice tile,
+            // in the pool or in a response area, is a button named "Answer choice: …", or one dnd-kit
+            // describes as draggable while it has no name of its own (math not rendered yet, say).
+            inBlank:
+              chip.closest(
+                ':is([role="button"], [role="group"]):not([aria-roledescription]):not([aria-label^="Answer choice:"])'
+              ) !== null,
             width: box.width,
             height: box.height,
             textHeight: label.getBoundingClientRect().height,
