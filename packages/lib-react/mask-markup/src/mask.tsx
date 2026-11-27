@@ -18,6 +18,13 @@ const Spacer: any = styled('span')(() => ({
   width: '.75em',
 }));
 
+// Between blanks written with nothing between them: a third of a spacer, which keeps their
+// borders apart while the run still reads as one word (PIE-1558).
+const BlankGap: any = styled('span')(() => ({
+  display: 'inline-block',
+  width: '.25em',
+}));
+
 const restrictWhitespaceTypes = ['tbody', 'tr'];
 
 const addText = (parentNode, text) => {
@@ -30,6 +37,8 @@ const addText = (parentNode, text) => {
     return text;
   }
 };
+
+const isBlank = (n) => n?.data?.dataset?.component === 'blank';
 
 const getMark = (n) => {
   const mark = n.leaves.find((leave) => get(leave, 'marks', []).length);
@@ -67,16 +76,25 @@ export const renderChildren = (layout, value, onChange, rootRenderChildren, pare
       if (c) {
         // A table cell's padding already separates its blank; spacers there push apart
         // items that lay out one letter tile per cell (PD-4704).
-        const isSpacedBlank = n.data?.dataset?.component === 'blank' && parentNode?.type !== 'td';
+        const isSpacedBlank = isBlank(n) && parentNode?.type !== 'td';
+        // Blanks written with nothing between them, such as drop zones that spell a word one
+        // letter each, sit close: one narrow gap between them instead of a spacer on each side.
+        const nodes = layout.nodes;
 
-        if (isSpacedBlank) {
+        if (isSpacedBlank && !isBlank(nodes[index - 1])) {
           children.push(<Spacer key={`spacer-${index}-before`} />);
         }
 
         children.push(c);
 
         if (isSpacedBlank) {
-          children.push(<Spacer key={`spacer-${index}-after`} />);
+          children.push(
+            isBlank(nodes[index + 1]) ? (
+              <BlankGap key={`blank-gap-${index}`} />
+            ) : (
+              <Spacer key={`spacer-${index}-after`} />
+            ),
+          );
         }
         return;
       }

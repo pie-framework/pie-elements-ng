@@ -673,8 +673,9 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
       const root = await getDeliveryContainer(page);
-      // An item without response areas has no draggable role: its objects are moved, and dragged, by their buttons
-      let draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+      // A tile dnd-kit can drag is a button with its `aria-disabled` (no role description, PIE-835). An item
+      // without response areas has none: its objects are moved, and dragged, by their buttons
+      let draggables = root.locator('[data-tile-id][role="button"][aria-disabled="false"]');
       let moveButtons = false;
       if ((await draggables.count()) < 2) {
         draggables = root.locator('button[data-move]');

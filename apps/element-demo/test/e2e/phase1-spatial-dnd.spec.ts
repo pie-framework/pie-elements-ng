@@ -211,8 +211,9 @@ async function waitForHostSessionMutation(
 }
 
 async function interactPlacementOrdering(page: Page, root: Locator) {
-  // An item without response areas has no draggable role: its objects are dragged from their move buttons
-  let draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+  // A tile dnd-kit can drag is a button with its `aria-disabled` (no role description, PIE-835). An item
+  // without response areas has none: its objects are dragged from their move buttons
+  let draggables = root.locator('[data-tile-id][role="button"][aria-disabled="false"]');
   let moveButtons = false;
   if ((await draggables.count()) < 2) {
     draggables = root.locator('button[data-move]');

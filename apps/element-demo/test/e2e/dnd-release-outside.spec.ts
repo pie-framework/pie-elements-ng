@@ -16,6 +16,9 @@ type Input = 'mouse' | 'touch';
 
 const INPUTS: Input[] = ['mouse', 'touch'];
 const DRAGGABLE = '[aria-roledescription="draggable"]';
+// placement-ordering tiles carry no role description (PIE-835): a tile dnd-kit can drag is a button
+// with dnd-kit's `aria-disabled`; an empty slot that is a tab stop has neither.
+const PLACEMENT_TILE = '[data-tile-id][role="button"][aria-disabled="false"]';
 
 async function boxOf(locator: Locator): Promise<Box> {
   await locator.waitFor({ state: 'visible' });
@@ -317,7 +320,7 @@ test.describe('placement-ordering: releasing a tile outside the element', () => 
     });
     await switchTab(page, 'deliver');
     const root = deliveryContainer(page);
-    await expect(root.locator(DRAGGABLE).first()).toBeVisible();
+    await expect(root.locator(PLACEMENT_TILE).first()).toBeVisible();
     return root;
   }
 

@@ -1,7 +1,6 @@
 import type { MessageCatalog } from '@pie-element/shared-i18n';
 
 export default {
-  dragInstructions: 'Presiona Espacio o Intro para tomar esta opción de respuesta. Una vez tomada, usa Tab o Mayús+Tab para recorrer las áreas de respuesta, o usa las flechas para moverla libremente. Presiona Espacio o Intro para soltarla, o Escape para cancelar.',
   commonCorrectAnswerWithAlternates: 'Nota: La respuesta que se muestra arriba es la respuesta correcta más común para esta pregunta. También se definen una o más respuestas correctas adicionales, y también se reconocerán como correctas.',
   readingInstructions: 'Crea una lista ordenada moviendo cada objeto a la posición correcta. Usa Tab para moverte entre los objetos y las áreas de colocación, Intro para seleccionar o soltar, y Escape para cancelar.',
   objectsAreOnSortedList: {
@@ -19,7 +18,6 @@ export default {
     many: '{count} objetos ordenados',
     other: '{count} objetos ordenados',
   },
-  unsortedObjectPrefix: 'objeto:',
   sortedObjectPrefix: 'Posición {position}:',
   endOfUnsorted: 'Fin de los objetos sin ordenar',
   endOfSorted: 'Fin de los objetos ordenados.',

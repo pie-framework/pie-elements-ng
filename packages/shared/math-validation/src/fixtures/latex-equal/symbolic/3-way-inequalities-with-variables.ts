@@ -4,7 +4,13 @@ export default {
     {
       target: '1<2x ≤ 3',
       eq: ['3 ≥ 2x>1', 'x/x<x+x≤1.5*2', '1/2<x ≤1.5'],
-      ne: ['1/2<x ≤1.5<7', '1/2<x+y≤1.5', 'x/x<x+y≤1.5*2', '1<2y ≤ 3'],
+      ne: ['1/2<x+y≤1.5', 'x/x<x+y≤1.5*2', '1<2y ≤ 3'],
+    },
+    {
+      // the same set: 1.5<7 always holds, so this still reads 1/2 < x ≤ 1.5
+      target: '1<2x ≤ 3',
+      eq: ['1/2<x ≤1.5<7'],
+      knownIssue: 'PIE-1465',
     },
     {
       target: '-5 < 3x + 7 ≤ 22',
@@ -52,8 +58,14 @@ export default {
     },
     {
       target: '-99 ≤  9-12r ≤  45',
-      eq: ['-108≤ -12r ≤  36', '-108/-12≤ -12r/-12 ≤  36/-12', '9 ≥ r ≥  -3', '-3≤ r≤ 9'],
+      eq: ['-108≤ -12r ≤  36', '-108/-12≥ -12r/-12 ≥  36/-12', '9 ≥ r ≥  -3', '-3≤ r≤ 9'],
       ne: ['-108≤ -12r < 36', '-108≤ -12r >  36', '-107/-12≤ -12r/-12 ≤  36/-12'],
+    },
+    {
+      // divided by -12 without flipping the signs: 9 ≤ r ≤ -3 has no solutions
+      target: '-99 ≤  9-12r ≤  45',
+      ne: ['-108/-12≤ -12r/-12 ≤  36/-12', '9 ≤ r ≤ -3'],
+      knownIssue: 'PIE-1465',
     },
   ],
 };

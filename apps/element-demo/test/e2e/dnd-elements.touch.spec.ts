@@ -108,6 +108,8 @@ const DRAGGABLE = '[aria-roledescription="draggable"][aria-disabled="false"]';
 const DITB_TILE = '[role="button"][aria-label^="Answer choice:"][aria-disabled="false"]';
 const DITB_BLANK =
   '[role="button"]:not([aria-roledescription]):not([aria-label^="Answer choice:"])';
+// placement-ordering tiles carry no role description (PIE-835); see dnd-release-outside.spec.ts.
+const PLACEMENT_TILE = '[data-tile-id][role="button"][aria-disabled="false"]';
 const ICA_AREA = ':is([role="button"], [role="group"])[aria-label]:not([aria-roledescription])';
 
 const CASES: DndCase[] = [
@@ -164,7 +166,7 @@ const CASES: DndCase[] = [
       });
       await expect(page).toHaveURL(/layout=page/);
     },
-    choices: (root) => root.locator(DRAGGABLE),
+    choices: (root) => root.locator(PLACEMENT_TILE),
     target: (root) => root.locator('[data-tile-id$=":target-0"]'),
     otherTarget: (root) => root.locator('[data-tile-id$=":target-1"]'),
     autoscroll: true,

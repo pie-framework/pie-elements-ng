@@ -49,9 +49,11 @@
    layouts, the same set that gets the feature button and the wide underline, so
    trailing tokens in audio_blank_only (gplusggg) match the blank's height the way
    the CQT does. Stems on other layouts are prose, which the box would stack a word or
-   two per line. Spans inside the blank are the answer's own markup, not stem tokens.
-   The margin outranks token_sequence's span + span gap, so tokens sit 4px apart,
-   as in the CQT (CONTOOL-2569). */
+   two per line. Spans inside the blank are the answer's own markup, not stem tokens,
+   and spans inside a table are the content of one token, such as a word box drawn as a
+   bordered table, which keeps its authored size (PIE-1557); :where() keeps that out of
+   the specificity. The margin outranks token_sequence's span + span gap, so tokens sit
+   4px apart, as in the CQT (CONTOOL-2569). */
 .mc-populated-blank-root:where(
     [class*="variant-sel-r1-"]:is(
       .layout-audio_blank_only,
@@ -60,7 +62,7 @@
     )
   )
   .pie-template-line
-  span:not([class]):not(.pie-blank-slot *) {
+  span:not([class]):not(.pie-blank-slot *):not(:where(table *)) {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
@@ -78,7 +80,7 @@
     [class*="variant-sel-r1-"]:is(.layout-audio_blank_only, .layout-token_sequence)
   )
   .pie-template-line
-  span:not([class]):not(.pie-blank-slot *) {
+  span:not([class]):not(.pie-blank-slot *):not(:where(table *)) {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -98,6 +100,20 @@
   .pie-template-line
   p {
   align-items: flex-start;
+}
+
+/* The token layouts' stem is a flex line, which drops the whitespace between its tokens
+   whatever white-space says, so McPopulatedBlank.svelte's pre-wrap reaches only the text
+   inside a token. There it showed the newlines an author left around a word box's table
+   as empty lines, which the CQT collapses as any HTML does (PIE-1557). The layout classes
+   outside :where() outrank the component's scoped rule. */
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
+    .layout-audio_blank_only,
+    .layout-stimulus_image_blank,
+    .layout-token_sequence
+  )
+  .pie-template-line {
+  white-space: normal;
 }
 
 /* .pie-template-line's align-items:baseline (above) computes a shared baseline

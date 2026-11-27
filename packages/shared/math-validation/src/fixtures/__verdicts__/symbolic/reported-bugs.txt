@@ -1,0 +1,13 @@
+# verdict	kind	mode [opts]	a	b, for latexEqual(a, b); written by latex-equal-verdicts.test.ts
+true	eq	symbolic	"9x^2-24xy+16y^2"	"16y^2+9x^2-24xy"
+true	eq/rev	symbolic	"16y^2+9x^2-24xy"	"9x^2-24xy+16y^2"
+true	eq	symbolic	"9x^2-24xy+16y^2"	"16y^2-24xy+9x^2"
+true	eq/rev	symbolic	"16y^2-24xy+9x^2"	"9x^2-24xy+16y^2"
+true	cross	symbolic	"16y^2+9x^2-24xy"	"16y^2-24xy+9x^2"
+true	cross	symbolic	"16y^2-24xy+9x^2"	"16y^2+9x^2-24xy"
+true	eq	symbolic	"9x^2-24xy-16y^2"	"-16y^2+9x^2-24xy"
+true	eq/rev	symbolic	"-16y^2+9x^2-24xy"	"9x^2-24xy-16y^2"
+true	eq	symbolic	"9x^2-24xy-16y^2"	"-16y^2-24xy+9x^2"
+true	eq/rev	symbolic	"-16y^2-24xy+9x^2"	"9x^2-24xy-16y^2"
+true	cross	symbolic	"-16y^2+9x^2-24xy"	"-16y^2-24xy+9x^2"
+true	cross	symbolic	"-16y^2-24xy+9x^2"	"-16y^2+9x^2-24xy"

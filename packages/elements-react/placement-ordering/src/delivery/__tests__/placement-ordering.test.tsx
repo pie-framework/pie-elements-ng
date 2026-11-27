@@ -64,15 +64,13 @@ const describedByIds = (root: ParentNode = document) =>
 describe('PlacementOrdering ids', () => {
   it('stay unique when two items share a page', () => {
     const first = render(<Item />).container;
-    const second = render(<Item />).container;
+    render(<Item />);
 
     expect(tileIds(first)).toHaveLength(4);
     expect(new Set(tileIds()).size).toBe(tileIds().length);
-    // The drag instructions every tile references: dnd-kit's own `DndDescribedBy-<n>` counter
-    // restarts in each element bundle, so the id must come from elsewhere.
-    expect(describedByIds(first)).toHaveLength(1);
-    expect(describedByIds(first)).not.toEqual(describedByIds(second));
-    expect(describedByIds(first)[0]).not.toMatch(/^DndDescribedBy-\d+$/);
+    // dnd-kit points every tile at its pick-up instructions by an id from a counter that restarts in each element
+    // bundle; the tiles reference none (their labels say what to press), so there is no id to collide.
+    expect(describedByIds(first)).toHaveLength(0);
   });
 
   it('stay the same across re-renders', () => {
