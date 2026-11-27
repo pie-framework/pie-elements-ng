@@ -5,10 +5,11 @@
  * Players pass models to elements verbatim and sanitize only the item's own markup, so every
  * element sink that writes model HTML into the DOM runs it through `sanitizeModelHtml` first.
  *
- * The forbid-lists are pie-players' `sanitize-forbidden-lists.ts` without `<iframe>` and
- * `<object>`: production prompts embed videos and simulations in `<iframe>` and item-bank SVG
- * images in `<object>`. DOMPurify's URI check confines both to http(s) and relative URLs, and
- * `srcdoc`, `classid` and `codebase` are not allowed attributes.
+ * The forbid-lists are pie-players' `sanitize-forbidden-lists.ts` without `<iframe>`: production
+ * prompts embed videos, audio and simulations in frames. A frame loads from an https origin other
+ * than the document's, inside the sandbox and permissions of `FRAME_SANDBOX` and `FRAME_ALLOW`;
+ * `srcdoc` is not an allowed attribute. An `<object>` holding an image becomes an `<img>`; any
+ * other `<object>` is removed.
  * https://github.com/pie-framework/pie-players/blob/develop/packages/players-shared/src/security/sanitize-forbidden-lists.ts
  */
 
@@ -57,7 +58,6 @@ export const MODEL_HTML_FORBIDDEN_ATTRS = [
 // sanitizer keeps the same MathML.
 const EXTRA_TAGS = new Set([
   'iframe',
-  'object',
   'mstack',
   'mlongdiv',
   'msgroup',
@@ -78,12 +78,8 @@ const EXTRA_ATTRS = [
   // <img alignment>, written by the image editors and read by PreviewPrompt.
   'alignment',
   'target',
-  'allow',
-  'allowfullscreen',
   'frameborder',
   'scrolling',
-  // <object data>, validated as a URI.
-  'data',
   // Elementary math and `<mspace linebreak>`.
   'stackalign',
   'charalign',
@@ -98,6 +94,66 @@ const EXTRA_ATTRS = [
   'mslinethickness',
   'linebreak',
 ];
+
+// Every frame runs in the same sandbox and permissions, whatever it loads: its own scripts and
+// storage, sandboxed popups and form posts, fullscreen, picture-in-picture and protected media. It
+// cannot navigate the host page, open dialogs, download, autoplay or reach the device. Which
+// origins a frame may load is the host's call, made in its CSP `frame-src`.
+const FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation';
+const FRAME_ALLOW = 'encrypted-media; fullscreen; picture-in-picture';
+
+// Resolves a protocol-relative `src` to https and a relative one to an origin no frame may load.
+const NO_ORIGIN = 'https://invalid.invalid';
+
+// A same-origin frame with `allow-same-origin` and `allow-scripts` can lift its own sandbox, and a
+// relative `src` is same-origin.
+function frameSrc(src: string | null): string | null {
+  if (!src) return null;
+  let url: URL;
+  try {
+    url = new URL(src, `${NO_ORIGIN}/`);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:') return null;
+  if (url.origin === NO_ORIGIN || url.origin === window.location.origin) return null;
+  return url.href;
+}
+
+function containFrame(node: Element) {
+  if (node.nodeName !== 'IFRAME') return;
+  const src = frameSrc(node.getAttribute('src'));
+  if (src === null) {
+    node.remove();
+    return;
+  }
+  node.setAttribute('src', src);
+  node.setAttribute('sandbox', FRAME_SANDBOX);
+  node.setAttribute('allow', FRAME_ALLOW);
+  // A link whose `target` names the frame would navigate it to any URL.
+  node.removeAttribute('name');
+}
+
+// Production prompts use `<object>` only for item-bank SVG images, mostly written self-closing.
+// HTML ignores the slash, so the object holds the rest of the prompt as fallback content, hidden
+// once the image loads. An object that declares an image type, or none, becomes an `<img>` with its
+// attributes, followed by that content; both are sanitized after it. DOMPurify removes the emptied
+// object, and keeps the content of any other.
+const IMAGE_TYPE = /^\s*image\//i;
+
+function objectToImage(node: Node) {
+  if (node.nodeName !== 'OBJECT') return;
+  const object = node as Element;
+  const data = object.getAttribute('data');
+  const type = object.getAttribute('type');
+  if (!data || (type && !IMAGE_TYPE.test(type))) return;
+  const img = object.ownerDocument.createElement('img');
+  for (const { name, value } of object.attributes) {
+    if (name !== 'data' && name !== 'type') img.setAttribute(name, value);
+  }
+  img.setAttribute('src', data);
+  object.after(img, ...object.childNodes);
+}
 
 // The one inline handler authored content relies on: Star's listening prompts play an `<audio>`
 // that has no controls from an image link. Such a link keeps the audio's id in `PLAY_AUDIO_ATTR`
@@ -138,6 +194,7 @@ let purifier: typeof DOMPurify | null = null;
 function getPurifier(): typeof DOMPurify {
   if (purifier) return purifier;
   purifier = DOMPurify(window);
+  purifier.addHook('beforeSanitizeElements', objectToImage);
   purifier.addHook('beforeSanitizeAttributes', (node) => {
     if (node.nodeName !== 'A') return;
     const id = PLAY_AUDIO_HANDLER.exec(node.getAttribute('onclick') ?? '')?.[2];
@@ -149,6 +206,7 @@ function getPurifier(): typeof DOMPurify {
       playListenerInstalled = true;
     }
   });
+  purifier.addHook('afterSanitizeAttributes', containFrame);
   purifier.addHook('afterSanitizeAttributes', markAuthoredColors);
   return purifier;
 }
@@ -162,7 +220,8 @@ let cachedChars = 0;
 
 /**
  * Returns `html` with scripts, event handlers, `javascript:` URLs and the forbidden tags and
- * attributes removed. A link that only plays an `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
+ * attributes removed, and frames contained by `FRAME_SANDBOX` and `FRAME_ALLOW`. A link that only plays an
+ * `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
  * Elements with an authored color carry the markers a color scheme overrides them by; see
  * `markAuthoredColors`.
  * Returns an empty string where there is no DOM to sanitize against.
