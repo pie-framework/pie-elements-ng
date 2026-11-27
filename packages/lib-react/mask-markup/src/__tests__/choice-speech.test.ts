@@ -58,6 +58,48 @@ describe('speakChoice', () => {
     // Unfinished speech is not kept, so the same choice is spoken once the renderer has started.
     expect(speakChoice('<b>\\(c^2\\)</b>')).toEqual({ text: 'c squared', complete: true });
   });
+
+  it('reads a title the HTML starts with, but no stylesheet or meta', () => {
+    expect(speakChoice('<style>b { color: red }</style><b>Jupiter</b>').text).toBe('Jupiter');
+    expect(speakChoice('<meta charset="utf-8">Mars').text).toBe('Mars');
+    expect(speakChoice('<title>Planet</title> Venus').text).toBe('Planet Venus');
+  });
+});
+
+// Outside a browser there is no DOMParser: the tags are taken out of the HTML as text.
+describe('speakChoice without a DOMParser', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reads the text between the tags, each tag a space', () => {
+    vi.stubGlobal('DOMParser', undefined);
+
+    expect(speakChoice('<p>Tom<br>and <b>Jerry</b></p><p>run</p>')).toEqual({ text: 'Tom and Jerry run', complete: true });
+    expect(speakChoice('<b>\\(c^2\\)</b>')).toEqual({ text: '\\(c^2\\)', complete: false });
+  });
+
+  it('takes a < to open a tag that the next > closes, and keeps a < no > closes', () => {
+    vi.stubGlobal('DOMParser', undefined);
+
+    expect(speakChoice('a<b<c>d').text).toBe('a d');
+    expect(speakChoice('2 < 3 <i>x</i>').text).toBe('2 x');
+    expect(speakChoice('<p>x</p> 1 < 2').text).toBe('x 1 < 2');
+    expect(speakChoice('a <b').text).toBe('a <b');
+  });
+
+  it('takes time in step with the length of the HTML, however many < it holds', () => {
+    vi.stubGlobal('DOMParser', undefined);
+    const opens = '<'.repeat(50_000);
+    const unclosed = '<a'.repeat(25_000);
+    const start = performance.now();
+
+    expect(speakChoice(opens).text).toBe(opens);
+    expect(speakChoice(unclosed).text).toBe(unclosed);
+    expect(speakChoice(`${opens}>x`).text).toBe('x');
+    // The old regular expression took seconds here, its time growing with the square of the length.
+    expect(performance.now() - start).toBeLessThan(500);
+  });
 });
 
 // MathJax reads \$ as $ and \\ as \ in what it typesets, and it typesets a choice only when the choice holds

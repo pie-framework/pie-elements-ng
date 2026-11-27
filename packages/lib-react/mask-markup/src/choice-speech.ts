@@ -56,7 +56,30 @@ export interface ChoiceSpeech {
   complete: boolean;
 }
 
-const parse = (html: string) => new DOMParser().parseFromString(`<!doctype html><body>${html}`, 'text/html').body;
+// The HTML is parsed into an inert document, in which nothing runs or loads, and only its text and alt text are
+// read. Its head is read too: a document takes a <title> or <style> the HTML starts with there.
+const parse = (html: string): Element => new DOMParser().parseFromString(html, 'text/html').documentElement;
+
+/** `html` with each tag a space, as a `<` opens a tag the next `>` closes. One pass, however many `<` it holds. */
+const stripTags = (html: string): string => {
+  let text = '';
+  let from = 0;
+  let open = html.indexOf('<');
+
+  while (open !== -1) {
+    const close = html.indexOf('>', open + 1);
+
+    if (close === -1) {
+      break;
+    }
+
+    text += `${html.slice(from, open)} `;
+    from = close + 1;
+    open = html.indexOf('<', from);
+  }
+
+  return text + html.slice(from);
+};
 
 /** The speech of `latex`, or undefined until the math renderer can convert it. */
 const speakLatex = (latex: string, display: boolean): string | undefined => {
@@ -167,7 +190,7 @@ export const speakChoice = (html?: string): ChoiceSpeech => {
 
   // Outside a browser there is no math renderer either; the tags go and any TeX counts as unspoken.
   if (typeof DOMParser === 'undefined') {
-    const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const text = stripTags(html).replace(/\s+/g, ' ').trim();
 
     return { text, complete: !dialect.hasTex.test(html) };
   }
@@ -179,10 +202,10 @@ export const speakChoice = (html?: string): ChoiceSpeech => {
     return known;
   }
 
-  const body = parse(html);
-  const state: SpeechState = { complete: true, dialect, typeset: typesets(body, dialect) };
+  const root = parse(html);
+  const state: SpeechState = { complete: true, dialect, typeset: typesets(root, dialect) };
   // Math and images are spoken with a space either side, which a full stop or comma after them does not need.
-  const text = speakNode(body, state)
+  const text = speakNode(root, state)
     .replace(/\s+/g, ' ')
     .replace(/ ([.,;:!?])/g, '$1')
     .trim();
