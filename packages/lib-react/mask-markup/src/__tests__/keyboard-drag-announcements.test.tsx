@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 // MathJax loads off a CDN and has no bearing on the announcements.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
@@ -137,6 +137,40 @@ describe('DragInTheBlank keyboard drag announcements', () => {
 
     return { said, poolTile };
   };
+
+  it('says the selection each time the same choice is selected, also after the selection it ends', () => {
+    const { said, poolTile } = setup();
+    const heard: string[][] = [];
+
+    for (const step of ['select', 'deselect', 'select again', 'deselect again', 'select a third time']) {
+      poolTile('alpha').focus();
+      press('Enter');
+      tick(400);
+      heard.push(said());
+      expect(heard.at(-1), step).toHaveLength(1);
+    }
+
+    expect(heard).toEqual([[SELECTED_ALPHA], [ALPHA_NOT_SELECTED], [SELECTED_ALPHA], [ALPHA_NOT_SELECTED], [SELECTED_ALPHA]]);
+  });
+
+  it('says the selection again after a click placed the choice a keyboard drag held', () => {
+    const { said, poolTile } = setup();
+
+    poolTile('alpha').focus();
+    press('Enter');
+    tick(400);
+    expect(said()).toEqual([SELECTED_ALPHA]);
+
+    // The click ends the keyboard drag itself; the placement says what it did.
+    fireEvent.click(screen.getByRole('button', { name: 'Blank 1 is empty' }));
+    tick(400);
+    expect(said()).toEqual([expect.stringMatching(/^Placed answer choice alpha in blank 1\./)]);
+
+    screen.getByRole('button', { name: 'Answer choice: alpha in blank 1' }).focus();
+    press('Enter');
+    tick(400);
+    expect(said()).toEqual([SELECTED_ALPHA]);
+  });
 
   it('keeps the selection said when the drag first reports the pool it was lifted from, and reads the pool when Tab reaches it', () => {
     const { said, poolTile } = setup();

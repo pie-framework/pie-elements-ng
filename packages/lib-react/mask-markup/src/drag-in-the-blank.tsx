@@ -403,13 +403,17 @@ export default class DragInTheBlank extends React.Component {
         return describeFocusTarget(t, announcementConfig, selected, overData);
       },
 
+      // What the drop did is said in the element's own region. dnd-kit's region is emptied instead of
+      // left alone (`undefined`): it changes only when a drag event writes to it, so the selection it
+      // still held would be the same text next time and a new selection of that choice would go unsaid.
       onDragEnd() {
-        return undefined;
+        return '';
       },
 
       onDragCancel({ active }) {
+        // A click placement ended the drag and says what it did; dnd-kit's region is emptied, as at a drop.
         if (element.endingDragForPlacement) {
-          return undefined;
+          return '';
         }
 
         return describeDeselection(t, announcementConfig, dragData(active)?.choice?.id);
