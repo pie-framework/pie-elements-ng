@@ -46,6 +46,18 @@ describe('DragInTheBlank screen reader announcements', () => {
     expect(screen.getByText(/^This question has 2 blanks/)).toHaveClass('mathjax_ignore');
   });
 
+  it("keeps MathJax out of dnd-kit's live region and drag instructions too", () => {
+    const { container } = render(<DragInTheBlank {...props} onChange={vi.fn()} />);
+    const liveRegion = container.querySelector('[id^="DndLiveRegion"]');
+    const tile = screen.getByRole('button', { name: 'Answer choice: alpha' });
+    const instructions = container.querySelector(`[id="${tile.getAttribute('aria-describedby')}"]`);
+
+    expect(liveRegion).toHaveAttribute('aria-live', 'assertive');
+    expect(liveRegion?.closest('.mathjax_ignore')).not.toBeNull();
+    expect(instructions).toHaveTextContent(/./);
+    expect(instructions?.closest('.mathjax_ignore')).not.toBeNull();
+  });
+
   it('stays quiet about what to do once the item is disabled', () => {
     const { container } = render(<DragInTheBlank {...props} disabled onChange={vi.fn()} />);
 

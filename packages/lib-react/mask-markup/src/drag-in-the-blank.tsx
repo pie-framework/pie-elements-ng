@@ -90,6 +90,8 @@ export default class DragInTheBlank extends React.Component {
       selectedItem: null,
       // What a placement just did, for the live region; dnd-kit's own region only knows the drag.
       resultMessage: '',
+      // Where dnd-kit renders its live region and drag instructions, once it is in the document.
+      dndAnnouncer: null,
     };
     this.lastDragEndAt = 0;
     this.endingDragForPlacement = false;
@@ -170,6 +172,15 @@ export default class DragInTheBlank extends React.Component {
     // A drop that changes nothing is not a change to report.
     if (next !== value) {
       onChange(next);
+    }
+  };
+
+  // dnd-kit's announcements name math in words as well, and it would render them beside the element's
+  // content, which the element typesets as a whole: on a page that typesets $…$, a choice's $ would
+  // turn the announcement into math. Rendered in here instead, they are out of MathJax's reach.
+  setDndAnnouncer: any = (node) => {
+    if (node && node !== this.state.dndAnnouncer) {
+      this.setState({ dndAnnouncer: node });
     }
   };
 
@@ -433,7 +444,11 @@ export default class DragInTheBlank extends React.Component {
         collisionDetection={blanksFirst}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
-        accessibility={{ announcements, screenReaderInstructions: { draggable: t('dragInstructionsA11y') } }}
+        accessibility={{
+          announcements,
+          container: this.state.dndAnnouncer || undefined,
+          screenReaderInstructions: { draggable: t('dragInstructionsA11y') },
+        }}
       >
         <div ref={(ref) => (this.rootRef = ref)} style={style}>
           {/* What these say has its math in words already, so MathJax is kept out of them. */}
@@ -445,6 +460,7 @@ export default class DragInTheBlank extends React.Component {
           <div className={MATHJAX_IGNORE} style={visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
             {this.state.resultMessage}
           </div>
+          <div ref={this.setDndAnnouncer} className={MATHJAX_IGNORE} style={visuallyHidden} />
           <Choices
             choicePosition={choicePosition}
             choices={choices}
