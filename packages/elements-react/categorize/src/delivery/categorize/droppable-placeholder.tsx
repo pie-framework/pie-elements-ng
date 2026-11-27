@@ -122,7 +122,9 @@ const DroppablePlaceholder = ({
         flex: 1,
         minHeight: minRowHeight || '80px',
         position: 'relative',
-        touchAction: 'none',
+        // No `touch-action` here, nor on the pool's board in @pie-lib/drag: a drop zone never starts
+        // a drag, so on it a swipe scrolls the page and a pinch zooms it. The choices inside carry
+        // their own (see choice.tsx).
         // Only a pointer while there is actually something to place here. `cursor` only
         // manifests on hover anyway, so this needs no separate :hover rule.
         ...(hasSelection && !disabled && { cursor: 'pointer' }),

@@ -279,7 +279,6 @@ export class Categorize extends React.Component {
         model={model}
         choices={choices}
         language={language}
-        choicePosition={choicePosition}
         onDropChoice={this.dropChoice}
         onRemoveChoice={this.removeChoice}
         correct={correct}

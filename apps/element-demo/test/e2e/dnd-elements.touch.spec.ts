@@ -108,23 +108,25 @@ function forDefect(item: DndCase, key: TestKey) {
 const DRAGGABLE = `${DND_DRAGGABLE}[aria-disabled="false"]`;
 const ICA_AREA = `:is([role="button"], [role="group"])[aria-label]:not(${DND_DRAGGABLE})`;
 
-const CASES: DndCase[] = [
-  {
-    element: 'categorize',
-    open: async (page) => {
-      await openDeliverRoute(page, 'categorize', undefined, { layout: 'page' });
-      await waitForMathRendering(page);
-    },
-    choices: (root) => root.locator(DRAGGABLE),
-    target: (root) => root.getByRole('group', { name: 'True', exact: true }),
-    otherTarget: (root) => root.getByRole('group', { name: 'False', exact: true }),
-    autoscroll: true,
-    placed: (session) =>
-      ((session?.answers ?? []) as { choices?: unknown[] }[]).reduce(
-        (total, answer) => total + (answer.choices?.length ?? 0),
-        0
-      ),
+const CATEGORIZE: DndCase = {
+  element: 'categorize',
+  open: async (page) => {
+    await openDeliverRoute(page, 'categorize', undefined, { layout: 'page' });
+    await waitForMathRendering(page);
   },
+  choices: (root) => root.locator(DRAGGABLE),
+  target: (root) => root.getByRole('group', { name: 'True', exact: true }),
+  otherTarget: (root) => root.getByRole('group', { name: 'False', exact: true }),
+  autoscroll: true,
+  placed: (session) =>
+    ((session?.answers ?? []) as { choices?: unknown[] }[]).reduce(
+      (total, answer) => total + (answer.choices?.length ?? 0),
+      0
+    ),
+};
+
+const CASES: DndCase[] = [
+  CATEGORIZE,
   {
     element: 'match-list',
     choices: (root) => root.locator(DRAGGABLE),
@@ -494,4 +496,46 @@ test.describe('drag-and-drop elements under touch', () => {
       }
     });
   }
+
+  // A categorize drag holds only through the choice's own `touch-action: none`: without it Chromium
+  // claims the touch as a pan, fires `pointercancel`, and the drag is lost. The cases above start
+  // in the pool; this one starts on a choice already in a category.
+  test.describe('categorize: a placed choice', () => {
+    /** The choice ids the session places in each category, leaving out empty categories. */
+    async function placements(page: Page): Promise<Record<string, string[]>> {
+      const session = await getSessionState(page);
+      const placed: Record<string, string[]> = {};
+      for (const answer of (session?.answers ?? []) as { category: string; choices?: string[] }[]) {
+        if (answer.choices?.length) placed[answer.category] = answer.choices;
+      }
+      return placed;
+    }
+
+    test('a finger can drag it to another category', async ({ page }) => {
+      const root = await openForTouch(page, CATEGORIZE);
+      const from = CATEGORIZE.target(root);
+      const to = CATEGORIZE.otherTarget(root);
+
+      // Placed through the pool first, which the cases above already cover.
+      await centreInViewport(CATEGORIZE.choices(root).first(), from, to);
+      await touchDragBetween(page, CATEGORIZE.choices(root).first(), from, { settleMs: 150 });
+      await expect
+        .poll(async () => Object.keys(await placements(page)).length, { timeout: 10_000 })
+        .toBe(1);
+      const placed = await placements(page);
+      const [startCategory] = Object.keys(placed);
+      const [choiceId] = placed[startCategory];
+
+      const choice = CATEGORIZE.choices(from).first();
+      await centreInViewport(choice, to);
+      await recordPointers(page, 'pointercancel');
+      await touchDragBetween(page, choice, to, { settleMs: 150 });
+
+      await expect
+        .poll(async () => (await placements(page))[startCategory], { timeout: 10_000 })
+        .toBeUndefined();
+      expect(Object.values(await placements(page)).flat()).toEqual([choiceId]);
+      expect((await pointersSeen(page)).count, 'the browser took the touch for a pan').toBe(0);
+    });
+  });
 });

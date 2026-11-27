@@ -43,7 +43,7 @@ vi.mock('../categories', () => ({
 }));
 vi.mock('../choices', () => ({
   __esModule: true,
-  default: (props: any) => <div {...props} />,
+  default: (props: any) => <div data-testid="choices-pool" {...props} />,
 }));
 vi.mock('../choice', () => ({
   __esModule: true,
@@ -179,10 +179,9 @@ describe('categorize', () => {
   });
 
   describe('choicesPosition', () => {
-    // The mocked Choices renders its props as attributes, so the pool is the element carrying `choiceposition`.
     const layoutFor = (choicesPosition?: string) => {
       const { container } = renderCategorize({ model: { ...defaultProps.model, choicesPosition } });
-      const pool = container.querySelector('[choiceposition]') as HTMLElement;
+      const pool = container.querySelector('[data-testid="choices-pool"]') as HTMLElement;
       const content = pool.parentElement as HTMLElement;
 
       return { poolComesFirst: content.firstElementChild === pool, flexDirection: content.style.flexDirection };

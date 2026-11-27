@@ -365,3 +365,29 @@ describe('DraggableChoice tab stop', () => {
     expect((container.firstChild as Element).getAttribute('tabindex')).toBe('-1');
   });
 });
+
+// The drop zones leave `touch-action` alone so the page scrolls and zooms over them
+// (droppable-placeholder.test.tsx); a finger drag holds only because the choice claims the touch.
+describe('DraggableChoice touch', () => {
+  type TouchCaseProps = { categoryId?: string; choiceIndex?: number; disabled?: boolean };
+  const renderChoice = (extras: TouchCaseProps = {}) =>
+    render(
+      <ThemeProvider theme={theme}>
+        <DraggableChoice id="c1" content="Choice Content" {...extras} />
+      </ThemeProvider>,
+    );
+
+  it('claims a touch for the drag, in the pool and in a category', () => {
+    const pool = renderChoice();
+    expect(pool.container.firstChild).toHaveStyle({ touchAction: 'none' });
+
+    const placed = renderChoice({ categoryId: 'cat-1', choiceIndex: 0 });
+    expect(placed.container.firstChild).toHaveStyle({ touchAction: 'none' });
+  });
+
+  it('leaves a touch to the page when disabled, since it cannot be dragged', () => {
+    const { container } = renderChoice({ disabled: true });
+
+    expect((container.firstChild as HTMLElement).style.touchAction).toBe('');
+  });
+});

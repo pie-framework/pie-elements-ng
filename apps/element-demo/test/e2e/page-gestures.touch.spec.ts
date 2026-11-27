@@ -87,17 +87,9 @@ const BLOCKS = {
   },
   dragBoard: {
     cause:
-      "`@pie-lib/drag`'s choices board (lib-react/drag/src/placeholder.tsx, its `board` and " +
-      '`categorizeBoard` variants) sets `touch-action: none` on the whole pool, not only on the ' +
-      'choices in it.',
+      "`@pie-lib/drag`'s choices board (lib-react/drag/src/placeholder.tsx, its `board` " +
+      'variant) sets `touch-action: none` on the whole pool, not only on the choices in it.',
     ticket: 'PIE-1422',
-  },
-  categorize: {
-    cause:
-      "categorize's drop zones (elements-react/categorize/src/delivery/categorize/" +
-      'droppable-placeholder.tsx) set `touch-action: none` on every category, and its choices ' +
-      "wrapper (choices.tsx) on the pool, which also sits on `@pie-lib/drag`'s board.",
-    ticket: 'PIE-1423',
   },
 } satisfies Record<string, Block>;
 
@@ -185,14 +177,10 @@ const CASES: GestureCase[] = [
       {
         name: 'choices pool',
         locate: (root) => root.locator('[role="group"][aria-labelledby$="choices-label"]').first(),
-        scrollBlock: BLOCKS.categorize,
-        zoomBlock: BLOCKS.categorize,
       },
       {
         name: 'category',
         locate: (root) => root.locator('[role="group"][aria-labelledby*="category-label"]').first(),
-        scrollBlock: BLOCKS.categorize,
-        zoomBlock: BLOCKS.categorize,
       },
     ],
     handleDrag: choiceDragTo((root) =>
@@ -281,6 +269,14 @@ async function centreInViewport(...targets: Locator[]) {
 const FINGER_OFFSET = 30;
 
 /**
+ * How far from any handle a finger lands. Chromium moves a touch onto a tappable
+ * element near it (touch adjustment, over an area at least 20 CSS px across), so a
+ * finger in the 8px gap between two rows of categorize choices lands on a choice,
+ * which then rightly claims the touch.
+ */
+const HANDLE_CLEARANCE = 16;
+
+/**
  * A point on `surface` where both pinch fingers, and a swipe's one, land on the
  * surface itself and clear of any handle: the nearest such point to `prefer`.
  */
@@ -290,7 +286,7 @@ async function freePoint(
   prefer: GraphPoint
 ): Promise<Point> {
   const point = await surface.evaluate(
-    (el, { handles, prefer, offset }) => {
+    (el, { handles, prefer, offset, clearance }) => {
       /** The innermost element at a point, through open shadow roots. */
       const hitAt = (x: number, y: number) => {
         let hit = document.elementFromPoint(x, y);
@@ -301,15 +297,31 @@ async function freePoint(
         }
         return hit;
       };
-      /** On the surface, and not on or inside a handle. */
+      const parentOf = (node: Node) =>
+        node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentNode;
+      /** On or inside a handle, on the surface or off it. */
+      const onHandle = (x: number, y: number) => {
+        for (let node: Node | null = hitAt(x, y); node; node = parentOf(node)) {
+          if (handles && node instanceof Element && node.matches(handles)) return true;
+        }
+        return false;
+      };
+      /** Two rings of points around a finger, out to the clearance. */
+      const reach = [0.5, 1].flatMap((r) =>
+        Array.from({ length: 8 }, (_, k) => ({
+          dx: Math.cos((k * Math.PI) / 4) * clearance * r,
+          dy: Math.sin((k * Math.PI) / 4) * clearance * r,
+        }))
+      );
+      /** On the surface, and no handle within a finger's reach. */
       const isFree = (x: number, y: number) => {
         if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return false;
         let node: Node | null = hitAt(x, y);
         while (node && node !== el) {
           if (handles && node instanceof Element && node.matches(handles)) return false;
-          node = node.parentNode instanceof ShadowRoot ? node.parentNode.host : node.parentNode;
+          node = parentOf(node);
         }
-        return node === el;
+        return node === el && !reach.some(({ dx, dy }) => onHandle(x + dx, y + dy));
       };
 
       const rect = el.getBoundingClientRect();
@@ -331,7 +343,7 @@ async function freePoint(
       );
       return free ? { x: free.x, y: free.y } : null;
     },
-    { handles, prefer, offset: FINGER_OFFSET }
+    { handles, prefer, offset: FINGER_OFFSET, clearance: HANDLE_CLEARANCE }
   );
   if (!point) {
     throw new Error('No point on the surface clear of its handles, for one finger or two');
