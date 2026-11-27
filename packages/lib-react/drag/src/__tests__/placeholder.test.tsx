@@ -54,4 +54,18 @@ describe('PlaceHolder', () => {
     expect(source.borderTopColor).toBe(target.borderTopColor);
     expect(source.backgroundColor).not.toBe(renderSlot({}, { type: 'choice' }).backgroundColor);
   });
+
+  // categorize's choices set their own `touch-action: none`, so on its pool a swipe must scroll
+  // the page and a pinch zoom it.
+  it("leaves touch gestures on categorize's choices board to the page", () => {
+    const { container } = render(
+      <PlaceHolder choiceBoard isCategorize>
+        <span>1</span>
+      </PlaceHolder>,
+    );
+    const board = container.querySelector('.categorizeBoard') as HTMLElement;
+
+    expect(board).not.toBeNull();
+    expect(getComputedStyle(board).touchAction).not.toBe('none');
+  });
 });

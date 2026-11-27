@@ -66,6 +66,14 @@ describe('Choices', () => {
     );
   };
 
+  // A misspelt validator, such as `PropTypes.boolean`, is undefined: React logs an error on every
+  // render and never checks the prop.
+  it('declares a validator for every prop', () => {
+    for (const [name, validator] of Object.entries(Choices.propTypes)) {
+      expect(typeof validator, name).toBe('function');
+    }
+  });
+
   describe('rendering', () => {
     it('renders without crashing', () => {
       const { container } = renderChoices();
