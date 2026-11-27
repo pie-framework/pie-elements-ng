@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import { Feedback as FeedbackImport, color, createUniqueId, hasTextAlternative, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { isComposingKeyEvent } from '@pie-element/shared-utils';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -229,7 +230,7 @@ const StyledRadioBase: any = styled(Radio, {
 });
 
 export const StyledRadio = (props) => {
-  const { correctness, checked, onChange, disabled, value, id, tagName, inputRef, ariaLabelledBy } = props;
+  const { correctness, checked, onChange, disabled, value, id, tagName, onKeyDown, inputRef, ariaLabelledBy } = props;
 
   const miniProps = { checked, onChange, disabled, value };
 
@@ -237,6 +238,7 @@ export const StyledRadio = (props) => {
     <StyledRadioBase
       id={id}
       slotProps={{ input: { ref: inputRef, 'aria-labelledby': ariaLabelledBy } }}
+      onKeyDown={onKeyDown}
       disableRipple
       {...miniProps}
       correctness={correctness}
@@ -291,6 +293,20 @@ export class ChoiceInput extends React.Component {
 
   handleKeyDown: any = (event) => {
     const { choiceMode } = this.props;
+
+    // Enter picks the focused choice as Space does, as docs/ACCESSIBILITY.md describes, where a
+    // native radio or checkbox takes only Space (PIE-1628). It clicks the input, so the change it
+    // fires goes through the max-selections check, and a checked radio stays checked.
+    if (event.key === 'Enter' && !isComposingKeyEvent(event)) {
+      const input = event.currentTarget.querySelector('input');
+
+      if (input) {
+        event.preventDefault();
+        input.click();
+      }
+
+      return;
+    }
 
     if (choiceMode !== 'checkbox') return;
 
