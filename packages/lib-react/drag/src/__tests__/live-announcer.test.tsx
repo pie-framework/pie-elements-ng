@@ -19,7 +19,7 @@ const region = (container: HTMLElement) => container.querySelector('[role="statu
 
 describe('LiveAnnouncer', () => {
   it('says a message and empties itself after ANNOUNCEMENT_CLEAR_MS', () => {
-    const { container } = render(<LiveAnnouncer announcement={nextAnnouncement(undefined, 'Placed Lemon.')} />);
+    const { container } = render(<LiveAnnouncer announcement={nextAnnouncement('Placed Lemon.')} />);
 
     expect(region(container)).toHaveAttribute('aria-live', 'assertive');
     expect(region(container)).toHaveAttribute('aria-atomic', 'true');
@@ -39,29 +39,52 @@ describe('LiveAnnouncer', () => {
   });
 
   it('says the same words again as a new node', () => {
-    const first = nextAnnouncement(undefined, 'Selected Lemon.');
+    const first = nextAnnouncement('Selected Lemon.');
     const { container, rerender } = render(<LiveAnnouncer announcement={first} />);
     const firstNode = region(container).firstChild;
 
-    rerender(<LiveAnnouncer announcement={nextAnnouncement(first, 'Selected Lemon.')} />);
+    rerender(<LiveAnnouncer announcement={nextAnnouncement('Selected Lemon.')} />);
 
     expect(region(container)).toHaveTextContent('Selected Lemon.');
     expect(region(container).firstChild).not.toBe(firstNode);
   });
 
   it('gives a message that follows quickly its own full time', () => {
-    const first = nextAnnouncement(undefined, 'Selected Lemon.');
+    const first = nextAnnouncement('Selected Lemon.');
     const { container, rerender } = render(<LiveAnnouncer announcement={first} />);
 
     act(() => {
       vi.advanceTimersByTime(ANNOUNCEMENT_CLEAR_MS - 10);
     });
-    rerender(<LiveAnnouncer announcement={nextAnnouncement(first, 'Placed Lemon.')} />);
+    rerender(<LiveAnnouncer announcement={nextAnnouncement('Placed Lemon.')} />);
     act(() => {
       vi.advanceTimersByTime(ANNOUNCEMENT_CLEAR_MS - 1);
     });
 
     expect(region(container)).toHaveTextContent('Placed Lemon.');
+  });
+
+  it('says each message after its owner has set it back to nothing, as a drag starting does', () => {
+    const { container, rerender } = render(<LiveAnnouncer announcement={nextAnnouncement('Placed Lemon in blank 1.')} />);
+
+    for (const text of ['Placed Lemon in blank 1.', 'Selected Lemon.']) {
+      act(() => {
+        vi.advanceTimersByTime(ANNOUNCEMENT_CLEAR_MS);
+      });
+      expect(region(container).textContent).toBe('');
+
+      rerender(<LiveAnnouncer announcement={undefined} />);
+      expect(region(container).textContent).toBe('');
+
+      rerender(<LiveAnnouncer announcement={nextAnnouncement(text)} />);
+      expect(region(container)).toHaveTextContent(text);
+    }
+  });
+
+  it('never gives two announcements the same id', () => {
+    const ids = ['Selected Lemon.', 'Selected Lemon.', 'Placed Lemon.'].map((text) => nextAnnouncement(text).id);
+
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('keeps an empty region when there is nothing to say', () => {

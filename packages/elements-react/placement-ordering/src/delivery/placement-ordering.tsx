@@ -531,7 +531,7 @@ export class PlacementOrdering extends React.Component {
 
     // Each message is a new announcement, so the same one twice in a row is said twice. The region clears
     // itself a moment after it is said, which for a held-back result is after the delay below.
-    const say = () => this.setState((state) => ({ announcement: nextAnnouncement(state.announcement, message) }));
+    const say = () => this.setState({ announcement: nextAnnouncement(message) });
 
     if (afterFocus) {
       // A newer result replaces one still waiting; an immediate message (a selection, a button move) leaves it,

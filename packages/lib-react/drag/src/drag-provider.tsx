@@ -59,7 +59,7 @@ export function DragProvider({
 
   const announce = useCallback((text) => {
     if (text) {
-      setAnnouncement((previous) => nextAnnouncement(previous, text));
+      setAnnouncement(nextAnnouncement(text));
     }
   }, []);
   const announcements = accessibility?.announcements ?? defaultAnnouncements;

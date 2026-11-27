@@ -14,11 +14,17 @@ export interface Announcement {
   text: string;
 }
 
-/** The announcement that follows `previous`, saying `text`. */
-export const nextAnnouncement = (previous: Announcement | undefined, text: string): Announcement => ({
-  id: (previous?.id ?? 0) + 1,
-  text,
-});
+// Counted here rather than from the owner's last message: an owner that sets its announcement back to
+// nothing (as drag-in-the-blank does when a drag starts or is cancelled) would otherwise start again at 1,
+// an id its region has already said and emptied, and every message after it would go unsaid (PIE-1547).
+let lastAnnouncementId = 0;
+
+/** A new announcement saying `text`, with an id no announcement has had before. */
+export const nextAnnouncement = (text: string): Announcement => {
+  lastAnnouncementId += 1;
+
+  return { id: lastAnnouncementId, text };
+};
 
 // The visually hidden style of dnd-kit's own live region, so the region takes no room wherever it sits.
 const visuallyHidden: CSSProperties = {
@@ -41,7 +47,10 @@ const visuallyHidden: CSSProperties = {
 const MATHJAX_IGNORE = 'mathjax_ignore';
 
 export interface LiveAnnouncerProps {
-  /** What to say. A change of `id` says its text, which is then cleared after `ANNOUNCEMENT_CLEAR_MS`. */
+  /**
+   * What to say, made by `nextAnnouncement`. A change of `id` says its text, which is then cleared after
+   * `ANNOUNCEMENT_CLEAR_MS`; `undefined` empties the region at once.
+   */
   announcement?: Announcement;
   politeness?: 'polite' | 'assertive';
   id?: string;

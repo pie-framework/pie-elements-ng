@@ -148,7 +148,7 @@ export class Main extends React.Component {
       return;
     }
 
-    this.setState((state) => ({ announcement: nextAnnouncement(state.announcement, message) }));
+    this.setState({ announcement: nextAnnouncement(message) });
   };
 
   onRemoveAnswer(id) {

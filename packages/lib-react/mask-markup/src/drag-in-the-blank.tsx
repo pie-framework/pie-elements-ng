@@ -193,7 +193,7 @@ export default class DragInTheBlank extends React.Component {
       ? describePlacementResult(t, config, value, draggedItem, targetId)
       : describeDeselection(t, config, draggedItem.choice?.id);
 
-    this.setState((state) => ({ announcement: nextAnnouncement(state.announcement, message) }));
+    this.setState({ announcement: nextAnnouncement(message) });
   };
 
   handleDragEnd: any = (event) => {
@@ -254,7 +254,6 @@ export default class DragInTheBlank extends React.Component {
       return {
         selectedItem: deselecting ? null : data,
         announcement: nextAnnouncement(
-          state.announcement,
           deselecting ? describeDeselection(t, config, data.choice?.id) : describeSelection(t, config, data.choice?.id),
         ),
       };
